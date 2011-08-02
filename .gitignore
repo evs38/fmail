@@ -1,0 +1,4 @@
+
+*.exe
+/ide.45/FMAIL.~DE
+obj.45/ob*/*.obj
