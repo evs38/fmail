@@ -1,43 +1,61 @@
+/*------------------------------------------------------------------------
+ * filename - tzset.c
+ *
+ * function(s)
+ *        tzset     - UNIX time compatibility
+ *        _isDst    - determines whether daylight savings is in effect
+ *        _totalsec - converts a date to seconds since 1970
+ *-----------------------------------------------------------------------*/
+
 /*
- *  Copyright (C) 2007 Folkert J. Wijnstra
+ *      C/C++ Run Time Library - Version 1.5
  *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *      Copyright (c) 1987, 1994 by Borland International
+ *      All Rights Reserved.
  *
  */
 
+#if defined(__WIN32__)
+#include <ntbc.h>
+#endif
 
 #include <time.h>
-#include <ctype.h>
+#include <_time.h>
+#include <_ctype.h>
+#define ISALPHA(c) iscalpha(c)
+#include <stdlib.h>
 #include <string.h>
 
-#define Normal				0
-#define Daylight			1
-#define TZstrlen			3
+#define YES 1
+#define NO  0
+
+#define Normal    0
+#define Daylight  1
+#define TZstrlen        3        /* Len of tz string(- null terminator) */
 #define DefaultTimeZone 0L
-#define DefaultDaylight 0
-#define DefaultTZname   "GMT"
-#define DefaultDSTname  "GMT"
+#define DefaultDaylight NO
+#define DefaultTZname   "GMT"    /* Default normal time zone name */
+#define DefaultDSTname  "GMT"    /* Default daylight savings zone name */
 
+/*---------------------------------------------------------------------*
 
-void tzset(void)
+Name            tzset
+
+Usage           void tzset(void);
+
+Prototype in    time.h
+
+Description     sets local timezone info base on the "TZ" environment string
+
+Return value    None
+
+*---------------------------------------------------------------------*/
+
+void _RTLENTRY _EXPFUNC tzset(void)
 {
 #ifndef __OS2__
-	_daylight = DefaultDaylight;
-	_timezone = DefaultTimeZone * 60L * 60L;
+   _daylight = DefaultDaylight;
+   _timezone = DefaultTimeZone * 60L * 60L;
    strcpy(_tzname[Normal], DefaultTZname);
    strcpy(_tzname[Daylight], DefaultDSTname);
 #else
@@ -47,3 +65,5 @@ void tzset(void)
    strcpy(tzname[Daylight], DefaultDSTname);
 #endif
 }
+
+--=====================_37360781==_
