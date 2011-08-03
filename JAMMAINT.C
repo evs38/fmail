@@ -238,26 +238,26 @@ NoMem:
    memset(msgidBuf, 0, MSGIDNUM*4);
    memset(replyBuf, 0, MSGIDNUM*4);
 
-   if ( (JHRhandle = fsopen(expJAMname(areaPtr->msgBasePath, "JHR"),
+   if ( (JHRhandle = fsopen(expJAMname(areaPtr->msgBasePath, EXT_HDR),
                             O_RDONLY|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  goto jamx;
    }
-   if ( (JDThandle = fsopen(expJAMname(areaPtr->msgBasePath, "JDT"),
+   if ( (JDThandle = fsopen(expJAMname(areaPtr->msgBasePath, EXT_TXT),
                             O_RDONLY|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JHRhandle);
       goto jamx;
    }
-   if ( (JDXhandle = fsopen(expJAMname(areaPtr->msgBasePath, "JDX"),
+   if ( (JDXhandle = fsopen(expJAMname(areaPtr->msgBasePath, EXT_IDX),
                             O_RDONLY|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JDThandle);
       fsclose(JHRhandle);
       goto jamx;
    }
 
-   JLRhandle = fsopen(expJAMname(areaPtr->msgBasePath, "JLR"),
+   JLRhandle = fsopen(expJAMname(areaPtr->msgBasePath, EXT_LRD),
                       O_RDONLY|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1);
 
-   if ( (JHRhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, "$HR"),
+   if ( (JHRhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_NEW_HDR),
                                O_CREAT|O_TRUNC|O_RDWR|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JLRhandle);
       fsclose(JDXhandle);
@@ -265,7 +265,7 @@ NoMem:
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ( (JDThandleNew = fsopen(expJAMname(areaPtr->msgBasePath, "$DT"),
+   if ( (JDThandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_NEW_TXT),
                                O_CREAT|O_TRUNC|O_RDWR|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JHRhandleNew);
       fsclose(JLRhandle);
@@ -274,7 +274,7 @@ NoMem:
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ( (JDXhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, "$DX"),
+   if ( (JDXhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_NEW_IDX),
                                O_CREAT|O_TRUNC|O_RDWR|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JDThandleNew);
       fsclose(JHRhandleNew);
@@ -284,7 +284,7 @@ NoMem:
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ( (JLRhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, "$LR"),
+   if ( (JLRhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_NEW_LRD),
                                O_CREAT|O_TRUNC|O_RDWR|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JDXhandleNew);
       fsclose(JDThandleNew);
@@ -631,50 +631,42 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
    gotoTab(tabPos);
    if ( JAMerror )
    {
-      fsunlink(expJAMname(areaPtr->msgBasePath, "$HR"), 1);
-      fsunlink(expJAMname(areaPtr->msgBasePath, "$DT"), 1);
-      fsunlink(expJAMname(areaPtr->msgBasePath, "$DX"), 1);
-      fsunlink(expJAMname(areaPtr->msgBasePath, "$LR"), 1);
-      newLine();
-      sprintf(tempStr, "Disk problems during JAM base maintenance, area %s", areaPtr->areaName);
-      logEntry(tempStr, LOG_ALWAYS, 0);
+     fsunlink(expJAMname(areaPtr->msgBasePath, EXT_NEW_HDR), 1);
+     fsunlink(expJAMname(areaPtr->msgBasePath, EXT_NEW_TXT), 1);
+     fsunlink(expJAMname(areaPtr->msgBasePath, EXT_NEW_IDX), 1);
+     fsunlink(expJAMname(areaPtr->msgBasePath, EXT_NEW_LRD), 1);
+     newLine();
+     sprintf(tempStr, "Disk problems during JAM base maintenance, area %s", areaPtr->areaName);
+     logEntry(tempStr, LOG_ALWAYS, 0);
    }
    else
    {
-      fsunlink(expJAMname(areaPtr->msgBasePath, "!HR"), 1);
-      fsunlink(expJAMname(areaPtr->msgBasePath, "!DT"), 1);
-      fsunlink(expJAMname(areaPtr->msgBasePath, "!DX"), 1);
-      fsunlink(expJAMname(areaPtr->msgBasePath, "!LR"), 1);
+     fsunlink(expJAMname(areaPtr->msgBasePath, EXT_BCK_HDR), 1);
+     fsunlink(expJAMname(areaPtr->msgBasePath, EXT_BCK_TXT), 1);
+     fsunlink(expJAMname(areaPtr->msgBasePath, EXT_BCK_IDX), 1);
+     fsunlink(expJAMname(areaPtr->msgBasePath, EXT_BCK_LRD), 1);
 
-      if ( switches & SW_B )
-      {
-         fsrename(expJAMname(areaPtr->msgBasePath, "JHR"),
-		  expJAMname(areaPtr->msgBasePath, "!HR"), 1);
-	 fsrename(expJAMname(areaPtr->msgBasePath, "JDT"),
-		  expJAMname(areaPtr->msgBasePath, "!DT"), 1);
-	 fsrename(expJAMname(areaPtr->msgBasePath, "JDX"),
-		  expJAMname(areaPtr->msgBasePath, "!DX"), 1);
-	 fsrename(expJAMname(areaPtr->msgBasePath, "JLR"),
-		  expJAMname(areaPtr->msgBasePath, "!LR"), 1);
-      }
-      else
-      {
-	 fsunlink(expJAMname(areaPtr->msgBasePath, "JHR"), 1);
-	 fsunlink(expJAMname(areaPtr->msgBasePath, "JDT"), 1);
-	 fsunlink(expJAMname(areaPtr->msgBasePath, "JDX"), 1);
-	 fsunlink(expJAMname(areaPtr->msgBasePath, "JLR"), 1);
-      }
-      fsrename(expJAMname(areaPtr->msgBasePath, "$HR"),
-	       expJAMname(areaPtr->msgBasePath, "JHR"), 1);
-      fsrename(expJAMname(areaPtr->msgBasePath, "$DT"),
-	       expJAMname(areaPtr->msgBasePath, "JDT"), 1);
-      fsrename(expJAMname(areaPtr->msgBasePath, "$DX"),
-	       expJAMname(areaPtr->msgBasePath, "JDX"), 1);
-      fsrename(expJAMname(areaPtr->msgBasePath, "$LR"),
-               expJAMname(areaPtr->msgBasePath, "JLR"), 1);
+     if ( switches & SW_B )
+     {
+       fsrename(expJAMname(areaPtr->msgBasePath, EXT_HDR), expJAMname(areaPtr->msgBasePath, EXT_BCK_HDR), 1);
+       fsrename(expJAMname(areaPtr->msgBasePath, EXT_TXT), expJAMname(areaPtr->msgBasePath, EXT_BCK_TXT), 1);
+       fsrename(expJAMname(areaPtr->msgBasePath, EXT_IDX), expJAMname(areaPtr->msgBasePath, EXT_BCK_IDX), 1);
+       fsrename(expJAMname(areaPtr->msgBasePath, EXT_LRD), expJAMname(areaPtr->msgBasePath, EXT_BCK_LRD), 1);
+     }
+     else
+     {
+       fsunlink(expJAMname(areaPtr->msgBasePath, EXT_HDR), 1);
+       fsunlink(expJAMname(areaPtr->msgBasePath, EXT_TXT), 1);
+       fsunlink(expJAMname(areaPtr->msgBasePath, EXT_IDX), 1);
+       fsunlink(expJAMname(areaPtr->msgBasePath, EXT_LRD), 1);
+     }
+     fsrename(expJAMname(areaPtr->msgBasePath, EXT_NEW_HDR), expJAMname(areaPtr->msgBasePath, EXT_HDR), 1);
+     fsrename(expJAMname(areaPtr->msgBasePath, EXT_NEW_TXT), expJAMname(areaPtr->msgBasePath, EXT_TXT), 1);
+     fsrename(expJAMname(areaPtr->msgBasePath, EXT_NEW_IDX), expJAMname(areaPtr->msgBasePath, EXT_IDX), 1);
+     fsrename(expJAMname(areaPtr->msgBasePath, EXT_NEW_LRD), expJAMname(areaPtr->msgBasePath, EXT_LRD), 1);
 
-      printStringFill("Ready");
-      newLine();
+     printStringFill("Ready");
+     newLine();
    }
    return JAMerror;
 }

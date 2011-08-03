@@ -1,0 +1,19 @@
+2009-07-20
+  * fmail.h:
+    Version update 1.62.GPL.
+    
+  * jam.h:
+  * jamfun.c:
+  * jammaint.c:
+  * window.c:
+    Lowercase jam file extensions.
+    Usage of defines for jam file extensions.
+    
+2008-06-11
+  * ftscprod.c:
+    updated until ftscprod.011.
+    
+  * fmail.c:
+  * fsetup.c:
+  * ftools.c:
+    Single lines for top and bottom window borders, instead of double lines.

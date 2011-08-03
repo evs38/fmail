@@ -650,7 +650,7 @@ color = 1;
    windowLook.actvborderfg = YELLOW;
    windowLook.editfg       = RED;
    windowLook.mono_attr    = MONO_NORM;
-   windowLook.wAttr        = WB_DOUBLE_H | NO_SAVE;
+   windowLook.wAttr        = NO_SAVE; // WB_DOUBLE_H | NO_SAVE;
 
    if (displayWindow (NULL, 0, 0, 79, 3) != 0)
    {
@@ -697,7 +697,7 @@ color = 1;
       windowLook.commentbg      = BLACK;
       windowLook.atttextfg      = WHITE;
       windowLook.mono_attr      = MONO_HIGH;
-      windowLook.wAttr          = WB_DOUBLE_H | TITLE_RIGHT | SHADOW;
+      windowLook.wAttr          = TITLE_RIGHT | SHADOW; // WB_DOUBLE_H |
       break;
 
       case 1 : /* Winter colors */
@@ -718,7 +718,7 @@ color = 1;
       windowLook.commentbg      = BLACK;
       windowLook.atttextfg      = BLACK;
       windowLook.mono_attr      = MONO_HIGH;
-      windowLook.wAttr          = WB_DOUBLE_H | TITLE_RIGHT | SHADOW;
+      windowLook.wAttr          = TITLE_RIGHT | SHADOW; // WB_DOUBLE_H |
       break;
 
       case 2 : /* Marine colors */
@@ -739,7 +739,7 @@ color = 1;
       windowLook.commentbg      = BLACK;
       windowLook.atttextfg      = BLACK;
       windowLook.mono_attr      = MONO_HIGH;
-      windowLook.wAttr          = WB_DOUBLE_H | TITLE_RIGHT | SHADOW;
+      windowLook.wAttr          = TITLE_RIGHT | SHADOW; // WB_DOUBLE_H |
       break;
    }
 

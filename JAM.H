@@ -31,10 +31,30 @@ extern "C" {
 /*
 **  File extensions
 */
-#define EXT_HDRFILE     ".jhr"
-#define EXT_TXTFILE     ".jdt"
-#define EXT_IDXFILE     ".jdx"
-#define EXT_LRDFILE     ".jlr"
+#define BASE_EXT_HDR    "hr"
+#define BASE_EXT_TXT    "dt"
+#define BASE_EXT_IDX    "dx"
+#define BASE_EXT_LRD    "lr"
+
+#define EXT_HDR         "j"BASE_EXT_HDR
+#define EXT_TXT         "j"BASE_EXT_TXT
+#define EXT_IDX         "j"BASE_EXT_IDX
+#define EXT_LRD         "j"BASE_EXT_LRD
+
+#define EXT_BCK_HDR     "!"BASE_EXT_HDR
+#define EXT_BCK_TXT     "!"BASE_EXT_TXT
+#define EXT_BCK_IDX     "!"BASE_EXT_IDX
+#define EXT_BCK_LRD     "!"BASE_EXT_LRD
+
+#define EXT_NEW_HDR     "$"BASE_EXT_HDR
+#define EXT_NEW_TXT     "$"BASE_EXT_TXT
+#define EXT_NEW_IDX     "$"BASE_EXT_IDX
+#define EXT_NEW_LRD     "$"BASE_EXT_LRD
+
+#define EXT_HDRFILE     "."EXT_HDR
+#define EXT_TXTFILE     "."EXT_TXT
+#define EXT_IDXFILE     "."EXT_IDX
+#define EXT_LRDFILE     "."EXT_LRD
 
 /*
 **  Revision level and header signature

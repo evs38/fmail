@@ -23,7 +23,7 @@
 #include "fmstruct.h"
 #include "ftscprod.h"
 
-//      updated until ftscprod.005
+// updated until ftscprod.011
 
 struct ftscps ftscprod[MAX_PRODCODES] =
 {
@@ -316,5 +316,14 @@ struct ftscps ftscprod[MAX_PRODCODES] =
    { 0x0DFF, "Nice Tosser" },
    { 0x0EFF, "LuckyGate" },
    { 0x0FFF, "McMail" },
+   { 0x10FF, "HPT" },
+   { 0x11FF, "MBSEBBS" },
+   { 0x12FF, "SBBSecho" },
+   { 0x13FF, "binkd" },
+   { 0x14FF, "Mail-ennium/32" },
+   { 0x15FF, "Radius" },
+   { 0x16FF, "RNtrack" },
+   { 0x17FF, "Msg2Pkt" },
+   { 0x18FF, "Marena" },
    { 0xFFFF, ""}
-};   
+};

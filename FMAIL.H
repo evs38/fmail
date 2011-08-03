@@ -99,13 +99,13 @@ int _closet(int);
 #endif
 
 #ifdef BETA
-        #define VERNUM         "1.47a"
+  #define VERNUM         "1.47a"
 	#define SERIAL_MAJOR    1
-        #define SERIAL_MINOR    47
+  #define SERIAL_MINOR    47
 #else
-        #define VERNUM         "1.60.GPL"
+  #define VERNUM         "1.62.GPL"
 	#define SERIAL_MAJOR    1
-        #define SERIAL_MINOR    60
+  #define SERIAL_MINOR    62
 #endif
 
 #ifdef BETA

@@ -50,6 +50,7 @@
 #include "fmail.h"
 #include "fs_func.h"
 #include "fs_util.h"
+#include "jam.h"
 #include "window.h"
 #include "areamgr.h"
 #include "help.h"
@@ -119,10 +120,11 @@ union REGS regs;
 static windowMemType  windowStack[MAX_WINDOWS];
 static u16            windowSP = 0;
 
-static char border[4][8] = {{'Ä', '³', 'Ú', '¿', 'À', 'Ù', '´', 'Ã'},
-			    {'Í', '³', 'Õ', '¸', 'Ô', '¾', 'µ', 'Æ'},
-                            {'Ä', 'º', 'Ö', '·', 'Ó', '½', '¶', 'Ç'},
-									 {'Í', 'º', 'É', '»', 'È', '¼', '¹', 'Ì'}};
+static char border[4][8] = { {'Ä', '³', 'Ú', '¿', 'À', 'Ù', '´', 'Ã'}
+                           , {'Í', '³', 'Æ', '¸', 'Ô', '¾', 'µ', 'Æ'}
+                           , {'Ä', 'º', 'Ö', '·', 'Ó', '½', '¶', 'Ç'}
+                           , {'Í', 'º', 'É', '»', 'È', '¼', '¹', 'Ì'}
+                           };
 
 extern struct COUNTRY countryInfo;
 
@@ -1897,7 +1899,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
       getAttr (windowLook.promptfg, windowLook.background, attr);
       py = sy+1;
 		for ( count = 0; count < menu->entryCount; count++ )
-      {   
+      {
          if (menu->menuEntry[count].offset != 0)
 	    py--;
 	 if ( menu->menuEntry[count].selected )
@@ -2130,7 +2132,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
                               }
                               update = 1;
 	    		      break;
-	    case ENUM_INT   : {  
+	    case ENUM_INT   : {
                               u16      teller;
 			      menuType *tempMenu;
 	    		      char     tempvar;
@@ -2822,13 +2824,13 @@ void askRemoveJAM(uchar *msgBasePath)
    if (*msgBasePath && !fsfindfirst(tempStr, &ffblkJAM, 0, 1) &&
     (askBoolean("Delete JAM files of this area ?", 'Y') == 'Y'))
    {
-      strcpy(helpPtr, ".JDX");
+      strcpy(helpPtr, EXT_IDXFILE);
       fsunlink(tempStr, 1);
-      strcpy(helpPtr, ".JHR");
+      strcpy(helpPtr, EXT_HDRFILE);
       fsunlink(tempStr, 1);
-      strcpy(helpPtr, ".JDT");
+      strcpy(helpPtr, EXT_TXTFILE);
       fsunlink(tempStr, 1);
-      strcpy(helpPtr, ".JLR");
+      strcpy(helpPtr, EXT_LRDFILE);
       fsunlink(tempStr, 1);
       if ((helpPtr = strrchr(msgBasePath, '\\')) != NULL)
       {  *helpPtr = 0;

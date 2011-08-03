@@ -153,26 +153,26 @@ u32 jam_open(char *msgBaseName, JAMHDRINFO **jam_hdrinfo)
 
    strcpy(jam_basename, msgBaseName);
    helpptr = stpcpy(tempstr, msgBaseName);
-   strcpy(helpptr, ".jhr");
+   strcpy(helpptr, EXT_HDRFILE);
    if ( (jam_hdrhandle = fsopenP(tempstr, O_RDWR|O_BINARY|O_DENYNONE|O_CREAT, S_IREAD|S_IWRITE)) == -1 )
    {
 //    logEntry("jam_open 1", LOG_ALWAYS, 0);
       return 0;
   }
-   strcpy(helpptr, ".jlr");
+   strcpy(helpptr, EXT_LRDFILE);
    if ( (jam_lrdhandle = fsopenP(tempstr, O_RDWR|O_BINARY|O_DENYNONE|O_CREAT, S_IREAD|S_IWRITE)) == -1 )
    {  fsclose(jam_hdrhandle);
 //    logEntry("jam_open 2", LOG_ALWAYS, 0);
       return 0;
    }
-   strcpy(helpptr, ".jdt");
+   strcpy(helpptr, EXT_TXTFILE);
    if ( (jam_txthandle = fsopenP(tempstr, O_RDWR|O_BINARY|O_DENYNONE|O_CREAT, S_IREAD|S_IWRITE)) == -1 )
    {  fsclose(jam_lrdhandle);
       fsclose(jam_hdrhandle);
 //    logEntry("jam_open 3", LOG_ALWAYS, 0);
       return 0;
    }
-   strcpy(helpptr, ".jdx");
+   strcpy(helpptr, EXT_IDXFILE);
    if ( (jam_idxhandle = fsopenP(tempstr, O_RDWR|O_BINARY|O_DENYNONE|O_CREAT, S_IREAD|S_IWRITE)) == -1 )
    {  fsclose(jam_txthandle);
       fsclose(jam_lrdhandle);
@@ -267,7 +267,7 @@ u16 jam_getidx(u32 jam_code, JAMIDXREC *jam_idxrec, u32 jam_msgnum)
 {  dummy = jam_code;
 
    if ( !jam_msgnum )
-      jam_msgnum++;	 
+      jam_msgnum++;	
    if ( fmseek(jam_idxhandle, (jam_msgnum-1)*sizeof(JAMIDXREC), SEEK_SET, 1) != (jam_msgnum-1)*sizeof(JAMIDXREC) )
       return 0;
    if ( read(jam_idxhandle, jam_idxrec, sizeof(JAMIDXREC)) != sizeof(JAMIDXREC) )
@@ -427,7 +427,7 @@ u16 jam_fields[21] =
 	};
 
 
-u16 jam_makesubfields(u32 jam_code, char *jam_subfields, u32 *jam_subfieldLen, 
+u16 jam_makesubfields(u32 jam_code, char *jam_subfields, u32 *jam_subfieldLen,
 		      JAMHDR *jam_msghdrrec, internalMsgType *message)
 {  u16   loID;
 //	u16   hiID;
@@ -579,7 +579,7 @@ u16 jam_newhdr(u32 jam_code, u32 *jam_hdrOffset, JAMHDR *jam_hdrrec, char *jam_s
    }
    if ( write(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR) )
       return 0;
-   if ( write(jam_hdrhandle, jam_subfields, (udef)jam_hdrrec->SubfieldLen) != (udef)jam_hdrrec->SubfieldLen) 
+   if ( write(jam_hdrhandle, jam_subfields, (udef)jam_hdrrec->SubfieldLen) != (udef)jam_hdrrec->SubfieldLen)
       return 0;
    return 1;
 }
@@ -613,7 +613,7 @@ u16 jam_puttext(JAMHDR *jam_hdrrec, char *txt)
 static s16 useLocks = -1;
 
 u16 jam_getlock(u32 jam_code)
-{  
+{
    s16 stat;
 
    dummy = jam_code;

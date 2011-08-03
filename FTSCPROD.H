@@ -20,7 +20,7 @@
  */
 
 
-#define MAX_PRODCODES 0x122
+#define MAX_PRODCODES  299
 
 typedef struct ftscps
 {  u32  prodcode;
