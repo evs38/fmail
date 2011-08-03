@@ -194,8 +194,9 @@ int cdecl main(int argc, char *argv[])
    rawEchoType *adefBuf;
    time_t      time1, time2, time2a;
 
-#ifdef __OS2__
+   putenv("TZ=LOC0");
    tzset();
+#ifdef __OS2__
    WinSetTitle(FSETUP_VER_STRING);
 #endif
 
@@ -668,7 +669,7 @@ color = 1;
 #endif
 
    printString (versionStr, 3, 1, YELLOW, RED, MONO_HIGH);
-   printString ("Copyright (C) 1991, 2001 by Folkert J. Wijnstra ù All rights reserved", 3, 2, YELLOW, RED, MONO_HIGH);
+   printString ("Copyright (C) 1991-2008 by Folkert J. Wijnstra ù All rights reserved", 3, 2, YELLOW, RED, MONO_HIGH);
 
    fillRectangle ('Ü', 0, 4, 79, 4, BLUE, BLACK, 0);
    fillRectangle ('ß', 0, 23, 79, 23, BLUE, BLACK, 0);
@@ -778,7 +779,7 @@ color = 1;
 				 O_WRONLY|O_DENYALL|O_BINARY|O_CREAT|O_TRUNC,
 				 S_IREAD|S_IWRITE)) == -1) &&
              (!config.activTimeOut || time2-time1 < config.activTimeOut) && ((ch = GetKey & 0xff) != 27))
-      {  
+      {
 	 if (ch != 0 && ch != -1)
 	    WaitForKey;
 	 else

@@ -654,7 +654,7 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
 				      }
 				      break;
 			case BADMSG : printStringFill ("ÍÍ Bad message");
-                                      
+
 tossbad:                              sprintf (tempStr, "\r\1FMAIL DEST: %s", nodeStr(&globVars.packetDestNode));
                                       if ((helpPtr = strchr (message->text, '\r')) != NULL)
                                       {
@@ -1210,8 +1210,9 @@ int cdecl main(int argc, char *argv[])
 // struct tm      *timeBlock;
    struct bt      *bundlePtr, *bundlePtr2, *bundlePtr3;
 
-#ifdef __OS2__
+   putenv("TZ=LOC0");
    tzset();
+#ifdef __OS2__
    WinSetTitle(VERSION_STRING);
 #endif
 #if defined __WIN32__ && !defined __DPMI32__
@@ -1243,7 +1244,7 @@ int cdecl main(int argc, char *argv[])
       printString (" ù The Fast Echomail Processor");
 #endif
    gotoPos (3, 2);
-   printString ("Copyright (C) 1991, 2001 by Folkert J. Wijnstra ù All rights reserved");
+   printString ("Copyright (C) 1991-2008 by Folkert J. Wijnstra ù All rights reserved");
    gotoPos (0, 5);
    setAttr (LIGHTGRAY, BLACK, MONO_NORM);
 
@@ -1562,7 +1563,7 @@ int cdecl main(int argc, char *argv[])
                          sprintf (tempStr, "\n\nReceived from node        #Msgs  Dupes  Sec V\n"
                                            "------------------------  -----  -----  -----\n"));
                }
-	       write (tempHandle, tempStr, 
+	       write (tempHandle, tempStr,
 		      sprintf (tempStr, "Not in export list        %5u  %5u  %5u\n",
 					globVars.fromNoExpMsg,
 					globVars.fromNoExpDup,
@@ -2070,7 +2071,7 @@ skipHudson:
       initPkt ();
       initNodeInfo ();
       initAreaInfo (); /* for AreaFix */
-   
+
       initMsg ((u16)(switches & SW_A));  /* after initNodeInfo */
       retryArc (); /* after initMsg */
       scan_bcl();

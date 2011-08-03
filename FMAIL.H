@@ -55,7 +55,7 @@ int _closet(int);
 #ifdef __32BIT__
 #define country(a,b)
 #endif
-#endif                
+#endif
 */
 
 #if (__BORLANDC__ >= 0x0452)
@@ -103,7 +103,7 @@ int _closet(int);
 	#define SERIAL_MAJOR    1
         #define SERIAL_MINOR    47
 #else
-        #define VERNUM         "1.60"
+        #define VERNUM         "1.60.GPL"
 	#define SERIAL_MAJOR    1
         #define SERIAL_MINOR    60
 #endif

@@ -226,13 +226,17 @@ int sendmail_smtp(void)
 
    if ( !config.inetOptions.smtpImm )
       return 1;
-   tzset2();
-   if ( config.mailer == 3 || config.mailer == 5 )
-      ret = sendsmtp_bink();
-   else
-      ret = sendsmtp_msg();
-   closeConnection();
-   tzset();
+#if 0
+	tzset2();
+#endif
+	if ( config.mailer == 3 || config.mailer == 5 )
+		ret = sendsmtp_bink();
+	else
+		ret = sendsmtp_msg();
+	closeConnection();
+#if 0
+	tzset();
+#endif
    return ret;
  }
 
