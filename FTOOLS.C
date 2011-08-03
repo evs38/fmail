@@ -60,7 +60,7 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include "hudson.h"
 #include "jam.h"
 #include "jamfun.h"
-#include "cfgfile.h"                
+#include "cfgfile.h"
 #include "mtask.h"
 
 /* linkfout FTools voorkomen! */
@@ -290,7 +290,7 @@ int cdecl main (int argc, char *argv[])
 {
    s16            ch;
    tempStrType    tempStr, tempStr2, tempStr3;
-   u16            count, c, d, 
+   u16            count, c, d,
 		  temp,
 		  bufCount,
 		  newBufCount;
@@ -378,11 +378,12 @@ int cdecl main (int argc, char *argv[])
    u16            maxRead, index;
    u16            msgIdxBufCount = 0;
    u16            TXT_BUFSIZE, LRU_BUFSIZE;
-   u16            HDR_BUFSIZE; 
+   u16            HDR_BUFSIZE;
 #endif
 
-#ifdef __OS2__
+   putenv("TZ=LOC0");
    tzset();
+#ifdef __OS2__
    WinSetTitle(FTOOLS_VER_STRING);
 #endif
 
@@ -409,7 +410,7 @@ int cdecl main (int argc, char *argv[])
    printString (" ù The Fast Message Base Utility\n");
 #endif
    gotoPos (3, 2);
-   printString ("Copyright (C) 1991, 2001 by Folkert J. Wijnstra ù All rights reserved\n\n");
+   printString ("Copyright (C) 1991-2008 by Folkert J. Wijnstra ù All rights reserved\n\n");
 	gotoPos (0, 5);
    setAttr (LIGHTGRAY, BLACK, MONO_NORM);
 
@@ -461,7 +462,7 @@ int cdecl main (int argc, char *argv[])
    strcat(tempStr, "FMAIL.LOC");
    if ((helpPtr = strrchr(tempStr2, '\\')) != NULL)
       *helpPtr = 0;
-												  
+												
    if  ((!access(tempStr2, 0)) &&
         ((semaHandle = open(tempStr, O_WRONLY|O_DENYWRITE|O_BINARY|O_CREAT|O_TRUNC,
                                      S_IREAD|S_IWRITE)) == -1) &&

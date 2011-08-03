@@ -1,0 +1,3294 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            FMail 1.60
+
+
+
+
+                    The Fast Echomail Processor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          Copyright (C) 1991, 1999 by Folkert J. Wijnstra
+
+
+                        All rights reserved
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                         TABLE OF CONTENTS
+
+
+
+1   Introduction  . . . . . . . . . . . . . . . . . . . . . .     3
+    1.1  License and disclaimer . . . . . . . . . . . . . . .     3
+    1.2  Registration   . . . . . . . . . . . . . . . . . . .     4
+    1.3  Files  . . . . . . . . . . . . . . . . . . . . . . .     5
+    1.4  System requirements  . . . . . . . . . . . . . . . .     5
+    1.5  Various notes  . . . . . . . . . . . . . . . . . . .     7
+
+2   Getting started . . . . . . . . . . . . . . . . . . . . .     8
+    2.1  Converting config files of other echomail processors     8
+
+3   FSetup  . . . . . . . . . . . . . . . . . . . . . . . . .     9
+    3.1  FSetup keys  . . . . . . . . . . . . . . . . . . . .     9
+    3.2  Main menu  . . . . . . . . . . . . . . . . . . . . .    10
+    3.3  Miscellaneous  . . . . . . . . . . . . . . . . . . .    11
+         3.3.1  General options . . . . . . . . . . . . . . .    11
+         3.3.2  Message base  . . . . . . . . . . . . . . . .    12
+         3.3.3  Mail options  . . . . . . . . . . . . . . . .    15
+         3.3.4  Mgr options . . . . . . . . . . . . . . . . .    17
+         3.3.5  Personal mail . . . . . . . . . . . . . . . .    18
+         3.3.6  Addresses 1/2 . . . . . . . . . . . . . . . .    18
+         3.3.7  Group names . . . . . . . . . . . . . . . . .    19
+         3.3.8  AreaMgr defaults  . . . . . . . . . . . . . .    19
+    3.4  System info  . . . . . . . . . . . . . . . . . . . .    20
+         3.4.1  Miscellaneous . . . . . . . . . . . . . . . .    20
+         3.4.2  Directories . . . . . . . . . . . . . . . . .    21
+         3.4.3  Log files . . . . . . . . . . . . . . . . . .    23
+         3.4.5  Swapping  . . . . . . . . . . . . . . . . . .    24
+         3.4.6  Compression . . . . . . . . . . . . . . . . .    24
+         3.4.7  Decompression . . . . . . . . . . . . . . . .    25
+    3.5  Import/export  . . . . . . . . . . . . . . . . . . .    25
+    3.6  Uplink Manager . . . . . . . . . . . . . . . . . . .    26
+    3.7  Pack Manager . . . . . . . . . . . . . . . . . . . .    28
+    3.8  Node Manager . . . . . . . . . . . . . . . . . . . .    29
+    3.9  Area Manager . . . . . . . . . . . . . . . . . . . .    33
+
+4   FMail . . . . . . . . . . . . . . . . . . . . . . . . . .    37
+    4.1  Scan . . . . . . . . . . . . . . . . . . . . . . . .    37
+    4.2  Toss . . . . . . . . . . . . . . . . . . . . . . . .    37
+    4.3  Import . . . . . . . . . . . . . . . . . . . . . . .    37
+    4.4  Pack . . . . . . . . . . . . . . . . . . . . . . . .    38
+         4.4.1  Examples  . . . . . . . . . . . . . . . . . .    38
+
+5   AreaMgr . . . . . . . . . . . . . . . . . . . . . . . . .    39
+
+6   FTools  . . . . . . . . . . . . . . . . . . . . . . . . .    42
+      . . . . . . . . . . . . . . . . . . . . . . . . . . . .    42
+    6.1  Maint  . . . . . . . . . . . . . . . . . . . . . . .    42
+    6.2  Delete . . . . . . . . . . . . . . . . . . . . . . .    43
+    6.3  Undelete . . . . . . . . . . . . . . . . . . . . . .    43
+      . . . . . . . . . . . . . . . . . . . . . . . . . . . .    43
+    6.4  Post . . . . . . . . . . . . . . . . . . . . . . . .    43
+      . . . . . . . . . . . . . . . . . . . . . . . . . . . .    44
+    6.5  Export . . . . . . . . . . . . . . . . . . . . . . .    44
+    6.7  Sort . . . . . . . . . . . . . . . . . . . . . . . .    45
+      . . . . . . . . . . . . . . . . . . . . . . . . . . . .    45
+    6.8  Stat . . . . . . . . . . . . . . . . . . . . . . . .    45
+    6.9  Notify . . . . . . . . . . . . . . . . . . . . . . .    45
+    7    Credits  . . . . . . . . . . . . . . . . . . . . . .    46
+
+APPENDIX A  -   Error messages  . . . . . . . . . . . . . . .    47
+
+APPENDIX B  -   Technical notes . . . . . . . . . . . . . . .    50
+
+INDEX . . . . . . . . . . . . . . . . . . . . . . . . . . . .    52
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1   Introduction
+
+
+
+FMail is an echomail and netmail processor for the Hudson and JAM
+message bases. There's also a special version available that
+support the QuickBBS Goldbase message base. FMail has a built-in
+AreaFix-like function, called AreaMgr, with new commands like
+%RESCAN, %ACTIVE and %PASSIVE. Ten different types of archives are
+supported. FMail has its own netmail routing function, called the
+Pack Manager. With FMail it is possible to make a copy of all
+personal mail in a special directory. Other features of FMail
+include:
+
+-   Capable of handling 4D addresses.
+
+-   If needed FMail automatically remaps fakenet addresses to 4D
+    addresses and vice versa.
+
+-   Swaps to disk, EMS or XMS before running an archiving utility
+    (DOS versions).
+
+-   Supports the message base sharing specifications also used by
+    RemoteAccess and FrontDoor.
+
+-   Multiple netmail boards in the message base.
+
+-   Optionally sorts and links messages in the Hudson of JAM
+    message base after new messages have been imported.
+
+
+1.1   License and disclaimer
+
+"FMail" refers to the executables and documentation in the
+original distribution archive. FMail is copyrighted material by
+Folkert J. Wijnstra. It may only be used in agreement with the
+conditions set out in this license agreement.
+
+FMail may be freely distributed as long as no files are removed
+from the package and the files are not modified in any way, and as
+long as no money or any other compensation is asked or accepted
+for this package without prior written permission from the author.
+
+Although care has been taken to write and test a program that does
+what this document states, the program is provided as is, without
+warranty or guarantee of any kind, either expressed or implied, as
+to the quality or performance of this program, except that it will
+occupy disk space.
+
+The author, Folkert J. Wijnstra, will not be held liable to you or
+anyone for (but not limited to) any direct, indirect, incidental
+or consequential damages, including any lost profits, lost savings
+which may result from the use or inability to use this program.
+
+Folkert J. Wijnstra is in no way obligated to provide future
+versions of, or support for this software.
+
+Your use of the program constitutes your agreement to this license
+and disclaimer and your release of the author from any form of
+liability or litigation.
+
+1.2   Registration 
+
+This release of FMail may be used free of charge for individual
+hobby use. It is not allowed to use an unregistered version of
+FMail within a commercial environment (ie. business, governmental
+organization, school, foundation, or any other form of juridical
+person) longer than an evaluation period of four weeks.
+
+Registering FMail enables a number of special features (eg. the
+tearline options). To register FMail, fill out the registration
+form and send it to one of the registration sites, preferably by
+netmail. See FMAILREG.ZIP for more information.
+
+If you want to send me netmail, use crash mail to node 2:283/619
+or use normal netmail routing. If you have access to the Internet,
+you can also send mail to wijnstra@telekabel.nl. The latest
+version of FMail can be found on the Internet FMail Support page
+http://arnhem.telekabel.nl/~wijnstra/. Should this page not be
+available, it is possible that the URL has changed. Please use a
+search engine to find the new location or try
+http://www.fmail.nl.eu.org).
+
+More information about the availability of the FMAIL_HELP fidonet
+echo can be obtained from the registration and support sites or
+me.
+
+Folkert Wijnstra.
+Wageningen, The Netherlands.
+
+FidoNet:    2:283/619
+E-mail:     wijnstra@telekabel.nl
+            wijnstra@fmail.nl.eu.org
+Data:       ++31-317-418615 (V34, V32b, CM, MO)
+Fax:        ++31-317-414760
+WWW:        http://arnhem.telekabel.nl/~wijnstra/ or
+            http://www.fmail.nl.eu.org
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1.3   Files
+
+FMail, FSetup and FTools create and use a number of files. Except
+for the last three files, FMail will create and look for these
+files in the directory where FMail is located, even if the current
+directory is a different one. The files are:
+
+FMAIL.CFG      General configuration file.
+
+FMAIL.AR       Contains the area configuration used by FMail.
+
+FMAIL.ARD      Contains  the area  configuration  defaults used  by
+               FMail.
+
+FMAIL.NOD      Contains the node configuration used by FMail.
+
+FMAIL.PCK      Contains  the  netmail routing  information  used by
+               FMail's PACK function.
+
+FMAIL.DUP      Contains  the database  with signatures  of messages
+               used by  FMail to  detect duplicate messages.  FMail
+               keeps track of the last 16384 messages.
+
+FMAIL32.DUP    The 32-bit version of the duplicate detection  file.
+               It is  capable of  keeping track of  more duplicates
+               than the 16-bit DOS version. (max. 9999*1024).
+
+FMAIL.LOC      This file  is opened by  FMail in  the message  base
+               directory  to prevent multiple  copies of FMail from
+               operating  on  the same  message  base  at the  same
+               time. This file will not be deleted afterwards.
+
+MSG*.FML       These  files  are   created  in  the   message  base
+               directory  when  FMail is  running  in  message base
+               sharing  mode.  Normally  FMail  will  append  these
+               files to  the normal message base  files, but it can
+               happen that this is  not possible. FMail will  retry
+               to append them  to the normal message base files the
+               next time it is started.
+
+FMAIL.BDE      File created  by FMAIL.EXE when new areas are tossed
+               and used by FSETUP.EXE to AutoCreate those areas.
+
+*.QQQ          If  FMail  could  not  compress  the  outgoing  .PKT
+               files, they  will be renamed to  .QQQ files and will
+               remain in  the Outgoing  mail directory.  FMail will
+               retry to compress  these .QQQ files the next time it
+               is started.
+
+*.TMP          In some cases  (e.g. a crash),  it is possible  that
+               .TMP files  remain in  the Outbound  mail directory.
+               In most  cases, these  files can be  deleted without
+               any problem,  because the original mail has not been
+               removed yet: the messages  will be tossed again  the
+               next time FMail Toss is started.
+
+
+1.4       System requirements
+
+To use FMail you  need an IBM PC, AT, 386, 486  or Pentium or fully
+compatible computer  with a mono or  color display and  a harddisk.
+Also you need MS-DOS or  PC DOS 3.3 or  later for the DOS,  DOS/386
+and DOS/DPMI version  and OS/2 2.1 or  later for the  OS/2 version.
+To use the  Win32 version you must be using  either Windows NT/2000
+or Windows 95/98/98SE/ME.
+
+In  order to be  able to send  and receive mail,  you need a mailer
+that is compatible with FTS-0001. For  reading and writing mail you
+need a message editor or a BBS program  that uses the Hudson and/or
+JAM message base format.
+
+Finally you  need one or more  of these compression  programs: ARC,
+PKZIP, LHA, PAK, ZOO, ARJ, SQZ, UC2, RAR, JAR.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1.5       Various notes
+
+FMail  supports up to  32 AKAs.  Enter your  AKAs in FSetup  in the
+same order  as in FrontDoor's FDSetup  and GoldED's setup,  i.e. if
+you  have AKA 3 in FrontDoor  defined as 2:283/619, you should also
+define AKA 3 in FSetup as 2:283/619.
+
+When entering node numbers in FSetup  or on the FMail command-line,
+always use  the 4 dimensional address  for points, not  the fakenet
+address.
+
+Node  numbers may be entered in an abbreviated way. FMail or FSetup
+will use the main node number to complete the node number. E.g.  if
+you enter  ".1" and the main  node number is 2:283/619,  FMail will
+use 2:283/619.1. Likewise, "1" will be changed into 2:283/1.
+
+FMail looks for the  compression and decompression programs in  the
+directories that are  included in the DOS or  OS/2 PATH environment
+variable.
+
+If one  or more  compression utilities  are not  available on  your
+system, you  should remove  them from FSetup.  That way,  they will
+not be mentioned in AreaMgr receipts as being available.
+
+Internally, FMail  always uses 4-dimensional addresses. If FMail is
+handling mail from  or to a  fakenet address, the  address will  be
+internally  converted  into   the  corresponding  4D  address.   If
+necessary, the 4D  address will be converted back  into the fakenet
+address if that is required by the receiving system.
+
+IMPORTANT: As a  consequence, all node numbers entered  in the node
+manager or the area manager should be 4D addresses!!!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2         Getting started
+
+
+A  good place  to put  the files  that are  included in  this FMail
+package   is  the   system  directory   of  your   mailer.  Another
+possibility is  to create a separate  directory to store  the FMail
+executables in.  After you have copied  the FMail executables  to a
+directory on  your harddisk, type FSETUP  and press the  ENTER key.
+Now  a menu pops up. If  you use a monochrome  monitor and the text
+is  difficult to read,  try using the /M  switch after FSETUP. This
+will force FSetup not to use any colours.
+
+FMail looks  for its configuration files  in the same  directory as
+the executable,  even if it  is not the  current directory.  If you
+want  FMail to  look for  the  configuration files  in a  different
+directory, set  the FMAIL environment  variable to where  the files
+are, e.g. SET FMAIL=C:\FIDO\FMAIL.
+
+You can only  start one of  the FMail  programs (FMail, FSetup,  or
+FTools) at the  same time in  the same directory.  When you try  to
+start a  second program, this program  will display a  message that
+another FMail  program is still running.  If the other  program has
+not stopped within 30 seconds, the program will abort.
+
+
+2.1       Converting config files of other echomail processors
+
+FSetup has the capability to import the configuration files of a
+number of other echomail processors: IMAIL, TosScan and all
+programs that can export AREAS.BBS file. Before using this
+capability however, you first should enter all node numbers you
+will be using and include the fakenet numbers you are using, if
+any. This way, FMail will automatically convert all fakenet
+addresses in the configuration files into 4-dimensional addresses
+that are used by FMail.
+
+IMPORTANT: 
+
+1.        Always check the imported configuration files. 
+2.        The archiver  program to  be used  will not  be converted
+          correctly in the node manager.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3         FSetup
+
+
+FSetup is  the menu  oriented setup  utility for  FMail. First  the
+keys  that  can  be  used  to   enter  information  in  FSetup  are
+discussed. The rest of the chapter discusses all menus in FSetup.
+
+
+3.1       FSetup keys
+
+The keys used  in FSetup are  reasonably self-explanatory. Some  of
+the special keys that can be used in FSetup are:
+
+-         Move bar to the previous menu entry              Up arrow
+-         Move bar to the next menu entry                Down arrow
+-         Select option at the position of the bar            Enter
+-         Return to the previous menu
+               (or exit if the current menu is the Main menu)   ESC
+-         Shell to the command interpreter                    ALT-Z
+-         Go to a menu item          Press the highlighed character
+
+When editing  a data  field in  FSetup, the  following options  are
+available to you:
+
+-         Move one position to the left                  Left arrow
+-         Move one position to the right                Right arrow
+-         Move to the first position 
+               of the previous word                 Ctrl-Left arrow
+-         Move to the first position
+               of the next word                    Ctrl-Right arrow
+-         Move to the first position of the field              Home
+-         Move to the last position of the field                End
+
+-         Delete the character at the 
+               current position of the cursor                Delete
+-         Delete the character left of the cursor         Backspace
+-         Delete rest of the field                         Ctrl-End
+-         Clear the entire field                             Ctrl-Y
+
+-         Accept contents of data field                       Enter
+-         Restore original contents of data field               ESC
+-         Toggle insert mode                                 Insert
+-         Shell to DOS                                        ALT-Z
+
+When editing a group selection window:
+-         Select all groups                                  Insert
+-         Deselect all groups                                Delete
+-         Toggle an entry                      The listed character
+
+
+
+
+
+
+
+
+
+
+
+
+
+3.2       Main menu
+
+The main menu of FSetup contains seven options:
+
+Miscellaneous
+
+          Allows  you   to  enter  general  information  about  the
+          message base and how messages should be handled.
+
+System info
+
+          Information  about  directories,  swapping,   compression
+          programs etc.  can be  entered via  the System  info sub-
+          menu.
+
+Import/Export
+
+          With the  Import/Export option,  you can  export selected
+          parts of the configuration to a  text file or printer. It
+          is also possible to  import area and node  configurations
+          of IMail and TosScan.
+
+Uplink Manager
+
+          The  uplink   manager  contains  information   about  the
+          systems  you receive  most of  your echomail  from. Areas
+          can  be  connected and  disconnected  from  these systems
+          automatically when  requested by  your downlinks, if  you
+          allow it.
+
+Pack Manager
+
+          The  pack  manager  is  used  to  enter  netmail  routing
+          information. This information is  used by the FMail  Pack
+          function.
+
+Node Manager
+
+          The   node  manager   is  used   to  review   and  update
+          information about  your uplinks  and  downlinks. You  can
+          set passwords, etc. in here.
+
+Area Manager
+
+          The  area  manager is  used  to  enter information  about
+          echomail areas that are processed by FMail.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3.3       Miscellaneous
+
+The "Miscellaneous" menu contains nine options, which will be
+described below.
+
+
+3.3.1     General options
+
+This option shows a menu that lets you enter general configuration
+information:
+
+Sysop Name
+
+          Your name. It is used for determining whether or not
+          netmail should be imported into the message base netmail
+          board and if mail is addressed to you. Your registration
+          keys (if you are a registered user) are also dependent
+          on the name you enter here.
+
+Mailer
+
+          The mailer program you are using. Supported mailers are
+          FrontDoor, InterMail, D'Bridge, Binkley, Portal of
+          Power, MainDoor and Xenia. If your mailer is compatible
+          with any of these, it can be used too.
+
+Busy flags
+
+          FMail can create busy flags for FrontDoor and InterMail.
+          It prevents these mailers from polling systems that you
+          are currently compressing mail for.
+
+BBS program
+
+          The BBS program you are using (if any). Supported
+          programs are RemoteAccess (versions earlier than 2.00,
+          2.00/2.01/2.02 and 2.50), SuperBBS, QuickBBS, TAG and
+          ProBoard. This information is only used by the
+          AutoExport function, and you need not specify it if you
+          don't plan on using AutoExport.
+
+Tearline (registered users only)
+
+          You can define which type of tearline you would like
+          FMail to use for messages from your system. The options
+          range from the standard FMail tearline to a custom
+          tearline or no tearline at all. If you want the tearline
+          to be empty or absent, you can tell FMail to use a
+          Tosser ID (TID) ^A kludge instead.
+
+Custom (registered users only)
+
+          If you select 'Custom' as the tearline type, FMail will
+          use the tearline you enter here.
+
+ReTear (registered users only)
+
+          If FMail should replace an existing tearline. Normally
+          FMail only retears the message in the outbound packets
+          it generates. If you want FMail to update the message
+
+          text in the message base as well, enable the switch
+          'Update text after scan' (see section 3.3.2 below).
+
+
+3.3.2     Message base
+
+This option shows a menu that lets you control the way the message
+base will be handled.
+
+Netmail boards
+
+Netmail boardsFMail allows you to use different netmail boards for each of your
+AKA's. Information about these netmail areas can be entered in a
+sub-menu. The information includes:
+
+-         A comment that will be used in the areas files that can
+          be created by FSetup AutoExport feature.
+-         Hudson message base board number. It is possible to use
+          a board number for more than one AKA. If you do this,
+          only the information of the first netmail area that uses
+          a particular message base board will be used, eg. by
+          AutoExport to create the FrontDoor and GoldED areas
+          files and by FTools for determining which messages
+          should be deleted. JAM netmail boards are not yet
+          supported, but will be in a future release.
+-         Information that is used by FTools for message base
+          maintenance purposes.
+-         Security information to be used in the BBS area file.
+          For more information about the options available in the
+          BBS information menu, please refer to the documentation
+          of your BBS package.
+
+Bad message board
+
+          Message base board number of the board in which bad
+          messages will be stored.
+
+Duplicate message board
+
+          Hudson message base board number of the board in which
+          duplicate messages will be stored. JAM is not yet
+          supported for this purpose.
+
+Recovery board
+
+          Hudson message base board number of the board to which
+          FTools Maint /C should move messages in boards that are
+          not defined in FSetup. If the Recovery board is not
+          defined, FTools Maint /C will delete all messages in
+          undefined boards.
+
+AutoRenumber
+
+          FTools Maint will renumber your Hudson message base as
+          soon as the highest message number in the message base
+          has reached the AutoRenumber limit.
+
+
+
+
+
+Check dupe net boards
+
+          FMail normally allows you to use the same message base
+          board for more than one AKA. If you set the Check dupe
+          net boards option, FMail won't allow this anymore.
+
+Import netmail to sysop
+
+          If set to "No", messages addressed to your name or to
+          "Sysop" will not be imported into the netmail board(s).
+          This option has no effect if no netmail boards have been
+          defined.
+
+Remove 'Re:'
+
+          Some message editors put "Re:" before the actual subject
+          when replying to a message. FMail will remove the "Re:"
+          from subject lines if you turn this option on.
+
+Remove lf/soft cr
+
+          Linefeeds and soft carriage returns are unnecessary in
+          echomail messages. In order to save some diskspace, you
+          may want to remove them. It will, however, slow the
+          program down a bit.
+
+Update text after Scan
+
+          Write the text of the message as it will be sent to
+          other systems back to the message base. This means that
+          the message in the message base will contain PATH and
+          SEEN-BY information. It will also contain an updated
+          tearline, if you use the ReTear options (see 3.3.1).
+          Previously, only Hudson areas were supported in this
+          function, however this release supports both Hudson and
+          JAM.
+
+Update reply chains
+
+          If set to "Yes", all message reply chains will be
+          updated after messages have been tossed into the message
+          base. Note that this slows down the tossing speed
+          considerably.
+
+Sort new messages
+
+          If set to "Yes", new messages in the message base will
+          be sorted according date and time.
+
+Use subject
+
+          Apart from date/time, also use the subject to sort new
+          messages.
+
+Message base sharing
+
+          Allows concurrent access of FMail and the BBS software
+          to the message base. DOS's SHARE should be installed if
+          you are using the DOS version. OS/2, Windows NT and
+          Windows 95 all have built-in SHARE file-locking support.
+
+Scan always
+
+          If set to "Yes", the messages base will always be
+          completely scanned for outgoing messages. If set to
+          "No", FMail relies on the files ECHOMAIL.BBS and
+          NETMAIL.BBS for Hudson and/or ECHOMAIL.JAM for JAM areas
+          to indicate new messages. If these files are found to be
+          pointing to a message that does not qualify for export,
+          a complete scan of the message base (or JAM base) will
+          be performed.
+
+Quick toss
+
+          If enabled, this option slightly shortens the time taken
+          by FMail after a packet has been tossed. Normally the
+          message base files are closed and re-opened between
+          packets, but this option causes the files not to be
+          closed. Using this option, might, under extreme
+          conditions, slightly increases the risk of losing some
+          messages in the message base, eg. in the case of a power
+          failure.
+
+Tossed Areas List
+
+          Writes a list of echomail areas in which mail has been
+          tossed to the specified file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3.3.3     Mail options
+
+This option shows you a menu that lets you control certain aspects
+of the way FMail handles mail.
+
+Never use ARCmail
+
+          Never use the ARCmail 0.60 naming convention. Sometimes
+          enabling this option may be necessary, because under
+          some circumstances mail bundles you send to two
+          different system may get the same ARCmail name, which
+          causes problems.
+
+Out-of-zone (only if the Never use ARCmail switch is set to No)
+
+          Use ARCmail 0.60 naming convention for out-of-zone mail.
+          Some other programs require the use of the ARCmail 0.60
+          naming convention. Normally this is not necessary. Ask
+          the sysops of your uplinks and downlinks if you are not
+          sure.
+
+Extended bundle names
+
+          Use 0-9 and A-Z instead of only 0-9 for mail bundle name
+          extensions. Warning: Some programs do not recognize
+          bundle name extensions that do not end on a digit.
+
+Check PKT destination
+
+          If this option is enabled, only packets that are
+          addressed to one of your AKAs (or to one of your points
+          if you are not a point yourself) will be tossed. Packets
+          addressed to other nodes will be renamed to files with
+          the file name extension '.DST'.
+
+Dupe detection
+
+          Enables FMail's duplicate message detection system. If a
+          duplicate message is found, it will be placed into the
+          duplicate messages board (if defined). If the duplicate
+          board is not defined, duplicate messages are deleted.
+
+Ignore MSGID
+
+          Normally FMail uses the MSGID of a message (if present)
+          for duplicate detection purposes. In some cases, this
+          may cause problems when different messages are having
+          the same MSGID: one or more of these messages will be
+          marked as duplicates although they are not. If you are
+          frequently experiencing these problems, try setting this
+          switch to 'Yes'.
+
+Use EMS (standard DOS version only)
+
+          Try to use EMS memory to store the signatures of
+          messages in. This saves about 64 kb of conventional
+          memory.
+
+
+
+
+Dups recs (x1024) (32-bit mode only, start FSetupX with "/32")
+
+          Number of signatures of messages that are stored on
+          disk.
+
+Max PKT size (kb)
+
+          The maximum size of an outgoing PKT file in kilobytes.
+
+Max bundle size (kb)
+
+          The maximum size of an outgoing mail bundle (compressed
+          mail file). The bundle may get a bit bigger than the
+          requested size. It partly depends on the Max PKT size
+          you entered. You are advised not to enter a relatively a
+          large number there if you use Max bundle size.
+
+Kill empty netmail
+
+          Kill empty received netmail messages when scanning the
+          netmail directory. If you enable this option, empty
+          netmails will not be moved to the Received mail
+          directory.
+
+Kill bad ARCmail msg
+
+          Kill ARCmail messages of which the attached mail bundle
+          is missing. Can be used for example to remove file
+          attach messages of mail bundles that are moved (eg. by a
+          command in a batch file) from FMail's outbound directory
+          to the inbound directory of a point's FMail in a network
+          environment.
+
+No point in PATH
+
+          If this switch is enabled, FMail will not generate a
+          PATH line in echomail messages that originate from a
+          point system.
+
+Max net msgs
+
+          The maximum number of netmail messages allowed in one
+          PKT file when tossing. If the maximum number is reached,
+          the PKT file will be renamed to MLB (mail bomb).
+          Normally there is no need to use this option and should
+          it be set to 0.
+
+Keep exported netmail
+
+          Do not set the KILL flag on netmail messages that are
+          exported from the message base.
+
+Remove netmail kludges
+
+          Some echomail processors cannot handle echomail messages
+          containing netmail kludges (INTL, FMPT, TOPT). If some
+          of your downlinks use such an echomail processor, you
+          may want to enable the 'Remove netmail kludges' toggle.
+          Please check the echomail policy of your net before
+          using this option.
+
+Set Pvt on import
+
+          Set the Private flag on all netmail messages that are
+          imported into the message base.
+
+Daily mailbundles
+
+          Create a new mail bundle every day.
+
+3.3.4     Mgr options
+
+For a more extensive explanation of some of the options below, see
+also paragraph 3.8.
+
+Keep requests
+
+          Do not delete AreaMgr requests after they have been
+          processed.
+
+Keep receipts
+
+          Do not set the KILL attribute on receipts created by
+          AreaMgr.
+
+Uplink Areas List
+
+          Also send a list of areas available from uplinks to
+          nodes that use the %LIST command
+
+Allow %PASSWORD
+
+          Allow nodes to change their AreaMgr passwords by sending
+          a message to AreaMgr containing the %PASSWORD command.
+
+Allow %PKTPWD
+
+          Allow nodes to change their packet passwords by sending
+          a message to AreaMgr containing the %PKTPWD command.
+
+Allow %ACTIVE
+
+          Allow nodes to change the status of their systems from
+          active to passive and back through a message to AreaMgr
+          containing the %PASSIVE and %ACTIVE commands.
+
+Allow %COMPRESSION
+
+          Allows nodes to use %COMPRESSION to change the
+          compression method used for their mail.
+
+Allow %NOTIFY
+
+          Allows nodes to toggle the notify status on or off using
+          the %NOTIFY command.
+
+Allow %AUTOBCL
+
+          Allows nodes to use the %AUTOBCL command. With this
+          command, downlinks can ask FMail to send them a new
+          Binary Conference Listing periodically. See page 27 for
+          more information about this feature.
+Allow %+ALL
+
+          Allow nodes to use %+ALL to connect all areas available
+          to them at once.
+
+Auto-disconnect
+
+          Automatically disconnect passthrough areas with only one
+          link (export address).
+
+
+3.3.5     Personal mail
+
+FMail is able to scan all messages being tossed for messages
+addressed to you personally and store them in a separate
+directory.
+
+Pers. mail path
+
+          If you enter a directory name here, a copy of each
+          echomail message that is directed to you (even if it is
+          in a pass-through area) will be placed in *.MSG format
+          in this directory. IMPORTANT: this directory should
+          _never_ be the same as any other directory entered in
+          FSetup.
+
+Topic 1
+Topic 2
+
+          FMail has the ability to scan the subject lines of
+          messages it is tossing for up to two keywords. If
+          messages are found containing one of these keywords,
+          they will be copied to the personal mail directory.
+          Using this feature will slow down the tossing function a
+          bit.
+
+Include netmail
+
+          Indicates whether or not personal netmail should also be
+          copied to the personal mail directory.
+
+Include sent netmail
+
+          Indicates whether or not messages sent by the SysOp
+          should also be copied to the personal mail directory.
+
+New mail warning
+
+          If enabled, FMail will send a netmail message to you,
+          each time personal netmail or echomail messages have
+          been tossed.
+
+Users (registered users only)
+
+          Enter up to eight names of users whose mail should be
+          copied to the Personal mail board too.
+
+
+3.3.6     Addresses 1/2
+
+
+Your main address and up to fifteen other addresses that you may
+use, can be entered in this window. If the echomail processors of
+some of your points do not have Type 2+ capabilities, they will
+have to receive their mail using the fakenet method. For each of
+the 32 addresses you may enter a fakenet number. You can do this
+by appending it to your normal 4-d address using a dash '-'. eg.
+2:283/619-7619. Eg. if point 1 uses a none-Type 2+ tosser, mail
+will be addressed to 2:7619/1.
+
+
+3.3.7     Group names
+
+If you are using a lot of different groups, remembering what each
+group letter stands for can be rather difficult. The Group names
+window lets you enter descriptions for all groups. These
+descriptions will be used in the Node Manager, the Area Manager
+and in AreaMgr replies.
+
+
+3.3.8     AreaMgr defaults
+
+To save some time when installing new areas in the Area Manager,
+you may enter a number of default settings that will be used for
+new areas. Of course, these values may be changed in the Area
+Manager, should it be necessary. For more information about the
+offered options, you are referred to the chapter about the Area
+Manager.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3.4       System info
+
+The system info menu is used for various types of information that
+are related to the system on which FMail is used.
+
+
+3.4.1     Miscellaneous
+
+Long file names
+
+          Enables the use of long file names by DPMI and 32-bit
+          versions FMail for JAM areas.
+
+Max exports
+
+          The maximum number of nodes that an area can be exported
+          to. The default (and minimum) value is 64.
+
+FMail MT aware
+
+          Lets FMail return time slices when running in a multi-
+          tasking environment. WARNING: on some systems, this may
+          cause FMail to run extremely slow!
+
+FTools MT aware
+
+          Lets FTools return time slices when running in a multi-
+          tasking environment. WARNING: on some systems, this may
+          cause FTools to run extremely slow!
+
+Extra handles
+
+          If you have more than about 5 downlinks and you want
+          FMail to run faster, you should allow FMail to use extra
+          file handles. You may let FMail use up to 235 extra
+          handles (apart from the standard 15 handles that are
+          always available to FMail). ATTENTION: if you are
+          running more than one program at the same time, please
+          make sure that there are enough handles left for the
+          other programs. Increase the FILES value in CONFIG.SYS
+          if necessary.
+
+Active time out
+
+          When a copy on FMail, FTools or FSetup is already
+          running and you start another one, that copy will wait
+          until the one that started previously has ended. You can
+          here set the maximum time that FMail should wait (0 =
+          keep waiting).
+
+Ctrl-Break
+
+          If the Ctrl-Break option is enabled, you may stop FMail
+          with Control-Break when tossing. This also may enlarge
+          the time available to other programs when running in a
+          multi-tasking environment.
+
+Control codes
+
+          Allow control codes to be entered in the Comment field
+          in the Area Manager. This can be used for e.g. the
+          export to Proboard to enter color codes. WARNING:
+          exporting ASCII codes 1 to 26 to other programs may
+          cause those programs to display erratic behaviour.
+
+Buffer size (standard DOS version only)
+
+          The size of FMail's internal buffers. Huge buffers
+          require about 100 kb of free memory, while tiny buffers
+          only require about 12 kb.
+
+FT buf size (standard DOS version only)
+
+          The size of FTools's internal buffers and FMail's
+          buffers for sorting and updating reply chains.
+
+Monochrome
+
+          If enabled, FSetup will not use color, even if a color
+          card is detected. This may be useful on systems using a
+          monochrome monitor in combination with a color card.
+
+Color set
+
+          FSetup now comes in three flavours: Summer, Winter and
+          Marine. If you select another color set, it will become
+          visible the next time you start FSetup.
+
+
+3.4.2     Directories
+
+In the 'Directories' window you can enter a number of paths to
+directories that will be used for specific files. IMPORTANT: Do
+not use a directory more than once for FMail. Only Sent mail and
+Received mail may point to the same directory if desired.
+
+Message base
+
+          The message base path points to the directory where the
+          Hudson message base files are stored. The message base
+          files are MSGHDR.BBS, MSGIDX.BBS, MSGTOIDX.BBS and
+          MSGTXT.BBS.
+
+          When FMail is running in message base sharing mode, it
+          is possible that also files with the same names as the
+          normal message base but with extensions .FML are present
+          in the message base directory. Apart from the file name
+          extension, this is a normal Hudson message base. When
+          tossing and the optional sorting has finished, FMail
+          tries to append the FML files to the normal message base
+          files. This can go wrong for a number of reasons:
+
+          -    The message base is locked.
+          -    The resulting message base would be bigger than is
+               allowed (e.g. the new MSGTXT.BBS would be bigger
+               than 16 Mb). Use FTools to reduce the size of the
+               message base.
+          -    There is not enough disk space available. FMail
+               needs an amount of free diskspace that is about
+               equal to the combined size of all FML files. If
+               appending the FML files to the BBS files goes
+               wrong, FMail displays the message "Can't update the
+               message base files". FMail will retry to append the
+               FML files to the normal message base files the next
+               time it is started.
+
+Netmail
+
+          The netmail directory contains netmail messages in *.MSG
+          format. File attach messages will be placed in this
+          directory.
+
+Incoming mail
+
+          The incoming mail directory is the directory where your
+          mailer stores its received files. Incoming mail bundles
+          will also be unpacked in this directory. 
+
+          Sometimes for some reason packets are not tossed by
+          FMail. If this is the case, the PKT files will be
+          renamed. The file name extensions of these remaining
+          files indicate the nature of the problem:
+
+          PKT  If there is not enough free disk space on your
+               harddisk when a incoming PKT file is being tossed,
+               FMail aborts and the PKT file remains in the
+               'Incoming mail' directory.
+
+          SEC  The password in this packet did not correspond with
+               the password for the source node in the node
+               manager.
+
+          DST  The mail packet is not directed to your main node
+               number or one of your AKAs.
+
+          ERR  For some reason, the PKT header could not be read.
+
+Outgoing mail
+
+          The outgoing mail directory is where FMail will store
+          the mail bundles it creates for other nodes. One special
+          type of file may remain in the outgoing mail directory:
+
+          QQQ  If FMail for some reason cannot compress an
+               outgoing mailbundle, the file name extension will
+               be changed from PKT into QQQ. If FMail is run
+               again, it will first try to compress any packets
+               with the QQQ extension if found.
+
+Local PKTs (optional)
+
+          If you are using some program that creates PKT files
+          that you would like to have tossed by FMail, there may
+          be a problem if you have security enabled in the Area
+          Manager. Placing those packets in the Local PKTs
+          directory will cause FMail to toss them, even if
+          security is enabled for that particular echomail
+          conference. CAUTION: Be very careful with what PKT files
+          you place in the Local PKTs directory. It is very easy
+          to create duplicates this way!
+
+
+
+Sent mail (optional)
+Received mail (optional)
+
+          If the 'Sent mail' and/or 'Received mail' directories
+          are defined, FMail will move sent and/or received
+          netmail from the netmail directory to the appropriate
+          directory: mail that has been sent, will be moved to the
+          'Sent mail' directory if defined. Messages that have
+          been received by the addressee will be moved to the
+          'Received mail' directory. Messages with special
+          attributes (file attach, in-transit) will never be moved
+          to either one of these directories. Sent mail and
+          Received mail may point to the same directory. 
+
+Sent echomail
+
+          Directory where copies of sent echomail messages are
+          stored.
+
+Semaphore (optional)
+
+          Indicates whether or not FMail should create the
+          semaphore files (like FrontDoor's FDRESCAN.NOW and
+          FMRESCAN.NOW) after netmail has been tossed.
+
+
+3.4.3     Log files
+
+Log style
+
+          The layout that should be used for the log file.
+          Possible settings are: FrontDoor, QuickBBS, D'Bridge and
+          Binkley.
+
+Log file name (optional)
+
+          If you want a log file to be created, you should enter
+          the desired path and filename here. IT IS NOT
+          RECOMMENDED TO LET FMAIL SHARE A LOG FILE WITH ANOTHER
+          PROGRAM THAT MAY RUN SIMULTANEOUSLY.
+
+Log settings
+
+          Various Yes/No switches let you set the specific
+          information you want to have logged.
+
+AreaMgr log
+
+          If you want a separate log file containing information
+          about AreaMgr requests to be created, you should enter
+          path and filename here. If left blank, information about
+          AreaMgr requests will be inserted in the normal log
+          file.
+
+Toss summary
+
+          The Toss summary file contains information about the
+          number of messages tossed into each area, about which
+          nodes sent those messages and to which nodes those
+          messages were forwarded.
+
+3.4.4     Internet (Windows 32-bit only, start FSetup with /32)
+
+The Windows 32-bit version of FMail is capable of sending mail
+bundles directly to Internet e-mail addresses. In this section of
+FSetup you can set up the necessary general parameters. If you
+want to send mail for a particular uplink or downlink thru the
+Internet, you need to enter the e-mail address of that node in the
+Node Manager on the PKT path line. FMail can add text to e-mail
+messages. If you place an ASCII file called EMAIL.TXT in the FMail
+directory, its contents will be placed in the body of the e-mail
+message.
+
+Send smtp
+
+          Set to Yes if you want to send mail thru the Internet.
+
+Email address
+
+          Enter your own e-mail address here.
+
+SMTP server
+
+          Enter the name of your mailserver here, e.g.
+          mail.chello.nl
+
+3.4.5     Swapping (standard DOS versions only)
+
+Under some circumstances, there may not be enough memory left to
+execute a compression or decompression program. To make sure that
+there is enough memory available, you may want to enable swapping.
+This means that FMail will temporarily remove itself from memory
+to make room for the archiver.
+
+There are three types of swapping available. The slowest type is
+swapping to disk. FMail will try to swap itself to disk if the
+other two methods are not available. These other two methods are
+swapping to EMS and swapping to XMS. If both swapping to EMS and
+swapping to XMS are enabled, FMail will first try XMS and if that
+fails, it will try EMS. If you are running FMail under DESQview or
+a similar program, make sure that there is enough EMS or XMS
+available to FMail. Under DESQview the amount of EMS/XMS that is
+available in a window can be changed via 'Change a Program'->
+'Maximum Expanded Memory Size'. It should be left blank or be set
+to at least 700 kb.
+
+You may set the directory in which the swap file will be located
+by entering the path to the desired directory. If left blank, the
+swap file will be placed in the directory where FMail is located.
+
+
+3.4.6     Compression and Compression/32
+
+The programs that are used to compress your outgoing mail bundles
+are listed here. FMail can handle nine different types of
+archivers: ARC, ZIP, LZH, PAK, ZOO, ARJ, SQZ, UC2, RAR and JAR.
+32-bit versions of FMail use the archivers listed in the
+Compression/32 section. First the name of the program should be
+listed, followed by optional arguments. Using the program name
+with a full path lets FMail find the requested program faster and
+prevents problems when there is another program with the same name
+in a directory that is included in the path. Default settings for
+each program are automatically created by FSetup when it is run
+for the first time. There are separate windows for settings that
+are use by the 16-bit versions of FMail and the 32-bit versions of
+FMail.
+
+It is important to add the proper command line switches for the
+compression utilities. You must make sure that the programs are
+not waiting for additional input such as a response to a Yes/No
+prompt. When calling the archive program, FMail appends the
+archive name and (when adding to an archive) the names of the
+files to be added or (when extracting files) the name of the
+directory where the extracted files should be placed. When you
+need use another order, e.g. you need to put a switch between the
+archive name and the name of the file to be added, you can use the
+%a, %f and %p arguments. FMail will substitute %a by the name of
+the archive, %f by the name of the file to be added or the
+directory where extracted files should be placed and %p by the
+path of a directory where temporary files can be stored (FMail
+uses the FMail system directory for this purpose). IMPORTANT: when
+you use for example %f, you also must use %a and vice versa,
+because as soon as you use one of these arguments, FMail won't
+automatically append archive and file info anymore! %p is normally
+left out, because not many archivers require this.
+
+The archiving utility listed behind "Default" is used for nodes
+not listed in the Node Manager.
+
+DOS versions only: For each of the compression programs you can
+enter the minimum amount of memory that is required to run the
+program. If the required amount is available, FMail won't swap
+itself out of memory when it start a compression program. If you
+enter 0, FMail will always swap itself out of memory (if swapping
+is enabled).
+
+
+3.4.7     Decompression and Decompression/32
+
+The programs that are used to decompress your incoming mail
+bundles are listed here. 32-bit versions of FMail use the
+archivers listed in the Decompression/32 section. The
+Decompression window has a special entry called GUS. The program
+that is entered here is called by FMail when it can't determine
+the type of the archive. For more information see section 3.4.6
+(Compression).
+
+
+3.5       Import/export
+
+All menu options starting with "List" allow you to send
+information about parts of your FMail setup to a text file,
+printer, or other device. If you want to send it to the printer
+(or other device), enter it's device name (e.g. PRN) instead of a
+filename.
+
+
+3.5.1     Import Config
+
+The option "Import config" allows you to import AREAS.BBS,
+FOLDER.FD and area and node configuration files of three other
+popular echomail processors: IMAIL (version 1.20), TosScan and
+GEcho. In some cases you have the choice whether to use the area
+tag or to use the comment to identify an area in the config file
+that is created by FSetup.
+
+A special option is Import RA info. It imports RA security
+information into an EXISTING FMail areas file. If you do not
+already have an FMail areas file, enter the information manually
+in the Area Manager or use one of the other import functions
+first. When you start the Import RA info option, the program will
+try to find security information in MESSAGES.RA for each area that
+is defined in FMail.Ar and insert it in that file.
+
+
+3.5.2     AutoExport
+
+Normally when a new area is installed, this had to be done in a
+number of programs. With FSetup's AutoExport feature this is no
+longer necessary. Each update in the Area Manager can result in an
+automatic update of AREAS.BBS, FOLDER.FD (FrontDoor), IMFOLDER.CFG
+(InterMail), MESSAGES.RA (RemoteAccess), BOARDS.BBS (SuperBBS),
+MSGCFG.DAT (QuickBBS) and a file in a format that can be used by
+GoldED. All you have to do is to enter the path to the directory
+in which the desired file should appear (the actual filename
+should not be added; FSetup will append a standard name to the
+path).
+
+IMPORTANT: The AutoExport function will overwrite the existing
+file, so ALL INFORMATION IN THAT FILE WILL BE LOST. For example,
+areas defined in MESSAGES.RA that are not defined in FSetup will
+be removed by AutoExport. That is the reason why local areas
+should also be defined in FSetup: that way they will be exported
+to MESSAGES.RA and other files.
+
+With AREAS.BBS you may include pass-through areas by setting the
+switch to 'Yes'. 
+
+With FOLDER.FD/IMFOLDER.CFG and the BBS area files you may choose
+which item should be used: the area tag or the comment field. You
+may include the Bad messages board, the Duplicate messages board
+and the Recovery board in the BBS areas file by setting the
+appropriate switch to 'Yes'. AutoExport will use some standard
+settings for these areas: e.g. they will be Local and ReadOnly and
+all security levels will be set to 32000.
+
+The GoldEd file AREAS.GLD can be used by GoldEd if you insert the
+following line as the last line in your GoldEd configuration file:
+INCLUDE AREAS.GLD
+
+In QuickBBS's MSGCFG.DAT the write security information will also
+be used for the template security information.
+
+
+3.6       Uplink Manager
+
+The Uplink Manager is used to enter information about uplinks that
+is needed by FMail to connect and disconnect echomail areas. You
+can define up to 32 uplinks. The information that is needed for
+each uplink will now be explained.
+
+Uplink system
+
+          The node number of the uplink.
+AreaFix program
+
+          The name of the program FMail should direct its request
+          messages to. If you are not sure, try 'Areafix'. This
+          will work in most cases.
+
+AreaFix password
+
+          The password you use to connect and disconnect echomail
+          areas on this system.
+
+Add '+' prefix
+
+          If FMail should put a '+' in front of the area names it
+          tries to connect. This is normally not necessary.
+
+Authorized groups
+
+          Authorized groups are groups a downlink has to have
+          access to in order to be allowed to use the Forward
+          Request feature for this uplink.
+
+Unconditional
+
+          If set to Yes, FMail doesn't check the Areas file listed
+          below.
+
+Areas file type
+
+          If set to 'Random', FMail searches the entire file. If
+          'Areas file type' is set to '<AREANAME> <DESCRIPTION>'
+          FMail searches for area names at the beginning of each
+          line only. Also it then uses the description to fill in
+          the comment field in the Area Manager.
+          A new format is BCL. Some tosser can send Binary
+          Conference Listings to their download (one of which is
+          FMail). FMail will automatically connect received BCL
+          files to the right entry of the Uplink Manager if this
+          switch is set to BCL. 
+
+          --- more BCL info ---
+
+Areas file name
+
+          Name of the file containing area names that should be
+          checked by FMail. This file has to located in the same
+          directory where the FMail executables are located or the
+          directory that is pointed to by the FMAIL environment
+          variable (if defined).
+
+Origin address
+
+          The address that should by used as the origin address of
+          the request message.
+
+
+
+
+
+
+
+3.7       Pack Manager
+
+The syntax to be used for Pack Manager entries:
+
+<node> ... [EXCEPT <node> ...] [VIA <node>|HOST] [/A] [/C] [/H]
+[/I] [/L] [/O]
+
+The one or more <node> entries before the optional VIA keyword
+specify the nodes for which messages should be packed. The '*' and
+'?' characters may be used here. '?' may be any digit. '*'
+indicates that the rest of the node number may be anything. E.g.
+2:283/* specifies all nodes in net 283 in zone 2. 2:283/6?0
+specifies nodes 2:283/600, 610, 620, 630 etc. The wildcard '#' is
+substituted by digits 0-9 in subsequent evaluations. If the VIA
+node is 'HOST', the mail bundles will be sent to the net hosts.
+
+Five switches may be used:
+
+/A        Do not process AreaMgr requests
+
+/C        Include messages with Crash status. Normally these
+          messages will not be packed.
+
+/H        Include messages with Hold status. Normally these
+          messages will not be packed.
+
+/O        Include orphaned messages. Normally these messages will
+          not be packed.
+
+/I        Only pack messages that are in transit. Normally all
+          netmail messages destined for other nodes will be
+          packed.
+
+/L        Only pack messages that originated on your system.
+          Normally all netmail messages destined for other nodes
+          will be packed.
+
+Entries in the Pack Manager are used from top to bottom: the first
+entry that applies to a particular message will be used for that
+message. An example:
+
+2:282/357 2:282/309 via 2:282/301
+2:283/216 via 2:283/203
+1:* 2:* 3:* 4:* 5:* 6:* via 2:282/1
+
+This example packs all messages for nodes 2:282/357, 2:282/309 and
+2:282/301 and their points that do not have the crash, hold or
+orphan status and sends them to node 2:282/301. Messages for
+2:283/216 and 2:283/203 are packed and sent to node 2:283/203. All
+remaining messages for zones 1, 2, 3, 4, 5 and 6 will be sent to
+2:282/1. 
+
+
+
+
+
+
+
+
+
+
+3.8       Node Manager
+
+The node manager is used to store information about the systems
+you exchange mail with.
+
+Sysop Name
+
+          Here you may enter the name of the sysop of the remote
+          system. The name of the sysop will be used in AreaMgr
+          replies and to determine if a message should be sent to
+          a system if that system is 'passive'. Only messages
+          directed to the Sysop will be forwarded to such systems.
+
+System
+
+          The node number of a system. IMPORTANT: This node number
+          should always be the normal node number i.e. you should
+          NEVER enter a node number containing a fakenet. If it is
+          necessary for some of your points that you send them
+          their mail using a fakenet, you should set their
+          capability to "Stone Age" (see below) and define a
+          fakenet in the Addresses window.
+
+Via system
+
+          Address where to route mail for this system to. NOTE:
+          the PKT files will be directed to the original AKA. Only
+          the ARCmail bundle will be directed to the Via node, if
+          specified.
+
+Use AKA
+
+          Which AKA should be used for mail bundles to this
+          system. If set to AUTO, FMail automatically picks the
+          best-matching AKA.
+
+Groups
+
+          The area manager lets you assign a group letter to each
+          echo area. In the node manager you can enter the letters
+          of the groups that are available to a particular system.
+
+Write level
+
+          If the write level of a system is less than the write
+          level that is specified with an echo area in the Area
+          Manager, then this system is not allowed to write
+          messages in this area.
+
+Compression
+
+          The Compression toggle can be used to set the type of
+          archiving program that will be used to compress mail for
+          this system. A system is able to change this setting
+          using an AreaMgr request message, if %COMPRESSION is
+          allowed in the AreaMgr options.
+
+Capability
+
+          You can tell FMail whether or not the software of the
+          other system recognizes 4-d addresses (FSC-0039) or only
+          2-d addresses by setting the capability switch to "Type
+          2+" for 4-d or "Stone Age" for 2-d. If you want to send
+          mail to one of your "Stone Age" points, FMail will
+          automatically try to use the fakenet method. In most
+          cases setting the capability of a system to Type 2+ will
+          be fine.
+
+Attach status
+
+          You may set the status of the file attach messages for a
+          system to "None", "Hold", "Crash", "Hold/Direct",
+          "Crash/Direct" and "Direct". Normally "None" is fine.
+          Please see the manual of your mailer on how to handle
+          mail bundles.
+
+PKT path
+
+          If you enter a path here, FMail will not compress the
+          mail for this node, but store the PKT files in this
+          directory.
+
+E-mail
+
+          E-mail address where the mail should be sent to if you
+          are using FMail/Win32's SMTP option.
+
+Active
+
+          A system that is not active will not receive echomail
+          for the connected areas except for messages that are
+          directed to the Sysop name of that system. A system that
+          has the Active set to No is still allowed to send
+          echomail for connected areas. The Active status can be
+          changed by the system through the %ACTIVE and %PASSIVE
+          commands in a message to AreaMgr.
+
+Notify
+
+          Send a notify message to this system when the command
+          'FTools Notify [/A] [/N]' is issued.
+
+Pack netmail
+
+          If enabled, the Pack Netmail switch causes netmail for
+          this system to be packed for this system directly. This
+          means, that mail for this system will not be routed
+          according to the contents of the Pack Manager.
+
+Forward requests
+
+          The Forward request toggle is used to allow systems to
+          use the Uplink Manager.
+
+Allow rescan
+
+          When a system connects a new area through an AreaMgr
+          request, that system may also request to scan your
+          message base for messages in that area. You can prevent
+          a system from rescanning your message base by setting
+          this switch to No. Previously, JAM rescanning was not
+          available, however it is avilable in this release! The
+          ^aRESCANNED kludge is added to messages which are
+          rescanned.
+
+Route point
+
+          If the system you are editing in the Node Manager is one
+          of your points, then if you enable this switch, FMail
+          will check all messages directed to your AKAs to see
+          whether they are meant for this point (by checking the
+          To: name). If so, the message will be automatically
+          forwarded.
+
+Rem.maint (registered users only)
+
+          Allow this system to perform remote maintenance. A
+          system that is allowed to perform remote maintenance
+          (e.g. your Co- Sysop) can connect and disconnect areas
+          on behalf of other systems. A remote maintenance message
+          has the same syntax as a normal AreaFix message, but
+          also contains a %FROM command, followed by the node
+          number for which the remote maintenance has to be
+          performed. The password that should be used is the
+          password of the system performing the request, not the
+          password of the system behind the %FROM keyword.
+
+Tiny SEEN-BYs
+
+          If you set the "Tiny SEEN-BYs" switch to "Yes", this
+          system will receive echo mail messages in which only you
+          and your downlinks will be listed in the SEEN-BY lines.
+          In normal situations this switch should be set to "No".
+
+Reformat date
+
+          Some echomail utilities create date strings which are
+          not in accordance with the specifications. Some other
+          echomail utilities have problems recognizing those date
+          strings. FMail will send a corrected date string to a
+          system if "Reformat date" is set to yes.
+
+Auto BCL days
+
+          If you set a value here, FMail automatically sends BCL
+          files to this node. The value set indicates the number
+          of days between two files. See page 27 for more
+          information about this feature.
+
+AreaMgr password
+
+          The AreaMgr password is used by a remote system to
+          connect or disconnect echomail areas. To do this, the
+          remote system has to send a message to "AreaMgr",
+          "AreaFix" or "FMail" at your node number. The password
+          should be on the subject line.
+
+Packet password
+
+          If you enter an Packet password, FMail will only toss
+          packets from this system if the listed password is
+          present in the header of the received packet. The
+          password also will be placed in the header of each
+          packet created for this system. The combination of
+          packet password and the Security option in the Area
+          Manager should make it a bit more difficult to
+          successfully drop an echomail bomb on your system.
+
+Ignore
+
+          If you want to put a password in packets you are sending
+          to another system, but do not want to check packets you
+          receive from that system for that password, you should
+          toggle the Ignore switch to Yes.
+
+AutoPassive days
+
+          The system will automatically be set to the Passive
+          status, if more days passed by since the last time new
+          mail created than the number of days entered here.
+
+AutoPassive size
+
+          The system will automatically be set to the Passive
+          status, if the size of the mail bundle exceeds the
+          number of kb's entered here.
+
+Settings in the Node Manager can be changed for more than one node
+at once by means of the Global change function (F3). First you
+change the desired fields. Those fields get an asterisk in front
+of them meaning that those are the fields that will be updated in
+the selected records. You can also turn the asterisk on and off by
+means of the INS and DEL keys. When you are ready, press ESC. You
+will then be prompted for a node string with wildcards. If you
+want to change all nodes in zone 2, enter here 2:*. Use of ? is
+also allowed.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3.9       Area Manager
+
+The area manager is used to tell FMail which echomail conferences
+(areas) you are carrying. Use the left and right arrows to walk
+through all areas. If you press F5, you will see a list of all
+areas you have defined. Here you can walk through all areas by
+pressing the up and down arrows.
+
+Each of the fields of the Area Manager will now be explained in
+detail.
+
+Area name
+
+          This is the name of the conference. It can be up to 50
+          characters long. This name is often referred to as the
+          area tag. It is inserted into every message that your
+          system exports for an area so that other system's
+          echomail processors can put the message into the correct
+          area when it arrives.
+
+Comment
+
+          This field is used to give some info about an echomail
+          area in messages that are returned by AreaMgr. It also
+          appears in the output of some of the list functions in
+          the Import/export menu.
+
+JAM MB path
+
+          Path of the JAM message base. If you enter a path name
+          here, FMail will set the Hudson board number to None (if
+          it was not set to that already).
+
+Board
+
+          The "Board" field is used to select the message base
+          board number in which the messages in this area should
+          be imported. If you select this option, a window pops up
+          containing all possible board numbers and the word
+          "None". The board numbers that are displayed in a dark
+          colour are already used by another area. If you select
+          the word "None" and the JAM MB path is left blank, the
+          messages will not be imported into the message base, but
+          only forwarded to your downlinks (a so called "Pass-
+          through area"). Any other choice of board number will
+          cause the JAM MB path field to be blanked. Use the
+          cursor keys to go to the desired board number and press
+          ENTER to select.
+
+Write level
+
+          If the write level of an area is greater than or equal
+          to the write level that is specified with a system in
+          the Node Manager, then this system is not allowed to
+          write messages in this area.
+
+Group
+
+          The "Group" field defines which group a conference
+          belongs to. The valid range for this field is A through
+          Z. It's used to regulate the availability of conferences
+          to other systems. You should divide your conferences
+          into a number of categories. For example, all
+          conferences that only a few people should be able to
+          access could be put into group S for Secure while all
+          other conferences are put into G for General.
+
+Local
+
+          If you have local message areas in your message base,
+          you should enter those areas in FSetup with Local set to
+          Yes. That way, you can enter message base maintenance
+          information for that area and make sure, that the
+          boardnumber cannot be accidentally assigned to another
+          area. Also those areas will be marked as Local in
+          AutoExported files.
+
+Areafix
+
+          Allow your downlinks to connect to and disconnect from
+          this area by sending messages to AreaFix or FMail.
+          Normally this switch should be set to Yes.
+
+Active
+
+          If the 'Active' switch is off, the area will no longer
+          be recognized by FMail as a valid echomail area. This
+          switch can be used to temporarily disable a particular
+          area.
+
+BBS info
+
+          Here you may enter the security level and flags and
+          other information that will be used in the area file of
+          your BBS program.
+
+Use SeenBy
+
+          Normally FMail only uses the address in the packet
+          header to determine to which systems a message in a
+          particular area should be forwarded: a message is
+          forwarded to all systems listed in the export list in
+          the Area Manager. If Use SeenBy is enabled, a message
+          also will not be forwarded to systems listed in the
+          SEEN-BY lines of that message.
+
+Tiny SeenBy
+
+          If set to "Yes", all of your downlinks that are
+          connected to this area will receive messages in which
+          the SEEN-BY lines will contain only your downlinks.
+
+Imp. SeenBy
+
+          If set to "Yes", SEEN-BY information of messages in this
+          conference will be imported into the message base.
+
+Security
+
+          Only messages from systems that are connected to a
+          particular conference are accepted by FMail. For
+          example, suppose you carry an area called FMAIL_HELP and
+          you have enabled Security for that area. If you receive
+          an echomail message from some system and that system was
+          not listed in the export list of FMAIL_HELP, that
+          message will be tossed into the bad messages board (if
+          defined).
+
+Private
+
+          If the "Private" field is set to "Yes", private message
+          are allowed in this conference. Otherwise, the private
+          bit will be removed from all messages in this
+          conference.
+
+# Messages
+
+          Maximum number of messages in an area. If there are more
+          messages in an area, they will be deleted as soon as
+          FTools Maint /d is used.
+
+# Days old
+
+          If there are messages in an area that are older than the
+          number of days that is entered here, they will be
+          deleted as soon as FTools Maint /d is used.
+
+# Days rcvd
+
+          If there are received messages (i.e. messages that have
+          been read by the person they are addressed to) in an
+          area that are older than the number of days that is
+          entered here, they will be deleted as soon as FTools
+          Maint /d is used.
+
+Arrival date
+
+          Use the date that a message arrived on your system
+          instead of the date that a message was written when
+          deleting messages using the # Days. This option does not
+          work with messages with an extremely long subject line.
+          For these messages the date that the message was written
+          will be used.
+
+Keep SysOp
+
+          Do not remove any message that has not been read by the
+          Sysop (the user with the first entry in Users.BBS). If
+          this switch is set to Yes, no message that has not been
+          read by the SysOp will be deleted, if it should be
+          deleted according to one or more of the other criteria.
+
+Origin AKA
+
+          The origin is the address that will be added to the PATH
+          and SEEN-BY lines. It will also used in the origin line
+          that will be appended by FMail if the message that is
+          exported from the message base does not contain an
+          origin line (NOTE: FMail will NEVER add tear and/or
+          origin lines to messages that are received from other
+          systems in case they are missing).
+
+
+Other AKAs
+
+          If you want to add more than one of your AKAs to the
+          SEEN-BY lines of a message, you should use the "Other
+          AKAs" options to indicate which AKAs should be added
+          also.
+
+Origin line
+
+          If a message that is exported out of the message base
+          does not contain a origin line, FMail will add one. This
+          added origin will contain a text string that may be
+          entered here.
+
+Export
+
+          The systems connected to the conference are listed in a
+          window which pops up when you select the option
+          "Connected systems". IMPORTANT: The node number should
+          always be the normal node number i.e. you should NEVER
+          enter a node number containing a fakenet. FMail
+          automatically uses the fakenet if necessary. The maximum
+          number of systems on the Export list is 64.
+
+Settings in the Area Manager can be changed for more than one node
+at once by means of the Global change function (F3). First you
+change the desired fields. Those fields get an asterisk in front
+of them meaning that those are the fields that will be updated in
+the selected records. You can also turn the asterisk on and off by
+means of the INS and DEL keys. When you are ready, press ESC. You
+will then be prompted for the groups for which the selected fields
+should be changed.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4         FMail
+
+
+
+The actual FMail program has four main commands. They are "Scan",
+"Toss", "Import" and "Pack" and will be discussed in detail below.
+
+
+4.1       Scan
+
+Scan the message base for outgoing echomail and netmail messages.
+Echomail messages will be packed to be sent to other systems.
+Netmail messages will be moved to the netmail directory. They may
+be packed later by the FMail Pack command discussed below.
+
+The Scan option can be used in combination with six switches:
+
+          /A   Do not process AreaMgr requests
+          /E   Scan for echomail messages only
+          /N   Scan for netmail messages only
+          /H   Scan Hudson base only
+          /J   Scan JAM base only
+          /S   Scan the entire message base (ignore
+               ECHOMAIL.BBS/JAM and NETMAIL.BBS/JAM)
+
+ATTENTION: FMail's SCAN function does not support netmail credits.
+
+
+4.2       Toss
+
+Tosses received mail bundles into the message base and forwards
+echomail messages to your downlinks. 
+
+If FMail Toss seems to be returning messages to the system they
+were coming from, please check if the address listed on the
+'Processing...' line when tossing, is the same address as the one
+that is listed in the Export list of the echoes concerned.
+
+The /A switch tells FMail to ingnore AreaMgr requests.
+
+The /B switch may be added to let FMail check all messages in the
+bad messages directory to see whether they are valid echomail
+messages or not. This may necessary if you are receiving a new
+conference from your uplink but forgot to enter it in the area
+manager. Messages that are moved to the message base using the /B
+switch will not be sent to your downlinks as this may cause
+duplicate messages to be sent into the net.
+
+
+
+4.3       Import
+
+Imports netmail messages destined for your system into the message
+base. A netmail board should be defined in FSetup. Whether or not
+messages to the Sysop should be imported can also be defined in
+FSetup. The /A switch tells FMail to ingnore AreaMgr requests.
+
+
+
+
+
+4.4       Pack
+
+Packs and compresses netmail messages. These messages may be
+routed through a specified system or may be sent directly.
+
+The syntax of FMail Pack:
+
+          FMail Pack     [<node> ... [EXCEPT <node>] 
+                         [VIA <node>|HOST]
+                         [/A] [/C] [/H] [/I] [/L] [/O] ]
+
+This syntax is the same as the syntax of Pack Manager entries and
+is described in section 3.7. If the command line does not contain
+any node numbers, the information stored in FSetup's Pack Manager
+will be used. Packing messages is not required (but sometimes
+useful) in e.g. a FrontDoor environment. It _is_ required in a
+Binkley/PoP environment.
+
+The /A switch tells FMail to ingnore AreaMgr requests.
+
+
+4.4.1     Examples
+
+FMail Pack 2:282/301 2:283/203 VIA HOST
+
+               Packs mail for nodes 2:282/301 and 2:283/203 and
+               points of these nodes and sends it to the host of
+               these systems (2:282/0 and 2:283/0).
+
+FMail Pack 2:282/1.1 /C
+
+               Packs mail for point 2:282/1.1 and sends it
+               directly to that point. Messages with the Crash
+               status will also be packed.
+
+
+
+4.5       MGR
+
+FMail Mgr only scans the netmail directory and processes AreaMgr
+requests found in that directory.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5         AreaMgr
+
+
+
+AreaMgr is a built-in function of FMail that allows other systems
+to connect or disconnect echomail areas by simply sending a
+netmail message. 
+
+This netmail message should be addressed to one of your AKAs and
+directed to 'AreaMgr' or 'FMail'. For compatibility reasons the
+message may also be directed to 'AreaFix', 'AreaLink' or
+'EchoMgr'. Instead of the normal subject, a password should be
+entered. For each system that will be allowed to send AreaMgr
+messages to your, you should create an entry in the node manager
+containing a password.
+
+The message body of an AreaMgr request contains the requested
+mutations in connected echomail areas. To connect to area
+TEST_AREA you just enter that name followed by the ENTER key. To
+disconnect from an area, just put a minus '-' before the area tag.
+
+The format of an AreaLink request:
+
+   By: <your name>
+   To: AreaMgr (<node number of dest node>)
+   Re: <AreaMgr password>
+   St: Pvt
+   ---------------------------------------------------------
+               FMAIL_HELP          Connect area FMAIL_HELP
+               FMAIL_HELP /R       Connect area FMAIL_HELP and
+                                   rescan all messages in the
+                                   message base
+               FMAIL_HELP /R=50    Connect area FMAIL_HELP and
+                                   rescan at most 50 messages
+               =FMAIL_HELP /R=50   Rescan the connected area
+                                   FMAIL_HELP without having to
+                                   disconnect it first
+
+               -FMAIL_HELP         Disconnect area FMAIL_HELP
+
+               %+ALL               Connect all available areas
+               %-ALL               Disconnect all areas
+
+               %COMPRESSION ZIP    Change the compression method
+                                   used for your mail to ZIP (or
+                                   ARC/ZIP/LZH/PAK/ZOO/ARJ/SQZ)
+               %PASSWORD ABCDEF    Change your AreaMgr password to
+                                   ABCDEF (password should be at
+                                   least 5 characters and at most
+                                   16 characters long)
+               %PKTPWD QRSTUV      Change your packet password to
+                                   QRSTUV (password may be at most
+                                   8 characters long)
+
+               %NOTIFY ON          Turn NOTIFY messages on
+               %NOTIFY OFF         Turn NOTIFY messages off
+
+               %HELP               Request this message
+               %LIST               Request a list of areas
+                                   available to you
+
+               %QUERY              Request a list of areas for
+                                   which you are active
+               %UNLINKED           Request a list of areas to
+                                   which you are not connected
+
+               %FROM               Perform remote maintenance for
+                                   another system. The node or
+                                   point doing remote maintenance
+                                   should use his/her own
+                                   password. The replies generated
+                                   by FMail will be sent to both
+                                   the system doing remote
+                                   maintenance and the system for
+                                   which the maintenance is being
+                                   done.
+
+               %RESCAN             Request a rescan of all new
+                                   areas
+               %RESCAN=50          Request a rescan of at most 50
+                                   messages per area for all new
+                                   areas
+
+               %PASSIVE            Temporarily disable all areas.
+                                   This means that you won't
+                                   receive any echo mail unless it
+                                   is addressed to you personally
+                                   (only if the sysop on this
+                                   system has entered your name
+                                   correctly in the Node Manager).
+                                   You will still be allowed to
+                                   send echo mail to this system
+                                   in areas to which you are
+                                   connected.
+               %ACTIVE             Make your system active again.
+
+               %AUTOBCL 7          Request to receive a BCL file
+                                   from FMail every 7 days. Use 0
+                                   if you don't want to receive
+                                   BCL files anymore. See page 27
+                                   for more information about this
+                                   feature
+
+               [---]               Everything below the tear line
+                                   is ignored
+
+You can also use the -H, -L, -Q and -U switches on the subject
+line.
+When FMail processes an AreaMgr request message, it will generate
+a reply, containing the result of the request. This reply will
+look like this:
+
+               By: FMail AreaMgr
+               To: Folkert Wijnstra, FMail Development
+               (2:283/619.1)
+               Re: FMail AreaMgr status report
+               St: Pvt Local
+               ---------------------------------------------------
+               ----------
+               FMail AreaMgr status report for 2:283/619 on
+               2:283/619.1
+
+               Result of requested mutations:
+               - FMAIL_HELP ..................................
+               added
+
+               You are not connected to any area
+
+               Node status : ACTIVE
+               Notify      : ON
+               Compression : PKZip.Exe -ex
+               - available : ARC ZIP LZH PAK ARJ SQZ
+
+               Use %HELP in a message to FMail for more
+               information.
+
+FMail appends the contents of the file AREAMGR.TXT to the Areafix
+reply messages. This file should be located in the same directory
+as where the FMAIL.EXE is located.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6         FTools
+
+
+
+FTools is the message base maintenance program that comes with
+FMail.
+
+FTools is e.g. used to remove old messages from the message base
+and the display information about the message base. FTools can be
+divided into four parts, which will be discussed below.
+
+ATTENTION: The FTools functions that use the Hudson message base
+do NOT allow message base sharing. FTools will not run if either
+FMail, FSetup or another copy of FTools is active.
+
+Everywhere below where <board> is mentioned, you may use the area
+tag of the area. In some cases it also is allowed to use the
+Hudson board number. For the netmail board of the main AKA use
+#NETM, for netmail board of for example AKA 5 use #NET5. For the
+netmail directory use #NETDIR. For the Bad messages board, the
+Recovery board and the Duplicate messages board, you can use #BAD,
+#REC and #DUP.
+
+
+
+6.1       Maint
+
+The most important function of FTools is message base maintenance.
+If started without any switches, FTools Maint only updates the
+reply chains and recreates the index files.
+Additional features are available by using command line switches:
+
+/H        Process Hudson base only
+
+/J        Process JAM message bases only
+
+/Q        Process only JAM areas in which messages have been
+          tossed
+
+/C        Recover messages in undefined boards (Hudson only). This
+          means that messages in message base boards that are not
+          defined in the Area Manager will be moved to the
+          recovery board, if that board was defined in FSetup.
+          IMPORTANT: If no recovery board number was defined,
+          those messages will be deleted! So please make sure,
+          that your non-echomail boards are also defined in the
+          Area Manager, with the Active switch set to No.
+
+/D        Delete messages using the information in the Area
+          Manager. See section 3.9 for more information about the
+          criteria that may be used to delete messages.
+
+/N        Renumber the message base (Hudson only). All messages in
+          the message base will be renumbered. The first message
+          will become message #1 etc.
+
+/P        Pack (remove deleted messages) (Hudson only). When a
+          message in the message base is deleted, the actual
+          message is still present in the message base. It will
+          only be marked as being deleted. In order to keep the
+          message base size within reasonable limits, the message
+          base has to be packet regularly, i.e. deleted messages
+          are removed from the message base.
+
+/R        Remove "Re:" from subject lines. Some editors put "Re:"
+          in front of the actual subject line, when a reply is
+          written. This switch allows you to remove it.
+
+/T        Fix bad text length info in MsgHdr.BBS, which might
+          cause some BBS programs or mail editors to crash (Hudson
+          only).
+
+/U        Undelete deleted messages. Deleted messages cannot be
+          undeleted after the message base has been packed (Hudson
+          only).
+
+/X        Delete messages with bad dates or bad board number
+          (Hudson only).
+
+/B        Keep .BAK files. This switch only has effect if it is
+          used in combination with /P and if the Overwrite mode is
+          not used.
+
+/F        Force Overwrite mode (Hudson only). This switch only has
+          effect is used in combination with /P.
+
+/O        Use Overwrite mode if there is not enough disk space
+          available to create backup files (Hudson only). This
+          switch only has effect is used in combination with /P.
+
+In most cases the following command can be used:
+
+               FTOOLS MAINT /D /P /N /R /O
+
+
+6.2       Delete
+
+To delete all messages in a particular board in the message base,
+enter
+
+               FTools Delete <board>
+
+6.3       Undelete
+
+To undelete all deleted messages in a particular board in the
+message base, enter: FTools Undelete <board number>
+
+
+6.4       Post
+
+The general syntax of the Post command is:
+
+          FTools Post [<file|-] <area tag>
+               [-from xxx] [-to xxx] [-dest xxx] [-subj xxx] [-aka
+               x]
+               [/C] [/H] [/D] [/K] [/P] [/R] [/F] [/E] [/T]
+
+<area tag> can be one of the following:
+          -    The area tag of the desired echomail area.
+          -    #netdir for the Netmail directory.
+          -    #netm for the Netmail board of your main aka.
+
+          -    #net1-#net31 for the Netmail boards of your akas
+               1 - 31.
+
+Available options with default value which are used if the options
+is omitted:
+
+          [-from xxx]    From name, default is the SysOp name as
+                         defined in FSetup
+          [-to xxx]      To name, default is 'SysOp'.
+          [-subj xxx]    Subject line, default is the name of that
+                         file that was posted.
+          [-dest xxx]    Node to send the message to (netmail
+                         only).
+          [-aka x]            The AKA that should be used as the
+                              origin address (netmail only).
+          [/C]                     Crash status (netmail only).
+          [/H]                     Hold status (netmail only).
+          [/D]                     Direct status (netmail only).
+          [/K]                     Delete message after sending
+                                   it.
+          [/P]                     Private status.
+          [/R]                     File Request (netmail only).
+          [/F]                     File attach (netmail only)
+          [/E]                     Erase sent file (file attach
+                                   only)\n"
+          [/T]                     Truncate sent file (file attach
+                                   only)\n"
+
+Two examples:
+
+To send a file EXAMPLE.TXT as an echomail message in area
+FMAIL_HELP, enter:
+
+          FTools Post EXAMPLE.TXT FMAIL_HELP -subj "This is an
+          example"
+
+To send a file EXAMPLE.TXT as a netmail message with the file
+attached to node 2:283/619, enter
+
+          FTools Post EXAMPLE.TXT #netdir -to "Folkert Wijnstra"
+               -dest 2:283/619 /F
+
+
+6.5       Export
+
+To export messages in a particular Hudson board to a text file,
+you can use the FTools Export command. The general syntax of the
+Export command is:
+
+          FTools export <board name> <file name> [/D] [/F] [/T]
+          [/S] [/X] [/P] [/K]
+
+
+6.6       Move
+
+To move messages from one board to another board in the message
+base, enter
+
+          FTools Move <old board> <new board>
+
+
+6.7       Sort
+
+To sort messages in the Hudson message base that have not been
+read yet, enter
+
+          FTools Sort
+
+To sort all messages in the message base, add /A. WARNING: After
+sorting the message base with the /A switch, the lastread pointers
+will not be valid any more. This switch should NOT be used on BBS
+systems.
+
+
+6.8       Stat
+
+To display message base statistics which also will be written to
+the log file, enter
+
+               FTools Stat
+
+
+6.9       Notify
+
+To send a notify message to all systems in the Node Manager that
+have the notify switch set to Yes, enter
+
+          Ftools Notify [/A] [/N]
+
+          [/A] Send an Area Status report
+          [/N] Send a Node Status report
+
+To send a notify message to for example 2:283/619, enter
+
+          FTools Notify 2:283/619 [/A] [/N]
+
+
+6.10      MsgM
+
+In the current version of FTools, the .MSG maintenance function
+only contains the renumber function. The syntax is:
+
+          FTools MsgM [-net] [-sent] [-rcvd] [-pmail] /N
+
+          [-net]                   Netmail directory
+          [-sent]             Sent messages directory
+          [-rcvd]             Received messages directory
+          [-pmail]            Personal mail directory
+
+IMPORTANT: don't renumber the netmail directory while FrontDoor is
+active.
+
+
+
+6.11      Addnew
+
+Automatically add new areas detected during FMail Toss to the
+FMAIL.AR. FMail will use the default settings defined in the
+AreaMgr defaults section of FSetup. A name for JAM areas is
+generated automatically.
+
+
+7         Credits
+
+
+
+The standard DOS version of FMail uses the SPAWNO 3.0 routines by
+Ralf Brown to minimize memory use while running archiving
+utilities.
+
+The following copyrighted programs are mentioned in this manual:
+
+          ARC            Systems Enhancements Associates
+          ARJ, JAR       ARJ Software
+          Binkley        Bit Bucket Software
+          Borland C++    Borland International, Inc.
+          D'Bridge       Chris Irwin
+          FrontDoor,
+          TosScan        Joaquim Homrighausen
+          GEcho          Gerard van der Land
+          GUS            Tri-Systems co.
+          IBM, PC DOS    International Business Machines Corp.
+          IMAIL          Andreas Klein
+          JAM(mbp)       Copyright 1993 Joaquim Homrighausen,
+                         Andrew Milner, Mats Birch, Mats Wallin.
+                         ALL RIGHTS RESERVED
+          LHA            Haruyasu Yoshizaki
+          MainDoor       Francisco Sedano
+          Microsoft,
+          MS-DOS         Microsoft Corporation
+          PAK            NoGate Consulting
+          PKZIP, PKPAK   PKWARE, Inc.
+          Portal
+          of Power       The Portal Team
+          QEMM, DESQview Quarterdeck Office Systems, Inc.
+          QuickBBS       Pegasus Software
+          RemoteAccess,
+          RA, RAMSG      Wantree Development
+          RAR            Eugene Roshal
+          SQZ            Jonas I. Hammarberg
+          SuperBBS       SuperBBS group
+          TAG            Robert Numerick & Victor Capton
+          UC2            AIP-NL
+          Xenia          Arjen G. Lentz & Lentz
+                         Software-Development
+          ZOO            Rahul Dhesi
+
+I would like to thank all of my beta testers for the time they
+invested in testing a program en helping me to develop the program
+and especially my girlfriend Karin for her patience and
+understanding.
+
+
+
+8         Registration sites
+
+
+For information about the nearest registration site please see the
+FMAILREG.ZIP file contained in the FMail distribution archive.
+
+
+
+
+APPENDIX A     -    Error messages
+
+
+
+Below some of FMail's error messages are listed with a brief
+explanation.
+
+Bad node in pack list
+
+               There was a syntax error in the list of nodes that
+               should be packed.
+
+Bad VIA node
+
+               There was a syntax error in the node number after
+               the optional VIA keyword.
+
+Can't forward area xxx to a local AKA
+
+               You are using one of your own AKAs in the export
+               list of the listed area. Exporting an area to one
+               of your own AKAs is not allowed.
+
+Can't lock the message base for update
+
+               FMail couldn't lock the message base for update in
+               a multiline environment. If after several retries
+               this message doesn't go away, reboot your computer,
+               because some program may have locked the message
+               base without unlocking it when it was finished.
+
+Can't read FMAIL.CFG
+
+               FMail could not find FMAIL.CFG in the directory
+               where the currently running executable in located.
+
+Can't send mail to more than 256 nodes in one run
+
+               You have used more than 256 different export
+               addresses in the export lists of your echomail
+               areas.
+
+Can't update the message base files
+
+               When running in Message base sharing mode, FMail
+               could not append the shadow message base (MSG*.FML
+               files) to the actual message base files. Probable
+               causes are:
+               -    The message base is locked. Try resetting your
+                    computer.
+               -    The message base has reached its maximum size.
+                    Use FTools Maint /D /P to reduce its size.
+               -    The highest message number has been reached.
+                    Use FTools Maint /N to renumber the message
+                    base.
+
+Disk-related error
+
+               FMail has a problem reading or writing some file.
+               This might be caused by a full disk.
+
+ERROR: ....
+
+               Please contact the author! In case of the message
+               'Not enough file handles available' try using a
+               higher number in the FILES= command in CONFIG.SYS
+               first.
+
+FMail requires at least DOS 3.3
+
+               Some functions of FMail require the presence of DOS
+               3.3 or higher. DR DOS should also work.
+
+Highest allowed message number has been reached
+
+               The highest allowed message number in the Hudson
+               message base (32768) has been reached. Use FTools
+               Maint /N to renumber the message base.
+
+Main nodenumber not defined in FSetup
+
+               You should always define the main node number in
+               FSetup; FMail will not work without one!
+
+Maximum message base size has been reached
+
+               The size of the Hudson message base file MSGTXT.BBS
+               has reached its limit of 16 Mb. Use FTools Maint /D
+               /P to delete old messages. If you have enabled
+               FMail's multi-line option, the error message means
+               that MSGTXT.FML has reached the 16 Mb limit.
+
+Packet is addressed to another node
+
+               A PKT file is not addressed to your main node
+               number or to one of your AKAs.
+
+Packet password security violation
+
+               A PKT file contained a wrong password or no
+               password at all, although a password was set for
+               the source node in the node manager.
+
+Received password "xxx" from node x:x/x.x, expected "yyy"
+
+               A packet from node x:x/x.x contained password xxx,
+               but password yyy was entered in the Node Manager.
+
+Unexpected password "xxx" from node x:x/x.x
+
+               A packet from node x:x/x.x contained password xxx,
+               but that password was not entered in the Node
+               Manager.
+
+Warning: Fakenet not defined but required for AKA x
+
+               You are trying to send mail to a point system,
+               which was configured in the Node Manager as being a
+               "Stone Age" system, and thus requiring a fakenet
+               number which was not defined. There are two
+               possible solutions:
+
+               -    Set the Capability of the point system to Type
+                    2+ if that system is using an echomail
+                    processor that can handle Type 2+ packets.
+               -    If the echomail processor of the point system
+                    can't handle Type 2+ packets, you have to
+                    assign a fakenet number to the AKA that is
+                    used for that particular point. See paragraph
+                    3.3.6 for more information.
+
+Warning: Node xxx is not defined in the Node Manager
+
+               You are trying to send mail to a node which is not
+               listed in the Node Manager. As a consequence, FMail
+               does not know what the capability of the remote
+               system is, which compression program should be used
+               and status the resulting file attach message should
+               have. If this is the case, FMail will use default
+               values.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+APPENDIX B     -    Technical notes
+
+
+
+*         The FTSC assigned product code for FMail is 0x81 (129
+          decimal).
+
+*         The standard DOS version of FMail can handle up to 512
+          echomail conferences (4096 for the DPMI and 32-bit
+          versions) of which up to 200 may be imported into the
+          Hudson message base.
+
+*         FMail can handle up to 256 downlinks.
+
+*         FMail supports up to 32 AKAs.
+
+*         FMail is fully zone and point aware.
+
+*         Maximum message size is 45 kb (DOS version) or 9999 kb
+          (32 bits DOS/DPMI, Windows and OS/2 version).
+
+*         The mail packets created by FMail are FTS-0001, FTS-0004
+          and FSC-0039 compatible, using the Type 2+ packet header
+          and the Capability Word. FMail also recognizes Type 2.2
+          (FSC-0045) packet headers.
+
+*         If an AREA: tag is preceded by a ^A, it is still
+          recognized by FMail. Also tags in lower case are
+          recognized.
+
+*         SEEN-BY and PATH lines are created and updated and are
+          optionally used by FMail for duplicate prevention
+          purposes (the PATH lines are not used by FMail).
+
+*         FMail can parse both Fido/Opus and SEAdog style date
+          fields.
+
+*         FMail supports the RemoteAccess/FrontDoor Hudson Message
+          Base sharing specifications.
+
+*         FMail was written in C and compiled using Borland C++
+          Version 4.52. The DPMI version was compiled using
+          Borland C++ Version 4.52 and Borland Powerpack for DOS
+          Version 1.5. The OS/2 version was compiled using Borland
+          C++ for OS/2 1.0.
+
+*         File input/output is performed using standard DOS file
+          handle calls.
+
+*         The DOS versions of FMail, FSetup and FTools
+          automatically detect the video environment and write
+          directly to the screen or DESQview screen buffer.
+
+*         The implementation of the Binary Conference Listing
+          system is based upon FSC-0057 rev. 3.
+
+*         FMail returns one of the following errorlevels:
+
+               50   Message base is full
+               5    Possible mail bomb detected
+               4    Error in configuration files
+               3    Control-break pressed
+               2    Insufficient memory available
+               1    Insufficient disk space available or disk
+                    error
+               0    No errors occurred
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+INDEX
+
+
+Address . . . . . . . .   7, 18, 19, 24, 27, 29, 30, 34, 35, 37, 44
+Area Manager  . .  7, 10, 19, 20, 22, 26, 27, 29, 32-34, 36, 37, 42
+AreaFix . . . . . . . . . . . . . . . . . .   3, 27, 31, 34, 39, 41
+AreaMgr . . . . . . . . . .  3, 7, 17, 19, 23, 28-31, 33, 37-41, 45
+AutoExport  . . . . . . . . . . . . . . . . . . . . . .  11, 12, 26
+BBS . . . . . . .   6, 8, 11-14, 21, 25, 26, 34, 35, 37, 43, 45, 48
+BCL . . . . . . . . . . . . . . . . . . . . . . . . . .  27, 31, 40
+Binary Conference Listing . . . . . . . . . . . . . . . . .  17, 50
+Board number  . . . . . . . . . . . . . . . . . . .  12, 33, 42, 43
+Buffer size . . . . . . . . . . . . . . . . . . . . . . . . . .  21
+Capability  . . . . . . . . . . . . . . . . . .   8, 29, 30, 49, 50
+Color set . . . . . . . . . . . . . . . . . . . . . . . . . . .  21
+Compression . . . . . . . . .  6, 7, 10, 17, 24, 25, 29, 39, 41, 49
+Control-break . . . . . . . . . . . . . . . . . . . . . . .  20, 51
+Decompression . . . . . . . . . . . . . . . . . . . . .   7, 24, 25
+Defaults  . . . . . . . . . . . . . . . . . . . . . . .   5, 19, 45
+Delete  . . . . . . . . . . . . . . . . . . .  9, 12, 17, 42-44, 48
+Directories . . . . . . . . . . . . . . . . . . . .   7, 10, 21, 23
+Duplicate messages  . . . . . . . . . . . .   5, 12, 15, 26, 37, 42
+e-mail  . . . . . . . . . . . . . . . . . . . . . . . .   4, 24, 30
+Empty netmail . . . . . . . . . . . . . . . . . . . . . . . . .  16
+EMS . . . . . . . . . . . . . . . . . . . . . . . . . .   3, 15, 24
+Error messages  . . . . . . . . . . . . . . . . . . . . . . . .  47
+Export  . . . . . . . . . . .  8, 10, 14, 18, 21, 25, 33-37, 44, 47
+Export addresses  . . . . . . . . . . . . . . . . . . . . . . .  47
+File handles  . . . . . . . . . . . . . . . . . . . . . . .  20, 48
+FMAIL.LOC . . . . . . . . . . . . . . . . . . . . . . . . . . .   5
+FML . . . . . . . . . . . . . . . . . . . . . .   5, 21, 22, 47, 48
+Group names . . . . . . . . . . . . . . . . . . . . . . . . . .  19
+Groups  . . . . . . . . . . . . . . . . . . . .   9, 19, 27, 29, 36
+Handles . . . . . . . . . . . . . . . . . . . . . . . .  15, 20, 48
+Hudson message base . . . . . . . . . . . .  12, 21, 42, 45, 48, 50
+Import  . . . . . . . . . . . . . .   8, 10, 13, 17, 25, 26, 33, 37
+Internet  . . . . . . . . . . . . . . . . . . . . . . . . .   4, 24
+JAM message base  . . . . . . . . . . . . . . . . . . . .  3, 6, 33
+Kludge  . . . . . . . . . . . . . . . . . . . . . . . . . .  11, 31
+Log . . . . . . . . . . . . . . . . . . . . . . . . . . . .  23, 45
+Mailer  . . . . . . . . . . . . . . . . . . . . .  6, 8, 11, 22, 30
+Maintenance . . . . . . . . . . . . . . . .  12, 31, 34, 40, 42, 45
+Message base sharing  . . . . . . . . . .  3, 5, 13, 21, 42, 47, 50
+Monochrome  . . . . . . . . . . . . . . . . . . . . . . . .   8, 21
+MSG*.FML  . . . . . . . . . . . . . . . . . . . . . . . . .   5, 47
+MSGID . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  15
+Node Manager              7, 8, 10, 19, 22, 24, 25, 29, 31-33, 39, 40, 45, 48, 49
+Notify  . . . . . . . . . . . . . . . . . . . .  17, 30, 39, 41, 45
+Origin line . . . . . . . . . . . . . . . . . . . . . . . .  35, 36
+Pack  . . . . . . . . . . . . . .  3, 5, 10, 28, 30, 37, 38, 42, 47
+Pack Manager  . . . . . . . . . . . . . . . . .   3, 10, 28, 30, 38
+Password  . . . . . . . . . . . . .  17, 22, 27, 31, 32, 39, 40, 48
+PATH  . . . . . . . . . .  7, 13, 16, 18, 21, 23-26, 30, 33, 35, 50
+Personal mail . . . . . . . . . . . . . . . . . . . . .   3, 18, 45
+PKT . . . . . . . . . . . . . . . .   5, 15, 16, 22, 24, 29, 30, 48
+Post  . . . . . . . . . . . . . . . . . . . . . . . . . . .  43, 44
+Private . . . . . . . . . . . . . . . . . . . . . . . .  17, 35, 44
+QQQ . . . . . . . . . . . . . . . . . . . . . . . . . . . .   5, 22
+Registration  . . . . . . . . . . . . . . . . . . . . .   4, 11, 46
+Remote maintenance  . . . . . . . . . . . . . . . . . . . .  31, 40
+Reply chains  . . . . . . . . . . . . . . . . . . . . .  13, 21, 42
+Rescan  . . . . . . . . . . . . . . . . . . . . . .   3, 30, 39, 40
+Security  . . . . . . . . . . . . . . .  12, 22, 26, 32, 34, 35, 48
+SEEN-BY . . . . . . . . . . . . . . . . . . . .   13, 31, 34-36, 50
+SMTP  . . . . . . . . . . . . . . . . . . . . . . . . . . .  24, 30
+Sort  . . . . . . . . . . . . . . . . . . . . . . . . . . .  13, 45
+Statistics  . . . . . . . . . . . . . . . . . . . . . . . . . .  45
+Status  . . . . . . . . . .  17, 28, 30, 32, 38, 40, 41, 44, 45, 49
+Swapping  . . . . . . . . . . . . . . . . . . . . . . .  10, 24, 25
+Tearline  . . . . . . . . . . . . . . . . . . . . . . .   4, 11, 13
+Technical notes . . . . . . . . . . . . . . . . . . . . . . . .  50
+Tiny SEEN-BYs . . . . . . . . . . . . . . . . . . . . . . . . .  31
+Undelete  . . . . . . . . . . . . . . . . . . . . . . . . . . .  43
+Uplink Manager  . . . . . . . . . . . . . . . . . .  10, 26, 27, 30
+Via Node  . . . . . . . . . . . . . . . . . . . . . . .  28, 29, 47
+XMS . . . . . . . . . . . . . . . . . . . . . . . . . . . .   3, 24
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
