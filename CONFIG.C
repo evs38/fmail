@@ -189,7 +189,7 @@ void handlesReset40 (void)
 
 #define N 65339L
 
-#ifdef BETA
+#ifdef BETA0
 
 static u16 checkKeyBeta(void)
 {
@@ -224,7 +224,7 @@ static u16 checkKeyBeta(void)
 
    if ((!(keyResult & 0x4000)) || (key != tempKey))
    {
-#ifdef BETA
+#ifdef BETA0
       setAttr (LIGHTRED, BLACK, MONO_HIGH);
       logEntry ("Beta registration key is missing or invalid", LOG_ALWAYS, 100);
 #endif
@@ -438,7 +438,7 @@ void initFMail (char *s, s32 switches)
 
    newLine();
 
-#ifndef BETA
+#ifndef BETA0
    registered = keyFileInit();
 #else
    registered = checkKeyBeta();

@@ -99,13 +99,13 @@ int _closet(int);
 #endif
 
 #ifdef BETA
-  #define VERNUM         "1.47a"
-	#define SERIAL_MAJOR    1
-  #define SERIAL_MINOR    47
+  #define VERNUM         "1.64.GPL"
+  #define SERIAL_MAJOR    1
+  #define SERIAL_MINOR    64
 #else
-  #define VERNUM         "1.62.GPL"
-	#define SERIAL_MAJOR    1
-  #define SERIAL_MINOR    62
+  #define VERNUM         "1.63.GPL"
+  #define SERIAL_MAJOR    1
+  #define SERIAL_MINOR    63
 #endif
 
 #ifdef BETA
@@ -130,12 +130,12 @@ int _closet(int);
 #define CONFIG_MINOR        94 /* do not change */
 
 #ifdef GOLDBASE
-   #define MBEXTN   "DAT"
-   #define MBEXTB   "FMG"
+   #define MBEXTN   "dat"
+   #define MBEXTB   "fmg"
    #define MBBOARDS 500
 #else
-   #define MBEXTN   "BBS"
-   #define MBEXTB   "FML"
+   #define MBEXTN   "bbs"
+   #define MBEXTB   "fml"
    #define MBBOARDS 200
 #endif
 

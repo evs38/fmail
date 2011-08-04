@@ -39,13 +39,13 @@ typedef unsigned long   dword;  //(32-bit)
 /* --- Address type */
 
 typedef struct
-   {
-   word zone;
-   word net;
-   word node;
-   word point;
-   }
-   ADDRESS;
+{
+  word zone;
+  word net;
+  word node;
+  word point;
+}
+ADDRESS;
 
 /* --- Log levels */
 
@@ -167,171 +167,171 @@ typedef struct
 #define UPLINK_ADDPLUS  0x04  /* Add '+' prefix */
 
 typedef struct
-   {
-   ADDRESS address;       /* Uplink address */
-   char    areafix[9];    /* AreaFix program */
-   char    password[17];  /* AreaFix password */
-   char    filename[13];  /* "Forward List" filename */
-   byte    unused[6];
-   byte    options;       /* See --- Uplink options bits */
-   byte    filetype;      /* 0 = Random, 1 = "<areaname> <description>" */
-   dword   groups;        /* Nodes must have one of these groups */
-   byte    origin;        /* Origin AKA */
-   }
-   UPLINK;
+{
+  ADDRESS address;       /* Uplink address */
+  char    areafix[9];    /* AreaFix program */
+  char    password[17];  /* AreaFix password */
+  char    filename[13];  /* "Forward List" filename */
+  byte    unused[6];
+  byte    options;       /* See --- Uplink options bits */
+  byte    filetype;      /* 0 = Random, 1 = "<areaname> <description>" */
+  dword   groups;        /* Nodes must have one of these groups */
+  byte    origin;        /* Origin AKA */
+}
+UPLINK;
 
 typedef struct
-   {
-   word zone;
-   word net;
-   byte aka;
-   }
-   AKAMATCH;
+{
+  word zone;
+  word net;
+  byte aka;
+}
+AKAMATCH;
 
 typedef struct
-   {
-   byte bg_char;
-   byte headerframe;
-   byte headertext;
-   byte background;
-   byte bottomline;
-   byte bottomtext;
-   byte bottomkey;
-   byte errorframe;
-   byte errortext;
-   byte helpframe;
-   byte helptitle;
-   byte helptext;
-   byte helpfound;
-   byte winframe;
-   byte wintitle;
-   byte winline;
-   byte wintext;
-   byte winkey;
-   byte windata;
-   byte winselect;
-   byte inputdata;
-   byte exportonly;
-   byte importonly;
-   byte lockedout;
-   }
-   COLORSET;
+{
+  byte bg_char;
+  byte headerframe;
+  byte headertext;
+  byte background;
+  byte bottomline;
+  byte bottomtext;
+  byte bottomkey;
+  byte errorframe;
+  byte errortext;
+  byte helpframe;
+  byte helptitle;
+  byte helptext;
+  byte helpfound;
+  byte winframe;
+  byte wintitle;
+  byte winline;
+  byte wintext;
+  byte winkey;
+  byte windata;
+  byte winselect;
+  byte inputdata;
+  byte exportonly;
+  byte importonly;
+  byte lockedout;
+}
+COLORSET;
 
 /* --- SETUP.GE structure */
 
 typedef struct
-   {
-   word sysrev;              /* Must contain GE_THISREV */
-   word options;             /* Options bits, see --- Setup option bits */
-   word autorenum;           /* Auto renumber value */
-   word maxpktsize;          /* Maximum packet size, 0 = unlimited */
-   byte logstyle;            /* See --- Log styles */
-   byte oldnetmailboard;     /* Netmail board, must be zero now */
-   byte oldbadboard;         /* Where bad echomail is stored (0 = path) */
-   byte olddupboard;         /* Where duplicates are stored (0 = path) */
-   byte recoveryboard;       /* Recovery board (1-200, 0 = delete) */
-   byte filebuffer;          /* Size (in KB) of MBU file I/O buffer */
-   byte days;                /* Days to keep old mail around */
-   byte swapping;            /* Swapping method */
-   byte compr_default;       /* Default compresion type */
-   byte pmcolor[15];         /* Unused */
-   ADDRESS oldaka[OLDAKAS];  /* Main address and AKAs */
-   word oldpointnet[OLDAKAS];  /* Pointnets for all addresses */
-   dword gekey;              /* GEcho registration key */
-   dword mbukey;             /* MBUTIL registration key */
-   char geregto[51];         /* Text used to generate the GEcho key */
-   char mburegto[51];        /* Text used to generate the MBUTIL key */
-   char username[USERS][36]; /* User names */
-   char hmbpath[53];         /* Hudson message base path */
-   char mailpath[53];        /* Netmail path */
-   char inbound_path[53];    /* Where incoming compressed mail is stored */
-   char outbound_path[53];   /* Where outgoing compressed mail is stored */
-   char editor[65];          /* Unused */
-   char nodepath[53];        /* Unused */
-   char areasfile[65];       /* AREAS.BBS style file */
-   char logfile[65];         /* GEcho/MBUTIL log file */
-   char mgrlogfile[65];      /* AreaMgr log file */
-   char swap_path[53];       /* Swap path */
-   char tear_line[31];       /* Tearline to be placed by MBUTIL Export */
-   char originline[20][61];  /* Origin lines */
-   char compr_prog[10][13];       /* Compression program filenames */
-   char compr_switches[10][20];   /* Compression program switches */
-   char decompr_prog[10][13];     /* Decompression program filenames */
-   char decompr_switches[10][20]; /* Decompression program switches */
-   char groups[26][21];      /* Descriptions of area groups */
-   byte lockmode;            /* See --- Locking method */
-   char secure_path[53];     /* From which secure PKTs are tossed */
-   char rcvdmailpath[53];    /* Unused */
-   char sentmailpath[53];    /* Unused */
-   char semaphorepath[53];   /* Where FD rescan files are stored */
-   byte version_major;       /* Major GEcho version */
-   byte version_minor;       /* Minor GEcho version */
-   byte semaphore_mode;      /* See --- Semaphore modes */
-   char badecho_path[53];    /* Where sec. violating and unknown mail is stored */
-   byte mailer_type;         /* See --- Mailer type */
-   word loglevel;            /* See --- Log level */
-   AKAMATCH akamatch[20];    /* AKA matching table */
-   char mbulogfile[65];      /* MBUTIL log file */
-   word maxqqqs;             /* Max. number of QQQ info stored in memory */
-   byte maxqqqopen;          /* Not used */
-   byte maxhandles;          /* Max. number of files used by GEcho */
-   word maxarcsize;          /* Max. archive size, 0 = unlimited */
-   word delfuture;           /* Days to delete messages in the future, 0 = disable */
-   word extraoptions;        /* See --- Extra option bits */
-   byte firstboard;          /* First available new board (0 = *.MSG) */
-   word reserved1;           /* Reserved */
-   word copy_persmail;       /* Unused */
-   byte oldpersmailboard[USERS];  /* Personal mail board (0 = path) */
-   dword public_groups;      /* Public groups (bits 0-25) */
-   word dupentries;          /* Number of duplicate entries in ECHODUPE.GE */
-   byte oldrcvdboard;        /* Where Rcvd netmail is moved to (0 = path) */
-   byte oldsentboard;        /* Where Sent netmail is moved to (0 = path) */
-   byte oldakaboard[OLDAKAS];  /* Netmail boards for AKAs */
-   byte olduserboard[USERS];  /* Netmail boards for system users, 255 = use AKA board */
-   byte reserved2;           /* Reserved */
-   UPLINK uplink[UPLINKS];   /* Uplink manager information */
-   char persmail_path[53];   /* Unused */
-   char outpkts_path[53];    /* Where outbound packets are temp. stored */
-   word compr_mem[10];       /* Memory needed for compression programs */
-   word decompr_mem[10];     /* Memory needed for decompression programs */
-   dword pwdcrc;             /* CRC-32 of access password, -1L = no password */
-   word default_maxmsgs;     /* Maximum number of messages       (Purge) */
-   word default_maxdays;     /* Maximum age of non-Rcvd messages (Purge) */
-   char gus_prog[13];        /* General Unpack Shell program filename */
-   char gus_switches[20];    /* GUS switches */
-   word gus_mem;             /* Memory needed for GUS */
-   word default_maxrcvddays; /* Maximum age of Rcvd messages     (Purge) */
-   byte checkname;           /* See --- Check user name */
-   byte maxareacachesize;    /* Area cache size, 0 .. 64 KB */
-   char inpkts_path[53];     /* Where inbound mail packets should be stored */
-   char pkt_prog[13];        /* Called before each tossed mail packet */
-   char pkt_switches[20];    /* Command line switches */
-   word pkt_mem;             /* Memory needed */
-   word maxareas;            /* Maximum number of areas */
-   word maxconnections;      /* Maximum number of connections per area */
-   word maxnodes;            /* Maximum number of nodes */
-   word default_minmsgs;     /* Minimum number of messages       (Purge) */
-   byte bbs_type;            /* See --- BBS type */
-   byte decompress_ext;      /* 0 = 0-9, 1 = 0-F, 2 = 0-Z */
-   byte reserved3;           /* Reserved */
-   byte change_tearline;     /* See --- Change tear line */
-   word prog_notavail;       /* Bit 0-9, 1 = program not available */
-   byte gs_background;       /* Character to use as background */
-   byte gscolor[32];         /* GSETUP color set, See COLORSET structure */
+{
+  word sysrev;              /* Must contain GE_THISREV */
+  word options;             /* Options bits, see --- Setup option bits */
+  word autorenum;           /* Auto renumber value */
+  word maxpktsize;          /* Maximum packet size, 0 = unlimited */
+  byte logstyle;            /* See --- Log styles */
+  byte oldnetmailboard;     /* Netmail board, must be zero now */
+  byte oldbadboard;         /* Where bad echomail is stored (0 = path) */
+  byte olddupboard;         /* Where duplicates are stored (0 = path) */
+  byte recoveryboard;       /* Recovery board (1-200, 0 = delete) */
+  byte filebuffer;          /* Size (in KB) of MBU file I/O buffer */
+  byte days;                /* Days to keep old mail around */
+  byte swapping;            /* Swapping method */
+  byte compr_default;       /* Default compresion type */
+  byte pmcolor[15];         /* Unused */
+  ADDRESS oldaka[OLDAKAS];  /* Main address and AKAs */
+  word oldpointnet[OLDAKAS];  /* Pointnets for all addresses */
+  dword gekey;              /* GEcho registration key */
+  dword mbukey;             /* MBUTIL registration key */
+  char geregto[51];         /* Text used to generate the GEcho key */
+  char mburegto[51];        /* Text used to generate the MBUTIL key */
+  char username[USERS][36]; /* User names */
+  char hmbpath[53];         /* Hudson message base path */
+  char mailpath[53];        /* Netmail path */
+  char inbound_path[53];    /* Where incoming compressed mail is stored */
+  char outbound_path[53];   /* Where outgoing compressed mail is stored */
+  char editor[65];          /* Unused */
+  char nodepath[53];        /* Unused */
+  char areasfile[65];       /* AREAS.BBS style file */
+  char logfile[65];         /* GEcho/MBUTIL log file */
+  char mgrlogfile[65];      /* AreaMgr log file */
+  char swap_path[53];       /* Swap path */
+  char tear_line[31];       /* Tearline to be placed by MBUTIL Export */
+  char originline[20][61];  /* Origin lines */
+  char compr_prog[10][13];       /* Compression program filenames */
+  char compr_switches[10][20];   /* Compression program switches */
+  char decompr_prog[10][13];     /* Decompression program filenames */
+  char decompr_switches[10][20]; /* Decompression program switches */
+  char groups[26][21];      /* Descriptions of area groups */
+  byte lockmode;            /* See --- Locking method */
+  char secure_path[53];     /* From which secure PKTs are tossed */
+  char rcvdmailpath[53];    /* Unused */
+  char sentmailpath[53];    /* Unused */
+  char semaphorepath[53];   /* Where FD rescan files are stored */
+  byte version_major;       /* Major GEcho version */
+  byte version_minor;       /* Minor GEcho version */
+  byte semaphore_mode;      /* See --- Semaphore modes */
+  char badecho_path[53];    /* Where sec. violating and unknown mail is stored */
+  byte mailer_type;         /* See --- Mailer type */
+  word loglevel;            /* See --- Log level */
+  AKAMATCH akamatch[20];    /* AKA matching table */
+  char mbulogfile[65];      /* MBUTIL log file */
+  word maxqqqs;             /* Max. number of QQQ info stored in memory */
+  byte maxqqqopen;          /* Not used */
+  byte maxhandles;          /* Max. number of files used by GEcho */
+  word maxarcsize;          /* Max. archive size, 0 = unlimited */
+  word delfuture;           /* Days to delete messages in the future, 0 = disable */
+  word extraoptions;        /* See --- Extra option bits */
+  byte firstboard;          /* First available new board (0 = *.MSG) */
+  word reserved1;           /* Reserved */
+  word copy_persmail;       /* Unused */
+  byte oldpersmailboard[USERS];  /* Personal mail board (0 = path) */
+  dword public_groups;      /* Public groups (bits 0-25) */
+  word dupentries;          /* Number of duplicate entries in ECHODUPE.GE */
+  byte oldrcvdboard;        /* Where Rcvd netmail is moved to (0 = path) */
+  byte oldsentboard;        /* Where Sent netmail is moved to (0 = path) */
+  byte oldakaboard[OLDAKAS];  /* Netmail boards for AKAs */
+  byte olduserboard[USERS];  /* Netmail boards for system users, 255 = use AKA board */
+  byte reserved2;           /* Reserved */
+  UPLINK uplink[UPLINKS];   /* Uplink manager information */
+  char persmail_path[53];   /* Unused */
+  char outpkts_path[53];    /* Where outbound packets are temp. stored */
+  word compr_mem[10];       /* Memory needed for compression programs */
+  word decompr_mem[10];     /* Memory needed for decompression programs */
+  dword pwdcrc;             /* CRC-32 of access password, -1L = no password */
+  word default_maxmsgs;     /* Maximum number of messages       (Purge) */
+  word default_maxdays;     /* Maximum age of non-Rcvd messages (Purge) */
+  char gus_prog[13];        /* General Unpack Shell program filename */
+  char gus_switches[20];    /* GUS switches */
+  word gus_mem;             /* Memory needed for GUS */
+  word default_maxrcvddays; /* Maximum age of Rcvd messages     (Purge) */
+  byte checkname;           /* See --- Check user name */
+  byte maxareacachesize;    /* Area cache size, 0 .. 64 KB */
+  char inpkts_path[53];     /* Where inbound mail packets should be stored */
+  char pkt_prog[13];        /* Called before each tossed mail packet */
+  char pkt_switches[20];    /* Command line switches */
+  word pkt_mem;             /* Memory needed */
+  word maxareas;            /* Maximum number of areas */
+  word maxconnections;      /* Maximum number of connections per area */
+  word maxnodes;            /* Maximum number of nodes */
+  word default_minmsgs;     /* Minimum number of messages       (Purge) */
+  byte bbs_type;            /* See --- BBS type */
+  byte decompress_ext;      /* 0 = 0-9, 1 = 0-F, 2 = 0-Z */
+  byte reserved3;           /* Reserved */
+  byte change_tearline;     /* See --- Change tear line */
+  word prog_notavail;       /* Bit 0-9, 1 = program not available */
+  byte gs_background;       /* Character to use as background */
+  byte gscolor[32];         /* GSETUP color set, See COLORSET structure */
 
-   ADDRESS aka[AKAS];         /* Main address and AKAs */
-   word pointnet[AKAS];       /* Pointnets for all addresses */
-   word akaarea[AKAS];        /* AKA netmail areas */
-   word userarea[USERS];      /* Netmail areas for system users, 0 = don't import, 65535 = use AKA area */
-   word persmailarea[USERS];  /* Personal mail area (0 = don't copy) */
-   word rcvdarea;             /* Rcvd netmail area (0 = don't move) */
-   word sentarea;             /* Sent netmail area (0 = don't move) */
-   word badarea;              /* Where bad echomail is stored (0 = path) */
-   word duparea;              /* Where duplicates are stored (0 = path) */
-   char jampath[53];          /* JAM message base path */
-   char userbase[53];         /* User base path */
-   }
-   SETUP_GE;
+  ADDRESS aka[AKAS];         /* Main address and AKAs */
+  word pointnet[AKAS];       /* Pointnets for all addresses */
+  word akaarea[AKAS];        /* AKA netmail areas */
+  word userarea[USERS];      /* Netmail areas for system users, 0 = don't import, 65535 = use AKA area */
+  word persmailarea[USERS];  /* Personal mail area (0 = don't copy) */
+  word rcvdarea;             /* Rcvd netmail area (0 = don't move) */
+  word sentarea;             /* Sent netmail area (0 = don't move) */
+  word badarea;              /* Where bad echomail is stored (0 = path) */
+  word duparea;              /* Where duplicates are stored (0 = path) */
+  char jampath[53];          /* JAM message base path */
+  char userbase[53];         /* User base path */
+}
+SETUP_GE;
 
 /***************************************************************************/
 
@@ -380,35 +380,35 @@ typedef struct
 /* --- AREAFILE.GE header */
 
 typedef struct
-   {
-   word hdrsize;         /* sizeof(AREAFILE_HDR) */
-   word recsize;         /* sizeof(AREAFILE_GE) */
-   word maxconnections;  /* Maximum number of entries in connections list */
-   }
-   AREAFILE_HDR;
+{
+  word hdrsize;         /* sizeof(AREAFILE_HDR) */
+  word recsize;         /* sizeof(AREAFILE_GE) */
+  word maxconnections;  /* Maximum number of entries in connections list */
+}
+AREAFILE_HDR;
 
 /* --- AREAFILE.GE record */
 
 typedef struct
-   {
-   char name[51];       /* Area name must be uppercase, no spaces */
-   char comment[61];    /* Description of the topics discussed in area */
-   char path[51];       /* Path where the *.MSG files are stored */
-   char originline[61]; /* Custom origin line, used if origlinenr = 0 */
-   word areanumber;     /* Area number (1-200 = Hudson) */
-   char group;          /* Group (A-Z) */
-   word options;        /* See --- Area option bits */
-   byte originlinenr;   /* Origin line (1-20, 0 = custom) */
-   byte pkt_origin;     /* Address for the packet/Origin line (0-31) */
-   dword seenbys;       /* Addresses (bits 0-31) to add to the SEEN-BY */
-   word maxmsgs;        /* Maximum number of messages       (MBUTIL Purge) */
-   word maxdays;        /* Maximum age of non-Rcvd messages (MBUTIL Purge) */
-   word maxrcvddays;    /* Maximum age of Rcvd messages     (MBUTIL Purge) */
-   byte areatype;       /* See --- Area type */
-   byte areaformat;     /* See --- Area format */
-   byte extraoptions;   /* See --- Extra area option bits */
-   }
-   AREAFILE_GE;
+{
+  char name[51];       /* Area name must be uppercase, no spaces */
+  char comment[61];    /* Description of the topics discussed in area */
+  char path[51];       /* Path where the *.MSG files are stored */
+  char originline[61]; /* Custom origin line, used if origlinenr = 0 */
+  word areanumber;     /* Area number (1-200 = Hudson) */
+  char group;          /* Group (A-Z) */
+  word options;        /* See --- Area option bits */
+  byte originlinenr;   /* Origin line (1-20, 0 = custom) */
+  byte pkt_origin;     /* Address for the packet/Origin line (0-31) */
+  dword seenbys;       /* Addresses (bits 0-31) to add to the SEEN-BY */
+  word maxmsgs;        /* Maximum number of messages       (MBUTIL Purge) */
+  word maxdays;        /* Maximum age of non-Rcvd messages (MBUTIL Purge) */
+  word maxrcvddays;    /* Maximum age of Rcvd messages     (MBUTIL Purge) */
+  byte areatype;       /* See --- Area type */
+  byte areaformat;     /* See --- Area format */
+  byte extraoptions;   /* See --- Extra area option bits */
+}
+AREAFILE_GE;
 
 /* --- Connection entry status bits */
 
@@ -420,21 +420,21 @@ typedef struct
 /* --- Connections list entry */
 
 typedef struct
-   {
-   ADDRESS address;
-   byte    status;
-   }
-   CONNECTION;
+{
+  ADDRESS address;
+  byte    status;
+}
+CONNECTION;
 
 /* --- AREAFILE.GEX record */
 
 typedef struct
-   {
-   long crc32;       /* CRC-32 on areaname */
-   word areanumber;  /* Area number (1-200 = Hudson) */
-   long offset;      /* File offset of record in AREAFILE.GE */
-   }
-   AREAFILE_GEX;
+{
+  long crc32;       /* CRC-32 on areaname */
+  word areanumber;  /* Area number (1-200 = Hudson) */
+  long offset;      /* File offset of record in AREAFILE.GE */
+}
+AREAFILE_GEX;
 
 /***************************************************************************/
 
@@ -462,40 +462,40 @@ typedef struct
 /* --- NODEFILE.GE header */
 
 typedef struct
-   {
-   word hdrsize;  /* sizeof(NODEFILE_HDR) */
-   word recsize;  /* sizeof(NODEFILE_GE) */
-   }
-   NODEFILE_HDR;
+{
+  word hdrsize;  /* sizeof(NODEFILE_HDR) */
+  word recsize;  /* sizeof(NODEFILE_GE) */
+}
+NODEFILE_HDR;
 
 /* --- NODEFILE.GE record */
 
 typedef struct
-   {
-   ADDRESS address;       /* Address of the node */
-   char    sysop[36];     /* Name of the sysop or point */
-   char    pktpwd[9];     /* Packet (session) password */
-   char    mgrpwd[17];    /* AreaMgr password */
-   dword   groups;        /* Read/write groups (bits 0-25) */
-   word    options;       /* See --- Node option bits */
-   byte    comprtype;     /* Compression type (0-9, 10 = PKT) */
-   word    mailstatus;    /* Mail archive status. See above */
-   ADDRESS route_to;      /* Address to route mail files to */
-   dword   readgroups;    /* Read/write groups (bits 0-25) */
+{
+  ADDRESS address;       /* Address of the node */
+  char    sysop[36];     /* Name of the sysop or point */
+  char    pktpwd[9];     /* Packet (session) password */
+  char    mgrpwd[17];    /* AreaMgr password */
+  dword   groups;        /* Read/write groups (bits 0-25) */
+  word    options;       /* See --- Node option bits */
+  byte    comprtype;     /* Compression type (0-9, 10 = PKT) */
+  word    mailstatus;    /* Mail archive status. See above */
+  ADDRESS route_to;      /* Address to route mail files to */
+  dword   readgroups;    /* Read/write groups (bits 0-25) */
 // word    mgrstatus;     /* AreaMgr message status */
 // byte    compress_ext;  /* 0 = 0-9, 1 = 0-F, 2 = 0-Z */
 // word    maxdays;       /* Maximum age of mail archive, 0 = Unlimited */
-   }
-   NODEFILE_GE;
+}
+NODEFILE_GE;
 
 /* --- NODEFILE.GEX index entry */
 
 typedef struct
-   {
-   ADDRESS address;  /* Address of the node */
-   long    offset;   /* File offset of record in NODEFILE.GE */
-   }
-   NODEFILE_GEX;
+{
+  ADDRESS address;  /* Address of the node */
+  long    offset;   /* File offset of record in NODEFILE.GE */
+}
+NODEFILE_GEX;
 
 /***************************************************************************/
 
@@ -508,69 +508,69 @@ typedef struct
 /* --- Routed node entry */
 
 typedef struct
-   {
-   ADDRESS node;
-   byte    status;  /* See --- Routed node status */
-   byte    via;     /* Via entry for this routed node (0-59) */
-   }
-   ROUTE;
+{
+  ADDRESS node;
+  byte    status;  /* See --- Routed node status */
+  byte    via;     /* Via entry for this routed node (0-59) */
+}
+ROUTE;
 
 /* --- PACKFILE.GE structure */
 
 typedef struct
-   {
-   ADDRESS via[MAXVIAS];      /* Via nodes */
-   ROUTE   route[MAXROUTES];  /* Routed nodes */
-   }
-   PACKFILE_GE;
+{
+  ADDRESS via[MAXVIAS];      /* Via nodes */
+  ROUTE   route[MAXROUTES];  /* Routed nodes */
+}
+PACKFILE_GE;
 
 /***************************************************************************/
 
 /* --- ECHODUPE.GE structure */
 
 typedef struct
-   {
-   word pointer;  /* Next offset */
-   word entries;  /* Number of entries in the database */
-/*
-   word crc32_high[entries];     32 bit CRCs on msg headers, high portions
-   word crc32_low[entries];      32 bit CRCs on msg headers, low portions
-*/
-   }
-   ECHODUPE_GE;
+{
+  word pointer;  /* Next offset */
+  word entries;  /* Number of entries in the database */
+  /*
+     word crc32_high[entries];     32 bit CRCs on msg headers, high portions
+     word crc32_low[entries];      32 bit CRCs on msg headers, low portions
+  */
+}
+ECHODUPE_GE;
 
 /***************************************************************************/
 
 /* --- FTSCPROD.GE record */
 
 typedef struct
-   {
-   byte cap;       /* Capability: 0 = Type 2.0, 1 = Type 2.1, 2 = Type 2+ */
-   char name[30];  /* Name of product */
-   }
-   FTSCPROD_GE;
+{
+  byte cap;       /* Capability: 0 = Type 2.0, 1 = Type 2.1, 2 = Type 2+ */
+  char name[30];  /* Name of product */
+}
+FTSCPROD_GE;
 
 /***************************************************************************/
 
 /* --- JAM_CONV.GE record */
 
 typedef struct
-   {
-   word areanumber;
-   char name[51];
-   char jambase[51];
-   }
-   JAMCONV_GE;
+{
+  word areanumber;
+  char name[51];
+  char jambase[51];
+}
+JAMCONV_GE;
 
 /***************************************************************************/
 
 /* --- MBUTIL.RNX record */
 
 typedef struct
-   {
-   word old_msgnum;
-   word new_msgnum;
-   }
-   MBUTIL_RNX;
+{
+  word old_msgnum;
+  word new_msgnum;
+}
+MBUTIL_RNX;
 
 /* end of file "gestruct.h" */

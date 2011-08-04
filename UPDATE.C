@@ -42,28 +42,29 @@
 
 static s16 groupToChar (s32 group)
 {
-   s16 c = 'A';
+  s16 c = 'A';
 
-   if ( group )
-      while ( !(group & BIT0) )
-      {  group >>= 1;
-         c++;
-      }
-   return c;
+  if ( group )
+    while ( !(group & BIT0) )
+    {
+      group >>= 1;
+      c++;
+    }
+  return c;
 }
 
 #ifndef GOLDBASE
 static char getGroupChar (s32 groupCode)
 {
-   char count = 0;
+  char count = 0;
 
-   while (groupCode != 0)
-   {
-      groupCode >>= 1;
-      count++;
-   }
-   count += 'A'-1;
-   return (count);
+  while (groupCode != 0)
+  {
+    groupCode >>= 1;
+    count++;
+  }
+  count += 'A'-1;
+  return (count);
 }
 #endif
 #endif
@@ -75,53 +76,55 @@ extern char configPath[128];
 
 typedef struct
 {
-    char      NameLength;
-    char      Name[30];
-    char      QwkNameLength;
-    char      QwkName[12];
-    char      Typ;        /* 0=Standard 1=Net 3=Echo */
-    char      Kinds;      /* 0=Private & Public
+  char      NameLength;
+  char      Name[30];
+  char      QwkNameLength;
+  char      QwkName[12];
+  char      Typ;        /* 0=Standard 1=Net 3=Echo */
+  char      Kinds;      /* 0=Private & Public
                              1=Private 2=Public 3=Read-Only */
-    char      Aliases;    /* 0=no aliases,1=yes,2=ask alias,3=name/alias */
-    u16       ReadSecLvl;
-    u32       ReadFlags;
-    u16       WriteSecLvl;
-    u32       WriteFlags;
-    u16       SysopSecLvl;
-    u32       SysopFlags;
-    char      Group;
-    char      Replystatus; /* 0=normal,1=net/normal,2=net only,3=no replies */
-    char      Age;
-    char      Attrib;
-    char      UseAka;    } SBBSBoardRecType;
+  char      Aliases;    /* 0=no aliases,1=yes,2=ask alias,3=name/alias */
+  u16       ReadSecLvl;
+  u32       ReadFlags;
+  u16       WriteSecLvl;
+  u32       WriteFlags;
+  u16       SysopSecLvl;
+  u32       SysopFlags;
+  char      Group;
+  char      Replystatus; /* 0=normal,1=net/normal,2=net only,3=no replies */
+  char      Age;
+  char      Attrib;
+  char      UseAka;
+} SBBSBoardRecType;
 
 
 typedef struct
 {
-   char      NameLength;
-   char      Name[40];
-   char      Typ;
-   char      Kinds; /* 0=Both,1=Private,2=Public,3=ROnly */
-   char      Combined; /* 0/1 */
-   char      Aliases; /* 0=No, 1=Maybe, 2=Yes */
-   char      Aka;
-   char      OriginLineLength;
-   char      OriginLine[58];
-   char      AllowDelete; /* 0/1 */
-   u16       KeepCnt,
-             KillRcvd,
-             KillOld;
-   u16       ReadSecLvl;
-   u32       ReadFlags;
-   u16       WriteSecLvl;
-   u32       WriteFlags;
-   u16       TemplateSecLvl;
-   u32       TemplateFlags;
-   u16       SysopSecLvl;
-   u32       SysopFlags;
-   u16       FileArea;  /* for Fmail */
-   char      Group;
-   char      Spare[9];          } QBBSBoardRecType;
+  char      NameLength;
+  char      Name[40];
+  char      Typ;
+  char      Kinds; /* 0=Both,1=Private,2=Public,3=ROnly */
+  char      Combined; /* 0/1 */
+  char      Aliases; /* 0=No, 1=Maybe, 2=Yes */
+  char      Aka;
+  char      OriginLineLength;
+  char      OriginLine[58];
+  char      AllowDelete; /* 0/1 */
+  u16       KeepCnt,
+  KillRcvd,
+  KillOld;
+  u16       ReadSecLvl;
+  u32       ReadFlags;
+  u16       WriteSecLvl;
+  u32       WriteFlags;
+  u16       TemplateSecLvl;
+  u32       TemplateFlags;
+  u16       SysopSecLvl;
+  u32       SysopFlags;
+  u16       FileArea;  /* for Fmail */
+  char      Group;
+  char      Spare[9];
+} QBBSBoardRecType;
 
 
 /*---------------------------------------------------------------------------*/
@@ -133,20 +136,20 @@ typedef unsigned bit;
 
 typedef struct      /* Fidonet Style Address (23 Bytes) */
 {
-    Byte Zone;          /* Zone, 1   = N. America */
-    Word Net;           /* Net,  120 = SE Michigan */
-    Word Node;          /* Node, 116 = CRIMP BBS */
-    Word Point;         /* Point, 99% of the time = 0 */
-    char Domain[16];    /* As in FIDONET */
+  Byte Zone;          /* Zone, 1   = N. America */
+  Word Net;           /* Net,  120 = SE Michigan */
+  Word Node;          /* Node, 116 = CRIMP BBS */
+  Word Point;         /* Point, 99% of the time = 0 */
+  char Domain[16];    /* As in FIDONET */
 } OldAddressType;
 
 typedef struct      /* Fidonet Style Address (23 Bytes) */
 {
-    Word Zone;          /* Zone, 1   = N. America */
-    Word Net;           /* Net,  120 = SE Michigan */
-    Word Node;          /* Node, 116 = CRIMP BBS */
-    Word Point;         /* Point, 99% of the time = 0 */
-    char Domain[16];    /* As in FIDONET */
+  Word Zone;          /* Zone, 1   = N. America */
+  Word Net;           /* Net,  120 = SE Michigan */
+  Word Node;          /* Node, 116 = CRIMP BBS */
+  Word Point;         /* Point, 99% of the time = 0 */
+  char Domain[16];    /* As in FIDONET */
 } AddressType;
 
 #define MAXSUBOPS   10      /* Maximum number of message section SubOps */
@@ -160,27 +163,27 @@ typedef Byte NoYesForcedType;   /* Message section type */
 
 typedef struct      /* Set of Fido attr flags */
 {
-    bit fPrivate : 1;                   /* Private */
-    bit fCrash : 1;                     /* Crash */
-    bit fReceived : 1;                  /* Received */
-    bit fSent : 1;                      /* Sent */
-    bit fFileAttached : 1;              /* File attach */
-    bit fInTransit : 1;                 /* In-transit */
-    bit fOrphan : 1;                    /* Orphan */
-    bit fKillSent : 1;                  /* Kill/sent */
-    bit fLocal : 1;                     /* Local */
-    bit fHoldForPickup : 1;             /* Hold */
-    bit fUnusedBit10 : 1;               /* Reserved */
-    bit fFileRequest : 1;               /* File request */
-    bit fReturnReceiptRequest : 1;      /* Return receipt request */
-    bit fIsReturnReceipt : 1;           /* Return receipt */
-    bit fAuditRequest : 1;              /* Audit request */
-    bit fFileUpdateRequest : 1;         /* File update request */
-    bit fRaDeleted : 1;
-    bit fRaNetPendingExport : 1;
-    bit fRaNetmailMessage : 1;
-    bit fRaEchoPendingExport : 1;
-    bit unused : 12;
+  bit fPrivate : 1;                   /* Private */
+  bit fCrash : 1;                     /* Crash */
+  bit fReceived : 1;                  /* Received */
+  bit fSent : 1;                      /* Sent */
+  bit fFileAttached : 1;              /* File attach */
+  bit fInTransit : 1;                 /* In-transit */
+  bit fOrphan : 1;                    /* Orphan */
+  bit fKillSent : 1;                  /* Kill/sent */
+  bit fLocal : 1;                     /* Local */
+  bit fHoldForPickup : 1;             /* Hold */
+  bit fUnusedBit10 : 1;               /* Reserved */
+  bit fFileRequest : 1;               /* File request */
+  bit fReturnReceiptRequest : 1;      /* Return receipt request */
+  bit fIsReturnReceipt : 1;           /* Return receipt */
+  bit fAuditRequest : 1;              /* Audit request */
+  bit fFileUpdateRequest : 1;         /* File update request */
+  bit fRaDeleted : 1;
+  bit fRaNetPendingExport : 1;
+  bit fRaNetmailMessage : 1;
+  bit fRaEchoPendingExport : 1;
+  bit unused : 12;
 }
 MsgAttrFlagSet;
 
@@ -202,63 +205,63 @@ typedef Byte DefaultYesNoType;      /* Default/yes/no types */
 
 typedef char ArFlagType;    /* AR flags ('@'..'Z') */
 typedef Byte ArFlagset[4];  /* AR flags:                    */
-                            /* Byte 0 bits 0-7 = flags @..G */
-                            /* Byte 1 bits 0-7 = flags H..O */
-                            /* Byte 2 bits 0-7 = flags P..W */
-                            /* Byte 3 bits 0-3 = flags X..Z */
-                            /*        bits 4-7 = reserved   */
+/* Byte 0 bits 0-7 = flags @..G */
+/* Byte 1 bits 0-7 = flags H..O */
+/* Byte 2 bits 0-7 = flags P..W */
+/* Byte 3 bits 0-3 = flags X..Z */
+/*        bits 4-7 = reserved   */
 
 typedef struct      /* Message boards - MBOARDS.DAT */
 {
-    char NameLen;
-    char Name[64];                  /* Name of the Board */
-    MBstyle Mstyle;                 /* Local/Echo/Netmail */
-    MBtype Mtype;                   /* Message Board Type */
-    Byte RaBoard;                   /* Board Number if RA/QBBS type */
-    char PathLen;
-    char Path[64];                  /* Directory PathName */
-    char OriginLineLen;
-    char OriginLine[65];            /* Origin Line */
-    ArFlagType AccessAR;            /* AR flag Required to Access */
-    ArFlagType PostAR;              /* AR flag required to Post */
-    Byte AccessSL;                  /* Security Level Required to Access */
-    Byte PostSL;                    /* Security Level Required to Post */
-    Word MsgCount;                  /* Count of Msgs on the Board */
-    Word MaxMsgs;                   /* Max Number of Messages */
-    Word uuMaxOld;                  /* Max Days for Messages */
-    char PassWordLen;
-    char PassWord[16];              /* PassWord Required */
-    NoYesForcedType Anon;           /* Anonymous Type */
-    Boolean AllowAnsi;              /* Should we allow ANSI */
-    NoYesForcedType AllowHandle;    /* Should we allow handles */
+  char NameLen;
+  char Name[64];                  /* Name of the Board */
+  MBstyle Mstyle;                 /* Local/Echo/Netmail */
+  MBtype Mtype;                   /* Message Board Type */
+  Byte RaBoard;                   /* Board Number if RA/QBBS type */
+  char PathLen;
+  char Path[64];                  /* Directory PathName */
+  char OriginLineLen;
+  char OriginLine[65];            /* Origin Line */
+  ArFlagType AccessAR;            /* AR flag Required to Access */
+  ArFlagType PostAR;              /* AR flag required to Post */
+  Byte AccessSL;                  /* Security Level Required to Access */
+  Byte PostSL;                    /* Security Level Required to Post */
+  Word MsgCount;                  /* Count of Msgs on the Board */
+  Word MaxMsgs;                   /* Max Number of Messages */
+  Word uuMaxOld;                  /* Max Days for Messages */
+  char PassWordLen;
+  char PassWord[16];              /* PassWord Required */
+  NoYesForcedType Anon;           /* Anonymous Type */
+  Boolean AllowAnsi;              /* Should we allow ANSI */
+  NoYesForcedType AllowHandle;    /* Should we allow handles */
 
-    /*********************************************************/
-    /* Message Board SubOpts List  - Up to 10 - User Numbers */
-    /*********************************************************/
+  /*********************************************************/
+  /* Message Board SubOpts List  - Up to 10 - User Numbers */
+  /*********************************************************/
 
-    s16  SubOps[MAXSUBOPS+1];    /* SubOps - Item 0 = How many */
+  s16  SubOps[MAXSUBOPS+1];    /* SubOps - Item 0 = How many */
 
-    char EchoTagLen;
-    char EchoTag[32];               /* Echo Tag for Writing ECHOMAIL.BBS */
-    Boolean UseOtherAddress;        /* Use something other than system */
-    OldAddressType OldOtherAddress; /* The Address to use! (not used) */
-    Byte MenuNumber;                /* Default read message number */
-                                    /* (if 0, use system default)  */
-    char PrePostFileLen;
-    char PrePostFile[8];            /* Prepost file name */
-    Byte MinMsgs;                   /* Minimum number of messages */
-    char QuoteStartLen;
-    char QuoteStart[70];            /* Override starting quote */
-    char QuoteEndLen;
-    char QuoteEnd[70];              /* Override ending quote */
-    u16  QwkConf;                   /* Qwk conference number */
-    Byte GroupNumber;               /* What group the board belongs */
-    AddressType OtherAddress;       /* The address to use */
-    NoYesForcedType RestrictPrivate;/* Private mail status */
-    MsgAttrFlagSet DefaultAttr;     /* Default message flags */
-    char QwkNameLen;
-    char QwkName[10];               /* Qwk conference name */
-    char reserved;
+  char EchoTagLen;
+  char EchoTag[32];               /* Echo Tag for Writing ECHOMAIL.BBS */
+  Boolean UseOtherAddress;        /* Use something other than system */
+  OldAddressType OldOtherAddress; /* The Address to use! (not used) */
+  Byte MenuNumber;                /* Default read message number */
+  /* (if 0, use system default)  */
+  char PrePostFileLen;
+  char PrePostFile[8];            /* Prepost file name */
+  Byte MinMsgs;                   /* Minimum number of messages */
+  char QuoteStartLen;
+  char QuoteStart[70];            /* Override starting quote */
+  char QuoteEndLen;
+  char QuoteEnd[70];              /* Override ending quote */
+  u16  QwkConf;                   /* Qwk conference number */
+  Byte GroupNumber;               /* What group the board belongs */
+  AddressType OtherAddress;       /* The address to use */
+  NoYesForcedType RestrictPrivate;/* Private mail status */
+  MsgAttrFlagSet DefaultAttr;     /* Default message flags */
+  char QwkNameLen;
+  char QwkName[10];               /* Qwk conference name */
+  char reserved;
 } MboardType;
 
 /*---------------------------------------------------------------------------*/
@@ -272,44 +275,44 @@ typedef struct      /* Message boards - MBOARDS.DAT */
 */
 
 typedef struct
-  {
-   u16 areaNum;              /* # of message area (1-10000)                    */
-   u16 hudsonBase;           /* Number of Hudson message base                  */
-   uchar name[81];             /* Name of message area                           */
-   uchar msgType;              /* Kind of message area (Net/Echo/Local)          */
-   uchar msgKind;              /* Type of message (Private only/Public only/...) */
-   uchar msgBaseType;          /* Type of message base                           */
-   uchar path[81];             /* Path to Squish or *.MSG                        */
-   uchar flags;                /* Alias allowed/forced/prohibited                */
-   u16 readLevel;            /* Minimum level needed to read msgs              */
-   u32 readFlags;     /* flags needed to read msgs                      */
-   u32 readFlagsNot;  /* flags non-grata to read msgs                   */
-   u16 writeLevel;           /* Minimum level needed to write msgs             */
-   u32 writeFlags;    /* flags needed to write msgs                     */
-   u32 writeFlagsNot; /* flags non-grata to read msgs                   */
-   u16 sysopLevel;           /* Minimum level needed to change msgs            */
-   u32 sysopFlags;    /* flags needed to change msgs                    */
-   u32 sysopFlagsNot; /* flags non-grata to read msgs                   */
+{
+  u16 areaNum;              /* # of message area (1-10000)                    */
+  u16 hudsonBase;           /* Number of Hudson message base                  */
+  uchar name[81];             /* Name of message area                           */
+  uchar msgType;              /* Kind of message area (Net/Echo/Local)          */
+  uchar msgKind;              /* Type of message (Private only/Public only/...) */
+  uchar msgBaseType;          /* Type of message base                           */
+  uchar path[81];             /* Path to Squish or *.MSG                        */
+  uchar flags;                /* Alias allowed/forced/prohibited                */
+  u16 readLevel;            /* Minimum level needed to read msgs              */
+  u32 readFlags;     /* flags needed to read msgs                      */
+  u32 readFlagsNot;  /* flags non-grata to read msgs                   */
+  u16 writeLevel;           /* Minimum level needed to write msgs             */
+  u32 writeFlags;    /* flags needed to write msgs                     */
+  u32 writeFlagsNot; /* flags non-grata to read msgs                   */
+  u16 sysopLevel;           /* Minimum level needed to change msgs            */
+  u32 sysopFlags;    /* flags needed to change msgs                    */
+  u32 sysopFlagsNot; /* flags non-grata to read msgs                   */
 
-   uchar origin[62];           /* Origin line                                    */
-   u16 aka;                   /* AKA                                            */
+  uchar origin[62];           /* Origin line                                    */
+  u16 aka;                   /* AKA                                            */
 
-   u16 rcvKillDays;          /* Kill received after xx days                    */
-   u16 msgKillDays;          /* Kill after xx days                             */
-   u16 maxMsgs;              /* Max # msgs                                     */
+  u16 rcvKillDays;          /* Kill received after xx days                    */
+  u16 msgKillDays;          /* Kill after xx days                             */
+  u16 maxMsgs;              /* Max # msgs                                     */
 
-   uchar sysop[36];            /* Area Sysop                                     */
-   u16  replyBoard;           /* Area number where replies should go            */
+  uchar sysop[36];            /* Area Sysop                                     */
+  u16  replyBoard;           /* Area number where replies should go            */
 
-   uchar echoTag[61];          /* Echomail Tag Name                              */
-   uchar qwkTag[13];           /* QWK Area Name                                  */
+  uchar echoTag[61];          /* Echomail Tag Name                              */
+  uchar qwkTag[13];           /* QWK Area Name                                  */
 
-   uchar groups[4];            /* Groups belonging to                            */
-   uchar allGroups;            /* Belongs to all groups                          */
-   uchar minAge;               /* Minimum age for this area                      */
+  uchar groups[4];            /* Groups belonging to                            */
+  uchar allGroups;            /* Belongs to all groups                          */
+  uchar minAge;               /* Minimum age for this area                      */
 
-   uchar extra[112];
-  } proBoardType;
+  uchar extra[112];
+} proBoardType;
 
 
 #define MSGTYPE_BOTH     0 /* Private/Public */
@@ -336,30 +339,33 @@ static char nodeNameStr[2][24];
 
 char *nodeStrP(nodeNumType *nodeNum)
 {
-   char *tempPtr;
+  char *tempPtr;
 
-   tempPtr = nodeNameStr[nodeStrIndex = !nodeStrIndex];
-   if (nodeNum->zone != 0)
-   {  tempPtr += sprintf (tempPtr, "%u:", nodeNum->zone);
-   }
-   sprintf (tempPtr, "%u/%u.%u", nodeNum->net, nodeNum->node, nodeNum->point);
-   return (nodeNameStr[nodeStrIndex]);
+  tempPtr = nodeNameStr[nodeStrIndex = !nodeStrIndex];
+  if (nodeNum->zone != 0)
+  {
+    tempPtr += sprintf (tempPtr, "%u:", nodeNum->zone);
+  }
+  sprintf (tempPtr, "%u/%u.%u", nodeNum->net, nodeNum->node, nodeNum->point);
+  return (nodeNameStr[nodeStrIndex]);
 }
 
 
 #ifndef GOLDBASE
 static u32 bitSwap(u32 v)
-{  u32 temp = 0;
-   u16 count = 32;
+{
+  u32 temp = 0;
+  u16 count = 32;
 
-   do
-   {  temp <<= 1;
-      if (v & 1)
-         temp |= 1;
-      v >>= 1;
-   }
-   while (--count);
-   return temp;
+  do
+  {
+    temp <<= 1;
+    if (v & 1)
+      temp |= 1;
+    v >>= 1;
+  }
+  while (--count);
+  return temp;
 }
 #endif
 
@@ -373,2018 +379,2041 @@ typedef u8 *anType[MAX_AREAS];
 
 void autoUpdate (void)
 {
-   u16          count,
-                count2;
-   tempStrType  tempStr;
-   char         *helpPtr;
-   FILE         *textFile;
-   time_t       timer;
-   u16          lastZone,
-                lastNet,
-                lastNode;
-   FOLDER       folderFdRec;
-   IMFOLDER     folderImRec;
-   QBBSBoardRecType QBBSBoardRec;
-   fhandle          folderHandle;
-   char           *areaInfoNamePtr;
-   u16            areaInfoCount;
-   u16            low, mid, high;
-   headerType     *areaHeader;
-   rawEchoType    *areaBuf;
-   aiType         *areaInfoIndex;
-   anType         *areaNames;
+  u16          count,
+  count2;
+  tempStrType  tempStr;
+  char         *helpPtr;
+  FILE         *textFile;
+  time_t       timer;
+  u16          lastZone,
+  lastNet,
+  lastNode;
+  FOLDER       folderFdRec;
+  IMFOLDER     folderImRec;
+  QBBSBoardRecType QBBSBoardRec;
+  fhandle          folderHandle;
+  char           *areaInfoNamePtr;
+  u16            areaInfoCount;
+  u16            low, mid, high;
+  headerType     *areaHeader;
+  rawEchoType    *areaBuf;
+  aiType         *areaInfoIndex;
+  anType         *areaNames;
 
-   u16              maxBoardNumRA;
+  u16              maxBoardNumRA;
 #ifndef GOLDBASE
-   fhandle          indexHandle;
-   messageRaType    messageRaRec;
-   messageRa2Type   messageRa2Rec;
-   SBBSBoardRecType SBBSBoardRec;
-   char             SBBSakaUsed[MBBOARDS];
-   MboardType       TAGBoardRec;
-   s32              group;
-   const u16        nul = 0;
-   u16              temp;
+  fhandle          indexHandle;
+  messageRaType    messageRaRec;
+  messageRa2Type   messageRa2Rec;
+  SBBSBoardRecType SBBSBoardRec;
+  char             SBBSakaUsed[MBBOARDS];
+  MboardType       TAGBoardRec;
+  s32              group;
+  const u16        nul = 0;
+  u16              temp;
 #endif
 
-   if ( (areaInfoIndex = malloc(sizeof(aiType))) == NULL )
-      return;
-   if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
-   {  displayMessage("Could not open Area File for AutoExport");
-      free(areaInfoIndex);
-      return;
-   }
-   areaInfoCount = areaHeader->totalRecords;
+  if ( (areaInfoIndex = malloc(sizeof(aiType))) == NULL )
+    return;
+  if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
+  {
+    displayMessage("Could not open Area File for AutoExport");
+    free(areaInfoIndex);
+    return;
+  }
+  areaInfoCount = areaHeader->totalRecords;
 
-   if (*config.autoAreasBBSPath != 0)
-   {
-      time (&timer);
+  if (*config.autoAreasBBSPath != 0)
+  {
+    time (&timer);
 
-      strcpy (tempStr, config.autoAreasBBSPath);
-      strcat (tempStr, "AREAS.BBS");
+    strcpy (tempStr, config.autoAreasBBSPath);
+    strcat (tempStr, "areas.bbs");
 
-      if ((textFile = fopen(tempStr, "wt")) == NULL)
+    if ((textFile = fopen(tempStr, "wt")) == NULL)
+    {
+      displayMessage ("Can't open Areas.BBS for output");
+    }
+    else
+    {
+      if (config.akaList[0].nodeNum.zone != 0)
       {
-         displayMessage ("Can't open Areas.BBS for output");
+        fprintf (textFile, "%s ! ", nodeStr(&config.akaList[0].nodeNum));
       }
-      else
-      {
-         if (config.akaList[0].nodeNum.zone != 0)
-         {
-            fprintf (textFile, "%s ! ", nodeStr(&config.akaList[0].nodeNum));
-         }
-         fprintf (textFile, "%s\n", config.sysopName);
-         fprintf (textFile, "; Created by "VERSION_STRING" - %s", ctime(&timer));
-
-         for (count = 0; count < areaInfoCount; count++)
-         {
-            getRec(CFG_ECHOAREAS, count);
-            if (areaBuf->options.active &&
-                (areaBuf->board || *areaBuf->msgBasePath ||
-                 config.genOptions.PTAreasBBS))
-            {
-               if (*areaBuf->msgBasePath)
-               {
-                  fprintf (textFile, "!%-29s %-19s ", areaBuf->msgBasePath,
-                                                      areaBuf->areaName);
-               }
-               else if (areaBuf->board)
-               {
-                  fprintf (textFile, "%03u %-19s ", areaBuf->board,
-                                                    areaBuf->areaName);
-               }
-               else
-               {
-                  fprintf (textFile, "P   %-19s ", areaBuf->areaName);
-	       }
-	       if (!areaBuf->options.local)
-	       {
-		  lastZone = 0;
-		  lastNet = 0;
-		  lastNode = 0;
-		  count2 = 0;
-		  while ((count2 < MAX_FORWARD) && (areaBuf->export[count2].nodeNum.zone != 0))
-		  {
-		     strcpy (tempStr, nodeStr (&areaBuf->export[count2].nodeNum));
-		     helpPtr = tempStr;
-
-		     if (lastZone == areaBuf->export[count2].nodeNum.zone)
-		     {
-			if (lastNet != areaBuf->export[count2].nodeNum.net)
-			{
-			   helpPtr = strchr (tempStr, ':') + 1;
-			}
-			else
-			{
-			   if (lastNode != areaBuf->export[count2].nodeNum.node)
-			   {
-			      helpPtr = strchr (tempStr, '/') + 1;
-			   }
-			   else
-			   {
-			      if (areaBuf->export[count2].nodeNum.point == 0)
-			      {
-				 helpPtr = strchr (tempStr, 0);
-			      }
-			      else
-			      {
-				 helpPtr = strchr (tempStr, '.');
-			      }
-			   }
-			}
-		     }
-		     lastZone = areaBuf->export[count2].nodeNum.zone;
-		     lastNet  = areaBuf->export[count2].nodeNum.net;
-		     lastNode = areaBuf->export[count2].nodeNum.node;
-
-		     fprintf (textFile, " %s", helpPtr);
-
-                     count2++;
-                  }
-               }
-               fprintf (textFile, "\n");
-            }
-         }
-         fclose (textFile);
-      }
-   }
-/*
-   if (*config.autoGoldEdAreasPath != 0)
-   {
-      strcpy (tempStr, config.autoGoldEdAreasPath);
-      strcat (tempStr, "AREAS.GLD");
-
-      if ((textFile = fopen(tempStr, "wt")) == NULL)
-      {
-         displayMessage ("Can't open Areas.GLD for output");
-      }
-      else
-      {
-         if (*config.sentPath &&
-             !strcmp (config.sentPath, config.rcvdPath))
-         {
-            fprintf (textFile, "AREA SENT_RCVD            \x22Sent/Received netmail\x22 FN %s (R/O)\n",
-                               config.sentPath);
-         }
-         else
-         {
-            if (*config.sentPath)
-            {
-               fprintf (textFile, "AREA SENT_NETMAIL         \x22Sent netmail\x22          FN %s (R/O)\n",
-                                  config.sentPath);
-            }
-            if (*config.rcvdPath)
-            {
-               fprintf (textFile, "AREA RCVD_NETMAIL         \x22Received netmail\x22      FN %s (R/O)\n",
-                                  config.rcvdPath);
-            }
-         }
-
-         if (*config.pmailPath)
-         {
-            fprintf (textFile, "AREA PERSONAL_MAIL        \x22Personal mail\x22         FL %s (R/O)\n",
-                               config.pmailPath);
-         }
-
-         if (config.dupBoard)
-         {
-            fprintf (textFile, "AREA DUP_MSGS             \x22""Duplicate messages\x22    QL %u (R/O)\n",
-                               config.dupBoard);
-         }
-
-         if (config.badBoard)
-         {
-            fprintf (textFile, "AREA BAD_MSGS             \x22""Bad messages\x22          QL %u (R/O)\n",
-                               config.badBoard);
-         }
-
-         if (config.recBoard)
-         {
-            fprintf (textFile, "AREA RECOVERY_BOARD       \x22Recovery board\x22        QL %u (R/O)\n",
-                               config.recBoard);
-         }
-
-         for (count = 0; count < MAX_NETAKAS; count++)
-         {
-            if (config.netmailBoard[count])
-            {
-               count2 = 0;
-               while ((count2 < count) &&
-                      (config.netmailBoard[count] != config.netmailBoard[count2]))
-               {
-                  count2++;
-               }
-               if (count == count2)
-               {
-                  if (count == 0)
-                  {
-                     fprintf (textFile, "AREA NETMAIL_MAIN         \x22%s\x22%*cQN %u\n",
-                                        config.descrAKA[0],
-                                        42-strlen(config.descrAKA[0], ' ',
-                                        config.netmailBoard[count]);
-                  }
-                  else
-                  {
-                     fprintf (textFile, "AREA NETMAIL_AKA_%-8u \x22""%s\x22%*cQN %u %u\n",
-                                        count, config.descrAKA[count],
-                                        42-strlen(config.descrAKA[0], ' ',
-                                        config.netmailBoard[count], count);
-                  }
-               }
-            }
-         }
-
-         for (count = 0; count < areaInfoCount; count++)
-         {
-            getRec(CFG_ECHOAREAS, count);
-            if (areaBuf->options.active && areaBuf->board &&
-                                           !*areaBuf->msgBasePath)
-            {
-               fprintf (textFile, "AREA %-20s \x22%-42s\x22 Q%c %u",
-                                  areaBuf->areaName,
-                                  areaBuf->comment,
-                                  areaBuf->options.local?'L':'E',
-                                  areaBuf->board);
-
-               if (areaBuf->address != 0)
-               {
-                  fprintf (textFile, " %u\n",
-                                     areaBuf->address);
-               }
-               else
-               {
-                  putc ('\n', textFile);
-               }
-            }
-            if (areaBuf->options.active &&
-/*                (areaBuf->msgBaseType == 1) && */
-                (*areaBuf->msgBasePath))
-            {
-               fprintf (textFile, "AREA %-20s \x22%-42s\x22 J%c %s",
-                                  areaBuf->areaName,
-                                  areaBuf->comment,
-                                  areaBuf->options.local?'L':'E',
-                                  areaBuf->msgBasePath);
-
-               if (areaBuf->address != 0)
-               {
-                  fprintf (textFile, " %u\n",
-                                     areaBuf->address);
-               }
-               else
-               {
-                  putc ('\n', textFile);
-               }
-            }
-         }
-         fclose (textFile);
-      }
-   }
-*/
-   if (*config.autoGoldEdAreasPath != 0)
-   {
-      strcpy (tempStr, config.autoGoldEdAreasPath);
-      strcat (tempStr, "AREAS.GLD");
-
-      if ((textFile = fopen(tempStr, "wt")) == NULL)
-      {
-         displayMessage ("Can't open Areas.GLD for output");
-      }
-      else
-      {
-         if (*config.netPath)
-         {
-            fprintf (textFile, "AREADEF NETMAIL              \x22Netmail area\x22          0 Net FIDO %s .    (Loc)\n",
-                               config.netPath);
-         }
-
-         if (*config.sentPath &&
-             !strcmp (config.sentPath, config.rcvdPath))
-         {
-            fprintf (textFile, "AREADEF SENT_RCVD            \x22Sent/Received netmail\x22 0 Net FIDO %s . (R/O Loc)\n",
-                               config.sentPath);
-         }
-         else
-         {
-            if (*config.sentPath)
-            {
-               fprintf (textFile, "AREADEF SENT_NETMAIL         \x22Sent netmail\x22          0 Net FIDO %s . (R/O Loc)\n",
-                                  config.sentPath);
-            }
-            if (*config.rcvdPath)
-            {
-               fprintf (textFile, "AREADEF RCVD_NETMAIL         \x22Received netmail\x22      0 Net FIDO %s . (R/O Loc)\n",
-                                  config.rcvdPath);
-            }
-         }
-
-         if (*config.pmailPath)
-         {
-            fprintf (textFile, "AREADEF PERSONAL_MAIL        \x22Personal mail\x22         0 Local FIDO %s . (R/O Loc)\n",
-                               config.pmailPath);
-         }
-
-         if (*config.sentEchoPath)
-         {
-            fprintf (textFile, "AREADEF SENT_ECHOMAIL        \x22Sent echomail\x22         0 Local FIDO %s . (R/O Loc)\n",
-                               config.sentEchoPath);
-         }
-
-         if (config.dupBoard)
-         {
-            fprintf (textFile, "AREADEF DUP_MSGS             \x22""Duplicate messages\x22    0 Local Hudson %u . (R/O Loc)\n",
-                               config.dupBoard);
-         }
-
-         if (config.badBoard)
-         {
-            fprintf (textFile, "AREADEF BAD_MSGS             \x22""Bad messages\x22          0 Local Hudson %u . (R/O Loc)\n",
-                               config.badBoard);
-         }
-
-         if (config.recBoard)
-         {
-            fprintf (textFile, "AREADEF RECOVERY_BOARD       \x22Recovery board\x22        0 Local Hudson %u . (R/O Loc)\n",
-                               config.recBoard);
-         }
-
-         for (count = 0; count < MAX_NETAKAS; count++)
-         {
-            if (config.netmailBoard[count])
-            {
-               count2 = 0;
-               while ((count2 < count) &&
-                      (config.netmailBoard[count] != config.netmailBoard[count2]))
-               {
-                  count2++;
-               }
-               if (count == count2)
-               {
-                  if (count == 0)
-                  {
-                     fprintf (textFile, "AREADEF NETMAIL_MAIN         \x22%s\x22%*c Net Hudson %u %s (Loc)\n",
-                                        *config.descrAKA[0]?config.descrAKA[0]:"Netmail Main",
-                                        44-strlen(*config.descrAKA[0]?config.descrAKA[0]:"Netmail Main"), '0',
-                                        config.netmailBoard[count],
-                                        nodeStrP(&config.akaList[count].nodeNum));
-                  }
-                  else
-                  {
-                     fprintf (textFile, "AREADEF NETMAIL_AKA_%-8u \x22""%s\x22%*c Net Hudson %u %s (Loc)\n",
-                                        count,
-                                        *config.descrAKA[count]?config.descrAKA[count]:"Netmail AKA (use comment)",
-                                        44-strlen(*config.descrAKA[count]?config.descrAKA[count]:"Netmail AKA (use comment)"), '0',
-                                        config.netmailBoard[count],
-                                        nodeStrP(&config.akaList[count].nodeNum));
-                  }
-               }
-            }
-         }
-
-         for (count = 0; count < areaInfoCount; count++)
-         {
-            getRec(CFG_ECHOAREAS, count);
-            if (areaBuf->options.active && areaBuf->board &&
-                                                   !*areaBuf->msgBasePath)
-	    {
-               fprintf (textFile, "AREADEF %-20s \x22%s\x22%*c %s Hudson %u %s (%sLoc%s)\n",
-                                  areaBuf->areaName,
-                                  areaBuf->comment,
-                                  44-strlen(areaBuf->comment),
-                                  groupToChar(areaBuf->group),
-                                  areaBuf->options.local?"Local":"Echo",
-                                  areaBuf->board,
-                                  nodeStrP(&config.akaList[areaBuf->address].nodeNum),
-                                  (config.bbsProgram != BBS_PROB && areaBuf->msgKindsRA == 3) ? "R/O ":"",
-                                  "");
-            }
-            if (areaBuf->options.active &&
-/*                (areaBuf->msgBaseType == 1) && */
-                (*areaBuf->msgBasePath))
-	    {
-               fprintf (textFile, "AREADEF %-20s \x22%s\x22%*c %s JAM %s %s (%sLoc%s)\n",
-                                  areaBuf->areaName,
-                                  areaBuf->comment,
-                                  44-strlen(areaBuf->comment),
-                                  groupToChar(areaBuf->group),
-                                  areaBuf->options.local?"Local":"Echo",
-                                  areaBuf->msgBasePath,
-                                  nodeStrP(&config.akaList[areaBuf->address].nodeNum),
-                                  (config.bbsProgram != BBS_PROB && areaBuf->msgKindsRA == 3) ? "R/O ":"",
-                                  "");
-            }
-         }
-         fclose (textFile);
-      }
-   }
-
-   if ( (*config.autoFolderFdPath ||
-         (*config.autoRAPath && config.bbsProgram == BBS_TAG)) &&
-        (areaNames = malloc(sizeof(anType))) != NULL )
-   {
-      /* Sort areas for FrontDoor and TAG */
+      fprintf (textFile, "%s\n", config.sysopName);
+      fprintf (textFile, "; Created by "VERSION_STRING" - %s", ctime(&timer));
 
       for (count = 0; count < areaInfoCount; count++)
-         (*areaInfoIndex)[count] = count;
-      if ( config.genOptions.commentFFD )
       {
-         for (count = 0; count < areaInfoCount; count++)
-         {
-            if ( !getRec(CFG_ECHOAREAS, count) ||
-                 ((*areaNames)[count] = malloc(strlen(*areaBuf->comment?areaBuf->comment:areaBuf->areaName)+1)) == NULL )
-               goto error;
-            strcpy((*areaNames)[count], *areaBuf->comment?areaBuf->comment:areaBuf->areaName);
-         }
-         for (count = 1; count < areaInfoCount; count++)
-         {
-            areaInfoNamePtr = (*areaNames)[count];
-            low = 0;
-            high = count;
-            while (low < high)
+        getRec(CFG_ECHOAREAS, count);
+        if (areaBuf->options.active &&
+            (areaBuf->board || *areaBuf->msgBasePath ||
+             config.genOptions.PTAreasBBS))
+        {
+          if (*areaBuf->msgBasePath)
+          {
+            fprintf (textFile, "!%-29s %-19s ", areaBuf->msgBasePath,
+                     areaBuf->areaName);
+          }
+          else if (areaBuf->board)
+          {
+            fprintf (textFile, "%03u %-19s ", areaBuf->board,
+                     areaBuf->areaName);
+          }
+          else
+          {
+            fprintf (textFile, "P   %-19s ", areaBuf->areaName);
+          }
+          if (!areaBuf->options.local)
+          {
+            lastZone = 0;
+            lastNet = 0;
+            lastNode = 0;
+            count2 = 0;
+            while ((count2 < MAX_FORWARD) && (areaBuf->export[count2].nodeNum.zone != 0))
             {
-               mid = (low + high) >> 1;
-               if ( stricmp (areaInfoNamePtr, (*areaNames)[mid]) > 0 )
-                  low = mid+1;
-               else
-                  high = mid;
-            }
-            memmove (&(*areaNames)[low+1], &(*areaNames)[low], (count-low) * 4); /* 4 = sizeof(ptr) */
-            (*areaNames)[low] = areaInfoNamePtr;
-            memmove (&(*areaInfoIndex)[low+1], &(*areaInfoIndex)[low], (count-low) * 2); /* 2 = sizeof(u16) */
-            (*areaInfoIndex)[low] = count;
-         }
-         for (count = 1; count < areaInfoCount; count++)
-            free((*areaNames)[count]);
-         free(areaNames);
-      }
-   }
-   if (*config.autoFolderFdPath != 0)
-   {
-      strcpy (tempStr, config.autoFolderFdPath);
-      strcat (tempStr, (config.mailer==1)?"IMFOLDER.CFG":"FOLDER.FD");
+              strcpy (tempStr, nodeStr (&areaBuf->export[count2].nodeNum));
+              helpPtr = tempStr;
 
-      if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
-                                        O_TRUNC|O_BINARY|O_DENYNONE,
-                                         S_IREAD|S_IWRITE)) == -1)
+              if (lastZone == areaBuf->export[count2].nodeNum.zone)
+              {
+                if (lastNet != areaBuf->export[count2].nodeNum.net)
+                {
+                  helpPtr = strchr (tempStr, ':') + 1;
+                }
+                else
+                {
+                  if (lastNode != areaBuf->export[count2].nodeNum.node)
+                  {
+                    helpPtr = strchr (tempStr, '/') + 1;
+                  }
+                  else
+                  {
+                    if (areaBuf->export[count2].nodeNum.point == 0)
+                    {
+                      helpPtr = strchr (tempStr, 0);
+                    }
+                    else
+                    {
+                      helpPtr = strchr (tempStr, '.');
+                    }
+                  }
+                }
+              }
+              lastZone = areaBuf->export[count2].nodeNum.zone;
+              lastNet  = areaBuf->export[count2].nodeNum.net;
+              lastNode = areaBuf->export[count2].nodeNum.node;
+
+              fprintf (textFile, " %s", helpPtr);
+
+              count2++;
+            }
+          }
+          fprintf (textFile, "\n");
+        }
+      }
+      fclose (textFile);
+    }
+  }
+  /*
+     if (*config.autoGoldEdAreasPath != 0)
+     {
+        strcpy (tempStr, config.autoGoldEdAreasPath);
+        strcat (tempStr, "AREAS.GLD");
+
+        if ((textFile = fopen(tempStr, "wt")) == NULL)
+        {
+           displayMessage ("Can't open Areas.GLD for output");
+        }
+        else
+        {
+           if (*config.sentPath &&
+               !strcmp (config.sentPath, config.rcvdPath))
+           {
+              fprintf (textFile, "AREA SENT_RCVD            \x22Sent/Received netmail\x22 FN %s (R/O)\n",
+                                 config.sentPath);
+           }
+           else
+           {
+              if (*config.sentPath)
+              {
+                 fprintf (textFile, "AREA SENT_NETMAIL         \x22Sent netmail\x22          FN %s (R/O)\n",
+                                    config.sentPath);
+              }
+              if (*config.rcvdPath)
+              {
+                 fprintf (textFile, "AREA RCVD_NETMAIL         \x22Received netmail\x22      FN %s (R/O)\n",
+                                    config.rcvdPath);
+              }
+           }
+
+           if (*config.pmailPath)
+           {
+              fprintf (textFile, "AREA PERSONAL_MAIL        \x22Personal mail\x22         FL %s (R/O)\n",
+                                 config.pmailPath);
+           }
+
+           if (config.dupBoard)
+           {
+              fprintf (textFile, "AREA DUP_MSGS             \x22""Duplicate messages\x22    QL %u (R/O)\n",
+                                 config.dupBoard);
+           }
+
+           if (config.badBoard)
+           {
+              fprintf (textFile, "AREA BAD_MSGS             \x22""Bad messages\x22          QL %u (R/O)\n",
+                                 config.badBoard);
+           }
+
+           if (config.recBoard)
+           {
+              fprintf (textFile, "AREA RECOVERY_BOARD       \x22Recovery board\x22        QL %u (R/O)\n",
+                                 config.recBoard);
+           }
+
+           for (count = 0; count < MAX_NETAKAS; count++)
+           {
+              if (config.netmailBoard[count])
+              {
+                 count2 = 0;
+                 while ((count2 < count) &&
+                        (config.netmailBoard[count] != config.netmailBoard[count2]))
+                 {
+                    count2++;
+                 }
+                 if (count == count2)
+                 {
+                    if (count == 0)
+                    {
+                       fprintf (textFile, "AREA NETMAIL_MAIN         \x22%s\x22%*cQN %u\n",
+                                          config.descrAKA[0],
+                                          42-strlen(config.descrAKA[0], ' ',
+                                          config.netmailBoard[count]);
+                    }
+                    else
+                    {
+                       fprintf (textFile, "AREA NETMAIL_AKA_%-8u \x22""%s\x22%*cQN %u %u\n",
+                                          count, config.descrAKA[count],
+                                          42-strlen(config.descrAKA[0], ' ',
+                                          config.netmailBoard[count], count);
+                    }
+                 }
+              }
+           }
+
+           for (count = 0; count < areaInfoCount; count++)
+           {
+              getRec(CFG_ECHOAREAS, count);
+              if (areaBuf->options.active && areaBuf->board &&
+                                             !*areaBuf->msgBasePath)
+              {
+                 fprintf (textFile, "AREA %-20s \x22%-42s\x22 Q%c %u",
+                                    areaBuf->areaName,
+                                    areaBuf->comment,
+                                    areaBuf->options.local?'L':'E',
+                                    areaBuf->board);
+
+                 if (areaBuf->address != 0)
+                 {
+                    fprintf (textFile, " %u\n",
+                                       areaBuf->address);
+                 }
+                 else
+                 {
+                    putc ('\n', textFile);
+                 }
+              }
+              if (areaBuf->options.active &&
+  /*                (areaBuf->msgBaseType == 1) && */
+  (*areaBuf->msgBasePath))
+  {
+    fprintf (textFile, "AREA %-20s \x22%-42s\x22 J%c %s",
+             areaBuf->areaName,
+             areaBuf->comment,
+             areaBuf->options.local?'L':'E',
+             areaBuf->msgBasePath);
+
+    if (areaBuf->address != 0)
+    {
+      fprintf (textFile, " %u\n",
+               areaBuf->address);
+    }
+    else
+    {
+      putc ('\n', textFile);
+    }
+  }
+}
+fclose (textFile);
+}
+}
+*/
+if (*config.autoGoldEdAreasPath != 0)
+{
+  strcpy (tempStr, config.autoGoldEdAreasPath);
+  strcat (tempStr, "areas.gld");
+
+  if ((textFile = fopen(tempStr, "wt")) == NULL)
+  {
+    displayMessage ("Can't open Areas.GLD for output");
+  }
+  else
+  {
+    if (*config.netPath)
+    {
+      fprintf (textFile, "AREADEF NETMAIL              \x22Netmail area\x22          0 Net FIDO %s .    (Loc)\n",
+               config.netPath);
+    }
+
+    if (*config.sentPath &&
+        !strcmp (config.sentPath, config.rcvdPath))
+    {
+      fprintf (textFile, "AREADEF SENT_RCVD            \x22Sent/Received netmail\x22 0 Net FIDO %s . (R/O Loc)\n",
+               config.sentPath);
+    }
+    else
+    {
+      if (*config.sentPath)
       {
-         if (config.mailer!=1)
-            displayMessage ("Can't open FOLDER.FD for output");
-         else
-            displayMessage ("Can't open IMFOLDER.CFG for output");
+        fprintf (textFile, "AREADEF SENT_NETMAIL         \x22Sent netmail\x22          0 Net FIDO %s . (R/O Loc)\n",
+                 config.sentPath);
+      }
+      if (*config.rcvdPath)
+      {
+        fprintf (textFile, "AREADEF RCVD_NETMAIL         \x22Received netmail\x22      0 Net FIDO %s . (R/O Loc)\n",
+                 config.rcvdPath);
+      }
+    }
+
+    if (*config.pmailPath)
+    {
+      fprintf (textFile, "AREADEF PERSONAL_MAIL        \x22Personal mail\x22         0 Local FIDO %s . (R/O Loc)\n",
+               config.pmailPath);
+    }
+
+    if (*config.sentEchoPath)
+    {
+      fprintf (textFile, "AREADEF SENT_ECHOMAIL        \x22Sent echomail\x22         0 Local FIDO %s . (R/O Loc)\n",
+               config.sentEchoPath);
+    }
+
+    if (config.dupBoard)
+    {
+      fprintf (textFile, "AREADEF DUP_MSGS             \x22""Duplicate messages\x22    0 Local Hudson %u . (R/O Loc)\n",
+               config.dupBoard);
+    }
+
+    if (config.badBoard)
+    {
+      fprintf (textFile, "AREADEF BAD_MSGS             \x22""Bad messages\x22          0 Local Hudson %u . (R/O Loc)\n",
+               config.badBoard);
+    }
+
+    if (config.recBoard)
+    {
+      fprintf (textFile, "AREADEF RECOVERY_BOARD       \x22Recovery board\x22        0 Local Hudson %u . (R/O Loc)\n",
+               config.recBoard);
+    }
+
+    for (count = 0; count < MAX_NETAKAS; count++)
+    {
+      if (config.netmailBoard[count])
+      {
+        count2 = 0;
+        while ((count2 < count) &&
+               (config.netmailBoard[count] != config.netmailBoard[count2]))
+        {
+          count2++;
+        }
+        if (count == count2)
+        {
+          if (count == 0)
+          {
+            fprintf (textFile, "AREADEF NETMAIL_MAIN         \x22%s\x22%*c Net Hudson %u %s (Loc)\n",
+                     *config.descrAKA[0]?config.descrAKA[0]:"Netmail Main",
+                     44-strlen(*config.descrAKA[0]?config.descrAKA[0]:"Netmail Main"), '0',
+                     config.netmailBoard[count],
+                     nodeStrP(&config.akaList[count].nodeNum));
+          }
+          else
+          {
+            fprintf (textFile, "AREADEF NETMAIL_AKA_%-8u \x22""%s\x22%*c Net Hudson %u %s (Loc)\n",
+                     count,
+                     *config.descrAKA[count]?config.descrAKA[count]:"Netmail AKA (use comment)",
+                     44-strlen(*config.descrAKA[count]?config.descrAKA[count]:"Netmail AKA (use comment)"), '0',
+                     config.netmailBoard[count],
+                     nodeStrP(&config.akaList[count].nodeNum));
+          }
+        }
+      }
+    }
+
+    for (count = 0; count < areaInfoCount; count++)
+    {
+      getRec(CFG_ECHOAREAS, count);
+      if (areaBuf->options.active && areaBuf->board &&
+          !*areaBuf->msgBasePath)
+      {
+        fprintf (textFile, "AREADEF %-20s \x22%s\x22%*c %s Hudson %u %s (%sLoc%s)\n",
+                 areaBuf->areaName,
+                 areaBuf->comment,
+                 44-strlen(areaBuf->comment),
+                 groupToChar(areaBuf->group),
+                 areaBuf->options.local?"Local":"Echo",
+                 areaBuf->board,
+                 nodeStrP(&config.akaList[areaBuf->address].nodeNum),
+                 (config.bbsProgram != BBS_PROB && areaBuf->msgKindsRA == 3) ? "R/O ":"",
+                 "");
+      }
+      if (areaBuf->options.active &&
+          /*                (areaBuf->msgBaseType == 1) && */
+          (*areaBuf->msgBasePath))
+      {
+        fprintf (textFile, "AREADEF %-20s \x22%s\x22%*c %s JAM %s %s (%sLoc%s)\n",
+                 areaBuf->areaName,
+                 areaBuf->comment,
+                 44-strlen(areaBuf->comment),
+                 groupToChar(areaBuf->group),
+                 areaBuf->options.local?"Local":"Echo",
+                 areaBuf->msgBasePath,
+                 nodeStrP(&config.akaList[areaBuf->address].nodeNum),
+                 (config.bbsProgram != BBS_PROB && areaBuf->msgKindsRA == 3) ? "R/O ":"",
+                 "");
+      }
+    }
+    fclose (textFile);
+  }
+}
+
+if ( (*config.autoFolderFdPath ||
+      (*config.autoRAPath && config.bbsProgram == BBS_TAG)) &&
+     (areaNames = malloc(sizeof(anType))) != NULL )
+{
+  /* Sort areas for FrontDoor and TAG */
+
+  for (count = 0; count < areaInfoCount; count++)
+    (*areaInfoIndex)[count] = count;
+  if ( config.genOptions.commentFFD )
+  {
+    for (count = 0; count < areaInfoCount; count++)
+    {
+      if ( !getRec(CFG_ECHOAREAS, count) ||
+           ((*areaNames)[count] = malloc(strlen(*areaBuf->comment?areaBuf->comment:areaBuf->areaName)+1)) == NULL )
+        goto error;
+      strcpy((*areaNames)[count], *areaBuf->comment?areaBuf->comment:areaBuf->areaName);
+    }
+    for (count = 1; count < areaInfoCount; count++)
+    {
+      areaInfoNamePtr = (*areaNames)[count];
+      low = 0;
+      high = count;
+      while (low < high)
+      {
+        mid = (low + high) >> 1;
+        if ( stricmp (areaInfoNamePtr, (*areaNames)[mid]) > 0 )
+          low = mid+1;
+        else
+          high = mid;
+      }
+      memmove (&(*areaNames)[low+1], &(*areaNames)[low], (count-low) * 4); /* 4 = sizeof(ptr) */
+      (*areaNames)[low] = areaInfoNamePtr;
+      memmove (&(*areaInfoIndex)[low+1], &(*areaInfoIndex)[low], (count-low) * 2); /* 2 = sizeof(u16) */
+      (*areaInfoIndex)[low] = count;
+    }
+    for (count = 1; count < areaInfoCount; count++)
+      free((*areaNames)[count]);
+    free(areaNames);
+  }
+}
+if (*config.autoFolderFdPath != 0)
+{
+  strcpy (tempStr, config.autoFolderFdPath);
+  strcat (tempStr, (config.mailer==1) ? "imfolder.cfg" : "folder.fd");
+
+  if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
+                           O_TRUNC|O_BINARY|O_DENYNONE,
+                           S_IREAD|S_IWRITE)) == -1)
+  {
+    if (config.mailer!=1)
+      displayMessage ("Can't open FOLDER.FD for output");
+    else
+      displayMessage ("Can't open IMFOLDER.CFG for output");
+  }
+  else
+  {
+    if (config.mailer!=1)
+    {
+      if (*config.sentPath &&
+          !strcmp (config.sentPath, config.rcvdPath))
+      {
+        memset (&folderFdRec, 0, sizeof(FOLDER));
+        strcpy (folderFdRec.title, "Sent/Received netmail");
+        strcpy (folderFdRec.path,  config.sentPath);
+        folderFdRec.behave = FD_LOCAL | FD_NETMAIL | FD_READONLY | FD_EXPORT_OK;
+        folderFdRec.userok = 0x03ff;
+        folderFdRec.pwdcrc = -1L;
+        write (folderHandle, &folderFdRec, sizeof(FOLDER));
       }
       else
       {
-         if (config.mailer!=1)
-         {
-            if (*config.sentPath &&
-                !strcmp (config.sentPath, config.rcvdPath))
-            {
-               memset (&folderFdRec, 0, sizeof(FOLDER));
-               strcpy (folderFdRec.title, "Sent/Received netmail");
-               strcpy (folderFdRec.path,  config.sentPath);
-               folderFdRec.behave = FD_LOCAL | FD_NETMAIL | FD_READONLY | FD_EXPORT_OK;
-               folderFdRec.userok = 0x03ff;
-               folderFdRec.pwdcrc = -1L;
-               write (folderHandle, &folderFdRec, sizeof(FOLDER));
-            }
-            else
-            {
-               if (*config.sentPath)
-               {
-                  memset (&folderFdRec, 0, sizeof(FOLDER));
-                  strcpy (folderFdRec.title, "Sent netmail");
-                  strcpy (folderFdRec.path,  config.sentPath);
-                  folderFdRec.behave = FD_LOCAL | FD_NETMAIL | FD_READONLY | FD_EXPORT_OK;
-                  folderFdRec.userok = 0x03ff;
-                  folderFdRec.pwdcrc = -1L;
-                  write (folderHandle, &folderFdRec, sizeof(FOLDER));
-               }
+        if (*config.sentPath)
+        {
+          memset (&folderFdRec, 0, sizeof(FOLDER));
+          strcpy (folderFdRec.title, "Sent netmail");
+          strcpy (folderFdRec.path,  config.sentPath);
+          folderFdRec.behave = FD_LOCAL | FD_NETMAIL | FD_READONLY | FD_EXPORT_OK;
+          folderFdRec.userok = 0x03ff;
+          folderFdRec.pwdcrc = -1L;
+          write (folderHandle, &folderFdRec, sizeof(FOLDER));
+        }
 
-               if (*config.rcvdPath)
-               {
-                  memset (&folderFdRec, 0, sizeof(FOLDER));
-                  strcpy (folderFdRec.title, "Received netmail");
-                  strcpy (folderFdRec.path,  config.rcvdPath);
-                  folderFdRec.behave = FD_LOCAL | FD_NETMAIL | FD_READONLY | FD_EXPORT_OK;
-                  folderFdRec.userok = 0x03ff;
-                  folderFdRec.pwdcrc = -1L;
-                  write (folderHandle, &folderFdRec, sizeof(FOLDER));
-               }
-            }
-
-            if (*config.pmailPath)
-            {
-               memset (&folderFdRec, 0, sizeof(FOLDER));
-               strcpy (folderFdRec.title, "Personal mail");
-               strcpy (folderFdRec.path,  config.pmailPath);
-               folderFdRec.behave = FD_LOCAL | FD_READONLY | FD_EXPORT_OK;
-               folderFdRec.userok = 0x03ff;
-               folderFdRec.pwdcrc = -1L;
-               write (folderHandle, &folderFdRec, sizeof(FOLDER));
-            }
-
-            if (*config.sentEchoPath)
-            {
-               memset (&folderFdRec, 0, sizeof(FOLDER));
-               strcpy (folderFdRec.title, "Sent echomail");
-               strcpy (folderFdRec.path,  config.sentEchoPath);
-               folderFdRec.behave = FD_LOCAL | FD_READONLY | FD_EXPORT_OK;
-               folderFdRec.userok = 0x03ff;
-               folderFdRec.pwdcrc = -1L;
-               write (folderHandle, &folderFdRec, sizeof(FOLDER));
-            }
-
-            if (config.dupBoard)
-            {
-               memset (&folderFdRec, 0, sizeof(FOLDER));
-               strcpy (folderFdRec.title, "Duplicate messages");
-               folderFdRec.board = config.dupBoard;
-               folderFdRec.behave = FD_QUICKBBS | FD_LOCAL | FD_READONLY | FD_EXPORT_OK;
-               folderFdRec.userok = 0x03ff;
-               folderFdRec.pwdcrc = -1L;
-               write (folderHandle, &folderFdRec, sizeof(FOLDER));
-            }
-
-            if (config.badBoard)
-            {
-               memset (&folderFdRec, 0, sizeof(FOLDER));
-               strcpy (folderFdRec.title, "Bad messages");
-               folderFdRec.board = config.badBoard;
-               folderFdRec.behave = FD_QUICKBBS | FD_LOCAL | FD_READONLY | FD_EXPORT_OK;
-               folderFdRec.userok = 0x03ff;
-               folderFdRec.pwdcrc = -1L;
-               write (folderHandle, &folderFdRec, sizeof(FOLDER));
-            }
-
-            if (config.recBoard)
-            {
-               memset (&folderFdRec, 0, sizeof(FOLDER));
-               strcpy (folderFdRec.title, "Recovery board");
-               folderFdRec.board = config.recBoard;
-               folderFdRec.behave = FD_QUICKBBS | FD_LOCAL | FD_READONLY | FD_EXPORT_OK;
-               folderFdRec.userok = 0x03ff;
-               folderFdRec.pwdcrc = -1L;
-               write (folderHandle, &folderFdRec, sizeof(FOLDER));
-            }
-
-            for (count = 0; count < MAX_NETAKAS; count++)
-            {
-               if (config.netmailBoard[count])
-               {
-                  count2 = 0;
-                  while ((count2 < count) &&
-                         (config.netmailBoard[count] != config.netmailBoard[count2]))
-                  {
-                     count2++;
-                  }
-                  if (count == count2)
-                  {
-                     memset (&folderFdRec, 0, sizeof(FOLDER));
-
-                     if (*config.descrAKA[count])
-                     {
-                        strncpy (folderFdRec.title, config.descrAKA[count], 40);
-                     }
-                     else
-                     {
-                        if (count == 0)
-                           sprintf (folderFdRec.title, "NETMAIL MAIN");
-                        else
-                           sprintf (folderFdRec.title, "NETMAIL AKA %u", count);
-                     }
-
-                     folderFdRec.useaka = count;
-                     folderFdRec.board  = config.netmailBoard[count];
-                     folderFdRec.behave = FD_PRIVATE | FD_NETMAIL | FD_QUICKBBS | FD_EXPORT_OK |
-                                          (config.attrRA[count] & BIT0 ? FD_ECHO_INFO:0);
-                     folderFdRec.userok = 0x03ff;
-                     folderFdRec.origin = min(count, 19);
-                     folderFdRec.pwdcrc = -1L;
-
-                     write (folderHandle, &folderFdRec, sizeof(FOLDER));
-                  }
-               }
-            }
-
-            for (count = 0; count < areaInfoCount; count++)
-            {
-               getRec(CFG_ECHOAREAS, (*areaInfoIndex)[count]);
-	       if (areaBuf->options.active &&
-		   (areaBuf->board || *areaBuf->msgBasePath))
-	       {
-		  memset (&folderFdRec, 0, sizeof(FOLDER));
-
-		  if (config.genOptions.commentFFD && *areaBuf->comment)
-                     strncpy (folderFdRec.title, areaBuf->comment, 40);
-                  else
-                     strncpy (folderFdRec.title, areaBuf->areaName, 40);
-
-                  if (*areaBuf->msgBasePath)
-                     strcpy (folderFdRec.path, areaBuf->msgBasePath);
-                  else
-                     folderFdRec.board  = areaBuf->board;
-                  folderFdRec.behave = (*areaBuf->msgBasePath ? FD_JAMAREA : FD_QUICKBBS) |
-                       ((areaBuf->msgKindsRA==1) ? FD_PRIVATE:0) |
-                       (areaBuf->options.local ? FD_LOCAL:FD_ECHOMAIL|FD_EXPORT_OK) |
-                       (areaBuf->attrRA & BIT0 ? FD_ECHO_INFO:0);
-                  folderFdRec.userok = 0x03ff;
-                  folderFdRec.origin = checkMax(areaBuf->address, 19);
-                  folderFdRec.pwdcrc = -1L;
-                  folderFdRec.useaka = checkMax(areaBuf->address, 10);
-                  write (folderHandle, &folderFdRec, sizeof(FOLDER));
-               }
-            }
-         }
-         else
-         {
-            if (*config.sentPath &&
-                !strcmp (config.sentPath, config.rcvdPath))
-            {
-               memset (&folderImRec, 0, sizeof(IMFOLDER));
-               strcpy (folderImRec.title, "Sent/Received netmail");
-               strcpy (folderImRec.areatag, "Sent/Received netmail");
-               strcpy (folderImRec.path,  config.sentPath);
-               folderImRec.ftype  = F_MSG;
-               folderImRec.behave = IM_LOCAL | IM_F_NETMAIL | IM_READONLY | IM_EXPORT_OK;
-               folderImRec.userok = 0x03ff;
-               folderImRec.pwdcrc = -1L;
-               write (folderHandle, &folderImRec, sizeof(IMFOLDER));
-            }
-            else
-            {
-               if (*config.sentPath)
-               {
-                  memset (&folderImRec, 0, sizeof(IMFOLDER));
-                  strcpy (folderImRec.title, "Sent netmail");
-                  strcpy (folderImRec.areatag, "Sent netmail");
-                  strcpy (folderImRec.path,  config.sentPath);
-                  folderImRec.ftype  = F_MSG;
-                  folderImRec.behave = IM_LOCAL | IM_F_NETMAIL | IM_READONLY | IM_EXPORT_OK;
-                  folderImRec.userok = 0x03ff;
-                  folderImRec.pwdcrc = -1L;
-                  write (folderHandle, &folderImRec, sizeof(IMFOLDER));
-               }
-
-               if (*config.rcvdPath)
-               {
-                  memset (&folderImRec, 0, sizeof(IMFOLDER));
-                  strcpy (folderImRec.title, "Received netmail");
-                  strcpy (folderImRec.areatag, "Received netmail");
-                  strcpy (folderImRec.path,  config.rcvdPath);
-                  folderImRec.ftype  = F_MSG;
-                  folderImRec.behave = IM_LOCAL | IM_F_NETMAIL | IM_READONLY | IM_EXPORT_OK;
-                  folderImRec.userok = 0x03ff;
-                  folderImRec.pwdcrc = -1L;
-                  write (folderHandle, &folderImRec, sizeof(IMFOLDER));
-               }
-            }
-
-            if (*config.pmailPath)
-            {
-               memset (&folderImRec, 0, sizeof(IMFOLDER));
-               strcpy (folderImRec.title, "Personal mail");
-               strcpy (folderImRec.areatag, "Personal mail");
-               strcpy (folderImRec.path,  config.pmailPath);
-               folderImRec.ftype  = F_MSG;
-               folderImRec.behave = IM_LOCAL | IM_READONLY | IM_EXPORT_OK;
-               folderImRec.userok = 0x03ff;
-               folderImRec.pwdcrc = -1L;
-               write (folderHandle, &folderImRec, sizeof(IMFOLDER));
-            }
-
-            if (*config.sentEchoPath)
-            {
-               memset (&folderImRec, 0, sizeof(IMFOLDER));
-               strcpy (folderImRec.title, "Sent echomail");
-               strcpy (folderImRec.areatag, "Sent echomail");
-               strcpy (folderImRec.path,  config.sentEchoPath);
-               folderImRec.ftype  = F_MSG;
-               folderImRec.behave = IM_LOCAL | IM_READONLY | IM_EXPORT_OK;
-               folderImRec.userok = 0x03ff;
-               folderImRec.pwdcrc = -1L;
-               write (folderHandle, &folderImRec, sizeof(IMFOLDER));
-            }
-
-            if (config.dupBoard)
-            {
-               memset (&folderImRec, 0, sizeof(IMFOLDER));
-               strcpy (folderImRec.title, "Duplicate messages");
-               strcpy (folderImRec.areatag, "Duplicate messages");
-               folderImRec.board = config.dupBoard;
-               folderImRec.ftype  = F_HUDSON;
-               folderImRec.behave = IM_BOARDTYPE | IM_LOCAL | IM_BOARDTYPE | IM_READONLY | IM_EXPORT_OK;
-               folderImRec.userok = 0x03ff;
-               folderImRec.pwdcrc = -1L;
-               write (folderHandle, &folderImRec, sizeof(IMFOLDER));
-            }
-
-            if (config.badBoard)
-            {
-               memset (&folderImRec, 0, sizeof(IMFOLDER));
-               strcpy (folderImRec.title, "Bad messages");
-               strcpy (folderImRec.areatag, "Bad messages");
-               folderImRec.board = config.badBoard;
-               folderImRec.ftype  = F_HUDSON;
-               folderImRec.behave = IM_BOARDTYPE | IM_LOCAL | IM_BOARDTYPE | IM_READONLY | IM_EXPORT_OK;
-               folderImRec.userok = 0x03ff;
-               folderImRec.pwdcrc = -1L;
-               write (folderHandle, &folderImRec, sizeof(IMFOLDER));
-            }
-
-            if (config.recBoard)
-            {
-               memset (&folderImRec, 0, sizeof(IMFOLDER));
-               strcpy (folderImRec.title, "Recovery board");
-               strcpy (folderImRec.areatag, "Recovery board");
-               folderImRec.board = config.recBoard;
-               folderImRec.ftype  = F_HUDSON;
-               folderImRec.behave = IM_BOARDTYPE | IM_LOCAL | IM_BOARDTYPE | IM_READONLY | IM_EXPORT_OK;
-               folderImRec.userok = 0x03ff;
-               folderImRec.pwdcrc = -1L;
-               write (folderHandle, &folderImRec, sizeof(IMFOLDER));
-            }
-
-            for (count = 0; count < MAX_NETAKAS; count++)
-            {
-               if (config.netmailBoard[count])
-               {
-                  count2 = 0;
-                  while ((count2 < count) &&
-                         (config.netmailBoard[count] != config.netmailBoard[count2]))
-                  {
-                     count2++;
-                  }
-                  if (count == count2)
-                  {
-                     memset (&folderImRec, 0, sizeof(IMFOLDER));
-
-                     if (*config.descrAKA[count])
-                     {
-                        strncpy (folderImRec.title, config.descrAKA[count], 40);
-                     }
-                     else
-                     {
-                        if (count == 0)
-                           sprintf (folderImRec.title, "NETMAIL MAIN");
-                        else
-                           sprintf (folderImRec.title, "NETMAIL AKA %u", count);
-                     }
-                     if (count == 0)
-			sprintf (folderImRec.areatag, "NETMAIL MAIN");
-                     else
-                        sprintf (folderImRec.areatag, "NETMAIL AKA %u", count);
-
-                     folderImRec.useaka = count;
-                     folderImRec.board  = config.netmailBoard[count];
-                     folderImRec.ftype  = F_HUDSON;
-                     folderImRec.behave = IM_BOARDTYPE | IM_PRIVATE | IM_BOARDTYPE | IM_F_NETMAIL | IM_EXPORT_OK |
-                                          (config.attrRA[count] & BIT0 ? IM_ECHO_INFO:0);
-                     folderImRec.userok = 0x03ff;
-                     folderImRec.origin = min(count, 19);
-                     folderImRec.pwdcrc = -1L;
-
-                     write (folderHandle, &folderImRec, sizeof(IMFOLDER));
-                  }
-               }
-            }
-
-            for (count = 0; count < areaInfoCount; count++)
-            {
-               getRec(CFG_ECHOAREAS, (*areaInfoIndex)[count]);
-	       if (areaBuf->options.active &&
-		   (areaBuf->board || *areaBuf->msgBasePath))
-	       {
-		  memset (&folderImRec, 0, sizeof(IMFOLDER));
-
-		  if (config.genOptions.commentFFD && *areaBuf->comment)
-                     strncpy (folderImRec.title, areaBuf->comment, 40);
-		  else
-		     strncpy (folderImRec.title, areaBuf->areaName, 40);
-                  strncpy (folderImRec.areatag, areaBuf->areaName, 38);
-
-                  folderImRec.ftype  = !*areaBuf->msgBasePath ?
-                                       F_HUDSON : F_JAM;
-                  if (*areaBuf->msgBasePath)
-                     strcpy (folderImRec.path, areaBuf->msgBasePath);
-                  else
-                     folderImRec.board  = areaBuf->board;
-                  folderImRec.behave = (*areaBuf->msgBasePath?0:IM_BOARDTYPE) |
-                       ((areaBuf->msgKindsRA==1) ? IM_PRIVATE:0) |
-                       (areaBuf->options.local ? IM_LOCAL:IM_ECHOMAIL|IM_EXPORT_OK) |
-                       (areaBuf->attrRA & BIT0 ? IM_ECHO_INFO:0);
-                  folderImRec.userok = 0x03ff;
-                  folderImRec.origin = checkMax(areaBuf->address, 19);
-                  folderImRec.pwdcrc = -1L;
-                  folderImRec.useaka = checkMax(areaBuf->address, 20);
-                  write (folderHandle, &folderImRec, sizeof(IMFOLDER));
-               }
-            }
-         }
-         close (folderHandle);
+        if (*config.rcvdPath)
+        {
+          memset (&folderFdRec, 0, sizeof(FOLDER));
+          strcpy (folderFdRec.title, "Received netmail");
+          strcpy (folderFdRec.path,  config.rcvdPath);
+          folderFdRec.behave = FD_LOCAL | FD_NETMAIL | FD_READONLY | FD_EXPORT_OK;
+          folderFdRec.userok = 0x03ff;
+          folderFdRec.pwdcrc = -1L;
+          write (folderHandle, &folderFdRec, sizeof(FOLDER));
+        }
       }
-   }
 
-   if (*config.autoRAPath != 0)
-   {
-#ifndef GOLDBASE
-      if (config.bbsProgram == BBS_TAG) /* TAG */
+      if (*config.pmailPath)
       {
-         strcpy (tempStr, config.autoRAPath);
-         strcat (tempStr, "MBOARDS.DAT");
+        memset (&folderFdRec, 0, sizeof(FOLDER));
+        strcpy (folderFdRec.title, "Personal mail");
+        strcpy (folderFdRec.path,  config.pmailPath);
+        folderFdRec.behave = FD_LOCAL | FD_READONLY | FD_EXPORT_OK;
+        folderFdRec.userok = 0x03ff;
+        folderFdRec.pwdcrc = -1L;
+        write (folderHandle, &folderFdRec, sizeof(FOLDER));
+      }
 
-         if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
-                                           O_TRUNC|O_BINARY|O_DENYNONE,
-                                           S_IREAD|S_IWRITE)) == -1)
-         {
-            displayMessage ("Can't open MBOARDS.DAT for output");
-         }
-         else
-         {
-            if (*config.pmailPath)
+      if (*config.sentEchoPath)
+      {
+        memset (&folderFdRec, 0, sizeof(FOLDER));
+        strcpy (folderFdRec.title, "Sent echomail");
+        strcpy (folderFdRec.path,  config.sentEchoPath);
+        folderFdRec.behave = FD_LOCAL | FD_READONLY | FD_EXPORT_OK;
+        folderFdRec.userok = 0x03ff;
+        folderFdRec.pwdcrc = -1L;
+        write (folderHandle, &folderFdRec, sizeof(FOLDER));
+      }
+
+      if (config.dupBoard)
+      {
+        memset (&folderFdRec, 0, sizeof(FOLDER));
+        strcpy (folderFdRec.title, "Duplicate messages");
+        folderFdRec.board = config.dupBoard;
+        folderFdRec.behave = FD_QUICKBBS | FD_LOCAL | FD_READONLY | FD_EXPORT_OK;
+        folderFdRec.userok = 0x03ff;
+        folderFdRec.pwdcrc = -1L;
+        write (folderHandle, &folderFdRec, sizeof(FOLDER));
+      }
+
+      if (config.badBoard)
+      {
+        memset (&folderFdRec, 0, sizeof(FOLDER));
+        strcpy (folderFdRec.title, "Bad messages");
+        folderFdRec.board = config.badBoard;
+        folderFdRec.behave = FD_QUICKBBS | FD_LOCAL | FD_READONLY | FD_EXPORT_OK;
+        folderFdRec.userok = 0x03ff;
+        folderFdRec.pwdcrc = -1L;
+        write (folderHandle, &folderFdRec, sizeof(FOLDER));
+      }
+
+      if (config.recBoard)
+      {
+        memset (&folderFdRec, 0, sizeof(FOLDER));
+        strcpy (folderFdRec.title, "Recovery board");
+        folderFdRec.board = config.recBoard;
+        folderFdRec.behave = FD_QUICKBBS | FD_LOCAL | FD_READONLY | FD_EXPORT_OK;
+        folderFdRec.userok = 0x03ff;
+        folderFdRec.pwdcrc = -1L;
+        write (folderHandle, &folderFdRec, sizeof(FOLDER));
+      }
+
+      for (count = 0; count < MAX_NETAKAS; count++)
+      {
+        if (config.netmailBoard[count])
+        {
+          count2 = 0;
+          while ((count2 < count) &&
+                 (config.netmailBoard[count] != config.netmailBoard[count2]))
+          {
+            count2++;
+          }
+          if (count == count2)
+          {
+            memset (&folderFdRec, 0, sizeof(FOLDER));
+
+            if (*config.descrAKA[count])
             {
-               memset (&TAGBoardRec, 0, sizeof(MboardType));
-               strcpy (TAGBoardRec.Name, "Personal mail");
-               TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-               strcpy (TAGBoardRec.Path, config.pmailPath);
-               TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
-               TAGBoardRec.Mstyle  = LOCALSTYLE;
-               TAGBoardRec.Mtype   = FIDOFORMAT;
-               TAGBoardRec.AccessAR = '@';
-               write (folderHandle, &TAGBoardRec, sizeof(MboardType));
-            }
-            if (*config.sentPath &&
-                !strcmp (config.sentPath, config.rcvdPath))
-            {
-               memset (&TAGBoardRec, 0, sizeof(MboardType));
-               strcpy (TAGBoardRec.Name, "Sent/Received netmail");
-               TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-               strcpy (TAGBoardRec.Path, config.sentPath);
-               TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
-               TAGBoardRec.Mstyle  = LOCALSTYLE;
-               TAGBoardRec.Mtype   = FIDOFORMAT;
-               TAGBoardRec.AccessAR = '@';
-               write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+              strncpy (folderFdRec.title, config.descrAKA[count], 40);
             }
             else
             {
-               if (*config.sentPath)
-               {
-                  memset (&TAGBoardRec, 0, sizeof(MboardType));
-                  strcpy (TAGBoardRec.Name, "Sent netmail");
-                  TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-                  strcpy (TAGBoardRec.Path, config.sentPath);
-                  TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
-                  TAGBoardRec.Mstyle  = LOCALSTYLE;
-                  TAGBoardRec.Mtype   = FIDOFORMAT;
-                  TAGBoardRec.AccessAR = '@';
-                  TAGBoardRec.AccessSL = 32000;
-                  TAGBoardRec.PostSL   = 32000;
-/*                TAGBoardRec.MsgCount = 0; */
-                  TAGBoardRec.MaxMsgs  = 0;
-                  TAGBoardRec.uuMaxOld = 0;
-                  /* password */
-                  /* anonymous */
-                  /* allowansi */
-                  /* allowhandles */
-                  write (folderHandle, &TAGBoardRec, sizeof(MboardType));
-               }
-
-               if (*config.rcvdPath)
-               {
-                  memset (&TAGBoardRec, 0, sizeof(MboardType));
-                  strcpy (TAGBoardRec.Name, "Received netmail");
-                  TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-                  strcpy (TAGBoardRec.Path, config.rcvdPath);
-                  TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
-                  TAGBoardRec.Mstyle  = LOCALSTYLE;
-                  TAGBoardRec.Mtype   = FIDOFORMAT;
-                  TAGBoardRec.AccessAR = '@';
-                  write (folderHandle, &TAGBoardRec, sizeof(MboardType));
-               }
+              if (count == 0)
+                sprintf (folderFdRec.title, "NETMAIL MAIN");
+              else
+                sprintf (folderFdRec.title, "NETMAIL AKA %u", count);
             }
 
-            if (*config.sentEchoPath)
+            folderFdRec.useaka = count;
+            folderFdRec.board  = config.netmailBoard[count];
+            folderFdRec.behave = FD_PRIVATE | FD_NETMAIL | FD_QUICKBBS | FD_EXPORT_OK |
+                                 (config.attrRA[count] & BIT0 ? FD_ECHO_INFO:0);
+            folderFdRec.userok = 0x03ff;
+            folderFdRec.origin = min(count, 19);
+            folderFdRec.pwdcrc = -1L;
+
+            write (folderHandle, &folderFdRec, sizeof(FOLDER));
+          }
+        }
+      }
+
+      for (count = 0; count < areaInfoCount; count++)
+      {
+        getRec(CFG_ECHOAREAS, (*areaInfoIndex)[count]);
+        if (areaBuf->options.active &&
+            (areaBuf->board || *areaBuf->msgBasePath))
+        {
+          memset (&folderFdRec, 0, sizeof(FOLDER));
+
+          if (config.genOptions.commentFFD && *areaBuf->comment)
+            strncpy (folderFdRec.title, areaBuf->comment, 40);
+          else
+            strncpy (folderFdRec.title, areaBuf->areaName, 40);
+
+          if (*areaBuf->msgBasePath)
+            strcpy (folderFdRec.path, areaBuf->msgBasePath);
+          else
+            folderFdRec.board  = areaBuf->board;
+          folderFdRec.behave = (*areaBuf->msgBasePath ? FD_JAMAREA : FD_QUICKBBS) |
+                               ((areaBuf->msgKindsRA==1) ? FD_PRIVATE:0) |
+                               (areaBuf->options.local ? FD_LOCAL:FD_ECHOMAIL|FD_EXPORT_OK) |
+                               (areaBuf->attrRA & BIT0 ? FD_ECHO_INFO:0);
+          folderFdRec.userok = 0x03ff;
+          folderFdRec.origin = checkMax(areaBuf->address, 19);
+          folderFdRec.pwdcrc = -1L;
+          folderFdRec.useaka = checkMax(areaBuf->address, 10);
+          write (folderHandle, &folderFdRec, sizeof(FOLDER));
+        }
+      }
+    }
+    else
+    {
+      if (*config.sentPath &&
+          !strcmp (config.sentPath, config.rcvdPath))
+      {
+        memset (&folderImRec, 0, sizeof(IMFOLDER));
+        strcpy (folderImRec.title, "Sent/Received netmail");
+        strcpy (folderImRec.areatag, "Sent/Received netmail");
+        strcpy (folderImRec.path,  config.sentPath);
+        folderImRec.ftype  = F_MSG;
+        folderImRec.behave = IM_LOCAL | IM_F_NETMAIL | IM_READONLY | IM_EXPORT_OK;
+        folderImRec.userok = 0x03ff;
+        folderImRec.pwdcrc = -1L;
+        write (folderHandle, &folderImRec, sizeof(IMFOLDER));
+      }
+      else
+      {
+        if (*config.sentPath)
+        {
+          memset (&folderImRec, 0, sizeof(IMFOLDER));
+          strcpy (folderImRec.title, "Sent netmail");
+          strcpy (folderImRec.areatag, "Sent netmail");
+          strcpy (folderImRec.path,  config.sentPath);
+          folderImRec.ftype  = F_MSG;
+          folderImRec.behave = IM_LOCAL | IM_F_NETMAIL | IM_READONLY | IM_EXPORT_OK;
+          folderImRec.userok = 0x03ff;
+          folderImRec.pwdcrc = -1L;
+          write (folderHandle, &folderImRec, sizeof(IMFOLDER));
+        }
+
+        if (*config.rcvdPath)
+        {
+          memset (&folderImRec, 0, sizeof(IMFOLDER));
+          strcpy (folderImRec.title, "Received netmail");
+          strcpy (folderImRec.areatag, "Received netmail");
+          strcpy (folderImRec.path,  config.rcvdPath);
+          folderImRec.ftype  = F_MSG;
+          folderImRec.behave = IM_LOCAL | IM_F_NETMAIL | IM_READONLY | IM_EXPORT_OK;
+          folderImRec.userok = 0x03ff;
+          folderImRec.pwdcrc = -1L;
+          write (folderHandle, &folderImRec, sizeof(IMFOLDER));
+        }
+      }
+
+      if (*config.pmailPath)
+      {
+        memset (&folderImRec, 0, sizeof(IMFOLDER));
+        strcpy (folderImRec.title, "Personal mail");
+        strcpy (folderImRec.areatag, "Personal mail");
+        strcpy (folderImRec.path,  config.pmailPath);
+        folderImRec.ftype  = F_MSG;
+        folderImRec.behave = IM_LOCAL | IM_READONLY | IM_EXPORT_OK;
+        folderImRec.userok = 0x03ff;
+        folderImRec.pwdcrc = -1L;
+        write (folderHandle, &folderImRec, sizeof(IMFOLDER));
+      }
+
+      if (*config.sentEchoPath)
+      {
+        memset (&folderImRec, 0, sizeof(IMFOLDER));
+        strcpy (folderImRec.title, "Sent echomail");
+        strcpy (folderImRec.areatag, "Sent echomail");
+        strcpy (folderImRec.path,  config.sentEchoPath);
+        folderImRec.ftype  = F_MSG;
+        folderImRec.behave = IM_LOCAL | IM_READONLY | IM_EXPORT_OK;
+        folderImRec.userok = 0x03ff;
+        folderImRec.pwdcrc = -1L;
+        write (folderHandle, &folderImRec, sizeof(IMFOLDER));
+      }
+
+      if (config.dupBoard)
+      {
+        memset (&folderImRec, 0, sizeof(IMFOLDER));
+        strcpy (folderImRec.title, "Duplicate messages");
+        strcpy (folderImRec.areatag, "Duplicate messages");
+        folderImRec.board = config.dupBoard;
+        folderImRec.ftype  = F_HUDSON;
+        folderImRec.behave = IM_BOARDTYPE | IM_LOCAL | IM_BOARDTYPE | IM_READONLY | IM_EXPORT_OK;
+        folderImRec.userok = 0x03ff;
+        folderImRec.pwdcrc = -1L;
+        write (folderHandle, &folderImRec, sizeof(IMFOLDER));
+      }
+
+      if (config.badBoard)
+      {
+        memset (&folderImRec, 0, sizeof(IMFOLDER));
+        strcpy (folderImRec.title, "Bad messages");
+        strcpy (folderImRec.areatag, "Bad messages");
+        folderImRec.board = config.badBoard;
+        folderImRec.ftype  = F_HUDSON;
+        folderImRec.behave = IM_BOARDTYPE | IM_LOCAL | IM_BOARDTYPE | IM_READONLY | IM_EXPORT_OK;
+        folderImRec.userok = 0x03ff;
+        folderImRec.pwdcrc = -1L;
+        write (folderHandle, &folderImRec, sizeof(IMFOLDER));
+      }
+
+      if (config.recBoard)
+      {
+        memset (&folderImRec, 0, sizeof(IMFOLDER));
+        strcpy (folderImRec.title, "Recovery board");
+        strcpy (folderImRec.areatag, "Recovery board");
+        folderImRec.board = config.recBoard;
+        folderImRec.ftype  = F_HUDSON;
+        folderImRec.behave = IM_BOARDTYPE | IM_LOCAL | IM_BOARDTYPE | IM_READONLY | IM_EXPORT_OK;
+        folderImRec.userok = 0x03ff;
+        folderImRec.pwdcrc = -1L;
+        write (folderHandle, &folderImRec, sizeof(IMFOLDER));
+      }
+
+      for (count = 0; count < MAX_NETAKAS; count++)
+      {
+        if (config.netmailBoard[count])
+        {
+          count2 = 0;
+          while ((count2 < count) &&
+                 (config.netmailBoard[count] != config.netmailBoard[count2]))
+          {
+            count2++;
+          }
+          if (count == count2)
+          {
+            memset (&folderImRec, 0, sizeof(IMFOLDER));
+
+            if (*config.descrAKA[count])
             {
-               memset (&TAGBoardRec, 0, sizeof(MboardType));
-               strcpy (TAGBoardRec.Name, "Sent echomail");
-               TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-               strcpy (TAGBoardRec.Path, config.sentEchoPath);
-               TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
-               TAGBoardRec.Mstyle  = LOCALSTYLE;
-               TAGBoardRec.Mtype   = FIDOFORMAT;
-               TAGBoardRec.AccessAR = '@';
-               write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+              strncpy (folderImRec.title, config.descrAKA[count], 40);
             }
-
-            if (config.dupBoard)
+            else
             {
-               memset (&TAGBoardRec, 0, sizeof(MboardType));
-               strcpy (TAGBoardRec.Name, "Duplicate messages");
-               TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-               strcpy (TAGBoardRec.Path, config.sentPath);
-               TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
-               TAGBoardRec.Mstyle  = LOCALSTYLE;
-               TAGBoardRec.Mtype   = RAFORMAT;
-               TAGBoardRec.AccessAR = '@';
-               TAGBoardRec.RaBoard = config.dupBoard;
-               write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+              if (count == 0)
+                sprintf (folderImRec.title, "NETMAIL MAIN");
+              else
+                sprintf (folderImRec.title, "NETMAIL AKA %u", count);
             }
+            if (count == 0)
+              sprintf (folderImRec.areatag, "NETMAIL MAIN");
+            else
+              sprintf (folderImRec.areatag, "NETMAIL AKA %u", count);
 
-            if (config.badBoard)
+            folderImRec.useaka = count;
+            folderImRec.board  = config.netmailBoard[count];
+            folderImRec.ftype  = F_HUDSON;
+            folderImRec.behave = IM_BOARDTYPE | IM_PRIVATE | IM_BOARDTYPE | IM_F_NETMAIL | IM_EXPORT_OK |
+                                 (config.attrRA[count] & BIT0 ? IM_ECHO_INFO:0);
+            folderImRec.userok = 0x03ff;
+            folderImRec.origin = min(count, 19);
+            folderImRec.pwdcrc = -1L;
+
+            write (folderHandle, &folderImRec, sizeof(IMFOLDER));
+          }
+        }
+      }
+
+      for (count = 0; count < areaInfoCount; count++)
+      {
+        getRec(CFG_ECHOAREAS, (*areaInfoIndex)[count]);
+        if (areaBuf->options.active &&
+            (areaBuf->board || *areaBuf->msgBasePath))
+        {
+          memset (&folderImRec, 0, sizeof(IMFOLDER));
+
+          if (config.genOptions.commentFFD && *areaBuf->comment)
+            strncpy (folderImRec.title, areaBuf->comment, 40);
+          else
+            strncpy (folderImRec.title, areaBuf->areaName, 40);
+          strncpy (folderImRec.areatag, areaBuf->areaName, 38);
+
+          folderImRec.ftype  = !*areaBuf->msgBasePath ?
+                               F_HUDSON : F_JAM;
+          if (*areaBuf->msgBasePath)
+            strcpy (folderImRec.path, areaBuf->msgBasePath);
+          else
+            folderImRec.board  = areaBuf->board;
+          folderImRec.behave = (*areaBuf->msgBasePath?0:IM_BOARDTYPE) |
+                               ((areaBuf->msgKindsRA==1) ? IM_PRIVATE:0) |
+                               (areaBuf->options.local ? IM_LOCAL:IM_ECHOMAIL|IM_EXPORT_OK) |
+                               (areaBuf->attrRA & BIT0 ? IM_ECHO_INFO:0);
+          folderImRec.userok = 0x03ff;
+          folderImRec.origin = checkMax(areaBuf->address, 19);
+          folderImRec.pwdcrc = -1L;
+          folderImRec.useaka = checkMax(areaBuf->address, 20);
+          write (folderHandle, &folderImRec, sizeof(IMFOLDER));
+        }
+      }
+    }
+    close (folderHandle);
+  }
+}
+
+if (*config.autoRAPath != 0)
+{
+#ifndef GOLDBASE
+  if (config.bbsProgram == BBS_TAG) /* TAG */
+  {
+    strcpy (tempStr, config.autoRAPath);
+    strcat (tempStr, "mboards.dat");
+
+    if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
+                             O_TRUNC|O_BINARY|O_DENYNONE,
+                             S_IREAD|S_IWRITE)) == -1)
+    {
+      displayMessage ("Can't open MBOARDS.DAT for output");
+    }
+    else
+    {
+      if (*config.pmailPath)
+      {
+        memset (&TAGBoardRec, 0, sizeof(MboardType));
+        strcpy (TAGBoardRec.Name, "Personal mail");
+        TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
+        strcpy (TAGBoardRec.Path, config.pmailPath);
+        TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
+        TAGBoardRec.Mstyle  = LOCALSTYLE;
+        TAGBoardRec.Mtype   = FIDOFORMAT;
+        TAGBoardRec.AccessAR = '@';
+        write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+      }
+      if (*config.sentPath &&
+          !strcmp (config.sentPath, config.rcvdPath))
+      {
+        memset (&TAGBoardRec, 0, sizeof(MboardType));
+        strcpy (TAGBoardRec.Name, "Sent/Received netmail");
+        TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
+        strcpy (TAGBoardRec.Path, config.sentPath);
+        TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
+        TAGBoardRec.Mstyle  = LOCALSTYLE;
+        TAGBoardRec.Mtype   = FIDOFORMAT;
+        TAGBoardRec.AccessAR = '@';
+        write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+      }
+      else
+      {
+        if (*config.sentPath)
+        {
+          memset (&TAGBoardRec, 0, sizeof(MboardType));
+          strcpy (TAGBoardRec.Name, "Sent netmail");
+          TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
+          strcpy (TAGBoardRec.Path, config.sentPath);
+          TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
+          TAGBoardRec.Mstyle  = LOCALSTYLE;
+          TAGBoardRec.Mtype   = FIDOFORMAT;
+          TAGBoardRec.AccessAR = '@';
+          TAGBoardRec.AccessSL = 32000;
+          TAGBoardRec.PostSL   = 32000;
+          /*                TAGBoardRec.MsgCount = 0; */
+          TAGBoardRec.MaxMsgs  = 0;
+          TAGBoardRec.uuMaxOld = 0;
+          /* password */
+          /* anonymous */
+          /* allowansi */
+          /* allowhandles */
+          write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+        }
+
+        if (*config.rcvdPath)
+        {
+          memset (&TAGBoardRec, 0, sizeof(MboardType));
+          strcpy (TAGBoardRec.Name, "Received netmail");
+          TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
+          strcpy (TAGBoardRec.Path, config.rcvdPath);
+          TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
+          TAGBoardRec.Mstyle  = LOCALSTYLE;
+          TAGBoardRec.Mtype   = FIDOFORMAT;
+          TAGBoardRec.AccessAR = '@';
+          write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+        }
+      }
+
+      if (*config.sentEchoPath)
+      {
+        memset (&TAGBoardRec, 0, sizeof(MboardType));
+        strcpy (TAGBoardRec.Name, "Sent echomail");
+        TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
+        strcpy (TAGBoardRec.Path, config.sentEchoPath);
+        TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
+        TAGBoardRec.Mstyle  = LOCALSTYLE;
+        TAGBoardRec.Mtype   = FIDOFORMAT;
+        TAGBoardRec.AccessAR = '@';
+        write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+      }
+
+      if (config.dupBoard)
+      {
+        memset (&TAGBoardRec, 0, sizeof(MboardType));
+        strcpy (TAGBoardRec.Name, "Duplicate messages");
+        TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
+        strcpy (TAGBoardRec.Path, config.sentPath);
+        TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
+        TAGBoardRec.Mstyle  = LOCALSTYLE;
+        TAGBoardRec.Mtype   = RAFORMAT;
+        TAGBoardRec.AccessAR = '@';
+        TAGBoardRec.RaBoard = config.dupBoard;
+        write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+      }
+
+      if (config.badBoard)
+      {
+        memset (&TAGBoardRec, 0, sizeof(MboardType));
+        strcpy (TAGBoardRec.Name, "Bad messages");
+        TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
+        strcpy (TAGBoardRec.Path, config.sentPath);
+        TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
+        TAGBoardRec.Mstyle  = LOCALSTYLE;
+        TAGBoardRec.Mtype   = RAFORMAT;
+        TAGBoardRec.AccessAR = '@';
+        TAGBoardRec.RaBoard = config.badBoard;
+        write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+      }
+
+      if (config.recBoard)
+      {
+        memset (&TAGBoardRec, 0, sizeof(MboardType));
+        strcpy (TAGBoardRec.Name, "Recovered messages");
+        TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
+        strcpy (TAGBoardRec.Path, config.sentPath);
+        TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
+        TAGBoardRec.Mstyle  = LOCALSTYLE;
+        TAGBoardRec.Mtype   = RAFORMAT;
+        TAGBoardRec.AccessAR = '@';
+        TAGBoardRec.RaBoard = config.recBoard;
+        write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+      }
+
+      for (count = 0; count < MAX_NETAKAS; count++)
+      {
+        if (config.netmailBoard[count])
+        {
+          count2 = 0;
+          while ((count2 < count) &&
+                 (config.netmailBoard[count] != config.netmailBoard[count2]))
+          {
+            count2++;
+          }
+          if (count == count2)
+          {
+            memset (&TAGBoardRec, 0, sizeof(MboardType));
+
+            if (*config.descrAKA[count])
             {
-               memset (&TAGBoardRec, 0, sizeof(MboardType));
-               strcpy (TAGBoardRec.Name, "Bad messages");
-               TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-               strcpy (TAGBoardRec.Path, config.sentPath);
-               TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
-               TAGBoardRec.Mstyle  = LOCALSTYLE;
-               TAGBoardRec.Mtype   = RAFORMAT;
-               TAGBoardRec.AccessAR = '@';
-               TAGBoardRec.RaBoard = config.badBoard;
-               write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+              strcpy (TAGBoardRec.Name, config.descrAKA[count]);
             }
-
-            if (config.recBoard)
+            else
             {
-               memset (&TAGBoardRec, 0, sizeof(MboardType));
-               strcpy (TAGBoardRec.Name, "Recovered messages");
-               TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-               strcpy (TAGBoardRec.Path, config.sentPath);
-               TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
-               TAGBoardRec.Mstyle  = LOCALSTYLE;
-               TAGBoardRec.Mtype   = RAFORMAT;
-               TAGBoardRec.AccessAR = '@';
-               TAGBoardRec.RaBoard = config.recBoard;
-               write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+              if (count == 0)
+                strcpy (TAGBoardRec.Name, "NETMAIL MAIN");
+              else
+                sprintf (TAGBoardRec.Name, "NETMAIL AKA %u", count);
             }
+            TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
+            strcpy (TAGBoardRec.Path, config.bbsPath);
+            TAGBoardRec.PathLen  = strlen(TAGBoardRec.Path);
+            TAGBoardRec.Mstyle   = NETMAILSTYLE;
+            TAGBoardRec.Mtype    = RAFORMAT;
+            TAGBoardRec.AccessAR = '@';
+            TAGBoardRec.RaBoard  = config.netmailBoard[count];
 
-            for (count = 0; count < MAX_NETAKAS; count++)
+            write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+          }
+        }
+      }
+
+      for (count = 0; count < areaInfoCount; count++)
+      {
+        getRec(CFG_ECHOAREAS, (*areaInfoIndex)[count]);
+        if (areaBuf->options.active && areaBuf->board &&
+            !*areaBuf->msgBasePath &&
+            (areaBuf->options.export2BBS) )
+        {
+          memset (&TAGBoardRec, 0, sizeof(MboardType));
+
+          if (config.genOptions.commentFFD && *areaBuf->comment)
+            strcpy (TAGBoardRec.Name, areaBuf->comment);
+          else
+            strcpy (TAGBoardRec.Name, areaBuf->areaName);
+          TAGBoardRec.NameLen  = strlen(TAGBoardRec.Name);
+          strncpy (TAGBoardRec.EchoTag, areaBuf->areaName, 31);
+          TAGBoardRec.EchoTagLen = strlen(TAGBoardRec.EchoTag);
+          strcpy (TAGBoardRec.Path, config.bbsPath);
+          TAGBoardRec.PathLen  = strlen(TAGBoardRec.Path);
+          strcpy (TAGBoardRec.OriginLine, areaBuf->originLine);
+          TAGBoardRec.OriginLineLen = strlen (TAGBoardRec.OriginLine);
+          strncpy (TAGBoardRec.QwkName, areaBuf->qwkName, 10);
+          TAGBoardRec.QwkNameLen = min(strlen(areaBuf->qwkName),10);
+          TAGBoardRec.Mstyle   = ECHOSTYLE;
+          TAGBoardRec.Mtype    = RAFORMAT;
+          TAGBoardRec.AccessAR = 'A';
+          group = areaBuf->group;
+          while ((group>>=1) != 0) TAGBoardRec.AccessAR++;
+          TAGBoardRec.PostAR   = 'A';
+          TAGBoardRec.RaBoard  = areaBuf->board;
+          TAGBoardRec.AccessSL = areaBuf->readSecRA;
+          TAGBoardRec.PostSL   = areaBuf->writeSecRA;
+          TAGBoardRec.MaxMsgs  = areaBuf->msgs;
+          TAGBoardRec.uuMaxOld = areaBuf->days;
+          /* password */
+          /* anonymous */
+          /* allowansi */
+          TAGBoardRec.RestrictPrivate = areaBuf->msgKindsRA;
+          TAGBoardRec.AllowHandle = areaBuf->attrRA & BIT5 ? 1 :
+                                    areaBuf->attrRA & BIT3 ? 2 : 0;
+          if (areaBuf->address)
+          {
+            TAGBoardRec.UseOtherAddress = 1;
+            TAGBoardRec.OtherAddress.Zone  = TAGBoardRec.OldOtherAddress.Zone  = config.akaList[areaBuf->address].nodeNum.zone;
+            TAGBoardRec.OtherAddress.Net   = TAGBoardRec.OldOtherAddress.Net   = config.akaList[areaBuf->address].nodeNum.net;
+            TAGBoardRec.OtherAddress.Node  = TAGBoardRec.OldOtherAddress.Node  = config.akaList[areaBuf->address].nodeNum.node;
+            TAGBoardRec.OtherAddress.Point = TAGBoardRec.OldOtherAddress.Point = config.akaList[areaBuf->address].nodeNum.point;
+          }
+          TAGBoardRec.QwkConf = areaBuf->board;
+          write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+        }
+      }
+      close (folderHandle);
+    }
+  }
+#endif
+  maxBoardNumRA = MBBOARDS;
+  for ( count = 0; count < areaInfoCount; count++ )
+  {
+    getRec(CFG_ECHOAREAS, count);
+    (*areaInfoIndex)[count] = ( (areaBuf->board == 0 &&
+                                 *areaBuf->msgBasePath == 0) ||
+                                (areaBuf->board > 0 &&
+                                 areaBuf->board <= MBBOARDS) ) ?
+                              areaBuf->board : areaBuf->boardNumRA;
+    maxBoardNumRA = max(maxBoardNumRA, (*areaInfoIndex)[count]);
+  }
+#ifndef GOLDBASE
+  if ( config.bbsProgram == BBS_RA1X || config.bbsProgram == BBS_RA20 ||
+       config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
+  {
+    strcpy (tempStr, config.autoRAPath);
+    strcat (tempStr, "messages.ra");
+
+    if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
+                             O_TRUNC|O_BINARY|O_DENYNONE,
+                             S_IREAD|S_IWRITE)) == -1)
+    {
+      displayMessage ("Can't open MESSAGES.RA for output");
+    }
+    else
+    {
+      if (config.bbsProgram == BBS_RA1X)
+      {
+        for (count2 = 1; count2 <= MBBOARDS; count2++)
+        {
+          memset (&messageRaRec, 0, sizeof(messageRaType));
+
+          count = 0;
+          while ((count < MAX_NETAKAS) &&
+                 (config.netmailBoard[count] != count2))
+          {
+            count++;
+          }
+          if (count < MAX_NETAKAS)
+          {
+            if (*config.descrAKA[count])
             {
-               if (config.netmailBoard[count])
-               {
-                  count2 = 0;
-                  while ((count2 < count) &&
-                         (config.netmailBoard[count] != config.netmailBoard[count2]))
-                  {
-                     count2++;
-                  }
-                  if (count == count2)
-                  {
-                     memset (&TAGBoardRec, 0, sizeof(MboardType));
-
-                     if (*config.descrAKA[count])
-                     {
-                        strcpy (TAGBoardRec.Name, config.descrAKA[count]);
-                     }
-                     else
-                     {
-                        if (count == 0)
-                           strcpy (TAGBoardRec.Name, "NETMAIL MAIN");
-                        else
-                           sprintf (TAGBoardRec.Name, "NETMAIL AKA %u", count);
-                     }
-                     TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-                     strcpy (TAGBoardRec.Path, config.bbsPath);
-                     TAGBoardRec.PathLen  = strlen(TAGBoardRec.Path);
-                     TAGBoardRec.Mstyle   = NETMAILSTYLE;
-                     TAGBoardRec.Mtype    = RAFORMAT;
-                     TAGBoardRec.AccessAR = '@';
-                     TAGBoardRec.RaBoard  = config.netmailBoard[count];
-
-                     write (folderHandle, &TAGBoardRec, sizeof(MboardType));
-                  }
-               }
+              strncpy (messageRaRec.name, config.descrAKA[count], 40);
             }
-
-            for (count = 0; count < areaInfoCount; count++)
+            else
             {
-               getRec(CFG_ECHOAREAS, (*areaInfoIndex)[count]);
-               if (areaBuf->options.active && areaBuf->board &&
-                   !*areaBuf->msgBasePath &&
+              if (count)
+                sprintf (messageRaRec.name, "Netmail AKA %2u", count);
+              else
+                strcpy (messageRaRec.name, "Netmail Main");
+            }
+            messageRaRec.nameLength = strlen(messageRaRec.name);
+
+            messageRaRec.typ = 1;
+            messageRaRec.msgKinds  = config.msgKindsRA[count];
+            messageRaRec.daysKill  = config.daysAKA[count];
+            messageRaRec.rcvdKill  = config.daysRcvdAKA[count];
+            messageRaRec.countKill = config.msgsAKA[count];
+            messageRaRec.attribute = config.attrRA[count] & ~BIT7;
+            messageRaRec.readSecurity = config.readSecRA[count];
+            messageRaRec.writeSecurity = config.writeSecRA[count];
+            messageRaRec.sysopSecurity = config.sysopSecRA[count];
+            *((s32*)&messageRaRec.readFlags) = *((s32*)&config.readFlagsRA[count]);
+            *((s32*)&messageRaRec.writeFlags) = *((s32*)&config.writeFlagsRA[count]);
+            *((s32*)&messageRaRec.sysopFlags) = *((s32*)&config.sysopFlagsRA[count]);
+
+            messageRaRec.akaAddress = count;
+          }
+          else if (config.dupBoard == count2)
+          {
+            if (config.genOptions.incBDRRA)
+            {
+              strcpy (messageRaRec.name, "Duplicate messages");
+              messageRaRec.nameLength = strlen(messageRaRec.name);
+              messageRaRec.msgKinds = 3;
+              messageRaRec.readSecurity  = 32000;
+              messageRaRec.writeSecurity = 32000;
+              messageRaRec.sysopSecurity = 32000;
+            }
+          }
+          else if (config.badBoard == count2)
+          {
+            if (config.genOptions.incBDRRA)
+            {
+              strcpy (messageRaRec.name, "Bad messages");
+              messageRaRec.nameLength = strlen(messageRaRec.name);
+              messageRaRec.msgKinds = 3;
+              messageRaRec.readSecurity  = 32000;
+              messageRaRec.writeSecurity = 32000;
+              messageRaRec.sysopSecurity = 32000;
+            }
+          }
+          else if (config.recBoard == count2)
+          {
+            if (config.genOptions.incBDRRA)
+            {
+              strcpy (messageRaRec.name, "Recovery board");
+              messageRaRec.nameLength = strlen(messageRaRec.name);
+              messageRaRec.msgKinds = 3;
+              messageRaRec.readSecurity  = 32000;
+              messageRaRec.writeSecurity = 32000;
+              messageRaRec.sysopSecurity = 32000;
+            }
+          }
+          else
+          {
+            count = 0;
+            while ( count < areaInfoCount )
+            {
+              if ( (*areaInfoIndex)[count] == count2 )
+              {
+                getRec(CFG_ECHOAREAS, count);
+                if ( !*areaBuf->msgBasePath )
+                  break;
+              }
+              count++;
+            }
+            if ( (count < areaInfoCount) &&
+                 (areaBuf->options.active) &&
+                 (areaBuf->options.export2BBS) )
+            {
+              if (config.genOptions.commentFRA && *areaBuf->comment)
+              {
+                strncpy (messageRaRec.name, areaBuf->comment, 40);
+              }
+              else
+              {
+                strncpy (messageRaRec.name, areaBuf->areaName, 40);
+              }
+              messageRaRec.nameLength = strlen(messageRaRec.name);
+
+              messageRaRec.typ = areaBuf->options.local?0:2;
+              messageRaRec.msgKinds = areaBuf->msgKindsRA;
+              strcpy (messageRaRec.origin, areaBuf->originLine);
+              messageRaRec.originLength = strlen(messageRaRec.origin);
+
+              messageRaRec.akaAddress    = checkMax(areaBuf->address, 9);
+              messageRaRec.daysKill      = areaBuf->days;
+              messageRaRec.rcvdKill      = areaBuf->daysRcvd;
+              messageRaRec.countKill     = areaBuf->msgs;
+              messageRaRec.attribute     = areaBuf->attrRA & ~BIT7;
+              messageRaRec.readSecurity  = areaBuf->readSecRA;
+              messageRaRec.writeSecurity = areaBuf->writeSecRA;
+              messageRaRec.sysopSecurity = areaBuf->sysopSecRA;
+              *((s32*)&messageRaRec.readFlags) = *((s32*)&areaBuf->flagsRdRA);
+              *((s32*)&messageRaRec.writeFlags) = *((s32*)&areaBuf->flagsWrRA);
+              *((s32*)&messageRaRec.sysopFlags) = *((s32*)&areaBuf->flagsSysRA);
+            }
+          }
+          write (folderHandle, &messageRaRec, sizeof(messageRaType));
+        }
+      }
+      else
+      {  /* RA 2 */
+        strcpy (tempStr, config.autoRAPath);
+        strcat (tempStr, "messages.rdx");
+
+        if ((config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB) &&
+            ((indexHandle = open(tempStr, O_WRONLY|O_CREAT|
+                                 O_TRUNC|O_BINARY|O_DENYNONE,
+                                 S_IREAD|S_IWRITE)) == -1))
+        {
+          displayMessage ("Can't open MESSAGES.RDX for output");
+        }
+        else
+        {
+          for (count2 = 1; count2 <= maxBoardNumRA; count2++)
+          {
+            memset (&messageRa2Rec, 0, sizeof(messageRa2Type));
+
+            count = 0;
+            while ((count < MAX_NETAKAS) &&
+                   (config.netmailBoard[count] != count2))
+            {
+              count++;
+            }
+            if (count < MAX_NETAKAS)
+            {
+              if (*config.descrAKA[count])
+              {
+                strncpy (messageRa2Rec.name, config.descrAKA[count], 40);
+              }
+              else
+              {
+                if (count)
+                  sprintf (messageRa2Rec.name, "Netmail AKA %2u", count);
+                else
+                  strcpy (messageRa2Rec.name, "Netmail Main");
+              }
+              messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
+
+              messageRa2Rec.typ = 1;
+              messageRa2Rec.msgKinds  = config.msgKindsRA[count];
+              messageRa2Rec.daysKill  = config.daysAKA[count];
+              messageRa2Rec.rcvdKill  = config.daysRcvdAKA[count];
+              messageRa2Rec.countKill = config.msgsAKA[count];
+              messageRa2Rec.attribute = config.attrRA[count] & ~BIT7;
+              messageRa2Rec.age       = config.minAgeSBBS[count];
+              messageRa2Rec.group     = config.groupRA[count];
+              messageRa2Rec.altGroup[0] = config.altGroupRA[count][0];
+              messageRa2Rec.altGroup[1] = config.altGroupRA[count][1];
+              messageRa2Rec.altGroup[2] = config.altGroupRA[count][2];
+              messageRa2Rec.attribute2    = config.attr2RA[count];
+              messageRa2Rec.readSecurity  = config.readSecRA[count];
+              messageRa2Rec.writeSecurity = config.writeSecRA[count];
+              messageRa2Rec.sysopSecurity = config.sysopSecRA[count];
+              *((s32*)&messageRa2Rec.readFlags) = *((s32*)&config.readFlagsRA[count]);
+              *((s32*)&messageRa2Rec.readNotFlags) = *((s32*)(&config.readFlagsRA[count])+1);
+              *((s32*)&messageRa2Rec.writeFlags) = *((s32*)&config.writeFlagsRA[count]);
+              *((s32*)&messageRa2Rec.writeNotFlags) = *((s32*)(&config.writeFlagsRA[count])+1);
+              *((s32*)&messageRa2Rec.sysopFlags) = *((s32*)&config.sysopFlagsRA[count]);
+              *((s32*)&messageRa2Rec.sysopNotFlags) = *((s32*)(&config.sysopFlagsRA[count])+1);
+
+              messageRa2Rec.akaAddress = count;
+            }
+            else if (config.dupBoard == count2)
+            {
+              if (config.genOptions.incBDRRA)
+              {
+                strcpy (messageRa2Rec.name, "Duplicate messages");
+                messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
+                messageRa2Rec.msgKinds = 3;
+                messageRa2Rec.readSecurity  = 32000;
+                messageRa2Rec.writeSecurity = 32000;
+                messageRa2Rec.sysopSecurity = 32000;
+              }
+            }
+            else if (config.badBoard == count2)
+            {
+              if (config.genOptions.incBDRRA)
+              {
+                strcpy (messageRa2Rec.name, "Bad messages");
+                messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
+                messageRa2Rec.msgKinds = 3;
+                messageRa2Rec.readSecurity  = 32000;
+                messageRa2Rec.writeSecurity = 32000;
+                messageRa2Rec.sysopSecurity = 32000;
+              }
+            }
+            else if (config.recBoard == count2)
+            {
+              if (config.genOptions.incBDRRA)
+              {
+                strcpy (messageRa2Rec.name, "Recovery board");
+                messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
+                messageRa2Rec.msgKinds = 3;
+                messageRa2Rec.readSecurity  = 32000;
+                messageRa2Rec.writeSecurity = 32000;
+                messageRa2Rec.sysopSecurity = 32000;
+              }
+            }
+            else
+            {
+              count = 0;
+              while ( count < areaInfoCount )
+              {
+                if ( (*areaInfoIndex)[count] == count2 )
+                {
+                  getRec(CFG_ECHOAREAS, count);
+                  break;
+                }
+                count++;
+              }
+              if ( (count < areaInfoCount) &&
+                   (areaBuf->options.active) &&
                    (areaBuf->options.export2BBS) )
-               {
-                  memset (&TAGBoardRec, 0, sizeof(MboardType));
+              {
+                if (config.genOptions.commentFRA && *areaBuf->comment)
+                {
+                  strncpy (messageRa2Rec.name, areaBuf->comment, 40);
+                }
+                else
+                {
+                  strncpy (messageRa2Rec.name, areaBuf->areaName, 40);
+                }
+                messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
 
-                  if (config.genOptions.commentFFD && *areaBuf->comment)
-                     strcpy (TAGBoardRec.Name, areaBuf->comment);
-                  else
-                     strcpy (TAGBoardRec.Name, areaBuf->areaName);
-                  TAGBoardRec.NameLen  = strlen(TAGBoardRec.Name);
-                  strncpy (TAGBoardRec.EchoTag, areaBuf->areaName, 31);
-                  TAGBoardRec.EchoTagLen = strlen(TAGBoardRec.EchoTag);
-                  strcpy (TAGBoardRec.Path, config.bbsPath);
-                  TAGBoardRec.PathLen  = strlen(TAGBoardRec.Path);
-                  strcpy (TAGBoardRec.OriginLine, areaBuf->originLine);
-                  TAGBoardRec.OriginLineLen = strlen (TAGBoardRec.OriginLine);
-                  strncpy (TAGBoardRec.QwkName, areaBuf->qwkName, 10);
-                  TAGBoardRec.QwkNameLen = min(strlen(areaBuf->qwkName),10);
-                  TAGBoardRec.Mstyle   = ECHOSTYLE;
-                  TAGBoardRec.Mtype    = RAFORMAT;
-                  TAGBoardRec.AccessAR = 'A';
-                  group = areaBuf->group;
-                  while ((group>>=1) != 0) TAGBoardRec.AccessAR++;
-                  TAGBoardRec.PostAR   = 'A';
-                  TAGBoardRec.RaBoard  = areaBuf->board;
-                  TAGBoardRec.AccessSL = areaBuf->readSecRA;
-                  TAGBoardRec.PostSL   = areaBuf->writeSecRA;
-                  TAGBoardRec.MaxMsgs  = areaBuf->msgs;
-                  TAGBoardRec.uuMaxOld = areaBuf->days;
-                  /* password */
-                  /* anonymous */
-                  /* allowansi */
-                  TAGBoardRec.RestrictPrivate = areaBuf->msgKindsRA;
-                  TAGBoardRec.AllowHandle = areaBuf->attrRA & BIT5 ? 1 :
-                                            areaBuf->attrRA & BIT3 ? 2 : 0;
-                  if (areaBuf->address)
-                  {
-                     TAGBoardRec.UseOtherAddress = 1;
-                     TAGBoardRec.OtherAddress.Zone  = TAGBoardRec.OldOtherAddress.Zone  = config.akaList[areaBuf->address].nodeNum.zone;
-                     TAGBoardRec.OtherAddress.Net   = TAGBoardRec.OldOtherAddress.Net   = config.akaList[areaBuf->address].nodeNum.net;
-                     TAGBoardRec.OtherAddress.Node  = TAGBoardRec.OldOtherAddress.Node  = config.akaList[areaBuf->address].nodeNum.node;
-                     TAGBoardRec.OtherAddress.Point = TAGBoardRec.OldOtherAddress.Point = config.akaList[areaBuf->address].nodeNum.point;
-                  }
-                  TAGBoardRec.QwkConf = areaBuf->board;
-                  write (folderHandle, &TAGBoardRec, sizeof(MboardType));
-               }
+                messageRa2Rec.typ = areaBuf->boardTypeRA ?
+                                    areaBuf->boardTypeRA+2 :
+                                    (areaBuf->options.local?0:2);
+                messageRa2Rec.netReply = areaBuf->netReplyBoardRA;
+                messageRa2Rec.msgKinds = areaBuf->msgKindsRA;
+                strcpy (messageRa2Rec.origin, areaBuf->originLine);
+                messageRa2Rec.originLength = strlen(messageRa2Rec.origin);
+
+                if ( config.bbsProgram == BBS_ELEB )
+                  messageRa2Rec.akaAddress = areaBuf->address;
+                else
+                  messageRa2Rec.akaAddress = checkMax(areaBuf->address, 9);
+                messageRa2Rec.daysKill      = areaBuf->days;
+                messageRa2Rec.rcvdKill      = areaBuf->daysRcvd;
+                messageRa2Rec.countKill     = areaBuf->msgs;
+                messageRa2Rec.attribute     = areaBuf->attrRA & ~BIT7;
+                if (*areaBuf->msgBasePath)
+                {
+                  strcpy (messageRa2Rec.JAMbase, areaBuf->msgBasePath);
+                  messageRa2Rec.JAMbaseLength = strlen(messageRa2Rec.JAMbase);
+                  messageRa2Rec.attribute |= BIT7;
+                }
+                messageRa2Rec.age           = areaBuf->minAgeSBBS;
+                messageRa2Rec.group         = areaBuf->groupRA;
+                messageRa2Rec.altGroup[0]   = areaBuf->altGroupRA[0];
+                messageRa2Rec.altGroup[1]   = areaBuf->altGroupRA[1];
+                messageRa2Rec.altGroup[2]   = areaBuf->altGroupRA[2];
+                messageRa2Rec.attribute2    = areaBuf->attr2RA;
+                messageRa2Rec.readSecurity  = areaBuf->readSecRA;
+                messageRa2Rec.writeSecurity = areaBuf->writeSecRA;
+                messageRa2Rec.sysopSecurity = areaBuf->sysopSecRA;
+                *((s32*)&messageRa2Rec.readFlags) = *((s32*)&areaBuf->flagsRdRA);
+                *((s32*)&messageRa2Rec.readNotFlags) = *((s32*)&areaBuf->flagsRdNotRA);
+                *((s32*)&messageRa2Rec.writeFlags) = *((s32*)&areaBuf->flagsWrRA);
+                *((s32*)&messageRa2Rec.writeNotFlags) = *((s32*)&areaBuf->flagsWrNotRA);
+                *((s32*)&messageRa2Rec.sysopFlags) = *((s32*)&areaBuf->flagsSysRA);
+                *((s32*)&messageRa2Rec.sysopNotFlags) = *((s32*)&areaBuf->flagsSysNotRA);
+              }
             }
-            close (folderHandle);
-         }
-      }
-#endif
-      maxBoardNumRA = MBBOARDS;
-      for ( count = 0; count < areaInfoCount; count++ )
-      {  getRec(CFG_ECHOAREAS, count);
-         (*areaInfoIndex)[count] = ( (areaBuf->board == 0 &&
-                                   *areaBuf->msgBasePath == 0) ||
-                                  (areaBuf->board > 0 &&
-                                   areaBuf->board <= MBBOARDS) ) ?
-                                   areaBuf->board : areaBuf->boardNumRA;
-         maxBoardNumRA = max(maxBoardNumRA, (*areaInfoIndex)[count]);
-      }
-#ifndef GOLDBASE
-      if ( config.bbsProgram == BBS_RA1X || config.bbsProgram == BBS_RA20 ||
-           config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
-      {
-         strcpy (tempStr, config.autoRAPath);
-         strcat (tempStr, "MESSAGES.RA ");
-
-	 if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
-                                           O_TRUNC|O_BINARY|O_DENYNONE,
-                                           S_IREAD|S_IWRITE)) == -1)
-         {
-            displayMessage ("Can't open MESSAGES.RA for output");
-         }
-         else
-         {
-            if (config.bbsProgram == BBS_RA1X)
+            /* Original, without 'holes'
+                                 if ( config.bbsProgram == BBS_RA25 || config.bbsProgramma == BBS_ELEB )
+                                 {
+                                    messageRa2Rec.areanum = count2;
+                                    if (*messageRa2Rec.name)
+                                    {
+                                       write (folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
+                                       temp = (u16)(tell(folderHandle)/(s32)sizeof(messageRa2Type));
+                                       write (indexHandle, &temp, 2);
+                                    }
+                                    else
+                                       write (indexHandle, &nul, 2);
+                                 }
+                                 else
+                                    write (folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
+            */
+            /* New, with 'holes' */
+            if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB
+                 /*&& *messageRa2Rec.name*/ )
+              messageRa2Rec.areanum = count2;
+            write (folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
+            if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
             {
-               for (count2 = 1; count2 <= MBBOARDS; count2++)
-               {
-                  memset (&messageRaRec, 0, sizeof(messageRaType));
-
-                  count = 0;
-                  while ((count < MAX_NETAKAS) &&
-                         (config.netmailBoard[count] != count2))
-                  {
-                     count++;
-                  }
-                  if (count < MAX_NETAKAS)
-                  {
-                    if (*config.descrAKA[count])
-                     {
-                        strncpy (messageRaRec.name, config.descrAKA[count], 40);
-                     }
-                     else
-                     {
-                        if (count)
-                           sprintf (messageRaRec.name, "Netmail AKA %2u", count);
-                        else
-                           strcpy (messageRaRec.name, "Netmail Main");
-                     }
-                     messageRaRec.nameLength = strlen(messageRaRec.name);
-
-                     messageRaRec.typ = 1;
-                     messageRaRec.msgKinds  = config.msgKindsRA[count];
-                     messageRaRec.daysKill  = config.daysAKA[count];
-                     messageRaRec.rcvdKill  = config.daysRcvdAKA[count];
-                     messageRaRec.countKill = config.msgsAKA[count];
-                     messageRaRec.attribute = config.attrRA[count] & ~BIT7;
-                     messageRaRec.readSecurity = config.readSecRA[count];
-                     messageRaRec.writeSecurity = config.writeSecRA[count];
-                     messageRaRec.sysopSecurity = config.sysopSecRA[count];
-                     *((s32*)&messageRaRec.readFlags) = *((s32*)&config.readFlagsRA[count]);
-                     *((s32*)&messageRaRec.writeFlags) = *((s32*)&config.writeFlagsRA[count]);
-                     *((s32*)&messageRaRec.sysopFlags) = *((s32*)&config.sysopFlagsRA[count]);
-
-                     messageRaRec.akaAddress = count;
-                  } else
-                  if (config.dupBoard == count2)
-                  {
-                     if (config.genOptions.incBDRRA)
-                     {
-                        strcpy (messageRaRec.name, "Duplicate messages");
-                        messageRaRec.nameLength = strlen(messageRaRec.name);
-                        messageRaRec.msgKinds = 3;
-                        messageRaRec.readSecurity  = 32000;
-                        messageRaRec.writeSecurity = 32000;
-                        messageRaRec.sysopSecurity = 32000;
-                     }
-                  } else
-                  if (config.badBoard == count2)
-                  {
-                     if (config.genOptions.incBDRRA)
-                     {
-                        strcpy (messageRaRec.name, "Bad messages");
-                        messageRaRec.nameLength = strlen(messageRaRec.name);
-                        messageRaRec.msgKinds = 3;
-                        messageRaRec.readSecurity  = 32000;
-                        messageRaRec.writeSecurity = 32000;
-                        messageRaRec.sysopSecurity = 32000;
-                     }
-                  } else
-                  if (config.recBoard == count2)
-                  {
-                     if (config.genOptions.incBDRRA)
-                     {
-                        strcpy (messageRaRec.name, "Recovery board");
-                        messageRaRec.nameLength = strlen(messageRaRec.name);
-                        messageRaRec.msgKinds = 3;
-                        messageRaRec.readSecurity  = 32000;
-                        messageRaRec.writeSecurity = 32000;
-                        messageRaRec.sysopSecurity = 32000;
-                     }
-                  }
-                  else
-                  {
-                     count = 0;
-                     while ( count < areaInfoCount ) 
-                     {  if ( (*areaInfoIndex)[count] == count2 )
-                        {  getRec(CFG_ECHOAREAS, count);
-                           if ( !*areaBuf->msgBasePath )
-                              break;
-                        }
-                        count++;
-                     }
-                     if ( (count < areaInfoCount) &&
-			  (areaBuf->options.active) &&
-                          (areaBuf->options.export2BBS) )
-		     {
-			if (config.genOptions.commentFRA && *areaBuf->comment)
-			{
-                           strncpy (messageRaRec.name, areaBuf->comment, 40);
-                        }
-                        else
-                        {
-                           strncpy (messageRaRec.name, areaBuf->areaName, 40);
-                        }
-                        messageRaRec.nameLength = strlen(messageRaRec.name);
-
-                        messageRaRec.typ = areaBuf->options.local?0:2;
-                        messageRaRec.msgKinds = areaBuf->msgKindsRA;
-                        strcpy (messageRaRec.origin, areaBuf->originLine);
-                        messageRaRec.originLength = strlen(messageRaRec.origin);
-
-                        messageRaRec.akaAddress    = checkMax(areaBuf->address, 9);
-                        messageRaRec.daysKill      = areaBuf->days;
-                        messageRaRec.rcvdKill      = areaBuf->daysRcvd;
-                        messageRaRec.countKill     = areaBuf->msgs;
-                        messageRaRec.attribute     = areaBuf->attrRA & ~BIT7;
-                        messageRaRec.readSecurity  = areaBuf->readSecRA;
-                        messageRaRec.writeSecurity = areaBuf->writeSecRA;
-                        messageRaRec.sysopSecurity = areaBuf->sysopSecRA;
-                        *((s32*)&messageRaRec.readFlags) = *((s32*)&areaBuf->flagsRdRA);
-                        *((s32*)&messageRaRec.writeFlags) = *((s32*)&areaBuf->flagsWrRA);
-                        *((s32*)&messageRaRec.sysopFlags) = *((s32*)&areaBuf->flagsSysRA);
-                     }
-                  }
-                  write (folderHandle, &messageRaRec, sizeof(messageRaType));
-               }
+              if (*messageRa2Rec.name)
+              {
+                temp = (u16)(tell(folderHandle)/(s32)sizeof(messageRa2Type));
+                write (indexHandle, &temp, 2);
+              }
+              else
+                write (indexHandle, &nul, 2);
+            }
+          }
+          for (count = 0; count < areaInfoCount; count++)
+          {
+            getRec(CFG_ECHOAREAS, count);
+            if (! (areaBuf->options.active &&
+                   areaBuf->boardNumRA == 0 &&
+                   *areaBuf->msgBasePath &&
+                   areaBuf->options.export2BBS) )
+              continue;
+            memset (&messageRa2Rec, 0, sizeof(messageRa2Type));
+            if (config.genOptions.commentFRA && *areaBuf->comment)
+            {
+              strncpy (messageRa2Rec.name, areaBuf->comment, 40);
             }
             else
-            {  /* RA 2 */
-               strcpy (tempStr, config.autoRAPath);
-               strcat (tempStr, "MESSAGES.RDX");
-
-               if ((config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB) &&
-                   ((indexHandle = open(tempStr, O_WRONLY|O_CREAT|
-                                                 O_TRUNC|O_BINARY|O_DENYNONE,
-                                                 S_IREAD|S_IWRITE)) == -1))
-               {
-                  displayMessage ("Can't open MESSAGES.RDX for output");
-               }
-               else
-               {
-                  for (count2 = 1; count2 <= maxBoardNumRA; count2++)
-                  {
-                     memset (&messageRa2Rec, 0, sizeof(messageRa2Type));
-
-                     count = 0;
-                     while ((count < MAX_NETAKAS) &&
-                            (config.netmailBoard[count] != count2))
-                     {
-                        count++;
-                     }
-                     if (count < MAX_NETAKAS)
-                     {
-                        if (*config.descrAKA[count])
-                        {
-                           strncpy (messageRa2Rec.name, config.descrAKA[count], 40);
-                        }
-                        else
-                        {
-                           if (count)
-                              sprintf (messageRa2Rec.name, "Netmail AKA %2u", count);
-                           else
-                              strcpy (messageRa2Rec.name, "Netmail Main");
-                        }
-                        messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
-
-                        messageRa2Rec.typ = 1;
-                        messageRa2Rec.msgKinds  = config.msgKindsRA[count];
-                        messageRa2Rec.daysKill  = config.daysAKA[count];
-                        messageRa2Rec.rcvdKill  = config.daysRcvdAKA[count];
-                        messageRa2Rec.countKill = config.msgsAKA[count];
-                        messageRa2Rec.attribute = config.attrRA[count] & ~BIT7;
-                        messageRa2Rec.age       = config.minAgeSBBS[count];
-                        messageRa2Rec.group     = config.groupRA[count];
-                        messageRa2Rec.altGroup[0] = config.altGroupRA[count][0];
-                        messageRa2Rec.altGroup[1] = config.altGroupRA[count][1];
-                        messageRa2Rec.altGroup[2] = config.altGroupRA[count][2];
-                        messageRa2Rec.attribute2    = config.attr2RA[count];
-                        messageRa2Rec.readSecurity  = config.readSecRA[count];
-                        messageRa2Rec.writeSecurity = config.writeSecRA[count];
-                        messageRa2Rec.sysopSecurity = config.sysopSecRA[count];
-                        *((s32*)&messageRa2Rec.readFlags) = *((s32*)&config.readFlagsRA[count]);
-                        *((s32*)&messageRa2Rec.readNotFlags) = *((s32*)(&config.readFlagsRA[count])+1);
-                        *((s32*)&messageRa2Rec.writeFlags) = *((s32*)&config.writeFlagsRA[count]);
-                        *((s32*)&messageRa2Rec.writeNotFlags) = *((s32*)(&config.writeFlagsRA[count])+1);
-                        *((s32*)&messageRa2Rec.sysopFlags) = *((s32*)&config.sysopFlagsRA[count]);
-                        *((s32*)&messageRa2Rec.sysopNotFlags) = *((s32*)(&config.sysopFlagsRA[count])+1);
-
-                        messageRa2Rec.akaAddress = count;
-                     } else
-                     if (config.dupBoard == count2)
-                     {
-                        if (config.genOptions.incBDRRA)
-                        {
-                           strcpy (messageRa2Rec.name, "Duplicate messages");
-                           messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
-                           messageRa2Rec.msgKinds = 3;
-                           messageRa2Rec.readSecurity  = 32000;
-                           messageRa2Rec.writeSecurity = 32000;
-                           messageRa2Rec.sysopSecurity = 32000;
-                        }
-                     } else
-                     if (config.badBoard == count2)
-                     {
-                        if (config.genOptions.incBDRRA)
-                        {
-                           strcpy (messageRa2Rec.name, "Bad messages");
-                           messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
-                           messageRa2Rec.msgKinds = 3;
-                           messageRa2Rec.readSecurity  = 32000;
-                           messageRa2Rec.writeSecurity = 32000;
-                           messageRa2Rec.sysopSecurity = 32000;
-                        }
-                     } else
-                     if (config.recBoard == count2)
-                     {
-                        if (config.genOptions.incBDRRA)
-                        {
-                           strcpy (messageRa2Rec.name, "Recovery board");
-                           messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
-                           messageRa2Rec.msgKinds = 3;
-                           messageRa2Rec.readSecurity  = 32000;
-                           messageRa2Rec.writeSecurity = 32000;
-                           messageRa2Rec.sysopSecurity = 32000;
-                        }
-                     }
-                     else
-                     {
-                        count = 0;
-                        while ( count < areaInfoCount )
-                        {  if ( (*areaInfoIndex)[count] == count2 )
-                           {  getRec(CFG_ECHOAREAS, count);
-                              break;
-                           }
-                           count++;
-                        }
-                        if ( (count < areaInfoCount) &&
-                             (areaBuf->options.active) &&
-                             (areaBuf->options.export2BBS) )
-                        {
-                           if (config.genOptions.commentFRA && *areaBuf->comment)
-                           {  strncpy (messageRa2Rec.name, areaBuf->comment, 40);
-                           }
-                           else
-                           {  strncpy (messageRa2Rec.name, areaBuf->areaName, 40);
-                           }
-                           messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
-
-                           messageRa2Rec.typ = areaBuf->boardTypeRA ?
-                                               areaBuf->boardTypeRA+2 :
-                                               (areaBuf->options.local?0:2);
-                           messageRa2Rec.netReply = areaBuf->netReplyBoardRA;
-                           messageRa2Rec.msgKinds = areaBuf->msgKindsRA;
-                           strcpy (messageRa2Rec.origin, areaBuf->originLine);
-                           messageRa2Rec.originLength = strlen(messageRa2Rec.origin);
-
-                           if ( config.bbsProgram == BBS_ELEB )
-                              messageRa2Rec.akaAddress = areaBuf->address;
-                           else
-                              messageRa2Rec.akaAddress = checkMax(areaBuf->address, 9);
-                           messageRa2Rec.daysKill      = areaBuf->days;
-                           messageRa2Rec.rcvdKill      = areaBuf->daysRcvd;
-                           messageRa2Rec.countKill     = areaBuf->msgs;
-                           messageRa2Rec.attribute     = areaBuf->attrRA & ~BIT7;
-                           if (*areaBuf->msgBasePath)
-                           {
-                              strcpy (messageRa2Rec.JAMbase, areaBuf->msgBasePath);
-                              messageRa2Rec.JAMbaseLength = strlen(messageRa2Rec.JAMbase);
-                              messageRa2Rec.attribute |= BIT7;
-                           }
-                           messageRa2Rec.age           = areaBuf->minAgeSBBS;
-                           messageRa2Rec.group         = areaBuf->groupRA;
-                           messageRa2Rec.altGroup[0]   = areaBuf->altGroupRA[0];
-                           messageRa2Rec.altGroup[1]   = areaBuf->altGroupRA[1];
-                           messageRa2Rec.altGroup[2]   = areaBuf->altGroupRA[2];
-                           messageRa2Rec.attribute2    = areaBuf->attr2RA;
-                           messageRa2Rec.readSecurity  = areaBuf->readSecRA;
-                           messageRa2Rec.writeSecurity = areaBuf->writeSecRA;
-                           messageRa2Rec.sysopSecurity = areaBuf->sysopSecRA;
-                           *((s32*)&messageRa2Rec.readFlags) = *((s32*)&areaBuf->flagsRdRA);
-                           *((s32*)&messageRa2Rec.readNotFlags) = *((s32*)&areaBuf->flagsRdNotRA);
-                           *((s32*)&messageRa2Rec.writeFlags) = *((s32*)&areaBuf->flagsWrRA);
-                           *((s32*)&messageRa2Rec.writeNotFlags) = *((s32*)&areaBuf->flagsWrNotRA);
-                           *((s32*)&messageRa2Rec.sysopFlags) = *((s32*)&areaBuf->flagsSysRA);
-                           *((s32*)&messageRa2Rec.sysopNotFlags) = *((s32*)&areaBuf->flagsSysNotRA);
-                        }
-                     }
-/* Original, without 'holes'
-                     if ( config.bbsProgram == BBS_RA25 || config.bbsProgramma == BBS_ELEB )
-                     {
-                        messageRa2Rec.areanum = count2;
-                        if (*messageRa2Rec.name)
-                        {
-                           write (folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
-                           temp = (u16)(tell(folderHandle)/(s32)sizeof(messageRa2Type));
-                           write (indexHandle, &temp, 2);
-                        }
-                        else
-                           write (indexHandle, &nul, 2);
-                     }
-                     else
-                        write (folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
-*/
-/* New, with 'holes' */
-                     if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB
-                          /*&& *messageRa2Rec.name*/ )
-                        messageRa2Rec.areanum = count2;
-                     write (folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
-                     if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
-                     {
-                        if (*messageRa2Rec.name)
-                        {
-                           temp = (u16)(tell(folderHandle)/(s32)sizeof(messageRa2Type));
-                           write (indexHandle, &temp, 2);
-                        }
-                        else
-                           write (indexHandle, &nul, 2);
-                     }
-                  }
-                  for (count = 0; count < areaInfoCount; count++)
-                  {
-                     getRec(CFG_ECHOAREAS, count);
-                     if (! (areaBuf->options.active &&
-                            areaBuf->boardNumRA == 0 &&
-                            *areaBuf->msgBasePath &&
-                            areaBuf->options.export2BBS) )
-                        continue;
-                     memset (&messageRa2Rec, 0, sizeof(messageRa2Type));
-                     if (config.genOptions.commentFRA && *areaBuf->comment)
-                     {  strncpy (messageRa2Rec.name, areaBuf->comment, 40);
-                     }
-                     else
-                     {  strncpy (messageRa2Rec.name, areaBuf->areaName, 40);
-                     }
-                     messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
-
-                     strcpy (messageRa2Rec.JAMbase, areaBuf->msgBasePath);
-                     messageRa2Rec.JAMbaseLength = strlen(messageRa2Rec.JAMbase);
-
-                     messageRa2Rec.typ = areaBuf->boardTypeRA ?
-                                         areaBuf->boardTypeRA+2 :
-                                         (areaBuf->options.local?0:2);
-                     messageRa2Rec.netReply = areaBuf->netReplyBoardRA;
-                     messageRa2Rec.msgKinds = areaBuf->msgKindsRA;
-                     strcpy (messageRa2Rec.origin, areaBuf->originLine);
-                     messageRa2Rec.originLength = strlen(messageRa2Rec.origin);
-                     if ( config.bbsProgram == BBS_ELEB )
-                        messageRa2Rec.akaAddress = areaBuf->address;
-                     else
-                        messageRa2Rec.akaAddress = checkMax(areaBuf->address, 9);
-                     messageRa2Rec.daysKill      = areaBuf->days;
-                     messageRa2Rec.rcvdKill      = areaBuf->daysRcvd;
-                     messageRa2Rec.countKill     = areaBuf->msgs;
-                     messageRa2Rec.attribute     = areaBuf->attrRA | BIT7;
-                     messageRa2Rec.age           = areaBuf->minAgeSBBS;
-                     messageRa2Rec.group         = areaBuf->groupRA;
-                     messageRa2Rec.altGroup[0]   = areaBuf->altGroupRA[0];
-                     messageRa2Rec.altGroup[1]   = areaBuf->altGroupRA[1];
-                     messageRa2Rec.altGroup[2]   = areaBuf->altGroupRA[2];
-                     messageRa2Rec.attribute2    = areaBuf->attr2RA;
-                     messageRa2Rec.readSecurity  = areaBuf->readSecRA;
-                     messageRa2Rec.writeSecurity = areaBuf->writeSecRA;
-                     messageRa2Rec.sysopSecurity = areaBuf->sysopSecRA;
-                     *((s32*)&messageRa2Rec.readFlags) = *((s32*)&areaBuf->flagsRdRA);
-                     *((s32*)&messageRa2Rec.readNotFlags) = *((s32*)&areaBuf->flagsRdNotRA);
-                     *((s32*)&messageRa2Rec.writeFlags) = *((s32*)&areaBuf->flagsWrRA);
-                     *((s32*)&messageRa2Rec.writeNotFlags) = *((s32*)&areaBuf->flagsWrNotRA);
-                     *((s32*)&messageRa2Rec.sysopFlags) = *((s32*)&areaBuf->flagsSysRA);
-                     *((s32*)&messageRa2Rec.sysopNotFlags) = *((s32*)&areaBuf->flagsSysNotRA);
-                     if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
-                     {
-                        messageRa2Rec.areanum = count2++;
-                     }
-                     write (folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
-                     if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
-                     {
-                        temp = (u16)(tell(folderHandle)/(s32)sizeof(messageRa2Type));
-                        write (indexHandle, &temp, 2);
-                     }
-                  }
-               }
-               if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
-                  close(indexHandle);
+            {
+              strncpy (messageRa2Rec.name, areaBuf->areaName, 40);
             }
-            close (folderHandle);
-         }
-      }
+            messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
 
-      if (config.bbsProgram == BBS_SBBS)
+            strcpy (messageRa2Rec.JAMbase, areaBuf->msgBasePath);
+            messageRa2Rec.JAMbaseLength = strlen(messageRa2Rec.JAMbase);
+
+            messageRa2Rec.typ = areaBuf->boardTypeRA ?
+                                areaBuf->boardTypeRA+2 :
+                                (areaBuf->options.local?0:2);
+            messageRa2Rec.netReply = areaBuf->netReplyBoardRA;
+            messageRa2Rec.msgKinds = areaBuf->msgKindsRA;
+            strcpy (messageRa2Rec.origin, areaBuf->originLine);
+            messageRa2Rec.originLength = strlen(messageRa2Rec.origin);
+            if ( config.bbsProgram == BBS_ELEB )
+              messageRa2Rec.akaAddress = areaBuf->address;
+            else
+              messageRa2Rec.akaAddress = checkMax(areaBuf->address, 9);
+            messageRa2Rec.daysKill      = areaBuf->days;
+            messageRa2Rec.rcvdKill      = areaBuf->daysRcvd;
+            messageRa2Rec.countKill     = areaBuf->msgs;
+            messageRa2Rec.attribute     = areaBuf->attrRA | BIT7;
+            messageRa2Rec.age           = areaBuf->minAgeSBBS;
+            messageRa2Rec.group         = areaBuf->groupRA;
+            messageRa2Rec.altGroup[0]   = areaBuf->altGroupRA[0];
+            messageRa2Rec.altGroup[1]   = areaBuf->altGroupRA[1];
+            messageRa2Rec.altGroup[2]   = areaBuf->altGroupRA[2];
+            messageRa2Rec.attribute2    = areaBuf->attr2RA;
+            messageRa2Rec.readSecurity  = areaBuf->readSecRA;
+            messageRa2Rec.writeSecurity = areaBuf->writeSecRA;
+            messageRa2Rec.sysopSecurity = areaBuf->sysopSecRA;
+            *((s32*)&messageRa2Rec.readFlags) = *((s32*)&areaBuf->flagsRdRA);
+            *((s32*)&messageRa2Rec.readNotFlags) = *((s32*)&areaBuf->flagsRdNotRA);
+            *((s32*)&messageRa2Rec.writeFlags) = *((s32*)&areaBuf->flagsWrRA);
+            *((s32*)&messageRa2Rec.writeNotFlags) = *((s32*)&areaBuf->flagsWrNotRA);
+            *((s32*)&messageRa2Rec.sysopFlags) = *((s32*)&areaBuf->flagsSysRA);
+            *((s32*)&messageRa2Rec.sysopNotFlags) = *((s32*)&areaBuf->flagsSysNotRA);
+            if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
+            {
+              messageRa2Rec.areanum = count2++;
+            }
+            write (folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
+            if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
+            {
+              temp = (u16)(tell(folderHandle)/(s32)sizeof(messageRa2Type));
+              write (indexHandle, &temp, 2);
+            }
+          }
+        }
+        if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
+          close(indexHandle);
+      }
+      close (folderHandle);
+    }
+  }
+
+  if (config.bbsProgram == BBS_SBBS)
+  {
+    memset (SBBSakaUsed, 0, MBBOARDS);
+
+    strcpy (tempStr, config.autoRAPath);
+    strcat (tempStr, "boards.bbs");
+
+    if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
+                             O_TRUNC|O_BINARY|O_DENYNONE,
+                             S_IREAD|S_IWRITE)) == -1)
+    {
+      displayMessage ("Can't open BOARDS.BBS for output");
+    }
+    else
+    {
+      for (count2 = 1; count2 <= MBBOARDS; count2++)
       {
-         memset (SBBSakaUsed, 0, MBBOARDS);
+        memset (&SBBSBoardRec, 0, sizeof(SBBSBoardRecType));
 
-         strcpy (tempStr, config.autoRAPath);
-         strcat (tempStr, "BOARDS.BBS");
-
-         if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
-                                           O_TRUNC|O_BINARY|O_DENYNONE,
-                                           S_IREAD|S_IWRITE)) == -1)
-         {
-            displayMessage ("Can't open BOARDS.BBS for output");
-         }
-         else
-         {
-            for (count2 = 1; count2 <= MBBOARDS; count2++)
+        count = 0;
+        while ((count < MAX_NETAKAS) &&
+               (config.netmailBoard[count] != count2))
+        {
+          count++;
+        }
+        if (count < MAX_NETAKAS)
+        {
+          if (*config.descrAKA[count])
+          {
+            strncpy (SBBSBoardRec.Name, config.descrAKA[count], 30);
+            /*                   strncpy (SBBSBoardRec.QwkName, config.descrAKA[count], 12); */
+          }
+          else
+          {
+            if (count)
             {
-               memset (&SBBSBoardRec, 0, sizeof(SBBSBoardRecType));
-
-               count = 0;
-               while ((count < MAX_NETAKAS) &&
-                      (config.netmailBoard[count] != count2))
-               {
-                  count++;
-               }
-               if (count < MAX_NETAKAS)
-               {
-                  if (*config.descrAKA[count])
-                  {
-                     strncpy (SBBSBoardRec.Name, config.descrAKA[count], 30);
-/*                   strncpy (SBBSBoardRec.QwkName, config.descrAKA[count], 12); */
-                  }
-                  else
-                  {
-                     if (count)
-                     {
-                        sprintf (SBBSBoardRec.Name, "Netmail AKA %2u", count);
-/*                      sprintf (SBBSBoardRec.QwkName, "Netm. AKA %2u", count); */
-                     }
-                     else
-                     {
-                        strcpy (SBBSBoardRec.Name, "Netmail Main");
-/*                      strcpy (SBBSBoardRec.QwkName, "Netmail Main"); */
-                     }
-                  }
-                  SBBSBoardRec.NameLength = strlen(SBBSBoardRec.Name);
-
-                  memcpy (SBBSBoardRec.QwkName, config.qwkName[count], 12);
-                  SBBSBoardRec.QwkNameLength = strlen(config.qwkName[count]);
-
-                  SBBSBoardRec.Typ         = 1;
-                  SBBSBoardRec.Kinds       = config.msgKindsRA[count];
-                  SBBSBoardRec.Aliases     = config.attrRA[count] & BIT5 ? 1 :
-                                             config.attrRA[count] & BIT3 ? 3 : 0;
-                  SBBSBoardRec.Attrib      = config.attrSBBS[count] |
-                                             (config.attrRA[count] & BIT1 ? BIT0 : 0) |
-                                             (config.attrRA[count] & BIT6 ? BIT2 : 0);
-                  SBBSBoardRec.Replystatus = config.replyStatSBBS[count];
-                  SBBSBoardRec.Age         = config.minAgeSBBS[count];
-                  SBBSBoardRec.UseAka      = count;
-                  SBBSBoardRec.ReadSecLvl  = config.readSecRA[count];
-                  SBBSBoardRec.WriteSecLvl = config.writeSecRA[count];
-                  SBBSBoardRec.SysopSecLvl = config.sysopSecRA[count];
-                  *((s32*)&SBBSBoardRec.ReadFlags)  = *((s32*)&config.readFlagsRA[count]);
-                  *((s32*)&SBBSBoardRec.WriteFlags) = *((s32*)&config.writeFlagsRA[count]);
-                  *((s32*)&SBBSBoardRec.SysopFlags) = *((s32*)&config.sysopFlagsRA[count]);
-
-                  SBBSakaUsed[count2-1] = count;
-               } else
-               if (config.dupBoard == count2)
-               {
-                  if (config.genOptions.incBDRRA)
-                  {
-                     strcpy (SBBSBoardRec.Name, "Duplicate msgs");
-                     SBBSBoardRec.NameLength = strlen (SBBSBoardRec.Name);
-                     strcpy (SBBSBoardRec.QwkName, "Duplicates");
-                     SBBSBoardRec.QwkNameLength = strlen (SBBSBoardRec.QwkName);
-                     SBBSBoardRec.Kinds = 3;
-                     SBBSBoardRec.Replystatus = 3;
-                     SBBSBoardRec.ReadSecLvl  = 32000;
-                     SBBSBoardRec.WriteSecLvl = 32000;
-                     SBBSBoardRec.SysopSecLvl = 32000;
-                  }
-               } else
-               if (config.badBoard == count2)
-               {
-                  if (config.genOptions.incBDRRA)
-                  {
-                     strcpy (SBBSBoardRec.Name, "Bad messages");
-                     SBBSBoardRec.NameLength = strlen (SBBSBoardRec.Name);
-                     strcpy (SBBSBoardRec.QwkName, "Bad messages");
-                     SBBSBoardRec.QwkNameLength = strlen (SBBSBoardRec.QwkName);
-                     SBBSBoardRec.Kinds       = 3;
-                     SBBSBoardRec.Replystatus = 3;
-                     SBBSBoardRec.ReadSecLvl  = 32000;
-                     SBBSBoardRec.WriteSecLvl = 32000;
-                     SBBSBoardRec.SysopSecLvl = 32000;
-                  }
-               } else
-               if (config.recBoard == count2)
-               {
-                  if (config.genOptions.incBDRRA)
-                  {
-                     strcpy (SBBSBoardRec.Name, "Recovery board");
-                     SBBSBoardRec.NameLength = strlen (SBBSBoardRec.Name);
-                     strcpy (SBBSBoardRec.QwkName, "Recovery");
-                     SBBSBoardRec.QwkNameLength = strlen (SBBSBoardRec.QwkName);
-                     SBBSBoardRec.Kinds = 3;
-                     SBBSBoardRec.Replystatus = 3;
-                     SBBSBoardRec.ReadSecLvl  = 32000;
-                     SBBSBoardRec.WriteSecLvl = 32000;
-                     SBBSBoardRec.SysopSecLvl = 32000;
-                  }
-               }
-               else
-               {
-                  count = 0;
-                  while ( count < areaInfoCount )
-                  {  if ( (*areaInfoIndex)[count] == count2 )
-                     {  getRec(CFG_ECHOAREAS, count);
-                        if ( !*areaBuf->msgBasePath )
-                           break;
-                     }
-                     count++;
-                  }
-                  if ((count < areaInfoCount) &&
-                      (!*areaBuf->msgBasePath) &&
-		      (areaBuf->options.active) &&
-                      (areaBuf->options.export2BBS) )
-                  {
-                     if (config.genOptions.commentFRA && *areaBuf->comment)
-                     {
-                        strncpy (SBBSBoardRec.Name, areaBuf->comment, 30);
-                     }
-                     else
-                     {
-                        strncpy (SBBSBoardRec.Name, areaBuf->areaName, 30);
-                     }
-                     SBBSBoardRec.NameLength = strlen(SBBSBoardRec.Name);
-
-                     strncpy (SBBSBoardRec.QwkName, areaBuf->qwkName, 12);
-                     SBBSBoardRec.QwkNameLength = strlen(areaBuf->qwkName);
-
-                     SBBSBoardRec.Typ     = areaBuf->options.local?0:3;
-                     SBBSBoardRec.Kinds   = areaBuf->msgKindsRA;
-
-                     SBBSBoardRec.Aliases = areaBuf->attrRA & BIT5 ? 1 :
-                                            areaBuf->attrRA & BIT3 ? 3 : 0;
-                     SBBSBoardRec.Attrib  = areaBuf->attrSBBS |
-                                            (areaBuf->attrRA & BIT1 ? BIT0 : 0) |
-                                            (areaBuf->attrRA & BIT6 ? BIT2 : 0);
-                     SBBSBoardRec.Replystatus = areaBuf->replyStatSBBS;
-                     SBBSBoardRec.Group   = getGroupChar(areaBuf->group);
-                     SBBSBoardRec.UseAka  = checkMax(areaBuf->address, 9);
-                     SBBSBoardRec.Age     = areaBuf->minAgeSBBS;
-
-                     SBBSBoardRec.ReadSecLvl = areaBuf->readSecRA;
-                     SBBSBoardRec.WriteSecLvl = areaBuf->writeSecRA;
-                     SBBSBoardRec.SysopSecLvl = areaBuf->sysopSecRA;
-                     *((s32*)&SBBSBoardRec.ReadFlags) = *((s32*)&areaBuf->flagsRdRA);
-                     *((s32*)&SBBSBoardRec.WriteFlags) = *((s32*)&areaBuf->flagsWrRA);
-                     *((s32*)&SBBSBoardRec.SysopFlags) = *((s32*)&areaBuf->flagsSysRA);
-
-                     SBBSakaUsed[count2-1] = checkMax(areaBuf->address, 9);
-                  }
-               }
-               write (folderHandle, &SBBSBoardRec, sizeof(SBBSBoardRecType));
+              sprintf (SBBSBoardRec.Name, "Netmail AKA %2u", count);
+              /*                      sprintf (SBBSBoardRec.QwkName, "Netm. AKA %2u", count); */
             }
-            close (folderHandle);
-
-            strcpy (tempStr, config.autoRAPath);
-            strcat (tempStr, "CONFIG.BBS");
-
-            if (((folderHandle = open(tempStr, O_WRONLY|O_BINARY|O_DENYNONE,
-                                               S_IREAD|S_IWRITE)) == -1) ||
-                (lseek(folderHandle, 0x442, SEEK_SET) == -1)             ||
-                (write(folderHandle, SBBSakaUsed, MBBOARDS) != MBBOARDS)           ||
-                (close(folderHandle) == -1))
+            else
             {
-               displayMessage ("Could not update CONFIG.BBS");
+              strcpy (SBBSBoardRec.Name, "Netmail Main");
+              /*                      strcpy (SBBSBoardRec.QwkName, "Netmail Main"); */
             }
-         }
+          }
+          SBBSBoardRec.NameLength = strlen(SBBSBoardRec.Name);
+
+          memcpy (SBBSBoardRec.QwkName, config.qwkName[count], 12);
+          SBBSBoardRec.QwkNameLength = strlen(config.qwkName[count]);
+
+          SBBSBoardRec.Typ         = 1;
+          SBBSBoardRec.Kinds       = config.msgKindsRA[count];
+          SBBSBoardRec.Aliases     = config.attrRA[count] & BIT5 ? 1 :
+                                     config.attrRA[count] & BIT3 ? 3 : 0;
+          SBBSBoardRec.Attrib      = config.attrSBBS[count] |
+                                     (config.attrRA[count] & BIT1 ? BIT0 : 0) |
+                                     (config.attrRA[count] & BIT6 ? BIT2 : 0);
+          SBBSBoardRec.Replystatus = config.replyStatSBBS[count];
+          SBBSBoardRec.Age         = config.minAgeSBBS[count];
+          SBBSBoardRec.UseAka      = count;
+          SBBSBoardRec.ReadSecLvl  = config.readSecRA[count];
+          SBBSBoardRec.WriteSecLvl = config.writeSecRA[count];
+          SBBSBoardRec.SysopSecLvl = config.sysopSecRA[count];
+          *((s32*)&SBBSBoardRec.ReadFlags)  = *((s32*)&config.readFlagsRA[count]);
+          *((s32*)&SBBSBoardRec.WriteFlags) = *((s32*)&config.writeFlagsRA[count]);
+          *((s32*)&SBBSBoardRec.SysopFlags) = *((s32*)&config.sysopFlagsRA[count]);
+
+          SBBSakaUsed[count2-1] = count;
+        }
+        else if (config.dupBoard == count2)
+        {
+          if (config.genOptions.incBDRRA)
+          {
+            strcpy (SBBSBoardRec.Name, "Duplicate msgs");
+            SBBSBoardRec.NameLength = strlen (SBBSBoardRec.Name);
+            strcpy (SBBSBoardRec.QwkName, "Duplicates");
+            SBBSBoardRec.QwkNameLength = strlen (SBBSBoardRec.QwkName);
+            SBBSBoardRec.Kinds = 3;
+            SBBSBoardRec.Replystatus = 3;
+            SBBSBoardRec.ReadSecLvl  = 32000;
+            SBBSBoardRec.WriteSecLvl = 32000;
+            SBBSBoardRec.SysopSecLvl = 32000;
+          }
+        }
+        else if (config.badBoard == count2)
+        {
+          if (config.genOptions.incBDRRA)
+          {
+            strcpy (SBBSBoardRec.Name, "Bad messages");
+            SBBSBoardRec.NameLength = strlen (SBBSBoardRec.Name);
+            strcpy (SBBSBoardRec.QwkName, "Bad messages");
+            SBBSBoardRec.QwkNameLength = strlen (SBBSBoardRec.QwkName);
+            SBBSBoardRec.Kinds       = 3;
+            SBBSBoardRec.Replystatus = 3;
+            SBBSBoardRec.ReadSecLvl  = 32000;
+            SBBSBoardRec.WriteSecLvl = 32000;
+            SBBSBoardRec.SysopSecLvl = 32000;
+          }
+        }
+        else if (config.recBoard == count2)
+        {
+          if (config.genOptions.incBDRRA)
+          {
+            strcpy (SBBSBoardRec.Name, "Recovery board");
+            SBBSBoardRec.NameLength = strlen (SBBSBoardRec.Name);
+            strcpy (SBBSBoardRec.QwkName, "Recovery");
+            SBBSBoardRec.QwkNameLength = strlen (SBBSBoardRec.QwkName);
+            SBBSBoardRec.Kinds = 3;
+            SBBSBoardRec.Replystatus = 3;
+            SBBSBoardRec.ReadSecLvl  = 32000;
+            SBBSBoardRec.WriteSecLvl = 32000;
+            SBBSBoardRec.SysopSecLvl = 32000;
+          }
+        }
+        else
+        {
+          count = 0;
+          while ( count < areaInfoCount )
+          {
+            if ( (*areaInfoIndex)[count] == count2 )
+            {
+              getRec(CFG_ECHOAREAS, count);
+              if ( !*areaBuf->msgBasePath )
+                break;
+            }
+            count++;
+          }
+          if ((count < areaInfoCount) &&
+              (!*areaBuf->msgBasePath) &&
+              (areaBuf->options.active) &&
+              (areaBuf->options.export2BBS) )
+          {
+            if (config.genOptions.commentFRA && *areaBuf->comment)
+            {
+              strncpy (SBBSBoardRec.Name, areaBuf->comment, 30);
+            }
+            else
+            {
+              strncpy (SBBSBoardRec.Name, areaBuf->areaName, 30);
+            }
+            SBBSBoardRec.NameLength = strlen(SBBSBoardRec.Name);
+
+            strncpy (SBBSBoardRec.QwkName, areaBuf->qwkName, 12);
+            SBBSBoardRec.QwkNameLength = strlen(areaBuf->qwkName);
+
+            SBBSBoardRec.Typ     = areaBuf->options.local?0:3;
+            SBBSBoardRec.Kinds   = areaBuf->msgKindsRA;
+
+            SBBSBoardRec.Aliases = areaBuf->attrRA & BIT5 ? 1 :
+                                   areaBuf->attrRA & BIT3 ? 3 : 0;
+            SBBSBoardRec.Attrib  = areaBuf->attrSBBS |
+                                   (areaBuf->attrRA & BIT1 ? BIT0 : 0) |
+                                   (areaBuf->attrRA & BIT6 ? BIT2 : 0);
+            SBBSBoardRec.Replystatus = areaBuf->replyStatSBBS;
+            SBBSBoardRec.Group   = getGroupChar(areaBuf->group);
+            SBBSBoardRec.UseAka  = checkMax(areaBuf->address, 9);
+            SBBSBoardRec.Age     = areaBuf->minAgeSBBS;
+
+            SBBSBoardRec.ReadSecLvl = areaBuf->readSecRA;
+            SBBSBoardRec.WriteSecLvl = areaBuf->writeSecRA;
+            SBBSBoardRec.SysopSecLvl = areaBuf->sysopSecRA;
+            *((s32*)&SBBSBoardRec.ReadFlags) = *((s32*)&areaBuf->flagsRdRA);
+            *((s32*)&SBBSBoardRec.WriteFlags) = *((s32*)&areaBuf->flagsWrRA);
+            *((s32*)&SBBSBoardRec.SysopFlags) = *((s32*)&areaBuf->flagsSysRA);
+
+            SBBSakaUsed[count2-1] = checkMax(areaBuf->address, 9);
+          }
+        }
+        write (folderHandle, &SBBSBoardRec, sizeof(SBBSBoardRecType));
       }
+      close (folderHandle);
+
+      strcpy (tempStr, config.autoRAPath);
+      strcat (tempStr, "config.bbs");
+
+      if (((folderHandle = open(tempStr, O_WRONLY|O_BINARY|O_DENYNONE,
+                                S_IREAD|S_IWRITE)) == -1) ||
+          (lseek(folderHandle, 0x442, SEEK_SET) == -1)             ||
+          (write(folderHandle, SBBSakaUsed, MBBOARDS) != MBBOARDS)           ||
+          (close(folderHandle) == -1))
+      {
+        displayMessage ("Could not update CONFIG.BBS");
+      }
+    }
+  }
 #endif
-      if (config.bbsProgram == BBS_QBBS)
+  if (config.bbsProgram == BBS_QBBS)
+  {
+    strcpy (tempStr, config.autoRAPath);
+    strcat (tempStr, "msgcfg.dat");
+
+    if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
+                             O_TRUNC|O_BINARY|O_DENYNONE,
+                             S_IREAD|S_IWRITE)) == -1)
+    {
+      displayMessage ("Can't open MSGCFG.DAT for output");
+    }
+    else
+    {
+      for (count2 = 1; count2 <= MBBOARDS; count2++)
       {
-         strcpy (tempStr, config.autoRAPath);
-         strcat (tempStr, "MSGCFG.DAT");
+        memset (&QBBSBoardRec, 0, sizeof(QBBSBoardRecType));
 
-         if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
-                                           O_TRUNC|O_BINARY|O_DENYNONE,
-                                           S_IREAD|S_IWRITE)) == -1)
-         {
-            displayMessage ("Can't open MSGCFG.DAT for output");
-         }
-         else
-         {
-            for (count2 = 1; count2 <= MBBOARDS; count2++)
+        count = 0;
+        while ((count < MAX_NETAKAS) &&
+               (config.netmailBoard[count] != count2))
+        {
+          count++;
+        }
+        if (count < MAX_NETAKAS)
+        {
+          if (*config.descrAKA[count])
+          {
+            strncpy (QBBSBoardRec.Name, config.descrAKA[count], 40);
+          }
+          else
+          {
+            if (count)
+              sprintf (QBBSBoardRec.Name, "Netmail AKA %2u", count);
+            else
+              strcpy (QBBSBoardRec.Name, "Netmail Main");
+          }
+          QBBSBoardRec.NameLength = strlen(QBBSBoardRec.Name);
+
+          QBBSBoardRec.Typ   = 1;
+          QBBSBoardRec.Kinds = config.msgKindsRA[count];
+          QBBSBoardRec.Combined = config.attrRA[count] & BIT1 ? 1 : 0;
+          QBBSBoardRec.Aliases  = config.attrRA[count] & BIT5 ? 2 :
+                                  config.attrRA[count] & BIT3 ? 1 : 0;
+          QBBSBoardRec.Group    = config.groupsQBBS[count];
+          QBBSBoardRec.Aka      = count;
+          QBBSBoardRec.AllowDelete = (config.attrRA[count] & BIT6) ? 1:0;
+          QBBSBoardRec.KeepCnt  = config.msgsAKA[count];
+          QBBSBoardRec.KillOld  = config.daysAKA[count];
+          QBBSBoardRec.KillRcvd = config.daysRcvdAKA[count];
+          QBBSBoardRec.ReadSecLvl     = config.readSecRA[count];
+          QBBSBoardRec.WriteSecLvl    = config.writeSecRA[count];
+          QBBSBoardRec.TemplateSecLvl = config.templateSecQBBS[count];
+          QBBSBoardRec.SysopSecLvl    = config.sysopSecRA[count];
+          *((s32*)&QBBSBoardRec.ReadFlags)     = *((s32*)&config.readFlagsRA[count]);
+          *((s32*)&QBBSBoardRec.WriteFlags)    = *((s32*)&config.writeFlagsRA[count]);
+          *((s32*)&QBBSBoardRec.TemplateFlags) = *((s32*)&config.templateFlagsQBBS[count]);
+          *((s32*)&QBBSBoardRec.SysopFlags)    = *((s32*)&config.sysopFlagsRA[count]);
+        }
+        else if (config.dupBoard == count2)
+        {
+          if (config.genOptions.incBDRRA)
+          {
+            strcpy (QBBSBoardRec.Name, "Duplicate msgs");
+            QBBSBoardRec.NameLength = strlen (QBBSBoardRec.Name);
+            QBBSBoardRec.Kinds = 3;
+            QBBSBoardRec.ReadSecLvl     = 32000;
+            QBBSBoardRec.WriteSecLvl    = 32000;
+            QBBSBoardRec.TemplateSecLvl = 32000;
+            QBBSBoardRec.SysopSecLvl    = 32000;
+          }
+        }
+        else if (config.badBoard == count2)
+        {
+          if (config.genOptions.incBDRRA)
+          {
+            strcpy (QBBSBoardRec.Name, "Bad messages");
+            QBBSBoardRec.NameLength = strlen (QBBSBoardRec.Name);
+            QBBSBoardRec.Kinds = 3;
+            QBBSBoardRec.ReadSecLvl     = 32000;
+            QBBSBoardRec.WriteSecLvl    = 32000;
+            QBBSBoardRec.TemplateSecLvl = 32000;
+            QBBSBoardRec.SysopSecLvl    = 32000;
+          }
+        }
+        else if (config.recBoard == count2)
+        {
+          if (config.genOptions.incBDRRA)
+          {
+            strcpy (QBBSBoardRec.Name, "Recovery board");
+            QBBSBoardRec.NameLength = strlen (QBBSBoardRec.Name);
+            QBBSBoardRec.Kinds = 3;
+            QBBSBoardRec.ReadSecLvl     = 32000;
+            QBBSBoardRec.WriteSecLvl    = 32000;
+            QBBSBoardRec.TemplateSecLvl = 32000;
+            QBBSBoardRec.SysopSecLvl    = 32000;
+          }
+        }
+        else
+        {
+          count = 0;
+          while ( count < areaInfoCount )
+          {
+            if ( (*areaInfoIndex)[count] == count2 )
             {
-               memset (&QBBSBoardRec, 0, sizeof(QBBSBoardRecType));
-
-               count = 0;
-               while ((count < MAX_NETAKAS) &&
-                      (config.netmailBoard[count] != count2))
-               {
-                  count++;
-               }
-               if (count < MAX_NETAKAS)
-               {
-                  if (*config.descrAKA[count])
-                  {
-                     strncpy (QBBSBoardRec.Name, config.descrAKA[count], 40);
-                  }
-                  else
-                  {
-                     if (count)
-                        sprintf (QBBSBoardRec.Name, "Netmail AKA %2u", count);
-                     else
-                        strcpy (QBBSBoardRec.Name, "Netmail Main");
-                  }
-                  QBBSBoardRec.NameLength = strlen(QBBSBoardRec.Name);
-
-                  QBBSBoardRec.Typ   = 1;
-                  QBBSBoardRec.Kinds = config.msgKindsRA[count];
-                  QBBSBoardRec.Combined = config.attrRA[count] & BIT1 ? 1 : 0;
-                  QBBSBoardRec.Aliases  = config.attrRA[count] & BIT5 ? 2 :
-                                          config.attrRA[count] & BIT3 ? 1 : 0;
-                  QBBSBoardRec.Group    = config.groupsQBBS[count];
-                  QBBSBoardRec.Aka      = count;
-                  QBBSBoardRec.AllowDelete = (config.attrRA[count] & BIT6) ? 1:0;
-                  QBBSBoardRec.KeepCnt  = config.msgsAKA[count];
-                  QBBSBoardRec.KillOld  = config.daysAKA[count];
-		  QBBSBoardRec.KillRcvd = config.daysRcvdAKA[count];
-                  QBBSBoardRec.ReadSecLvl     = config.readSecRA[count];
-                  QBBSBoardRec.WriteSecLvl    = config.writeSecRA[count];
-                  QBBSBoardRec.TemplateSecLvl = config.templateSecQBBS[count];
-                  QBBSBoardRec.SysopSecLvl    = config.sysopSecRA[count];
-                  *((s32*)&QBBSBoardRec.ReadFlags)     = *((s32*)&config.readFlagsRA[count]);
-                  *((s32*)&QBBSBoardRec.WriteFlags)    = *((s32*)&config.writeFlagsRA[count]);
-                  *((s32*)&QBBSBoardRec.TemplateFlags) = *((s32*)&config.templateFlagsQBBS[count]);
-                  *((s32*)&QBBSBoardRec.SysopFlags)    = *((s32*)&config.sysopFlagsRA[count]);
-               } else
-               if (config.dupBoard == count2)
-               {
-                  if (config.genOptions.incBDRRA)
-                  {
-                     strcpy (QBBSBoardRec.Name, "Duplicate msgs");
-                     QBBSBoardRec.NameLength = strlen (QBBSBoardRec.Name);
-                     QBBSBoardRec.Kinds = 3;
-                     QBBSBoardRec.ReadSecLvl     = 32000;
-                     QBBSBoardRec.WriteSecLvl    = 32000;
-                     QBBSBoardRec.TemplateSecLvl = 32000;
-                     QBBSBoardRec.SysopSecLvl    = 32000;
-                  }
-               } else
-               if (config.badBoard == count2)
-               {
-                  if (config.genOptions.incBDRRA)
-                  {
-                     strcpy (QBBSBoardRec.Name, "Bad messages");
-                     QBBSBoardRec.NameLength = strlen (QBBSBoardRec.Name);
-                     QBBSBoardRec.Kinds = 3;
-                     QBBSBoardRec.ReadSecLvl     = 32000;
-                     QBBSBoardRec.WriteSecLvl    = 32000;
-                     QBBSBoardRec.TemplateSecLvl = 32000;
-                     QBBSBoardRec.SysopSecLvl    = 32000;
-                  }
-               } else
-               if (config.recBoard == count2)
-               {
-                  if (config.genOptions.incBDRRA)
-                  {
-                     strcpy (QBBSBoardRec.Name, "Recovery board");
-                     QBBSBoardRec.NameLength = strlen (QBBSBoardRec.Name);
-                     QBBSBoardRec.Kinds = 3;
-                     QBBSBoardRec.ReadSecLvl     = 32000;
-                     QBBSBoardRec.WriteSecLvl    = 32000;
-                     QBBSBoardRec.TemplateSecLvl = 32000;
-                     QBBSBoardRec.SysopSecLvl    = 32000;
-                  }
-               }
-               else
-               {
-                  count = 0;
-                  while ( count < areaInfoCount )
-                  {  if ( (*areaInfoIndex)[count] == count2 )
-                     {  getRec(CFG_ECHOAREAS, count);
-                        if ( !*areaBuf->msgBasePath )
-                           break;
-                     }
-                     count++;
-                  }
-                  if ((count < areaInfoCount) &&
-                      (!*areaBuf->msgBasePath) &&
-                      (areaBuf->options.active) &&
-                      (areaBuf->options.export2BBS) )
-		  {
-                     if (config.genOptions.commentFRA && *areaBuf->comment)
-                     {
-                        strncpy (QBBSBoardRec.Name, areaBuf->comment, 40);
-                     }
-                     else
-                     {
-                        strncpy (QBBSBoardRec.Name, areaBuf->areaName, 40);
-                     }
-                     QBBSBoardRec.NameLength = strlen(QBBSBoardRec.Name);
-
-                     QBBSBoardRec.Typ      = areaBuf->options.local?0:3;
-                     QBBSBoardRec.Kinds    = areaBuf->msgKindsRA;
-                     QBBSBoardRec.Combined = areaBuf->attrRA & BIT1 ? 1 : 0;
-                     QBBSBoardRec.Aliases  = areaBuf->attrRA & BIT5 ? 2 :
-                                             areaBuf->attrRA & BIT3 ? 1 : 0;
-                     QBBSBoardRec.Group    = areaBuf->groupsQBBS;
-		     QBBSBoardRec.Aka      = checkMax(areaBuf->address, 10);
-
-                     strncpy (QBBSBoardRec.OriginLine, areaBuf->originLine, 58);
-                     QBBSBoardRec.OriginLineLength = strlen(QBBSBoardRec.OriginLine);
-
-                     QBBSBoardRec.AllowDelete = (areaBuf->attrRA & BIT6) ? 1:0;
-                     QBBSBoardRec.KeepCnt     = areaBuf->msgs;
-                     QBBSBoardRec.KillOld     = areaBuf->days;
-		     QBBSBoardRec.KillRcvd    = areaBuf->daysRcvd;
-
-                     QBBSBoardRec.ReadSecLvl     = areaBuf->readSecRA;
-                     QBBSBoardRec.WriteSecLvl    = areaBuf->writeSecRA;
-		     QBBSBoardRec.TemplateSecLvl = areaBuf->templateSecQBBS;
-                     QBBSBoardRec.SysopSecLvl    = areaBuf->sysopSecRA;
-                     *((s32*)&QBBSBoardRec.ReadFlags)     = *((s32*)&areaBuf->flagsRdRA);
-                     *((s32*)&QBBSBoardRec.WriteFlags)    = *((s32*)&areaBuf->flagsWrRA);
-                     *((s32*)&QBBSBoardRec.TemplateFlags) = *((s32*)&areaBuf->flagsTemplateQBBS);
-                     *((s32*)&QBBSBoardRec.SysopFlags)    = *((s32*)&areaBuf->flagsSysRA);
-		  }
-	       }
-               write (folderHandle, &QBBSBoardRec, sizeof(QBBSBoardRecType));
+              getRec(CFG_ECHOAREAS, count);
+              if ( !*areaBuf->msgBasePath )
+                break;
             }
-            close (folderHandle);
-         }
+            count++;
+          }
+          if ((count < areaInfoCount) &&
+              (!*areaBuf->msgBasePath) &&
+              (areaBuf->options.active) &&
+              (areaBuf->options.export2BBS) )
+          {
+            if (config.genOptions.commentFRA && *areaBuf->comment)
+            {
+              strncpy (QBBSBoardRec.Name, areaBuf->comment, 40);
+            }
+            else
+            {
+              strncpy (QBBSBoardRec.Name, areaBuf->areaName, 40);
+            }
+            QBBSBoardRec.NameLength = strlen(QBBSBoardRec.Name);
+
+            QBBSBoardRec.Typ      = areaBuf->options.local?0:3;
+            QBBSBoardRec.Kinds    = areaBuf->msgKindsRA;
+            QBBSBoardRec.Combined = areaBuf->attrRA & BIT1 ? 1 : 0;
+            QBBSBoardRec.Aliases  = areaBuf->attrRA & BIT5 ? 2 :
+                                    areaBuf->attrRA & BIT3 ? 1 : 0;
+            QBBSBoardRec.Group    = areaBuf->groupsQBBS;
+            QBBSBoardRec.Aka      = checkMax(areaBuf->address, 10);
+
+            strncpy (QBBSBoardRec.OriginLine, areaBuf->originLine, 58);
+            QBBSBoardRec.OriginLineLength = strlen(QBBSBoardRec.OriginLine);
+
+            QBBSBoardRec.AllowDelete = (areaBuf->attrRA & BIT6) ? 1:0;
+            QBBSBoardRec.KeepCnt     = areaBuf->msgs;
+            QBBSBoardRec.KillOld     = areaBuf->days;
+            QBBSBoardRec.KillRcvd    = areaBuf->daysRcvd;
+
+            QBBSBoardRec.ReadSecLvl     = areaBuf->readSecRA;
+            QBBSBoardRec.WriteSecLvl    = areaBuf->writeSecRA;
+            QBBSBoardRec.TemplateSecLvl = areaBuf->templateSecQBBS;
+            QBBSBoardRec.SysopSecLvl    = areaBuf->sysopSecRA;
+            *((s32*)&QBBSBoardRec.ReadFlags)     = *((s32*)&areaBuf->flagsRdRA);
+            *((s32*)&QBBSBoardRec.WriteFlags)    = *((s32*)&areaBuf->flagsWrRA);
+            *((s32*)&QBBSBoardRec.TemplateFlags) = *((s32*)&areaBuf->flagsTemplateQBBS);
+            *((s32*)&QBBSBoardRec.SysopFlags)    = *((s32*)&areaBuf->flagsSysRA);
+          }
+        }
+        write (folderHandle, &QBBSBoardRec, sizeof(QBBSBoardRecType));
       }
+      close (folderHandle);
+    }
+  }
 #ifndef GOLDBASE
-      if (config.bbsProgram == BBS_PROB ) /* ProBoard */
-      {  proBoardType   proBoardRec;
+  if (config.bbsProgram == BBS_PROB ) /* ProBoard */
+  {
+    proBoardType   proBoardRec;
 
-         strcpy (tempStr, config.autoRAPath);
-	 strcat (tempStr, "MESSAGES.PB");
+    strcpy (tempStr, config.autoRAPath);
+    strcat (tempStr, "messages.pb");
 
-	 if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
-                                           O_TRUNC|O_BINARY|O_DENYNONE,
-                                           S_IREAD|S_IWRITE)) == -1)
-         {
-	    displayMessage ("Can't open MESSAGES.PB for output");
-         }
-         else
-         {
-            for (count2 = 1; count2 <= maxBoardNumRA; count2++)
+    if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
+                             O_TRUNC|O_BINARY|O_DENYNONE,
+                             S_IREAD|S_IWRITE)) == -1)
+    {
+      displayMessage ("Can't open MESSAGES.PB for output");
+    }
+    else
+    {
+      for (count2 = 1; count2 <= maxBoardNumRA; count2++)
+      {
+        memset (&proBoardRec, 0, sizeof(proBoardType));
+
+        proBoardRec.areaNum = count2;
+        proBoardRec.hudsonBase = count2;
+
+        count = 0;
+        while ((count < MAX_NETAKAS) &&
+               (config.netmailBoard[count] != count2))
+        {
+          count++;
+        }
+        if (count < MAX_NETAKAS)
+        {
+          if (*config.descrAKA[count])
+          {
+            strncpy (proBoardRec.name, config.descrAKA[count], 40);
+          }
+          else
+          {
+            if (count)
+              sprintf (proBoardRec.name, "Netmail AKA %2u", count);
+            else
+              strcpy (proBoardRec.name, "Netmail Main");
+          }
+          proBoardRec.msgType = (config.msgKindsRA[count] <= 3) ? config.msgKindsRA[count] : 0;
+          proBoardRec.msgKind = MSGKIND_NET;;
+          proBoardRec.msgBaseType = MSGBASE_HUDSON;
+          proBoardRec.groups[0] = config.groupRA[count];
+          proBoardRec.groups[1] = config.altGroupRA[count][0];
+          proBoardRec.groups[2] = config.altGroupRA[count][1];
+          proBoardRec.groups[3] = config.altGroupRA[count][2];
+          proBoardRec.allGroups = config.attr2RA[count] & BIT0;
+          proBoardRec.flags     = (config.attrRA[count] & BIT3) ?
+                                  ((config.attrRA[count] & BIT5) ? 3 : 1) : 0;
+          proBoardRec.readLevel  = config.readSecRA[count];
+          *((s32*)&proBoardRec.readFlags) = bitSwap(*((s32*)&config.readFlagsRA[count]));
+          *((s32*)&proBoardRec.readFlagsNot) = bitSwap(*((s32*)(&config.readFlagsRA[count])+1));
+          proBoardRec.writeLevel = config.writeSecRA[count];
+          *((s32*)&proBoardRec.writeFlags) = bitSwap(*((s32*)&config.writeFlagsRA[count]));
+          *((s32*)&proBoardRec.writeFlagsNot) = bitSwap(*((s32*)(&config.writeFlagsRA[count])+1));
+          proBoardRec.sysopLevel = config.sysopSecRA[count];
+          *((s32*)&proBoardRec.sysopFlags) = bitSwap(*((s32*)&config.sysopFlagsRA[count]));
+          *((s32*)&proBoardRec.sysopFlagsNot) = bitSwap(*((s32*)(&config.sysopFlagsRA[count])+1));
+
+          proBoardRec.aka = count;
+          proBoardRec.rcvKillDays = config.daysRcvdAKA[count];
+          proBoardRec.msgKillDays = config.daysAKA[count];
+          proBoardRec.maxMsgs     = config.msgsAKA[count];
+
+          /* board names here.... */
+          proBoardRec.minAge = config.minAgeSBBS[count];
+        }
+        else if (config.dupBoard == count2)
+        {
+          if (config.genOptions.incBDRRA)
+          {
+            strcpy (proBoardRec.name, "Duplicate messages");
+            proBoardRec.msgKind = MSGKIND_LOCAL;
+            proBoardRec.readLevel  = 32000;
+            proBoardRec.writeLevel = 32000;
+            proBoardRec.sysopLevel = 32000;
+          }
+        }
+        else if (config.badBoard == count2)
+        {
+          if (config.genOptions.incBDRRA)
+          {
+            strcpy (proBoardRec.name, "Bad messages");
+            proBoardRec.msgKind = MSGKIND_LOCAL;
+            proBoardRec.readLevel  = 32000;
+            proBoardRec.writeLevel = 32000;
+            proBoardRec.sysopLevel = 32000;
+          }
+        }
+        else if (config.recBoard == count2)
+        {
+          if (config.genOptions.incBDRRA)
+          {
+            strcpy (proBoardRec.name, "Recovery board");
+            proBoardRec.msgKind = MSGKIND_LOCAL;
+            proBoardRec.readLevel  = 32000;
+            proBoardRec.writeLevel = 32000;
+            proBoardRec.sysopLevel = 32000;
+          }
+        }
+        else
+        {
+          count = 0;
+          while ( count < areaInfoCount )
+          {
+            if ( (*areaInfoIndex)[count] == count2 )
             {
-               memset (&proBoardRec, 0, sizeof(proBoardType));
-
-               proBoardRec.areaNum = count2;
-               proBoardRec.hudsonBase = count2;
-
-               count = 0;
-               while ((count < MAX_NETAKAS) &&
-                      (config.netmailBoard[count] != count2))
-               {
-                  count++;
-               }
-               if (count < MAX_NETAKAS)
-	       {
-                  if (*config.descrAKA[count])
-                  {
-                     strncpy (proBoardRec.name, config.descrAKA[count], 40);
-                  }
-                  else
-                  {
-                     if (count)
-                        sprintf (proBoardRec.name, "Netmail AKA %2u", count);
-                     else
-                        strcpy (proBoardRec.name, "Netmail Main");
-                  }
-                  proBoardRec.msgType = (config.msgKindsRA[count] <= 3) ? config.msgKindsRA[count] : 0;
-                  proBoardRec.msgKind = MSGKIND_NET;;
-                  proBoardRec.msgBaseType = MSGBASE_HUDSON;
-                  proBoardRec.groups[0] = config.groupRA[count];
-                  proBoardRec.groups[1] = config.altGroupRA[count][0];
-                  proBoardRec.groups[2] = config.altGroupRA[count][1];
-		  proBoardRec.groups[3] = config.altGroupRA[count][2];
-                  proBoardRec.allGroups = config.attr2RA[count] & BIT0;
-                  proBoardRec.flags     = (config.attrRA[count] & BIT3) ?
-                                          ((config.attrRA[count] & BIT5) ? 3 : 1) : 0;
-                  proBoardRec.readLevel  = config.readSecRA[count];
-                  *((s32*)&proBoardRec.readFlags) = bitSwap(*((s32*)&config.readFlagsRA[count]));
-                  *((s32*)&proBoardRec.readFlagsNot) = bitSwap(*((s32*)(&config.readFlagsRA[count])+1));
-                  proBoardRec.writeLevel = config.writeSecRA[count];
-                  *((s32*)&proBoardRec.writeFlags) = bitSwap(*((s32*)&config.writeFlagsRA[count]));
-                  *((s32*)&proBoardRec.writeFlagsNot) = bitSwap(*((s32*)(&config.writeFlagsRA[count])+1));
-                  proBoardRec.sysopLevel = config.sysopSecRA[count];
-                  *((s32*)&proBoardRec.sysopFlags) = bitSwap(*((s32*)&config.sysopFlagsRA[count]));
-                  *((s32*)&proBoardRec.sysopFlagsNot) = bitSwap(*((s32*)(&config.sysopFlagsRA[count])+1));
-
-                  proBoardRec.aka = count;
-                  proBoardRec.rcvKillDays = config.daysRcvdAKA[count];
-                  proBoardRec.msgKillDays = config.daysAKA[count];
-                  proBoardRec.maxMsgs     = config.msgsAKA[count];
-
-                  /* board names here.... */
-                  proBoardRec.minAge = config.minAgeSBBS[count];
-               } else
-               if (config.dupBoard == count2)
-               {
-                  if (config.genOptions.incBDRRA)
-                  {
-                     strcpy (proBoardRec.name, "Duplicate messages");
-                     proBoardRec.msgKind = MSGKIND_LOCAL;
-                     proBoardRec.readLevel  = 32000;
-                     proBoardRec.writeLevel = 32000;
-                     proBoardRec.sysopLevel = 32000;
-                  }
-               } else
-               if (config.badBoard == count2)
-               {
-                  if (config.genOptions.incBDRRA)
-		  {
-                     strcpy (proBoardRec.name, "Bad messages");
-                     proBoardRec.msgKind = MSGKIND_LOCAL;
-                     proBoardRec.readLevel  = 32000;
-                     proBoardRec.writeLevel = 32000;
-                     proBoardRec.sysopLevel = 32000;
-                  }
-               } else
-               if (config.recBoard == count2)
-               {
-                  if (config.genOptions.incBDRRA)
-                  {
-                     strcpy (proBoardRec.name, "Recovery board");
-                     proBoardRec.msgKind = MSGKIND_LOCAL;
-                     proBoardRec.readLevel  = 32000;
-                     proBoardRec.writeLevel = 32000;
-                     proBoardRec.sysopLevel = 32000;
-                  }
-	       }
-               else
-               {
-                  count = 0;
-                  while ( count < areaInfoCount )
-                  {  if ( (*areaInfoIndex)[count] == count2 )
-                     {  getRec(CFG_ECHOAREAS, count);
-                        break;
-                     }
-                     count++;
-                  }
-                  if ((count < areaInfoCount) &&
-		      (areaBuf->options.active) &&
-                      (areaBuf->options.export2BBS) )
-		  {
-		     if (config.genOptions.commentFRA && *areaBuf->comment)
-                     {  strcpy (proBoardRec.name, areaBuf->comment);
-		     }
-		     else
-		     {  strcpy (proBoardRec.name, areaBuf->areaName);
-		     }
-		     strcpy(proBoardRec.echoTag, areaBuf->areaName);
-                     strcpy(proBoardRec.qwkTag, areaBuf->qwkName);
-                     proBoardRec.msgType = (areaBuf->msgKindsRA <= 3) ? areaBuf->msgKindsRA : 0;
-                     proBoardRec.msgKind = areaBuf->options.local ? MSGKIND_LOCAL:
-                                           areaBuf->options.allowPrivate ? MSGKIND_PVTECHO:
-                                           MSGKIND_ECHO;
-                     proBoardRec.groups[0] = areaBuf->groupRA;
-                     proBoardRec.groups[1] = areaBuf->altGroupRA[0];
-                     proBoardRec.groups[2] = areaBuf->altGroupRA[1];
-		     proBoardRec.groups[3] = areaBuf->altGroupRA[2];
-                     proBoardRec.allGroups = areaBuf->attr2RA & BIT0;
-		     proBoardRec.flags     = areaBuf->attrRA & BIT3 ?
-                                             ((areaBuf->attrRA & BIT5) ? 3 : 1) : 0;
-                     proBoardRec.replyBoard = areaBuf->netReplyBoardRA;
-                     strcpy (proBoardRec.origin, areaBuf->originLine);
-
-                     proBoardRec.aka    = areaBuf->address; //checkMax(areaBuf->address, 10);
-                     proBoardRec.rcvKillDays = areaBuf->daysRcvd;
-                     proBoardRec.msgKillDays = areaBuf->days;
-                     proBoardRec.maxMsgs     = areaBuf->msgs;
-                     if (*areaBuf->msgBasePath)
-                     {  strcpy (proBoardRec.path, areaBuf->msgBasePath);
-                        proBoardRec.msgBaseType = MSGBASE_JAM;
-                     }
-                     else
-                     {  proBoardRec.hudsonBase = 0;
-                        proBoardRec.msgBaseType = MSGBASE_HUDSON;
-		     }
-                     proBoardRec.minAge     = areaBuf->minAgeSBBS;
-		     proBoardRec.readLevel  = areaBuf->readSecRA;
-                     proBoardRec.writeLevel = areaBuf->writeSecRA;
-                     proBoardRec.sysopLevel = areaBuf->sysopSecRA;
-                     *((s32*)&proBoardRec.readFlags) = bitSwap(*((s32*)&areaBuf->flagsRdRA));
-                     *((s32*)&proBoardRec.readFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsRdNotRA));
-                     *((s32*)&proBoardRec.writeFlags) = bitSwap(*((s32*)&areaBuf->flagsWrRA));
-                     *((s32*)&proBoardRec.writeFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsWrNotRA));
-                     *((s32*)&proBoardRec.sysopFlags) = bitSwap(*((s32*)&areaBuf->flagsSysRA));
-                     *((s32*)&proBoardRec.sysopFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsSysNotRA));
-                  }
-               }
-               write (folderHandle, &proBoardRec, sizeof(proBoardType));
+              getRec(CFG_ECHOAREAS, count);
+              break;
             }
-            for (count = 0; count < areaInfoCount; count++)
+            count++;
+          }
+          if ((count < areaInfoCount) &&
+              (areaBuf->options.active) &&
+              (areaBuf->options.export2BBS) )
+          {
+            if (config.genOptions.commentFRA && *areaBuf->comment)
             {
-               getRec(CFG_ECHOAREAS, count);
-	       if (areaBuf->options.active &&
-		   (areaBuf->boardNumRA == 0) &&
-		   *areaBuf->msgBasePath &&
-                   (areaBuf->options.export2BBS) )
-	       {
-		  memset (&proBoardRec, 0, sizeof(proBoardType));
-                  proBoardRec.areaNum = count2++;
-
-                  if (config.genOptions.commentFRA && *areaBuf->comment)
-                  {  strcpy (proBoardRec.name, areaBuf->comment);
-                  }
-                  else
-                  {  strcpy (proBoardRec.name, areaBuf->areaName);
-                  }
-                  strcpy(proBoardRec.echoTag, areaBuf->areaName);
-                  strcpy(proBoardRec.qwkTag, areaBuf->qwkName);
-                  strcpy (proBoardRec.path, areaBuf->msgBasePath);
-                  proBoardRec.msgBaseType = MSGBASE_JAM;
-
-                  proBoardRec.msgType = (areaBuf->msgKindsRA <= 3) ? areaBuf->msgKindsRA : 0;
-		  proBoardRec.msgKind = areaBuf->options.local ? MSGKIND_LOCAL:
-                                        areaBuf->options.allowPrivate ? MSGKIND_PVTECHO:
-                                        MSGKIND_ECHO;
-                  proBoardRec.groups[0] = areaBuf->groupRA;
-                  proBoardRec.groups[1] = areaBuf->altGroupRA[0];
-                  proBoardRec.groups[2] = areaBuf->altGroupRA[1];
-                  proBoardRec.groups[3] = areaBuf->altGroupRA[2];
-                  proBoardRec.allGroups = areaBuf->attr2RA & BIT0;
-                  proBoardRec.flags     = areaBuf->attrRA & BIT3 ?
-                                          ((areaBuf->attrRA & BIT5) ? 3 : 1) : 0;
-                  proBoardRec.replyBoard = areaBuf->netReplyBoardRA;
-                  strcpy (proBoardRec.origin, areaBuf->originLine);
-
-                  proBoardRec.aka         = areaBuf->address; //checkMax(areaBuf->address, 10);
-                  proBoardRec.rcvKillDays = areaBuf->daysRcvd;
-                  proBoardRec.msgKillDays = areaBuf->days;
-                  proBoardRec.maxMsgs     = areaBuf->msgs;
-
-		  proBoardRec.minAge           = areaBuf->minAgeSBBS;
-
-                  proBoardRec.readLevel  = areaBuf->readSecRA;
-                  proBoardRec.writeLevel = areaBuf->writeSecRA;
-                  proBoardRec.sysopLevel = areaBuf->sysopSecRA;
-                  *((s32*)&proBoardRec.readFlags) = bitSwap(*((s32*)&areaBuf->flagsRdRA));
-                  *((s32*)&proBoardRec.readFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsRdNotRA));
-                  *((s32*)&proBoardRec.writeFlags) = bitSwap(*((s32*)&areaBuf->flagsWrRA));
-                  *((s32*)&proBoardRec.writeFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsWrNotRA));
-                  *((s32*)&proBoardRec.sysopFlags) = bitSwap(*((s32*)&areaBuf->flagsSysRA));
-                  *((s32*)&proBoardRec.sysopFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsSysNotRA));
-                  write (folderHandle, &proBoardRec, sizeof(proBoardType));
-               }
+              strcpy (proBoardRec.name, areaBuf->comment);
             }
-            close (folderHandle);
-         }
+            else
+            {
+              strcpy (proBoardRec.name, areaBuf->areaName);
+            }
+            strcpy(proBoardRec.echoTag, areaBuf->areaName);
+            strcpy(proBoardRec.qwkTag, areaBuf->qwkName);
+            proBoardRec.msgType = (areaBuf->msgKindsRA <= 3) ? areaBuf->msgKindsRA : 0;
+            proBoardRec.msgKind = areaBuf->options.local ? MSGKIND_LOCAL:
+                                  areaBuf->options.allowPrivate ? MSGKIND_PVTECHO:
+                                  MSGKIND_ECHO;
+            proBoardRec.groups[0] = areaBuf->groupRA;
+            proBoardRec.groups[1] = areaBuf->altGroupRA[0];
+            proBoardRec.groups[2] = areaBuf->altGroupRA[1];
+            proBoardRec.groups[3] = areaBuf->altGroupRA[2];
+            proBoardRec.allGroups = areaBuf->attr2RA & BIT0;
+            proBoardRec.flags     = areaBuf->attrRA & BIT3 ?
+                                    ((areaBuf->attrRA & BIT5) ? 3 : 1) : 0;
+            proBoardRec.replyBoard = areaBuf->netReplyBoardRA;
+            strcpy (proBoardRec.origin, areaBuf->originLine);
+
+            proBoardRec.aka    = areaBuf->address; //checkMax(areaBuf->address, 10);
+            proBoardRec.rcvKillDays = areaBuf->daysRcvd;
+            proBoardRec.msgKillDays = areaBuf->days;
+            proBoardRec.maxMsgs     = areaBuf->msgs;
+            if (*areaBuf->msgBasePath)
+            {
+              strcpy (proBoardRec.path, areaBuf->msgBasePath);
+              proBoardRec.msgBaseType = MSGBASE_JAM;
+            }
+            else
+            {
+              proBoardRec.hudsonBase = 0;
+              proBoardRec.msgBaseType = MSGBASE_HUDSON;
+            }
+            proBoardRec.minAge     = areaBuf->minAgeSBBS;
+            proBoardRec.readLevel  = areaBuf->readSecRA;
+            proBoardRec.writeLevel = areaBuf->writeSecRA;
+            proBoardRec.sysopLevel = areaBuf->sysopSecRA;
+            *((s32*)&proBoardRec.readFlags) = bitSwap(*((s32*)&areaBuf->flagsRdRA));
+            *((s32*)&proBoardRec.readFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsRdNotRA));
+            *((s32*)&proBoardRec.writeFlags) = bitSwap(*((s32*)&areaBuf->flagsWrRA));
+            *((s32*)&proBoardRec.writeFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsWrNotRA));
+            *((s32*)&proBoardRec.sysopFlags) = bitSwap(*((s32*)&areaBuf->flagsSysRA));
+            *((s32*)&proBoardRec.sysopFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsSysNotRA));
+          }
+        }
+        write (folderHandle, &proBoardRec, sizeof(proBoardType));
       }
+      for (count = 0; count < areaInfoCount; count++)
+      {
+        getRec(CFG_ECHOAREAS, count);
+        if (areaBuf->options.active &&
+            (areaBuf->boardNumRA == 0) &&
+            *areaBuf->msgBasePath &&
+            (areaBuf->options.export2BBS) )
+        {
+          memset (&proBoardRec, 0, sizeof(proBoardType));
+          proBoardRec.areaNum = count2++;
+
+          if (config.genOptions.commentFRA && *areaBuf->comment)
+          {
+            strcpy (proBoardRec.name, areaBuf->comment);
+          }
+          else
+          {
+            strcpy (proBoardRec.name, areaBuf->areaName);
+          }
+          strcpy(proBoardRec.echoTag, areaBuf->areaName);
+          strcpy(proBoardRec.qwkTag, areaBuf->qwkName);
+          strcpy (proBoardRec.path, areaBuf->msgBasePath);
+          proBoardRec.msgBaseType = MSGBASE_JAM;
+
+          proBoardRec.msgType = (areaBuf->msgKindsRA <= 3) ? areaBuf->msgKindsRA : 0;
+          proBoardRec.msgKind = areaBuf->options.local ? MSGKIND_LOCAL:
+                                areaBuf->options.allowPrivate ? MSGKIND_PVTECHO:
+                                MSGKIND_ECHO;
+          proBoardRec.groups[0] = areaBuf->groupRA;
+          proBoardRec.groups[1] = areaBuf->altGroupRA[0];
+          proBoardRec.groups[2] = areaBuf->altGroupRA[1];
+          proBoardRec.groups[3] = areaBuf->altGroupRA[2];
+          proBoardRec.allGroups = areaBuf->attr2RA & BIT0;
+          proBoardRec.flags     = areaBuf->attrRA & BIT3 ?
+                                  ((areaBuf->attrRA & BIT5) ? 3 : 1) : 0;
+          proBoardRec.replyBoard = areaBuf->netReplyBoardRA;
+          strcpy (proBoardRec.origin, areaBuf->originLine);
+
+          proBoardRec.aka         = areaBuf->address; //checkMax(areaBuf->address, 10);
+          proBoardRec.rcvKillDays = areaBuf->daysRcvd;
+          proBoardRec.msgKillDays = areaBuf->days;
+          proBoardRec.maxMsgs     = areaBuf->msgs;
+
+          proBoardRec.minAge           = areaBuf->minAgeSBBS;
+
+          proBoardRec.readLevel  = areaBuf->readSecRA;
+          proBoardRec.writeLevel = areaBuf->writeSecRA;
+          proBoardRec.sysopLevel = areaBuf->sysopSecRA;
+          *((s32*)&proBoardRec.readFlags) = bitSwap(*((s32*)&areaBuf->flagsRdRA));
+          *((s32*)&proBoardRec.readFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsRdNotRA));
+          *((s32*)&proBoardRec.writeFlags) = bitSwap(*((s32*)&areaBuf->flagsWrRA));
+          *((s32*)&proBoardRec.writeFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsWrNotRA));
+          *((s32*)&proBoardRec.sysopFlags) = bitSwap(*((s32*)&areaBuf->flagsSysRA));
+          *((s32*)&proBoardRec.sysopFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsSysNotRA));
+          write (folderHandle, &proBoardRec, sizeof(proBoardType));
+        }
+      }
+      close (folderHandle);
+    }
+  }
 #endif
-   }
-   error:
-   closeConfig (CFG_ECHOAREAS);
-   free(areaInfoIndex);
+}
+error:
+closeConfig (CFG_ECHOAREAS);
+free(areaInfoIndex);
 }
 
