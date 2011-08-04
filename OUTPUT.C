@@ -51,7 +51,7 @@ typedef struct
 {
 	char ch;
 	char attr;
-}              screenCharType;
+} screenCharType;
 
 
 

@@ -1,6 +1,9 @@
-
+/.svn/*
+/*/.svn/*
+/*/*/.svn/*
 *.exe
 /ide.45/FMAIL.~DE
+/ide.45/fmail.OBR
 /obj.45/ob*/*.obj
 /FMAIL.AR
 /FMAIL.ARD
@@ -21,6 +24,9 @@
 /doc/ftscprod.z11
 /doc/gpl-url.txt
 /doc/header.txt
-/old/*
-
 /doc/ReadMe.TXT
+/doc/fmail2.msg
+/doc/ReadMe.TXT
+/doc/fmail2.msg
+/old/*
+/tst.out/*
