@@ -1201,9 +1201,7 @@ s16 handleScan (internalMsgType *message, u16 boardNum, u16 boardIndex)
   }
   return (0);
 }
-
-
-
+//----------------------------------------------------------------------------
 int cdecl main(int argc, char *argv[])
 {
   s16            count;
@@ -1220,14 +1218,16 @@ int cdecl main(int argc, char *argv[])
   u32            index;
 #endif
   tempStrType    tempStr;
-  char           *helpPtr;
+  char          *helpPtr;
   fhandle        tempHandle;
   s32            switches;
   s16            doneMsg;
   s32            msgNum;
   struct ffblk   ffblkMsg;
-// struct tm      *timeBlock;
-  struct bt      *bundlePtr, *bundlePtr2, *bundlePtr3;
+  struct bt     *bundlePtr
+              , *bundlePtr2
+              , *bundlePtr3
+              ;
 
   putenv("TZ=LOC0");
   tzset();
@@ -1238,7 +1238,7 @@ int cdecl main(int argc, char *argv[])
   smtpID = FMAIL_TID;
 #endif
 
-  initOutput ();
+  initOutput();
 
 #ifndef __32BIT__
   if ((_osmajor < 3) || ((_osmajor == 3) && (_osminor < 30)))
@@ -1247,28 +1247,38 @@ int cdecl main(int argc, char *argv[])
     exit (4);
   }
 #endif
-  cls ();
+  cls();
 
-  setAttr (YELLOW, RED, MONO_NORM);
-  printString ("ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n");
-  printString ("³                                                                             ³\n");
-  printString ("³                                                                             ³\n");
-  printString ("ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ");
-
+#ifndef STDO
+  setAttr(YELLOW, RED, MONO_NORM);
+  printString("ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n");
+  printString("³                                                                             ³\n");
+  printString("³                                                                             ³\n");
+  printString("ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ");
   setAttr (YELLOW, RED, MONO_HIGH);
   gotoPos (3, 1);
-  printString (version);
-#ifdef BETA
-  printString (" ù The Fast Echomail Processor ù DO NOT DISTRIBUTE !");
-#else
-  printString (" ù The Fast Echomail Processor");
 #endif
-  gotoPos (3, 2);
-  printString ("Copyright (C) 1991-2008 by Folkert J. Wijnstra ù All rights reserved");
-  gotoPos (0, 5);
-  setAttr (LIGHTGRAY, BLACK, MONO_NORM);
+  printString(version);
+#ifdef BETA
+  printString(" - The Fast Echomail Processor - DO NOT DISTRIBUTE !");
+#else
+  printString(" - The Fast Echomail Processor");
+#endif
+#ifndef STDO
+  gotoPos(3, 2);
+#else
+  newLine();
+#endif
+  printString("Copyright (C) 1991-2008 by Folkert J. Wijnstra - All rights reserved");
+#ifndef STDO
+  gotoPos(0, 5);
+  setAttr(LIGHTGRAY, BLACK, MONO_NORM);
+#else
+  newLine();
+  newLine();
+#endif
 
-  memset (&globVars, 0, sizeof(globVarsType));
+  memset(&globVars, 0, sizeof(globVarsType));
 
 #ifdef __FMAILX__
   strcpy(programPath, argv[0]);
@@ -1277,24 +1287,25 @@ int cdecl main(int argc, char *argv[])
 
   if (((helpPtr = getenv("FMAIL")) == NULL) || (*helpPtr == 0))
   {
-    strcpy (configPath, argv[0]);
+    strcpy(configPath, argv[0]);
     *(strrchr(configPath, '\\') + 1) = 0;
   }
   else
   {
-    strcpy (configPath, helpPtr);
+    strcpy(configPath, helpPtr);
     if (configPath[strlen(configPath)-1] != '\\')
     {
-      strcat (configPath, "\\");
+      strcat(configPath, "\\");
     }
   }
 
   if ((argc >= 2) &&
       ((stricmp(argv[1], "A") == 0) || (stricmp(argv[1], "ABOUT") == 0)))
   {
-    printString ("About FMail:\n\n"
-                 "    Version          : "VERSION_STRING"\n"
-                 "    Operating system : "
+    char *str = "About FMail:\n"
+                "\n"
+                "    Version          : "VERSION_STRING"\n"
+                "    Operating system : "
 #ifdef __OS2__
                  "OS/2\n"
 #elif defined __WIN32__ && !defined __DPMI32__
@@ -1314,15 +1325,15 @@ int cdecl main(int argc, char *argv[])
 #else
                  "8088/8086 and up\n"
 #endif
-                 "    Compiled on      : "__DATE__"\n");
+                 "    Compiled on      : "__DATE__"\n";
+    printString(str);
     sprintf(tempStr,
             "    Message bases    : JAM and "MBNAME"\n"
-//                 "    Max. message size: %lu kb\n"
             "    Max. areas       : %u\n"
-            "    Max. nodes       : %u\n", /*(u32)TEXT_SIZE>>10,*/ MAX_AREAS, MAX_NODES);
+            "    Max. nodes       : %u\n", MAX_AREAS, MAX_NODES);
     printString(tempStr);
-    showCursor ();
-    return (0);
+    showCursor();
+    return 0;
   }
   else if ((argc >= 2) &&
            ((stricmp(argv[1], "T") == 0) || (stricmp(argv[1], "TOSS") == 0)))
@@ -2157,14 +2168,19 @@ skipHudson:
   }
   else
   {
-    printString ("Usage:\n\n"
-                 "   FMail <command> [parameters]\n\n"
-                 "Commands:\n\n"
+    printString ("Usage:\n"
+                 "\n"
+                 "   FMail <command> [parameters]\n"
+                 "\n"
+                 "Commands:\n"
+                 "\n"
+                 "   About    Show some information about the program\n"
                  "   Scan     Scan the message base for outgoing messages\n"
                  "   Toss     Toss and forward incoming mailbundles\n"
                  "   Import   Import netmail messages into the message base\n"
                  "   Pack     Pack and compress outgoing netmail found in the netmail directory\n"
-                 "   Mgr      Only process AreaMgr requests\n\n"
+                 "   Mgr      Only process AreaMgr requests\n"
+                 "\n"
                  "Enter 'FMail <command> ?' for more information about [parameters]\n");
     showCursor ();
     return (0);
@@ -2207,7 +2223,6 @@ skipHudson:
       touch (config.semaphorePath, "dbridge.nmw", "");
     }
   }
-
 
   if (diskError)
   {
@@ -2265,65 +2280,4 @@ skipHudson:
 
   return (_mb_upderr ? 50 : 0);
 }
-
-
-#if 0
----------------------------------------------------------------------------
-(9362)  Mon 5 Feb 96 12:41      Rcvd:
-Wed 7 Feb 21:04
-By:
-grant beattie
-To:
-Folkert Wijnstra
-Re:
-OS/2 programming hint :
-)
-St: Rcvd
----------------------------------------------------------------------------
-Hello Folkert,
-
-Here's a nice tip for the OS/2 versions of FSetup, FMail and FTools.. You can
-set the application title using a function call..
-
-Here's an example I'm using in FMUtil.
-
-=== FMUtil.cpp ===
-
-#ifdef __OS2__
-#define INCL_DOSPROCESS
-#include <os2.h>
-
-extern "C" {
-APIRET16 APIENTRY16 WinSetTitle(PSZ16);
-}
-
-#endif
-
-unsigned char main (void)
-{
-#ifdef __OS2__
-WinSetTitle("FMUtil/2 0.50");
-#endif
-}
-=== FMUtil.cpp ===
-
-You also need to put this in your .def file..
-
-=== FMUtil.def ===
-NAME TITLE WINDOWCOMPAT
-IMPORTS
-WINSETTITLE=OS2SM.42
-=== FMUtil.def ===
-
-Regards, Grant.
-FMail Support Australia.
-gb@lin.cbl.com.au.
-
-... "That's a very Russian attitude. I commend you." - Susan Ivanova
---- FMail/2 1.03d3 beta+
-* Origin: = FMail Support = 10pm - 7am = 053 31-5594 = (FidoNet 3:637/106)
-
-@SEEN-BY: 206/216 281/410 283/6 619 284/402 423/99 634/395 637/102 106
-@SEEN-BY: 2330/4
-@PATH: 637/106 283/619
-#endif
+//----------------------------------------------------------------------------

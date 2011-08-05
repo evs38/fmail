@@ -29,12 +29,16 @@
 #include <stdlib.h>
 #include <dos.h>
 #include <string.h>
+#ifndef STDO
 #ifdef __STDIO__
 #include <conio.h>
+#endif
 #endif
 #include "fmail.h"
 #include "output.h"
 #include "mtask.h"
+
+#ifndef STDO
 
 //         CONTROLEREN !!!!!!!!!!!!!!!!!!!!!!!
 #if defined (_Windows) && !defined(__DPMI16__) && !defined(__DPMI32__) && !defined(__WIN32__)
@@ -46,13 +50,11 @@
 
 extern configType config;
 
-
 typedef struct
 {
 	char ch;
 	char attr;
 } screenCharType;
-
 
 
 #define showChar(chr)               \
@@ -153,13 +155,11 @@ typedef struct
 }
 #endif
 
-
 #if defined(__STDIO__)
 screenCharType *screen;
 #else
 screenCharType far *screen;
 #endif
-
 
 static s16  color    = 0;
 static s16  x        = 0;
@@ -168,20 +168,22 @@ static s16  rows     = 25;
 static s16  columns  = 80;
 static char attr     = LIGHTGRAY;
 
-
 #ifndef __STDIO__
 static u16 oldCursor;
 union REGS regs;
 #endif
 
+#endif // STDO
+
 #ifdef __STDIO__
 
 void displayLine(u16 y)
 {
-   u16   count;
-   uchar tempStr[81];
+#ifndef STDO
+  u16   count;
+  uchar tempStr[81];
 
-   gotoxy(1, y+1);
+  gotoxy(1, y+1);
 	textattr(screen[80*y].attr);
 	for (count = 0; count < 80; count++)
 	{
@@ -189,28 +191,33 @@ void displayLine(u16 y)
 	}
 	tempStr[79] = 0;
 	cputs(tempStr);
+#else
+  (void)y;
+#endif
 }
 
 void updCurrLine(void)
 {
-   u16   count;
-   uchar tempStr[81];
+#ifndef STDO
+  u16   count;
+  uchar tempStr[81];
 
-   gotoxy(1, y+1);
-   textattr(screen[80*y].attr);
-   for (count = 0; count < 80; count++)
+  gotoxy(1, y+1);
+  textattr(screen[80*y].attr);
+  for (count = 0; count < 80; count++)
 	{
 		tempStr[count] = screen[80*y+count].ch;
 	}
 	tempStr[79] = 0;
 	cputs(tempStr);
+#endif
 }
 
 #endif
 
-
 void initOutput (void)
 {
+#ifndef STDO
 #ifndef __STDIO__
    char     currMode;
 
@@ -317,227 +324,221 @@ void initOutput (void)
    removeCursor;
    x = y = 0;
    getMultiTasker();
+#endif   
 }
 
-
-
-void setAttr (u16 fgc, u16 bgc, u16 mattr)
+void setAttr(u16 fgc, u16 bgc, u16 mattr)
 {
-   if (color)
-   {
-      attr = ((fgc & 0x0f) | ((bgc & 0x0f) << 4));
-   }
-   else
-   {
-      attr = mattr;
-   }
+#ifndef STDO
+  if (color)
+  {
+    attr = ((fgc & 0x0f) | ((bgc & 0x0f) << 4));
+  }
+  else
+  {
+    attr = mattr;
+  }
+#else
+  (void)fgc;
+  (void)bgc;
+  (void)mattr;
+#endif
 }
 
-
-
-void scroll (void)
+void scroll(void)
 {
-   u16 count;
+#ifndef STDO
+  u16 count;
 
-   memcpy (&(screen[0]), &(screen[columns]), (rows-1)*columns*2);
-   for (count = (rows-1)*columns; count < rows*columns; count++)
-   {
-      screen[count].ch   = ' ';
-      screen[count].attr = attr;
-   }
-   screen[columns-1].attr = 0;
+  memcpy(&(screen[0]), &(screen[columns]), (rows-1)*columns*2);
+  for (count = (rows-1)*columns; count < rows*columns; count++)
+  {
+    screen[count].ch   = ' ';
+    screen[count].attr = attr;
+  }
+  screen[columns-1].attr = 0;
 
 #ifdef __STDIO__
-   movetext(1, 2, 80, rows, 1, 1);
-   displayLine(rows-1);
+  movetext(1, 2, 80, rows, 1, 1);
+  displayLine(rows-1);
 #endif
-   returnTimeSlice(0);
+  returnTimeSlice(0);
+#endif
 }
 
-
-
-void cls (void)
+void cls(void)
 {
-   u16 count;
+#ifndef STDO
+  u16 count;
 
-   for (count = 0; count < columns; count++)
-   {
-      screen[count].ch   = ' ';
-      screen[count].attr = attr;
-   }
+  for (count = 0; count < columns; count++)
+  {
+    screen[count].ch   = ' ';
+    screen[count].attr = attr;
+  }
 
-   for (count = 1; count < rows; count++)
-   {
-      memcpy (&(screen[count*columns]), &(screen[0]), 2*columns);
-   }
-   screen[columns-1].attr = 0;
+  for (count = 1; count < rows; count++)
+  {
+    memcpy (&(screen[count*columns]), &(screen[0]), 2*columns);
+  }
+  screen[columns-1].attr = 0;
 
 #ifdef __STDIO__
-   clrscr();
+  clrscr();
 #endif
-   returnTimeSlice(0);
+  returnTimeSlice(0);
+#endif
 }
 
-
-
-u16 getTab (void)
+u16 getTab(void)
 {
-   return x;
+#ifndef STDO
+  return x;
+#else
+  return 0;
+#endif
 }
 
-
-
-void gotoTab (u16 tab)
+void gotoTab(u16 tab)
 {
-   x = tab;
+#ifndef STDO
+  x = tab;
 #ifndef __STDIO__
-   if (config.genOptions.checkBreak)
-   {
-      _AH = 0x0b;
-      geninterrupt (0x21);
-   }
+  if (config.genOptions.checkBreak)
+  {
+    _AH = 0x0b;
+    geninterrupt(0x21);
+  }
 #endif
-   returnTimeSlice(0);
+  returnTimeSlice(0);
+#else
+  (void)tab;
+#endif
 }
-
-
 
 void gotoPos (u16 px, u16 py)
 {
+#ifndef STDO
 #ifdef __STDIO__
-   displayLine(y);
+  displayLine(y);
 #endif
-   x = px;
-   y = py;
+  x = px;
+  y = py;
 #ifndef __STDIO__
-   if (config.genOptions.checkBreak)
-   {
-      _AH = 0x0b;
-      geninterrupt (0x21);
-   }
+  if (config.genOptions.checkBreak)
+  {
+    _AH = 0x0b;
+    geninterrupt (0x21);
+  }
+#endif
+#else
+  (void)px;
+  (void)py;
 #endif
 }
 
-
-
+#ifndef STDO
 void newLine (void)
 {
 #ifdef __STDIO__
-   displayLine(y);
+  displayLine(y);
 #endif
-   x = 0;
-   if (y++ == rows-1)
-   {
-      y--;
-      scroll ();
-   }
-   else
-      returnTimeSlice(0);
+  x = 0;
+  if (y++ == rows-1)
+  {
+    y--;
+    scroll();
+  }
+  else
+    returnTimeSlice(0);
 #ifndef __STDIO__
-   if (config.genOptions.checkBreak)
-   {
-      _AH = 0x0b;
-      geninterrupt (0x21);
-   }
+  if (config.genOptions.checkBreak)
+  {
+    _AH = 0x0b;
+    geninterrupt(0x21);
+  }
 #endif
 }
-
-
 
 void printString (char *string)
 {
-   if (string != NULL)
-   {
-      while (*string)
+  if (string != NULL)
+  {
+    while (*string)
+    {
+      if (*string == '\n')
       {
-	 if (*string == '\n')
-	 {
-	    newLine ();
-	    string++;
-	 }
-	 else
-	 {
-	    showChar (*(string++));
-	    increment;
-	 }
+        newLine ();
+        string++;
       }
-   }
-   //returnTimeSlice(0);
+      else
+      {
+        showChar(*(string++));
+        increment;
+      }
+    }
+  }
+  //returnTimeSlice(0);
 }
+#endif  
 
-
-
-//void printInt (s16 p)
-//{
-//   char numStr[8];
-//
-//   itoa (p, numStr, 10);
-//   printString (numStr);
-//}
-
-
-
-void printLong (u32 p)
+void printLong(u32 p)
 {
-   char numStr[34];
+  char numStr[34];
 
-   ultoa(p, numStr, 10);
-   printString(numStr);
+  ultoa(p, numStr, 10);
+  printString(numStr);
 }
-
-
 
 void printFill (void)
 {
-   u16 temp;
+#ifndef STDO
+  u16 temp;
 
-   temp = x;
-   while (x != columns-1)
-   {
-      showChar (' ');
-      increment;
-   }
-   showChar (' ');
-   x = temp;
+  temp = x;
+  while (x != columns-1)
+  {
+    showChar(' ');
+    increment;
+  }
+  showChar(' ');
+  x = temp;
 #ifdef __STDIO__
-   displayLine(y);
+  displayLine(y);
+#endif
 #endif
 }
 
-
-
-void printStringFill (char *string)
+void printStringFill(char *string)
 {
-   printString (string);
-   printFill ();
+  printString(string);
+  printFill();
 }
 
-
-
-void printChar (char ch)
+#ifndef STDO
+void printChar(char ch)
 {
-   if (ch == '\n')
-      newLine ();
-   else
-   {
-      showChar (ch);
-      increment;
-   }
+  if (ch == '\n')
+    newLine ();
+  else
+  {
+    showChar (ch);
+    increment;
+  }
 }
-
-
+#endif
 
 void noCursor(void)
 {
-   whereCursor(x, y);
-   removeCursor;
+#ifndef STDO
+  whereCursor(x, y);
+  removeCursor;
+#endif
 }
-
-
 
 void showCursor(void)
 {
-   locateCursor(x, y);
+#ifndef STDO
+  locateCursor(x, y);
+#endif
 }
-
-
