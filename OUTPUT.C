@@ -193,12 +193,12 @@ void displayLine(u16 y)
 
 void updCurrLine(void)
 {
-   u16   count;
-   uchar tempStr[81];
+  u16   count;
+  uchar tempStr[81];
 
-   gotoxy(1, y+1);
-   textattr(screen[80*y].attr);
-   for (count = 0; count < 80; count++)
+  gotoxy(1, y+1);
+  textattr(screen[80*y].attr);
+  for (count = 0; count < 80; count++)
 	{
 		tempStr[count] = screen[80*y+count].ch;
 	}
@@ -304,19 +304,25 @@ void initOutput (void)
    if (regs.h.dl != 0)
       rows = regs.h.dl+1;
 #else
-   color = 1;
+  color = 1;
 #if !defined (_Windows) || defined(__DPMI16__) || defined(__DPMI32__) || defined(__WIN32__)
-   {  struct text_info ti;
-      gettextinfo(&ti);
-      rows = ti.screenheight;
-   }
+  {  
+    struct text_info ti;
+    gettextinfo(&ti);
+    rows = ti.screenheight;
+    // Check rows because there is a bug in Borland C++ conion,
+    // if the windows console Screen Buffer Size Height >255,
+    // the screenheight becomes 0 because it's an uchar!  
+    if (rows <= 0)
+      rows = 25;
+  }
 #endif
-   screen = malloc(80*2*rows);
+  screen = malloc(80*2*rows);
 #endif
 
-   removeCursor;
-   x = y = 0;
-   getMultiTasker();
+  removeCursor;
+  x = y = 0;
+  getMultiTasker();
 }
 
 
