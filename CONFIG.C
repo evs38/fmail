@@ -329,7 +329,7 @@ void initFMail (char *s, s32 switches)
       time (&time1);
       time2 = time1;
 
-      ch = 0;
+//    ch = 0;
       while (((fmailLockHandle = open(tempStr,
 				      O_WRONLY|O_DENYALL|O_BINARY|O_CREAT|O_TRUNC,
 				      S_IREAD|S_IWRITE)) == -1) &&

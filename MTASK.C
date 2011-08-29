@@ -48,7 +48,9 @@ void returnTimeSlice(u16 arg)
 #endif
 
 #if defined __32BIT__ && !defined __OS2__
-
+#ifdef __WIN32__
+#include <windows.h>
+#endif
 #include "dos.h"
 
 #include "fmstruct.h"
@@ -64,7 +66,11 @@ void returnTimeSlice(u16 arg)
    if ( !arg || !config.genOptions.timeSliceFM )
       return;
 #endif
-   sleep(1);
+#ifdef __WIN32__
+  Sleep(0);
+#else
+  sleep(1);
+#endif  
 }
 #endif
 

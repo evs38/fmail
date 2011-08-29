@@ -70,7 +70,7 @@ typedef struct
 
 void initMsg (s16 noAreaFix);
 
-u16 getFlags (uchar *text);
+u16 getFlags (char *text);
 
 s16 attribMsg (u16 attribute, s32 msgNum);
 
@@ -84,5 +84,5 @@ s32  writeMsgLocal (internalMsgType *message, s16 msgType, s16 valid);
 
 void validateMsg (void);
 
-s16 fileAttach (uchar *fileName, nodeNumType *srcNode, nodeNumType *destNode,
+s16 fileAttach (char *fileName, nodeNumType *srcNode, nodeNumType *destNode,
                 nodeInfoType *nodeInfo);

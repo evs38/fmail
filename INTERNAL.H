@@ -25,8 +25,8 @@
 #define open(a,b,c) openP(a,b,c)
 
 extern int no_msg;
-	      
-fhandle openP(const uchar *pathname, s16 access, u16 mode);
+
+fhandle openP(const char *pathname, int access, u16 mode);
 
 #endif
 

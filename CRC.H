@@ -20,11 +20,11 @@
  */
 
 
-u32 crc32      (uchar *string);
-u32 crc32old   (uchar *string);
-u32 crc32len   (uchar *string, s16 len);
-u32 crc32lennc (uchar *string, s16 len); /* for JAM */
-u32 crc32alpha (uchar *string);
-u32 crc32t     (uchar *string, uchar terminator);
-u32 crc32jam   (uchar *string);
+u32 crc32      (char *string);
+u32 crc32old   (char *string);
+u32 crc32len   (char *string, s16 len);
+u32 crc32lennc (char *string, s16 len); /* for JAM */
+u32 crc32alpha (char *string);
+u32 crc32t     (char *string, char terminator);
+u32 crc32jam   (char *string);
 

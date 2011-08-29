@@ -52,25 +52,6 @@
 #endif
 #endif
 
-/*
-void showHandlesFree(void)
-{
-    int handle[1024];
-    int count = 0;
-
-    while (count < 1000 && (handle[count] = open("qqq", O_RDONLY)) != -1)
-    {
-       count++;
-    }
-    printLong(count);
-    newLine();
-    while (count >= 0)
-    {
-       close(handle[count--]);
-    }
-}
-*/
-
 #ifdef __32BIT__
 #define MAX_PARSIZE 256
 #else
@@ -1295,7 +1276,7 @@ void retryArc (void)
             if (((pktHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE,S_IREAD|S_IWRITE)) != -1) &&
                 (_read (pktHandle, &msgPktHdr, sizeof(pktHdrType)) ==
                                                sizeof(pktHdrType)) &&
-                (close (pktHandle) != -1))
+                (close(pktHandle) != -1))
             {
                srcNode.zone   = msgPktHdr.origZone;
                srcNode.net    = msgPktHdr.origNet;

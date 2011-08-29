@@ -42,7 +42,7 @@ void handlesReset40 (void);
 
 s16  getNetmailBoard(nodeNumType *akaNode);
 s16  isNetmailBoard(u16 board);
-void initFMail(uchar *s, s32 switches);
+void initFMail(char *s, s32 switches);
 void deinitFMail(void);
 void readAreas(void);
 

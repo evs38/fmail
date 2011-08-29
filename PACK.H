@@ -20,5 +20,5 @@
  */
 
 
-s16 readNodeNum (uchar *nodeString, nodeNumType *nodeNum, u16 *valid);
-s16 pack (s16 argc, uchar *argv[], s32 switches);
+s16 readNodeNum (char *nodeString, nodeNumType *nodeNum, u16 *valid);
+s16 pack (s16 argc, char *argv[], s32 switches);

@@ -1262,18 +1262,22 @@ s16 closeNetPktWr (nodeFileRecType *nfInfo)
         int     no_msg;
 static  int     no_log = 0;
 
-fhandle openP (const char *pathname, s16 access, u16 mode)
-{  fhandle handle;
-   u16     errcode;
-   u8     *helpPtr;
+fhandle openP (const char *pathname, int access, u16 mode)
+{
+  fhandle handle;
+  u16     errcode;
+  u8     *helpPtr;
 
    ++no_log;
    while ((handle = open(pathname, access, mode)) == -1)
-   {  errcode = errno;
+   {
+      errcode = errno;
       if ((errno != EMFILE) || (closeLuPkt()))
-      {  if ( !no_msg && (((config.logInfo & LOG_OPENERR) ||
+      {
+        if ( !no_msg && (((config.logInfo & LOG_OPENERR) ||
                (config.logInfo & LOG_ALWAYS)) && no_log == 1) )
-         {  tempStrType tempStr;
+         {
+            tempStrType tempStr;
             sprintf(tempStr, "Error opening %s: %s", pathname, strerror(errcode));
             helpPtr = strchr(tempStr, 0);
             *--helpPtr = 0;
@@ -1281,26 +1285,31 @@ fhandle openP (const char *pathname, s16 access, u16 mode)
          }
          --no_log;
          no_msg = 0;
-	 return (-1);
+         return (-1);
       }
    }
    --no_log;
    no_msg = 0;
-   return (handle);
+
+  return handle;
 }
 
-fhandle fsopenP (const char *pathname, s16 access, u16 mode)
-{  fhandle handle;
+fhandle fsopenP (const char *pathname, int access, u16 mode)
+{
+  fhandle handle;
    u16     errcode;
    u8     *helpPtr;
 
    ++no_log;
    while ((handle = fsopen(pathname, access, mode, 1)) == -1)
-   {  errcode = errno;
+   {
+    errcode = errno;
       if ((errno != EMFILE) || (closeLuPkt()))
-      {  if ( !no_msg && (((config.logInfo & LOG_OPENERR) ||
+      {
+        if ( !no_msg && (((config.logInfo & LOG_OPENERR) ||
                (config.logInfo & LOG_ALWAYS)) && no_log == 1) )
-         {  tempStrType tempStr;
+         {
+          tempStrType tempStr;
             sprintf(tempStr, "Error opening %s: %s", pathname, strerror(errcode));
             helpPtr = strchr(tempStr, 0);
             *--helpPtr = 0;
@@ -1308,14 +1317,12 @@ fhandle fsopenP (const char *pathname, s16 access, u16 mode)
          }
          --no_log;
          no_msg = 0;
-	 return (-1);
+	       return (-1);
       }
    }
    --no_log;
    no_msg = 0;
-   return (handle);
+
+  return handle;
 }
-
-
-
 

@@ -99,13 +99,13 @@ int _closet(int);
 #endif
 
 #ifdef BETA
+  #define VERNUM         "1.65.GPL"
+  #define SERIAL_MAJOR    1
+  #define SERIAL_MINOR    65
+#else
   #define VERNUM         "1.64.GPL"
   #define SERIAL_MAJOR    1
   #define SERIAL_MINOR    64
-#else
-  #define VERNUM         "1.63.GPL"
-  #define SERIAL_MAJOR    1
-  #define SERIAL_MINOR    63
 #endif
 
 #ifdef BETA
@@ -364,7 +364,7 @@ typedef struct
 extern s16 breakPressed;
 extern internalMsgType *message;
 
-u16 getAreaCode (uchar *msgText);
+u16 getAreaCode (char *msgText);
 
 #define DERR_HACKER     -1
 #define DERR_VAL        2

@@ -1677,7 +1677,7 @@ Send:
       if ((helpHandle = openP(tempStr, O_RDWR|O_BINARY|O_CREAT|O_TRUNC|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
       {
         if (write (helpHandle, areaFixList,
-                   areaFixCount*sizeof(areaFixType)) == areaFixCount*sizeof(areaFixType))
+                   areaFixCount * sizeof(areaFixType)) == areaFixCount * sizeof(areaFixType))
         {
           lseek (helpHandle, 0, SEEK_SET);
           while (read(helpHandle, &areaFixRec, sizeof(areaFixType)) > 0)

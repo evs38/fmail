@@ -97,13 +97,13 @@ typedef struct
 void initPkt (void);
 void deInitPkt (void);
 
-s16  openPktRd  (uchar *fileName, s16 secure);
+s16  openPktRd  (char *fileName, s16 secure);
 s16  readPkt    (internalMsgType *message);
 void closePktRd (void);
 
 s16  closeLuPkt        (void);
-fhandle openP          (const uchar *pathname, s16 access, u16 mode);
-fhandle fsopenP        (const uchar *pathname, s16 access, u16 mode);
+fhandle openP          (const char *pathname, int access, u16 mode);
+fhandle fsopenP        (const char *pathname, int access, u16 mode);
 
 s16  writeEchoPkt      (internalMsgType *message,
                         s16 tinySeenByArea, echoToNodeType echoToNode);

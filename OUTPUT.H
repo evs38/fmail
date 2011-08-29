@@ -68,15 +68,15 @@ void gotoPos         (u16 px, u16 py);
 #define printChar(C)   putchar(C)
 #else
 void newLine         (void);
-void printString     (uchar *string);
-void printChar       (uchar ch);
+void printString     (char *string);
+void printChar       (char ch);
 #endif
 
 //void printInt      (s16 p);
 #define printInt(a)  printLong(a)
 void printLong       (u32 p);
 void printFill       (void);
-void printStringFill (uchar *string);
+void printStringFill (char *string);
 void noCursor        (void);
 void showCursor      (void);
 

@@ -1270,6 +1270,8 @@ int cdecl main(int argc, char *argv[])
   newLine();
 #endif
   printString("Copyright (C) 1991-2008 by Folkert J. Wijnstra - All rights reserved");
+  newLine();
+  printString("Copyright (C) 2008-2011 by Wilfred van Velzen  - All rights reserved");
 #ifndef STDO
   gotoPos(0, 5);
   setAttr(LIGHTGRAY, BLACK, MONO_NORM);
@@ -1316,7 +1318,9 @@ int cdecl main(int argc, char *argv[])
                  "DOS standard\n"
 #endif
                  "    Processor        : "
-#ifdef __PENTIUM__
+#ifdef __PENTIUMPRO__
+                 "PentiumPro\n"
+#elif __PENTIUM__
                  "Pentium\n"
 #elif defined __486__
                  "i486 and up\n"
@@ -1723,9 +1727,9 @@ int cdecl main(int argc, char *argv[])
 
     initFMail("SCAN", switches);
 
-    initPkt ();
-    initNodeInfo ();
-    initAreaInfo ();
+    initPkt();
+    initNodeInfo();
+    initAreaInfo();
 
     initMsg ((u16)(switches & SW_A));  /* After initNodeInfo */
     retryArc (); /* After initMsg */
@@ -2281,3 +2285,12 @@ skipHudson:
   return (_mb_upderr ? 50 : 0);
 }
 //----------------------------------------------------------------------------
+void myexit(void)
+{
+#pragma exit myexit
+#ifdef _DEBUG
+  getch();
+#endif  
+}
+//----------------------------------------------------------------------------
+

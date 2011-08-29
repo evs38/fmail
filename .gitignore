@@ -31,3 +31,6 @@
 /old/*
 /tst.out/*
 *.bak
+*.~*
+*.dsk
+/fmail.bde

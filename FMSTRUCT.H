@@ -37,6 +37,8 @@
 
 /* ********** General structures ********** */
 
+#include <pshpack1.h>
+
 typedef struct
 {  uchar programName[46];
    u16   memRequired;      } archiverInfo;
@@ -283,6 +285,8 @@ typedef struct
 
 /* ATTENTION: FMAIL.CFG does NOT use the new config file type yet (no header) !!! */
 
+#include <pshpack1.h>
+
 typedef struct
 {
    uchar           versionMajor;
@@ -474,7 +478,6 @@ typedef struct
    } configType;
 
 
-
 /* ********** FMAIL.AR ********** */
 
 #if defined(__FMAILX__) || defined(__32BIT__)
@@ -662,4 +665,5 @@ typedef struct
    nodeNumType  srcNode;
    s16          destAka;      } badEchoType;
 
+#include <poppack.h>
 

@@ -1509,7 +1509,7 @@ s16 updateCurrHdrBBS (internalMsgType *message)
    {
       return (1);
    }
-   recNum = lseek (msgHdrHandle, -(u32)sizeof(msgHdrRec), SEEK_CUR) /
+   recNum = lseek (msgHdrHandle, -sizeof(msgHdrRec), SEEK_CUR) /
             (u32)sizeof(msgHdrRec);
    if (_read (msgHdrHandle, &msgRa, sizeof(msgHdrRec)) != sizeof(msgHdrRec))
    {

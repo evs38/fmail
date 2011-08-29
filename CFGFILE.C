@@ -106,7 +106,8 @@ restart:
    cfiArr[fileType].status = 0;
 
    if ((cfiArr[fileType].handle = open(areaInfoPath, O_BINARY|O_RDWR|O_CREAT|O_DENYALL, S_IREAD|S_IWRITE)) == -1)
-   {  return 0;
+   {
+    return 0;
    }
    if (filelength(cfiArr[fileType].handle) == 0)
    {
@@ -368,3 +369,4 @@ s16 closeConfig(u16 fileType)
 
    return 1;
 }
+
