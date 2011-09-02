@@ -775,18 +775,18 @@ s16 packArc (char *qqqName, nodeNumType *srcNode, nodeNumType *destNode,
 
          if (findfirst(semaName,&semaBlk,FA_RDONLY|FA_HIDDEN|
                                          FA_SYSTEM|/*FA_LABEL|*/FA_DIREC) == 0)
-	 {
-	    sprintf (tempStr, "Node %s is on line: cannot compress mail",
-			      nodeStr(destNode));
-	    logEntry (tempStr, LOG_ALWAYS, 0);
-	    rename (pktName, qqqName);
-	    newLine ();
-	    return (1);
-	 }
-	 if (config.mailOptions.createSema)
-            semaHandle = openP(semaName,O_RDWR|O_CREAT|O_TRUNC|O_DENYALL,
-                                        S_IREAD|S_IWRITE); /* Originally _creat */
-      }
+         {
+            sprintf (tempStr, "Node %s is on line: cannot compress mail",
+                  nodeStr(destNode));
+            logEntry (tempStr, LOG_ALWAYS, 0);
+            rename (pktName, qqqName);
+            newLine ();
+            return (1);
+         }
+         if (config.mailOptions.createSema)
+                  semaHandle = openP(semaName,O_RDWR|O_CREAT|O_TRUNC|O_DENYALL,
+                                              S_IREAD|S_IWRITE); /* Originally _creat */
+     }
    }
 
    archivePtr = stpcpy (archiveStr, config.outPath);
@@ -794,15 +794,15 @@ s16 packArc (char *qqqName, nodeNumType *srcNode, nodeNumType *destNode,
    {
       if (destNode->zone != config.akaList[0].nodeNum.zone)
       {
-        archivePtr += sprintf(archivePtr-1, ".%03hx", destNode->zone);
+        archivePtr += sprintf(archivePtr - 1, ".%03hx", destNode->zone);
 	      mkdir(archiveStr);
-	      strcpy (archivePtr-1, "\\");
+	      strcpy(archivePtr - 1, "\\");
       }
       if (destNode->point)
       {
         archivePtr += sprintf (archivePtr, "%04hx%04hx.pnt", destNode->net, destNode->node);
-	      mkdir (archiveStr);
-	      strcpy (archivePtr++, "\\");
+	      mkdir(archiveStr);
+	      strcpy(archivePtr++, "\\");
       }
    }
 
@@ -810,21 +810,21 @@ s16 packArc (char *qqqName, nodeNumType *srcNode, nodeNumType *destNode,
    do
    {
       while ((count < fAttCount) &&
-	     ((memcmp (&fAttInfo[count].origNode,
-		       srcNode, sizeof(nodeNumType)) != 0) ||
-	      (memcmp (&fAttInfo[count].destNode,
-		       destNode, sizeof(nodeNumType)) != 0)))
+             ((memcmp (&fAttInfo[count].origNode,
+                 srcNode, sizeof(nodeNumType)) != 0) ||
+              (memcmp (&fAttInfo[count].destNode,
+                 destNode, sizeof(nodeNumType)) != 0)))
       {
-	 count++;
+        count++;
       }
 
       if (count < fAttCount)
       {
-	 strcpy (archivePtr, fAttInfo[count].fileName);
-         if ( (archiver = archiveType (archiveStr)) == 0xFE || archiver == 0xFF )
-	 {
-	    count++;
-	 }
+        strcpy (archivePtr, fAttInfo[count].fileName);
+        if ( (archiver = archiveType(archiveStr)) == 0xFE || archiver == 0xFF )
+         {
+            count++;
+         }
       }
    }
    while ((count < fAttCount) && ((archiver == 0xFE) || (archiver == 0xFF)) );
@@ -844,9 +844,9 @@ s16 packArc (char *qqqName, nodeNumType *srcNode, nodeNumType *destNode,
 	  (srcNode->point == 0) &&
           (destNode->point == 0)) )
       {
-         extPtr = archivePtr + sprintf (archivePtr, "%04hx%04hx",
-					 (*srcNode).net-(*destNode).net,
-					 (*srcNode).node-(*destNode).node);
+         extPtr = archivePtr + sprintf(archivePtr, "%04hX%04hX",                // Keep archive name uppercase, because an external archiver might change it to uppercase
+                                        (*srcNode).net - (*destNode).net,
+                                        (*srcNode).node - (*destNode).node);
       }
       else
       {
@@ -858,12 +858,12 @@ s16 packArc (char *qqqName, nodeNumType *srcNode, nodeNumType *destNode,
 printString(nodeName);
 newLine();
 */
-    	  extPtr = archivePtr + sprintf (archivePtr, "%08lx", crc32 (nodeName));
+    	  extPtr = archivePtr + sprintf (archivePtr, "%08lX", crc32 (nodeName));  // idem
       }
 
-      sprintf (extPtr, ".%.2s?", "sumotuwethfrsa" + (timeBlock.tm_wday<<1));
+      sprintf (extPtr, ".%.2s?", "SUMOTUWETHFRSA" + (timeBlock.tm_wday << 1));  // idem
 
-      maxArc = '0'-1;
+      maxArc = '0' - 1;
       okArc = 0;
       doneArc = findfirst (archiveStr, &ffblkArc, 0);
 
@@ -873,7 +873,7 @@ newLine();
          if ((config.mailer == 3 || config.mailer == 5) &&
 	           ((ffblkArc.ff_fsize > 0) &&
 	            ((config.maxBundleSize == 0) ||
-	             ((ffblkArc.ff_fsize>>10) < config.maxBundleSize))))
+	             ((ffblkArc.ff_fsize >> 10) < config.maxBundleSize))))
 	       {
             okArc = max (ffblkArc.ff_name[11], okArc);
 	       }
@@ -882,7 +882,7 @@ newLine();
               (config.mailOptions.extNames && (ffblkArc.ff_name[11] == 'Z')))
          {
             extPtr[3] = ffblkArc.ff_name[11];
-            unlink (archiveStr);
+            unlink(archiveStr);
          }
 	       doneArc = findnext (&ffblkArc);
       }
@@ -890,10 +890,10 @@ newLine();
       fnPtr = archivePtr;
       for (count = 0; count < fAttCount; count++)
       {
-	 if (strnicmp (fnPtr, fAttInfo[count].fileName, 11) == 0)
-	 {
-	    maxArc = max (fAttInfo[count].fileName[11], maxArc);
-	 }
+       if (strnicmp (fnPtr, fAttInfo[count].fileName, 11) == 0)
+       {
+          maxArc = max (fAttInfo[count].fileName[11], maxArc);
+       }
       }
 
       if (okArc && (config.mailer == 3 || config.mailer == 5))
@@ -905,21 +905,21 @@ newLine();
       else
       {
          if (config.mailOptions.extNames)
-	    switch (maxArc)
-	    {
-	       case '9' : extPtr[3] = 'a';
-			    break;
-	       case 'S' : extPtr[3] = 'u';
-			    break;
-	       case 'Z' : extPtr[3] = maxArc;
-			    break;
-	       default  : extPtr[3] = maxArc + 1;
-			    break;
-	    }
-	    else
-	      extPtr[3] = min ('9', maxArc+1);
-      if ( maxArc+1 == '0' )
-        nodeInfo->lastNewBundleDat = nodeInfo->referenceLNBDat = startTime;
+            switch (maxArc)
+            {
+               case '9' : extPtr[3] = 'a';
+                break;
+               case 'S' : extPtr[3] = 'u';
+                break;
+               case 'Z' : extPtr[3] = maxArc;
+                break;
+               default  : extPtr[3] = maxArc + 1;
+                break;
+            }
+        else
+          extPtr[3] = min ('9', maxArc+1);
+        if ( maxArc+1 == '0' )
+          nodeInfo->lastNewBundleDat = nodeInfo->referenceLNBDat = startTime;
     }
    }
 
@@ -1056,7 +1056,7 @@ newLine();
                    unlink (semaName);
                 }
                 rename (pktName, qqqName);
-		newLine ();
+                newLine ();
                 return (1);
    }
 
@@ -1069,14 +1069,14 @@ newLine();
       logEntry (tempStr, LOG_ALWAYS, 0);
       if ((config.mailer == 0 || config.mailer == 1 ||
            config.mailer == 3 || config.mailer == 5) &&
-	  config.mailOptions.createSema)
+           config.mailOptions.createSema)
       {
-	 close (semaHandle);
-	 unlink (semaName);
+       close (semaHandle);
+       unlink (semaName);
       }
       rename (pktName, qqqName);
       newLine ();
-      return (1);
+      return 1;
    }
 
    /* preprocessor */
@@ -1107,10 +1107,10 @@ newLine();
    {
       if ( (config.mailer == 0 || config.mailer == 1 ||
             config.mailer == 3 || config.mailer == 5) &&
-	  config.mailOptions.createSema)
+            config.mailOptions.createSema)
       {
-	 close (semaHandle);
-	 unlink (semaName);
+       close (semaHandle);
+       unlink (semaName);
       }
       rename (pktName, qqqName);
       newLine ();
@@ -1146,7 +1146,7 @@ newLine();
    }
 
    arcSize = 0;
-   if ((tempHandle = openP(archiveStr, O_RDONLY|O_BINARY,S_IREAD|S_IWRITE)) != -1)
+   if ((tempHandle = openP(archiveStr, O_RDONLY | O_BINARY,S_IREAD | S_IWRITE)) != -1)
    {
       if ((arcSize = filelength(tempHandle)) == -1)
          arcSize = 0;
@@ -1157,8 +1157,8 @@ newLine();
       if ((config.maxBundleSize != 0) &&
           ((arcSize>>10) >= config.maxBundleSize))
       {
-	 memcpy (&fAttInfo[oldArc], &fAttInfo[oldArc+1],
-		 sizeof(fAttInfoType)*((--fAttCount)-oldArc));
+        memcpy (&fAttInfo[oldArc], &fAttInfo[oldArc+1],
+        sizeof(fAttInfoType)*((--fAttCount)-oldArc));
       }
       sprintf (tempStr, "Mail bundle already going from %s to %s",
 			nodeStr(srcNode), nodeStr(destNode));
@@ -1168,61 +1168,62 @@ newLine();
    {
       if (config.mailer != 3 && config.mailer != 5)
       {
-      if (fileAttach (archiveStr, srcNode, destNode, nodeInfo))
-	 {
-	    rename (pktName, qqqName);
-	    newLine ();
-	    return (1);
-         }
+        if (fileAttach(archiveStr, srcNode, destNode, nodeInfo))
+        {
+          rename(pktName, qqqName);
+          newLine();
+          return 1;
+        }
       }
       else
       {
-         strcpy (tempStr, archiveStr);
+         strcpy(tempStr, archiveStr);
          if (destNode->point)
-         {
-            archivePtr += sprintf (archivePtr, "%08hx", destNode->point);
-         }
+           archivePtr += sprintf (archivePtr, "%08hx", destNode->point);
          else
-         {
-            archivePtr += sprintf (archivePtr, "%04hx%04hx", destNode->net, destNode->node);
-         }
+           archivePtr += sprintf (archivePtr, "%04hx%04hx", destNode->net, destNode->node);
 
          strcpy(archivePtr, ".?lo");
          if (findfirst (archiveStr, &ffblkArc, 0) == -1)
-         {   sprintf (archivePtr, ".%clo", (nodeInfo->outStatus==1) ? 'h':
-                                           (nodeInfo->outStatus==2) ? 'c':
-                                           ((nodeInfo->outStatus>=3) && (nodeInfo->outStatus<=5)) ? 'c' : 'f');
+         {   
+          sprintf (archivePtr, ".%clo", (nodeInfo->outStatus == 1) ? 'h'
+                                        : (nodeInfo->outStatus == 2) ? 'c'
+                                          : ((nodeInfo->outStatus >= 3) && (nodeInfo->outStatus <= 5)) ? 'c' : 'f');
          }
          else
             strcpy(archivePtr, strchr(ffblkArc.ff_name, '.'));
 
-         if ((tempHandle = openP(archiveStr,O_RDWR|O_CREAT|O_APPEND|O_BINARY|O_DENYNONE,S_IREAD|S_IWRITE)) == -1)
+         if ((tempHandle = openP(archiveStr, O_RDWR | O_CREAT | O_APPEND | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
          {
-            rename (pktName, qqqName);
-            newLine ();
-	    return (1);
+          rename(pktName, qqqName);
+          newLine();
+          return 1;
          }
-         strcpy (archiveStr, strupr(tempStr)); /* for 4DOS */
-         memset (arcPath, 0x20, sizeof(tempStrType)-2);
-         arcPath[sizeof(tempStrType)-2] = 0;
+#ifdef __WINDOWS32__         
+         strcpy(archiveStr, tempStr);
+#else
+         strcpy(archiveStr, strupr(tempStr));           // for 4DOS
+#endif         
+         memset(arcPath, 0x20, sizeof(tempStrType) - 2);
+         arcPath[sizeof(tempStrType) - 2] = 0;
          do
          {
-            memcpy (arcPath, arcPath+sizeof(tempStrType)/2-1, sizeof(tempStrType)/2-1);
-            read (tempHandle, arcPath+sizeof(tempStrType)/2-1, sizeof(tempStrType)/2-1);
+            memcpy(arcPath, arcPath + sizeof(tempStrType) / 2 - 1, sizeof(tempStrType) / 2 - 1);
+            read(tempHandle, arcPath + sizeof(tempStrType) / 2 - 1, sizeof(tempStrType) / 2 - 1);
          }
-         while (((helpPtr = strstr(arcPath,archiveStr)) == NULL) &&
+         while (((helpPtr = strstr(arcPath , archiveStr)) == NULL) &&
                 (!eof(tempHandle)));
 
          if (helpPtr == NULL)
          {
-             lseek (tempHandle, 0, SEEK_END);
-             sprintf (tempStr, "#%s\r\n", archiveStr);
-             write (tempHandle, tempStr, strlen(tempStr));
-             sprintf (tempStr, "Sending new mail from %s to %s",
-                               nodeStr(srcNode), nodeStr(destNode));
+           lseek (tempHandle, 0, SEEK_END);
+           sprintf (tempStr, "#%s\r\n", archiveStr);
+           write (tempHandle, tempStr, strlen(tempStr));
+           sprintf (tempStr, "Sending new mail from %s to %s",
+                             nodeStr(srcNode), nodeStr(destNode));
          }
          else
-	 {
+         {
             sprintf (tempStr, "Mail bundle already going from %s to %s",
                               nodeStr(srcNode), nodeStr(destNode));
          }

@@ -94,9 +94,9 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=64
 Release=0
-Build=1
+Build=4
 Debug=0
-PreRelease=0
+PreRelease=1
 Special=0
 Private=0
 DLL=0
@@ -104,15 +104,15 @@ Locale=1043
 CodePage=1252
 
 [Version Info Keys]
-CompanyName=
+CompanyName=Fmail GPL
 FileDescription=
-FileVersion=1.64.0.1
-InternalName=
+FileVersion=1.64.0.4
+InternalName=fmail
 LegalCopyright=
 LegalTrademarks=
-OriginalFilename=
-ProductName=
-ProductVersion=1.0.0.0
+OriginalFilename=FMail.exe
+ProductName=FMail
+ProductVersion=1.64
 Comments=
 
 [Excluded Packages]
