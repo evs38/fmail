@@ -696,11 +696,11 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
     if ((helpPtr = strrchr(qqqName, '\\')) == NULL)
       return 1;
     strcat(pktName, helpPtr + 1);
-      strcpy( pktName + strlen(pktName) - 3,  extn);
+    strcpy(pktName + strlen(pktName) - 3, extn);
     if (moveFile(qqqName, pktName))
     {
-      strcpy( pktName,                        qqqName);
-      strcpy( pktName + strlen(pktName) - 3,  exto);
+      strcpy(pktName, qqqName);
+      strcpy(pktName + strlen(pktName) - 3, exto);
       rename(qqqName, pktName);
       return 1;
     }
@@ -710,11 +710,11 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
   if (nodeInfo->archiver == 0xFF)
     nodeInfo->archiver = config.defaultArc;
 
-  strcpy( pktName,                        qqqName);
-  strcpy( pktName + strlen(pktName) - 3,  extn);
+  strcpy(pktName, qqqName);
+  strcpy(pktName + strlen(pktName) - 3, extn);
   if (rename(qqqName, pktName) == -1)
     return 1;
-  strcpy( qqqName + strlen(qqqName) - 3,  exto);
+  strcpy(qqqName + strlen(qqqName) - 3,  exto);
 
   if (nodeInfo->viaNode.zone)
   {
@@ -729,11 +729,9 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
                     , crc32(nodeStr(destNode))) - 2;
     unlink(semaName);
     *(u16 *)(semaName + count) = '*';
-    if (findfirst(semaName, &semaBlk, FA_RDONLY | FA_HIDDEN
-                  | FA_SYSTEM | /*FA_LABEL|*/ FA_DIREC) == 0)
+    if (findfirst(semaName, &semaBlk, FA_RDONLY | FA_HIDDEN | FA_SYSTEM | /*FA_LABEL|*/ FA_DIREC) == 0)
     {
-      sprintf(tempStr, "Node %s is on line: cannot compress mail"
-              , nodeStr(destNode));
+      sprintf(tempStr, "Node %s is on line: cannot compress mail", nodeStr(destNode));
       logEntry(tempStr, LOG_ALWAYS, 0);
       rename(pktName, qqqName);
       newLine();
@@ -742,8 +740,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
     if (config.mailOptions.createSema)
     {
       strcpy(semaName + count, "fm");
-      semaHandle = openP(semaName, O_RDWR | O_CREAT | O_TRUNC | O_DENYALL
-                         , S_IREAD | S_IWRITE);          /* Originally _creat */
+      semaHandle = openP(semaName, O_RDWR | O_CREAT | O_TRUNC | O_DENYALL, S_IREAD | S_IWRITE);          /* Originally _creat */
     }
   }
   else
@@ -770,8 +767,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
       if (config.mailOptions.createSema)
       {
         strcpy(helpPtr + 1, "fm");
-        semaHandle = openP(semaName, O_RDWR | O_CREAT | O_TRUNC | O_DENYALL
-                           , S_IREAD | S_IWRITE);           /* Originally _creat */
+        semaHandle = openP(semaName, O_RDWR | O_CREAT | O_TRUNC | O_DENYALL, S_IREAD | S_IWRITE);           /* Originally _creat */
       }
     }
     else
@@ -793,19 +789,16 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
         else
           sprintf(archivePtr, "%04hx%04hx.bsy", destNode->net, destNode->node);
 
-        if (findfirst(semaName, &semaBlk, FA_RDONLY | FA_HIDDEN
-                      | FA_SYSTEM | /*FA_LABEL|*/ FA_DIREC) == 0)
+        if (findfirst(semaName, &semaBlk, FA_RDONLY | FA_HIDDEN | FA_SYSTEM | /*FA_LABEL|*/ FA_DIREC) == 0)
         {
-          sprintf(tempStr, "Node %s is on line: cannot compress mail"
-                  , nodeStr(destNode));
+          sprintf(tempStr, "Node %s is on line: cannot compress mail", nodeStr(destNode));
           logEntry(tempStr, LOG_ALWAYS, 0);
           rename(pktName, qqqName);
           newLine();
           return 1;
         }
         if (config.mailOptions.createSema)
-          semaHandle = openP(semaName, O_RDWR | O_CREAT | O_TRUNC | O_DENYALL
-                             , S_IREAD | S_IWRITE);              /* Originally _creat */
+          semaHandle = openP(semaName, O_RDWR | O_CREAT | O_TRUNC | O_DENYALL, S_IREAD | S_IWRITE);              /* Originally _creat */
       }
   }
 
@@ -830,10 +823,8 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
   do
   {
     while ((count < fAttCount)
-           && ((memcmp(&fAttInfo[count].origNode
-                       , srcNode, sizeof(nodeNumType)) != 0)
-               || (memcmp(&fAttInfo[count].destNode
-                          , destNode, sizeof(nodeNumType)) != 0)))
+           && ((memcmp(&fAttInfo[count].origNode, srcNode, sizeof(nodeNumType)) != 0)
+               || (memcmp(&fAttInfo[count].destNode, destNode, sizeof(nodeNumType)) != 0)))
       count++;
 
     if (count < fAttCount)
@@ -842,8 +833,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
       if ((archiver = archiveType(archiveStr)) == 0xFE || archiver == 0xFF)
         count++;
     }
-  }
-  while ((count < fAttCount) && ((archiver == 0xFE) || (archiver == 0xFF)));
+  } while ((count < fAttCount) && ((archiver == 0xFE) || (archiver == 0xFF)));
 
   if (count < fAttCount)
     oldArc = count;
@@ -866,14 +856,10 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
               , config.akaList[0].nodeNum.point + destNode->net
               , destNode->node - config.akaList[0].nodeNum.net
               , config.akaList[0].nodeNum.node  + destNode->point);
-/*
-   printString(nodeName);
-   newLine();
- */
       extPtr = archivePtr + sprintf(archivePtr, "%08lX", crc32(nodeName));      // idem
     }
 
-      sprintf(extPtr, ".%.2s?", "SUMOTUWETHFRSA" + (timeBlock.tm_wday << 1));   // idem
+    sprintf(extPtr, ".%.2s?", "SUMOTUWETHFRSA" + (timeBlock.tm_wday << 1));   // idem
 
     maxArc = '0' - 1;
     okArc = 0;
@@ -903,31 +889,27 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
         maxArc = max(fAttInfo[count].fileName[11], maxArc);
 
     if (okArc && (config.mailer == 3 || config.mailer == 5))
-    {
       extPtr[3] = okArc;
-//       if ( okArc == '0' )
-//          nodeInfo->lastNewBundleDat = nodeInfo->referenceLNBDat = startTime;
-    }
     else
     {
       if (config.mailOptions.extNames)
         switch (maxArc)
         {
-        case '9':
-          extPtr[3] = 'a';
-          break;
+          case '9':
+            extPtr[3] = 'A';
+            break;
 
-        case 'S':
-          extPtr[3] = 'u';
-          break;
+          case 'S':
+            extPtr[3] = 'U';
+            break;
 
-        case 'Z':
-          extPtr[3] = maxArc;
-          break;
+          case 'Z':
+            extPtr[3] = maxArc;
+            break;
 
-        default:
-          extPtr[3] = maxArc + 1;
-          break;
+          default:
+            extPtr[3] = maxArc + 1;
+            break;
         }
       else
         extPtr[3] = min('9', maxArc + 1);
