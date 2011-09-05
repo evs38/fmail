@@ -29,6 +29,7 @@
 #include <ctype.h>
 #include <dir.h>
 #include <sys/stat.h>
+
 #include "fmail.h"
 #include "areainfo.h"
 #include "nodeinfo.h"
@@ -478,7 +479,7 @@ s16 pack (s16 argc, char *argv[], s32 switches)
           newLine();
         }
 
-        sprintf (tempStr, "Message #%lu : %s ออ %s", msgNum,
+        sprintf (tempStr, "Message #%lu : %s "dARROW" %s", msgNum,
                  nodeStr(&message->srcNode), nodeStr(&message->destNode));
         if (memcmp(&(*netList)[count].viaNode,
                    &message->destNode, sizeof(nodeNumType))!=0)

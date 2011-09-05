@@ -531,7 +531,7 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
               gotoTab (0);
               printString ("Pkt message ");
               printInt (++pktMsgCount);
-              printString (" 様 ");
+              printString (" "dARROW" ");
 
               areaIndex = getAreaCode (message->text);
 
@@ -665,7 +665,7 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
                   }
                   break;
                 case BADMSG :
-			            printStringFill ("様 Bad message");
+                printStringFill (dARROW" Bad message");
 
 tossbad:
                   sprintf (tempStr, "\r\1FMAIL DEST: %s", nodeStr(&globVars.packetDestNode));
@@ -726,8 +726,7 @@ tossbad:
                       }
                       if ( count != -1 )
                         ++globVars.fromNoExpSec;
-
-                      printStringFill (" Security violation 様 Bad message");
+                      printStringFill (" Security violation "dARROW" Bad message");
                       goto tossbad;
                     }
                   }
@@ -748,8 +747,7 @@ tossbad:
                     }
                     if ( count != -1 )
                       ++globVars.fromNoExpDup;
-
-                    printStringFill (" 様 Duplicate message");
+                    printStringFill (" "dARROW" Duplicate message");
                     if ( writeBBS (message, config.dupBoard, 1) )
                       diskError = DERR_WRHDUP;
                     echoAreaList[areaIndex].dupCount++;
@@ -1741,7 +1739,8 @@ int cdecl main(int argc, char *argv[])
     openDup ();
     openBBSWr(1); // was: openBBSRd();
 
-    if (switches & (SW_N|SW_H)) goto skipJAM;
+    if (switches & (SW_N|SW_H))
+      goto skipJAM;
 
     for (count=0; count<echoCount; count++)
       echoAreaList[count].options._reserved = 0;
@@ -1844,8 +1843,7 @@ int cdecl main(int argc, char *argv[])
                 printString("Rescanning selected JAM areas\n");
               infoBad = -1;
             }
-            sprintf(tempStr, "Scanning JAM area %s...\n",
-                    echoAreaList[count].areaName);
+            sprintf(tempStr, "Scanning JAM area %s...\n", echoAreaList[count].areaName);
             printString(tempStr);
             msgNum = 0;
             while ( !diskError && (msgNum = jam_scan(count, ++msgNum, 0, message)) != 0 )
@@ -1978,7 +1976,7 @@ skipHudson:
     deInitAreaInfo ();
     closeDup ();
 
-    /*    newLine (); */
+    /* newLine (); */
   }
   else if ((argc >= 2) &&
            ((stricmp(argv[1], "I") == 0) || (stricmp(argv[1], "IMPORT") == 0)))
@@ -2290,7 +2288,7 @@ void myexit(void)
 #pragma exit myexit
 #ifdef _DEBUG
   getch();
-#endif  
+#endif
 }
 //----------------------------------------------------------------------------
 

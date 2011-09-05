@@ -67,10 +67,11 @@ u32 jam_scan(u16 echoIndex, u32 jam_msgnum, u16 scanOne, internalMsgType *messag
    do
    {  if ( jam_idxrec.HdrOffset == MAXU32 )
          goto next;
+#if 0         
       sprintf(tempStr, "(%lu) ", jam_msgnum);
       gotoTab(0);
       printString(tempStr);
-
+#endif
       memset(message, 0, INTMSG_SIZE);
       jam_gethdr(jam_code, jam_idxrec.HdrOffset, &jam_msghdrrec, jam_subfields, message);
       if ( ((jam_msghdrrec.Attribute & (MSG_LOCAL|MSG_TYPEECHO)) == (MSG_LOCAL|MSG_TYPEECHO)) &&
@@ -92,7 +93,9 @@ next: if ( scanOne )
    }
    while ( jam_getnextidx(jam_code, &jam_idxrec) );
    jam_close(jam_code);
+#if 0   
    gotoTab(0);
+#endif   
    return 0;
 }
 

@@ -1,11 +1,11 @@
-2011-09-05
+2011-09-05  1.64.0.10-beta
  * Use \r when the "direct screen io" version of FMail jumped to the first column on the screen. This should speed things up in case of a rescan of the messagebase.
  * Changed some high ascii output to standard ascii chars.
 
-2011-09-04
+2011-09-04  1.64-beta
  * Archive extension created wrong
  
-2011-09-03
+2011-09-03  1.64
   * Used code beautifier uncrustify on ARCHIVE.C, had to do some hand editting afterwards.
   * Made it work with BCB6 Some upper/lower case filename conversions Some cosmetics to the source
   * Output just using standard library calls (printf, putchar)

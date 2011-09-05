@@ -18,7 +18,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+#ifndef __output_h
+#define __output_h
+ 
 #define COLOR_BLINK     0x08
 
 #define MONO_NORM       0x07
@@ -87,4 +89,10 @@ void updCurrLine  (void);
 #define updateCurrLine();
 #endif
 
+#ifdef STDO
+#define dARROW "->"
+#else
+#define dARROW "ออ"
+#endif
 
+#endif
