@@ -35,3 +35,4 @@
 *.dsk
 /fmail.bde
 *.C~
+/ide.45/fmail.mak

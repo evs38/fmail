@@ -412,7 +412,8 @@ void gotoTab(u16 tab)
 #endif
   returnTimeSlice(0);
 #else
-  (void)tab;
+  if (tab == 0)
+    putchar('\r');
 #endif
 }
 
