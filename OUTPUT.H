@@ -66,7 +66,7 @@ void gotoTab         (u16 tab);
 void gotoPos         (u16 px, u16 py);
 #ifdef STDO
 #define newLine()      putchar('\n')
-#define printString(S) printf("%s", (S))
+#define printString(S) printf(S)
 #define printChar(C)   putchar(C)
 #else
 void newLine         (void);

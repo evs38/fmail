@@ -36,3 +36,6 @@
 /fmail.bde
 *.C~
 /ide.45/fmail.mak
+*.tds
+/MB/lastread.bbs
+/MB/lastread.bbs

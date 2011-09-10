@@ -1266,10 +1266,10 @@ int cdecl main(int argc, char *argv[])
   gotoPos(3, 2);
 #else
   newLine();
-#endif
-  printString("Copyright (C) 1991-2008 by Folkert J. Wijnstra - All rights reserved");
   newLine();
-  printString("Copyright (C) 2008-2011 by Wilfred van Velzen  - All rights reserved");
+#endif
+  sprintf(tempStr, "Copyright (C) 1991-%s by FMail Developers - All rights reserved", __DATE__ + 7);
+  printString(tempStr);
 #ifndef STDO
   gotoPos(0, 5);
   setAttr(LIGHTGRAY, BLACK, MONO_NORM);

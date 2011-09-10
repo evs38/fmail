@@ -25,10 +25,10 @@ void addInfo (internalMsgType *message, s16 isNetmail);
 s16 writeNetMsg (internalMsgType *message, s16 srcAka, nodeNumType *destNode,
                  u16 capability, u16 outStatus);
 
-s16 readNodeNum (uchar *nodeString, nodeNumType *nodeNum, u16 *valid);
+s16 readNodeNum (char *nodeString, nodeNumType *nodeNum, u16 *valid);
 
 s16 export (int argc, char *argv[]);
 
 /* os2 */
 
-s16 getBoardNum (uchar *text, s16 valid, u16 *aka, rawEchoType **areaPtr);
+s16 getBoardNum (char *text, s16 valid, u16 *aka, rawEchoType **areaPtr);

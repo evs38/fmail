@@ -24,40 +24,6 @@
 
 #define FA_SPEC 0x1F
 
-/* TESTING */
-
-#if 0
-#pragma message ("TESTING FMAIL.H IS ON!!!")
-#define FMTEST
-#define malloc(a)    t_malloc(a)
-#define calloc(a,b)  t_calloc(a,b)
-#define realloc(a,b) t_realloc(a,b)
-#define free(a)      t_free(a)
-void *t_malloc(size_t);
-void *t_calloc(size_t, size_t);
-void *t_realloc(void *, size_t);
-void t_free(void *);
-#endif
-
-#if 0
-#define close(a)  closet(a)
-#define _rtl_close(a) _closet(a)
-int closet(int);
-int _closet(int);
-#endif
-
-/* END TESTING */
-
-// ????? #include "jammb.h"
-
-/*
-#ifndef __OS2__
-#ifdef __32BIT__
-#define country(a,b)
-#endif
-#endif
-*/
-
 #if (__BORLANDC__ >= 0x0452)
 #ifndef __OS2__
 #define _open  _rtl_open

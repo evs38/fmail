@@ -124,11 +124,12 @@ static  char    response_buf[RESPONSE_BUFFER_SIZE];
 static BOOL getresponse(UINT response_expected)
 {
    char        buf[4];
-   UINT        response;
+   int         response;
    tempStrType tempStr;
 
    if ( recv(ws, response_buf, RESPONSE_BUFFER_SIZE, 0) == SOCKET_ERROR )
-   {  logEntry("Socket receive error", LOG_ALWAYS, 0);
+   {
+      logEntry("Socket receive error", LOG_ALWAYS, 0);
       return FALSE;
    }
    strncpy(buf, response_buf, 3);
@@ -136,7 +137,7 @@ static BOOL getresponse(UINT response_expected)
    sscanf(buf, "%d", &response);
    if ( response != response_code[response_expected] )
    {
-      sprintf(tempStr, "Expected %d, received %u: %s",
+      sprintf(tempStr, "Expected %d, received %d: %s",
                        response_code[response_expected], response,
                        response_text[response_expected]);
       logEntry(tempStr, LOG_ALWAYS, 0);
