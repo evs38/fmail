@@ -46,14 +46,8 @@
 
 #include "dups.h"
 
-/*
-#define HDR_BUFSIZE 100 /* Max 350 */
-#define TXT_BUFSIZE 200 /* Max 255 */
-*/
-
 u16      HDR_BUFSIZE = 104;
 u16      TXT_BUFSIZE = 200;
-
 
 extern time_t            startTime;
 extern cookedEchoType    *echoAreaList;
@@ -131,8 +125,8 @@ void initBBS (void)
    else
       globVars.origTotalMsgBBS = 0;
 
-   if ( config.mbOptions.mbSharing &&
-	!findfirst(expandName("MSGTXT", 1), &ffblkData, 0) )
+   if (  config.mbOptions.mbSharing
+      && !findfirst(expandName("MSGTXT", 1), &ffblkData, 0) )
 #ifdef GOLDBASE
       globVars.baseTotalTxtRecs = ffblkData.ff_fsize / 256;
 #else
@@ -1512,7 +1506,7 @@ s16 updateCurrHdrBBS (internalMsgType *message)
    {
       return (1);
    }
-   recNum = lseek (msgHdrHandle, -sizeof(msgHdrRec), SEEK_CUR) /
+   recNum = lseek (msgHdrHandle, -(long)(sizeof(msgHdrRec)), SEEK_CUR) /
             (u32)sizeof(msgHdrRec);
    if (_read (msgHdrHandle, &msgRa, sizeof(msgHdrRec)) != sizeof(msgHdrRec))
    {
@@ -1588,7 +1582,7 @@ s16 updateCurrHdrBBS (internalMsgType *message)
       validate2BBS(1);
    }
 
-   lseek (msgHdrHandle, -(u32)sizeof(msgHdrRec), SEEK_CUR);
+   lseek (msgHdrHandle, -(long)sizeof(msgHdrRec), SEEK_CUR);
    if (_write (msgHdrHandle, &msgRa, sizeof(msgHdrRec)) != sizeof(msgHdrRec))
    {
       lseek (msgHdrHandle, 0, SEEK_CUR);

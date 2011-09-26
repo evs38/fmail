@@ -36,8 +36,8 @@
 #include "nodemgr.h"
 #include "fs_util.h"
 #include "nodeinfo.h"
-#include "output.h"
 
+#define dARROW "ออ"
 
 
 typedef struct
@@ -363,16 +363,7 @@ static s16 listData(u16 *totalElem, ldType listDataArray[MAX_AREAS], u16 *totalE
    return -1;
 }
 
-
-
-
-
-
-
-
 nodeInfoType tempInfoN, updInfoN;
-
-
 
 s16 nodeNGOnly (s16 editType, s16 code)
 {

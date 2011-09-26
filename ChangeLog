@@ -1,9 +1,21 @@
+2011-09-11  1.64.0.17-beta
+  * Added an icon to FMailW32.exe
+  * Bug fix: Writing a .msg file longer than 64K now works correctly.
+  * Bug fix: A readonly compressed package, would make FMail go into an endless loop.
+  
+2011-09-11  1.64.0.15-beta
+  * Made FToolsW32.exe compile with C++ Builder 6
+
+2011-09-05  1.64.0.14-beta
+  * Don't print message number when scanning jam or hudson message area.
+  * Replaced some more high ascii.
+
 2011-09-05  1.64.0.10-beta
- * Use \r when the "direct screen io" version of FMail jumped to the first column on the screen. This should speed things up in case of a rescan of the messagebase.
- * Changed some high ascii output to standard ascii chars.
+  * Use \r when the "direct screen io" version of FMail jumped to the first column on the screen. This should speed things up in case of a rescan of the messagebase.
+  * Changed some high ascii output to standard ascii chars.
 
 2011-09-04  1.64-beta
- * Archive extension created wrong
+  * Archive extension created wrong
  
 2011-09-03  1.64
   * Used code beautifier uncrustify on ARCHIVE.C, had to do some hand editting afterwards.

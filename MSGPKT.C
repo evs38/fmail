@@ -556,14 +556,14 @@ s16 readPkt(internalMsgType *message)
    {
       if (check++)
       {
-	 startBuf = oldStart;
-	 if (check == 2)
+    	 startBuf = oldStart;
+    	 if (check == 2)
          {  newLine();
             logEntry("Skipping garbage in PKT file...", LOG_ALWAYS, 0);
          }
       }
-      if (bscanstart ())
-	 return (EOF);
+      if (bscanstart())
+	      return (EOF);
       oldStart = startBuf;
    }
    while (bgetw (&message->srcNode.node)    ||
@@ -586,7 +586,8 @@ s16 readPkt(internalMsgType *message)
         ((key.relKey1 == 2103461921L && key.relKey2 == 479359711L ) ||
          (key.relKey1 == 957691693L  && key.relKey2 == 824577056L ) ||
          (key.relKey1 == 405825030L  && key.relKey2 == 1360920973L)) )
-   {  *((long*)message->text) = startTime;
+   {
+      *((long*)message->text) = startTime;
    }
 
    return (0);

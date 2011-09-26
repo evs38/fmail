@@ -156,7 +156,7 @@ struct ftscps ftscprod[MAX_PRODCODES] =
    { 0x007E, "Tosser" },
    { 0x007F, "TCL" },
    { 0x0080, "MsgTrack" },
-   { 0x0081, "FMail" },
+   { 0x0081, "FMail - Hey that's me! ;)" },
    { 0x0082, "Scantoss" },
    { 0x0083, "Point Manager" },
    { 0x0084, "IMBINK" },

@@ -828,18 +828,18 @@ tossbad:
                     }
                   }
 
-                  if ( echoAreaList[areaIndex].JAMdirPtr == NULL )
+                  if (echoAreaList[areaIndex].JAMdirPtr == NULL)
                   {
                     /* Hudson toss */
-                    if ( writeBBS (message,
-                                   echoAreaList[areaIndex].board,
-                                   echoAreaList[areaIndex].options.impSeenBy) )
+                    if (writeBBS (message,
+                                  echoAreaList[areaIndex].board,
+                                  echoAreaList[areaIndex].options.impSeenBy))
                       diskError = DERR_WRHECHO;
                   }
                   else
                   {
                     /* JAM toss */
-                    if ( echoAreaList[areaIndex].options.impSeenBy )
+                    if (echoAreaList[areaIndex].options.impSeenBy)
                     {
                       strcat(message->text, message->normSeen);
                     }
@@ -926,7 +926,7 @@ tossbad:
             logEntry ("Packet password security violation �� packet is renamed to .SEC",
                       LOG_ALWAYS, 0);
         }
-        donePkt = findnext (&ffblkPkt);
+        donePkt = findnext(&ffblkPkt);
       }
       if (!mailBomb) newLine ();
 #if 0
@@ -1342,33 +1342,33 @@ int cdecl main(int argc, char *argv[])
   {
     if ((argc >= 3) && ((argv[2][0] == '?') || (argv[2][1] == '?')))
     {
-      printString ("Usage:\n\n"
-                   "    FMail Toss [/A] [/B]\n\n"
-                   "Switches:\n\n"
-                   "    /A   Do not process AreaMgr requests\n"
-                   "    /B   Also scan bad message directory for valid echomail messages\n");
-      showCursor ();
-      return (0);
+      printString("Usage:\n\n"
+                  "    FMail Toss [/A] [/B]\n\n"
+                  "Switches:\n\n"
+                  "    /A   Do not process AreaMgr requests\n"
+                  "    /B   Also scan bad message directory for valid echomail messages\n");
+      showCursor();
+      return 0;
     }
 
     status = 2;
 
-    switches = getSwitch (&argc, argv, SW_A|SW_B);
+    switches = getSwitch (&argc, argv, SW_A | SW_B);
 
     initFMail("TOSS", switches);
 
-    initPkt ();
-    initNodeInfo ();
-    initAreaInfo ();
+    initPkt();
+    initNodeInfo();
+    initAreaInfo();
 
-    initMsg ((u16)(switches & SW_A));  /* After initNodeInfo & initAreaInfo */
-    retryArc (); /* After initMsg */
+    initMsg((u16)(switches & SW_A));  /* After initNodeInfo & initAreaInfo */
+    retryArc(); /* After initMsg */
     scan_bcl();
     _mb_upderr = multiUpdate ();
 
-    initBBS ();
+    initBBS();
 
-    openDup ();
+    openDup();
 
     strcpy (tempStr, configPath);
     strcat (tempStr, "fmail.bde");
@@ -1437,8 +1437,8 @@ int cdecl main(int argc, char *argv[])
               bundlePtr3->nextb = bundlePtr2->nextb;
               bundlePtr2->nextb = bundlePtr3;
             }
-            doneArc = findnext (&ffblkMsg);
           }
+          doneArc = findnext (&ffblkMsg);
         }
       }
       if ( bundlePtr == NULL )
@@ -1448,9 +1448,9 @@ int cdecl main(int argc, char *argv[])
         do
         {
           newLine ();
-          strcpy (tempStr, config.inPath);
-          strcat (tempStr, bundlePtr->name);
-          unpackArc (tempStr, &bundlePtr->blk);
+          strcpy(tempStr, config.inPath);
+          strcat(tempStr, bundlePtr->name);
+          unpackArc(tempStr, &bundlePtr->blk);
           scan_bcl();
           diskError = processPkt(0, (u16)(switches & SW_A));
           bundlePtr2 = bundlePtr;

@@ -372,14 +372,14 @@ s16 readKbd (void);
 
 void initWindow (u16 mode);
 
-menuType *createMenu (uchar *title);
+menuType *createMenu(char *title);
 
-s16 displayWindow (uchar *title, u16 sx, u16 sy, u16 ex, u16 ey);
+s16 displayWindow (char *title, u16 sx, u16 sy, u16 ex, u16 ey);
 
 void removeWindow (void);
 
-s16 addItem (menuType *menu, u16 entryType, uchar *prompt, u16 offset,
-             void *data, u16 par1, u16 par2, uchar *comment);
+s16 addItem (menuType *menu, u16 entryType, char *prompt, u16 offset,
+             void *data, u16 par1, u16 par2, char *comment);
 
 s16 displayMenu (menuType *menu, u16 sx, u16 sy);
 
@@ -387,50 +387,50 @@ s16 groupToChar (s32 group);
 
 //s32 charToGroup (s16 c);
 
-u16 editString (uchar *string, u16 width, u16 x, u16 y,
-                     u16 fieldType);
+u16 editString (char *string, u16 width, u16 x, u16 y,
+                u16 fieldType);
 
 void processed (u16 updated, u16 total);
 
 s16 changeGlobal(menuType *menu, void *org, void *upd);
 
-s16 runMenuDE(menuType *menu, u16 sx, u16 sy, uchar *dataPtr, u16 setdef, u16 esc);
+s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc);
 #define runMenuD(a,b,c,d,e) runMenuDE(a,b,c,d,e,0)
 #define runMenu(a,b,c) runMenuDE(a,b,c,NULL,0,0)
 
-void printChar (uchar ch, u16 sx,  u16 sy,
-                          u16 fgc, u16 bgc,
-                          u16 mAttr);
+void printChar (char ch, u16 sx,  u16 sy,
+                         u16 fgc, u16 bgc,
+                         u16 mAttr);
 
-void printString (uchar *string, u16 sx,  u16 sy,
-                                 u16 fgc, u16 bgc,
-                                 u16 mAttr);
+void printString (char *string, u16 sx,  u16 sy,
+                                u16 fgc, u16 bgc,
+                                u16 mAttr);
 
-void printStringFill (uchar *string, uchar ch, s16 num,
-                             u16 x,   u16 y,
-                             u16 fgc, u16 bgc,
-                             u16 mAttr);
+void printStringFill (char *string, char ch, s16 num,
+                            u16 x, u16 y,
+                            u16 fgc, u16 bgc,
+                            u16 mAttr);
 
 void displayData (menuType *menu, u16 sx, u16 sy, s16 mark);
 
-void fillRectangle (uchar ch, u16 sx, u16 sy,
+void fillRectangle (char ch, u16 sx, u16 sy,
                              u16 ex, u16 ey,
                              u16 fgc, u16 bgc,
                              u16 mAttr);
 
-nodeNumType getNodeNum (uchar *title,  u16 sx, u16 sy, u16 aka);
+nodeNumType getNodeNum(char *title, u16 sx, u16 sy, u16 aka);
 
-uchar *nodeStr (nodeNumType *nodeNum);
+char *nodeStr (nodeNumType *nodeNum);
 
-uchar *getSourceFileName (uchar *title);
+char *getSourceFileName (char *title);
 
-uchar *getDestFileName (uchar *title);
+char *getDestFileName (char *title);
 
-void displayMessage (uchar *msg);
+void displayMessage (char *msg);
 
 s16 askChar(char *prompt, u8 *keys);
 
-s16 askBoolean (uchar *prompt, s16 dfault);
+s16 askBoolean (char *prompt, s16 dfault);
 
 void working (void);
 
@@ -444,6 +444,6 @@ void restoreWindowLook(void);
 
 void askRemoveDir(char *path);
 
-void askRemoveJAM(uchar *msgBasePath);
+void askRemoveJAM(char *msgBasePath);
 
 

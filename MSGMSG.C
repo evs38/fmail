@@ -348,7 +348,7 @@ void initMsg (s16 noAreaFix)
                          ((arcSize>>10) < config.maxBundleSize) ||
 // necessary for prevention of truncation of mailbundles: (config.mailer == 2)
                          (config.mailer == 2) ||
-                         (toupper(ext[3]) == (config.mailOptions.extNames?'Z':'9'))))
+                         (toupper(ext[3]) == (config.mailOptions.extNames ? 'Z' : '9'))))
                     {
                       strcpy (fileNameStr, drive);
                       strcat (fileNameStr, dir);
@@ -573,7 +573,7 @@ s16 readMsg (internalMsgType *message, s32 msgNum)
     return (-1);
   }
 
-  if ( (filelength(msgMsgHandle) > sizeof(msgMsgType)+TEXT_SIZE) ||
+  if ( (filelength(msgMsgHandle) > sizeof(msgMsgType) + TEXT_SIZE) ||
        (_read (msgMsgHandle, &msgMsg, sizeof(msgMsgType)) != sizeof(msgMsgType)) )
   {
     close(msgMsgHandle);
@@ -693,7 +693,7 @@ s32 writeMsg (internalMsgType *message, s16 msgType, s16 valid)
      valid = 2 : write READ-ONLY .MSG file
   */
   fhandle     msgHandle;
-  u16         len;
+  size_t      len;
   tempStrType tempStr, tempFName;
   char        *helpPtr;
   s32         highMsgNum;
@@ -757,18 +757,17 @@ s32 writeMsg (internalMsgType *message, s16 msgType, s16 valid)
   switch (msgType)
   {
     case NETMSG:
-      strcpy (tempStr, config.netPath);
+      helpPtr = stpcpy(tempStr, config.netPath);
       break;
     case PERMSG:
-      strcpy (tempStr, config.pmailPath);
+      helpPtr = stpcpy(tempStr, config.pmailPath);
       break;
     case SECHOMSG:
-      strcpy (tempStr, config.sentEchoPath);
+      helpPtr = stpcpy (tempStr, config.sentEchoPath);
       break;
-    default      :
-      return (-1);
+    default:
+      return -1;
   }
-  helpPtr = strchr (tempStr, 0);
 
   /* Determine highest message */
 
@@ -820,11 +819,10 @@ s32 writeMsg (internalMsgType *message, s16 msgType, s16 valid)
       return (-1);
     }
 
-    len = strlen(message->text)+1;
+    len = strlen(message->text) + 1;
 
-    if ((_write (msgHandle, &msgMsg, sizeof(msgMsgType)) !=
-         sizeof(msgMsgType)) ||
-        (_write (msgHandle, message->text, len) != len))
+    if (  (_write(msgHandle, &msgMsg, sizeof(msgMsgType)) != sizeof(msgMsgType))
+       || (_write(msgHandle, message->text, len) != len))
     {
       close(msgHandle);
       printString ("Can't write to output file.\n");
@@ -832,7 +830,8 @@ s32 writeMsg (internalMsgType *message, s16 msgType, s16 valid)
     }
     close(msgHandle);
 
-    if (valid==2) chmod (tempStr, S_IREAD);
+    if (valid == 2)
+      chmod(tempStr, S_IREAD);
 
     /* if (!valid) */
     {

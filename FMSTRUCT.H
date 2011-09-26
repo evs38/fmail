@@ -285,8 +285,6 @@ typedef struct
 
 /* ATTENTION: FMAIL.CFG does NOT use the new config file type yet (no header) !!! */
 
-#include <pshpack1.h>
-
 typedef struct
 {
    uchar           versionMajor;

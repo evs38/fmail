@@ -1,3 +1,17 @@
+2011-09-11
+
+FToolsW32 is now also compiled with C++ Builder 6.
+Watch the name change from: FToolsW3.exe to: FToolsW32.exe. So either adapt your batch files or rename it back!
+You should be carefull when you use this version of FTools, make sure you make backups of your message base files before you use it.
+I didn't test every function of FTools, just the ones that I use on my system:
+
+ MAINT /D /N /O /P
+ MSGM -net -sent -rcvd /N
+ Notify /A
+ Post ... <to JAM area>
+
+ So be extra carefull when you use other functions of FTools!
+ 
 2011-09-03
 
 This release of FMailW32 1.64.GPL should be regarded as a Beta!

@@ -94,7 +94,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=64
 Release=0
-Build=14
+Build=17
 Debug=0
 PreRelease=1
 Special=0
@@ -105,11 +105,11 @@ CodePage=1252
 
 [Version Info Keys]
 CompanyName=Fmail GPL
-FileDescription=
-FileVersion=1.64.0.14
+FileDescription=FMail mail tosser
+FileVersion=1.64.0.17
 InternalName=fmail
-LegalCopyright=
-LegalTrademarks=
+LegalCopyright=FMail developers
+LegalTrademarks=FMail developers
 OriginalFilename=FMail.exe
 ProductName=FMail
 ProductVersion=1.64
@@ -144,7 +144,7 @@ Item1=OBJ.6
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=SCAN
+RunParams=TOSS
 Launcher=
 UseLauncher=0
 DebugCWD=
