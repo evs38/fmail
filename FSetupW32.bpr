@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="FSetupW32.exe"/>
+    <OBJFILES value="OBJ.6\FSetupW32\AMGR_UTL.obj OBJ.6\FSetupW32\AREAMGR.obj 
+      OBJ.6\FSetupW32\CFGFILE.obj OBJ.6\FSetupW32\CRC.obj 
+      OBJ.6\FSetupW32\EXPORT.obj OBJ.6\FSetupW32\FILESYS.obj 
+      OBJ.6\FSetupW32\FS_BCL.obj OBJ.6\FSetupW32\FS_FUNC.obj 
+      OBJ.6\FSetupW32\FS_UTIL.obj OBJ.6\FSetupW32\FSETUP.obj 
+      OBJ.6\FSetupW32\IMPORT.obj OBJ.6\FSetupW32\MTASK.obj 
+      OBJ.6\FSetupW32\NODEMGR.obj OBJ.6\FSetupW32\PACKMGR.obj 
+      OBJ.6\FSetupW32\STRISTR.obj OBJ.6\FSetupW32\totalsec.obj 
+      OBJ.6\FSetupW32\UPDATE.obj OBJ.6\FSetupW32\UPLINK.obj 
+      OBJ.6\FSetupW32\WINDOW.obj"/>
+    <RESFILES value="FSetupW32.res"/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value=""/>
+    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi 
+      inetdbxpress.bpi visualclx.bpi dbrtl.bpi bdertl.bpi vcldb.bpi vcldbx.bpi 
+      dsnap.bpi cds.bpi bdecds.bpi teeui.bpi teedb.bpi tee.bpi teeqr.bpi 
+      ibxpress.bpi visualdbclx.bpi inetdb.bpi bcbie.bpi soaprtl.bpi 
+      dbexpress.bpi dbxcds.bpi bcb2kaxserver.bpi adortl.bpi"/>
+    <PATHCPP value=".;"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="_DEBUG;FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__"/>
+    <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
+    <MAINSOURCE value="FSetupW32.bpf"/>
+    <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-Od -Vx -Ve -C -X- -r- -a1 -6 -b -d -k -y -v -vi- -tWC -tWM- -c"/>
+    <PFLAGS value="-N2OBJ.6\FSetupW32 -N0OBJ.6\FSetupW32 -$YD -$W -$O- -$A8 -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zd"/>
+    <LFLAGS value="-IOBJ.6\FSetupW32 -D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cw32.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="FSetupW32.res" FORMNAME="" UNITNAME="FSetupW32.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FSetupW32.bpf" FORMNAME="" UNITNAME="FSetupW32" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="AMGR_UTL.C" FORMNAME="" UNITNAME="AMGR_UTL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="AREAMGR.C" FORMNAME="" UNITNAME="AREAMGR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="CFGFILE.C" FORMNAME="" UNITNAME="CFGFILE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="CRC.C" FORMNAME="" UNITNAME="CRC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="EXPORT.C" FORMNAME="" UNITNAME="EXPORT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FILESYS.C" FORMNAME="" UNITNAME="FILESYS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FS_BCL.C" FORMNAME="" UNITNAME="FS_BCL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FS_FUNC.C" FORMNAME="" UNITNAME="FS_FUNC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FS_UTIL.C" FORMNAME="" UNITNAME="FS_UTIL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FSETUP.C" FORMNAME="" UNITNAME="FSETUP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="IMPORT.C" FORMNAME="" UNITNAME="IMPORT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="MTASK.C" FORMNAME="" UNITNAME="MTASK" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="NODEMGR.C" FORMNAME="" UNITNAME="NODEMGR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="PACKMGR.C" FORMNAME="" UNITNAME="PACKMGR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="STRISTR.C" FORMNAME="" UNITNAME="STRISTR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="totalsec.c" FORMNAME="" UNITNAME="totalsec" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UPDATE.C" FORMNAME="" UNITNAME="UPDATE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UPLINK.C" FORMNAME="" UNITNAME="UPLINK" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="WINDOW.C" FORMNAME="" UNITNAME="WINDOW" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=1
+AutoIncBuild=1
+MajorVer=1
+MinorVer=64
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.64.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=1
+Item0=$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=1
+Item0=$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=3
+Item0=_DEBUG;FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
+Item1=_DEBUG;FSETUP;PENTIUMPRO;__FMAILX__
+Item2=_DEBUG
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=OBJ.6\FSetupW32
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+Launcher=
+UseLauncher=0
+DebugCWD=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteLauncher=
+RemoteCWD=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+  </IDEOPTIONS>
+</PROJECT>
