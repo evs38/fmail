@@ -226,7 +226,7 @@ static s16 execute(char *arcType, char *program, char *parameters
   sprintf(tempStr, "Executing %s %s", program, parameters);
   logEntry(tempStr, LOG_EXEC | LOG_NOSCRN, 0);
 
-	printString("컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴�\n");
+	printString("----------------------------external-program-start-----------------------------\n");
 	showCursor ();
 
 #if !defined __FMAILX__ && !defined __32BIT__
@@ -304,7 +304,7 @@ static s16 execute(char *arcType, char *program, char *parameters
   }
 #endif
 	noCursor();
-	printString("컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴�\n");
+	printString("---------------------------external-program-finished---------------------------\n");
   if (dosExitCode == -1)
   {
     sprintf(tempStr, "Cannot execute %s utility: ", arcType);
@@ -370,7 +370,7 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
       return;
   /*
    getdfree (*config.inPath - 'A' + 1, &dtable); /* was pktPath */
-  */ 
+  */
   if ((getenv("FMAIL_NDC") == NULL)
         && ( /*((s16)dtable.df_sclus == -1) ||*/
           (diskFree(config.inPath) < 4 * statBuf.st_size)))
@@ -380,7 +380,7 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
     logEntry(tempStr, LOG_ALWAYS, 0);
     return;
   }
-*/ 
+*/
   *arcPath = 0;
   switch (arcType = archiveType(fullFileName))
   {
@@ -538,13 +538,13 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
   }
   sprintf(tempStr, "Decompressing %s (%s)", fullFileName, extPtr);
   logEntry(tempStr, LOG_INBOUND, 0);
-  sprintf(tempStr, "              읕 %uk, %u-%.3s-%u %u:%02u"
+  sprintf(tempStr, "Archive info: %uk, %u-%.3s-%u %u:%02u"
           , max(1, (u16)((ffblkArc->ff_fsize + 512) >> 10))
           , ffblkArc->ff_fdate & 0x1f
           , months + (((ffblkArc->ff_fdate >> 5) & 0x0f) - 1) * 3
           , ((ffblkArc->ff_fdate >> 9) & 0x7f) + 1980
           , (ffblkArc->ff_ftime >> 11) & 0x1f
-          , (ffblkArc->ff_ftime >> 5) & 0x3f         
+          , (ffblkArc->ff_ftime >> 5) & 0x3f
        /* , (ffblkArc->ff_ftime & 0x1f) << 1 */
           );
   logEntry(tempStr, LOG_INBOUND, 0);
@@ -590,7 +590,7 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #else
   if (execute(extPtr, pathStr, parStr, fullFileName, unpackPathStr, NULL, memReq))
 #endif
-  {  
+  {
      if (arcType == 4)  /* ZOO */
      {
        setdisk(*dirStr - 'A');

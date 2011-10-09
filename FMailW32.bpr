@@ -94,7 +94,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=64
 Release=0
-Build=17
+Build=18
 Debug=0
 PreRelease=1
 Special=0
@@ -106,7 +106,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Fmail GPL
 FileDescription=FMail mail tosser
-FileVersion=1.64.0.17
+FileVersion=1.64.0.18
 InternalName=fmail
 LegalCopyright=FMail developers
 LegalTrademarks=FMail developers

@@ -1,3 +1,6 @@
+2011-10-09  1.64.0.18-beta
+  * Replaced some more high ascii.
+
 2011-09-11  1.64.0.17-beta
   * Added an icon to FMailW32.exe
   * Bug fix: Writing a .msg file longer than 64K now works correctly.

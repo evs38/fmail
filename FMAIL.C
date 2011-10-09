@@ -508,14 +508,14 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
           if (headerStat == 0)
           {
             if ((globVars.remoteCapability&1) == 1)
-              sprintf (tempStr, "           юд %s %u.%02u, Type 2+, %uk, %u-%.3s-%u %u:%02u%s%s",
+              sprintf (tempStr, "Pkt info: %s %u.%02u, Type 2+, %uk, %u-%.3s-%u %u:%02u%s%s",
                        helpPtr, globVars.versionHi, globVars.versionLo,
                        globVars.packetSize, globVars.day,
                        months+(globVars.month-1)*3, globVars.year,
                        globVars.hour, globVars.min, /* globVars.sec, */
                        globVars.password?", Pwd":"", (globVars.password==2)?", Sec":"");
             else
-              sprintf (tempStr, "           юд %s, Type %s, %uk, %u-%.3s-%u %u:%02u%s%s",
+              sprintf (tempStr, "Pkt info: %s, Type %s, %uk, %u-%.3s-%u %u:%02u%s%s",
                        helpPtr,
                        globVars.remoteCapability == 0xffff ? "2.2" :"2.0",
                        globVars.packetSize, globVars.day,
