@@ -29,10 +29,8 @@
 #include <stdlib.h>
 #include <dos.h>
 #include <string.h>
-#ifndef STDO
-#ifdef __STDIO__
+#if defined(STDO) || defined(__STDIO__)
 #include <conio.h>
-#endif
 #endif
 #include "fmail.h"
 #include "output.h"
@@ -177,9 +175,9 @@ union REGS regs;
 
 #ifdef __STDIO__
 
+#ifndef STDO
 void displayLine(u16 y)
 {
-#ifndef STDO
   u16   count;
   uchar tempStr[81];
 
@@ -191,14 +189,12 @@ void displayLine(u16 y)
 	}
 	tempStr[79] = 0;
 	cputs(tempStr);
-#else
-  (void)y;
-#endif
 }
+#endif
 
+#ifndef STDO
 void updCurrLine(void)
 {
-#ifndef STDO
   u16   count;
   uchar tempStr[81];
 
@@ -210,12 +206,11 @@ void updCurrLine(void)
 	}
 	tempStr[79] = 0;
 	cputs(tempStr);
-#endif
 }
-
 #endif
+#endif  // __STDIO__
 
-void initOutput (void)
+void initOutput(void)
 {
 #ifndef STDO
 #ifndef __STDIO__
@@ -238,7 +233,7 @@ void initOutput (void)
 
    _AH = 0x0f;
    geninterrupt (0x10);
-	 
+
    currMode = _AL & 0x7f;
    columns = _AH;
 
@@ -313,13 +308,13 @@ void initOutput (void)
 #else
   color = 1;
 #if !defined (_Windows) || defined(__DPMI16__) || defined(__DPMI32__) || defined(__WIN32__)
-  {  
+  {
     struct text_info ti;
     gettextinfo(&ti);
     rows = ti.screenheight;
     // Check rows because there is a bug in Borland C++ conion,
     // if the windows console Screen Buffer Size Height >255,
-    // the screenheight becomes 0 because it's an uchar!  
+    // the screenheight becomes 0 because it's an uchar!
     if (rows <= 0)
       rows = 25;
   }
@@ -330,12 +325,12 @@ void initOutput (void)
    removeCursor;
    x = y = 0;
    getMultiTasker();
-#endif   
+#endif
 }
 
+#ifndef STDO
 void setAttr(u16 fgc, u16 bgc, u16 mattr)
 {
-#ifndef STDO
   if (color)
   {
     attr = ((fgc & 0x0f) | ((bgc & 0x0f) << 4));
@@ -344,16 +339,12 @@ void setAttr(u16 fgc, u16 bgc, u16 mattr)
   {
     attr = mattr;
   }
-#else
-  (void)fgc;
-  (void)bgc;
-  (void)mattr;
-#endif
 }
+#endif
 
+#ifndef STDO
 void scroll(void)
 {
-#ifndef STDO
   u16 count;
 
   memcpy(&(screen[0]), &(screen[columns]), (rows-1)*columns*2);
@@ -369,8 +360,8 @@ void scroll(void)
   displayLine(rows-1);
 #endif
   returnTimeSlice(0);
-#endif
 }
+#endif
 
 void cls(void)
 {
@@ -401,7 +392,7 @@ u16 getTab(void)
 #ifndef STDO
   return x;
 #else
-  return 0;
+  return wherex();
 #endif
 }
 
@@ -418,12 +409,16 @@ void gotoTab(u16 tab)
 #endif
   returnTimeSlice(0);
 #else
+#if 0
   if (tab == 0)
     putchar('\r');
+  else
+#endif
+    gotoxy(++tab, wherey());
 #endif
 }
 
-void gotoPos (u16 px, u16 py)
+void gotoPos(u16 px, u16 py)
 {
 #ifndef STDO
 #ifdef __STDIO__
@@ -439,13 +434,12 @@ void gotoPos (u16 px, u16 py)
   }
 #endif
 #else
-  (void)px;
-  (void)py;
+  gotoxy(++px, ++py);
 #endif
 }
 
 #ifndef STDO
-void newLine (void)
+void newLine(void)
 {
 #ifdef __STDIO__
   displayLine(y);
@@ -467,7 +461,7 @@ void newLine (void)
 #endif
 }
 
-void printString (char *string)
+void printString(char *string)
 {
   if (string != NULL)
   {
@@ -475,7 +469,7 @@ void printString (char *string)
     {
       if (*string == '\n')
       {
-        newLine ();
+        newLine();
         string++;
       }
       else
@@ -487,7 +481,7 @@ void printString (char *string)
   }
   //returnTimeSlice(0);
 }
-#endif  
+#endif
 
 void printLong(u32 p)
 {
@@ -497,7 +491,7 @@ void printLong(u32 p)
   printString(numStr);
 }
 
-void printFill (void)
+void printFill(void)
 {
 #ifndef STDO
   u16 temp;
@@ -513,6 +507,8 @@ void printFill (void)
 #ifdef __STDIO__
   displayLine(y);
 #endif
+#else
+  clreol();
 #endif
 }
 
@@ -526,26 +522,27 @@ void printStringFill(char *string)
 void printChar(char ch)
 {
   if (ch == '\n')
-    newLine ();
+    newLine();
   else
   {
-    showChar (ch);
+    showChar(ch);
     increment;
   }
 }
 #endif
 
+#ifndef STDO
 void noCursor(void)
 {
-#ifndef STDO
   whereCursor(x, y);
   removeCursor;
-#endif
 }
+#endif
 
+#ifndef STDO
 void showCursor(void)
 {
-#ifndef STDO
   locateCursor(x, y);
-#endif
 }
+#endif
+

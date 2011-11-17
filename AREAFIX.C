@@ -484,7 +484,7 @@ s16 areaFix(internalMsgType *message)
   u8              *tag, *descr;
 
   static s16      keyChecked = 0;
-#ifndef BETA
+#ifndef BETA0
   u32             tkey, tempKey;
 #endif
 
@@ -581,7 +581,7 @@ s16 areaFix(internalMsgType *message)
     {
       strupr (message->text);
 
-#ifndef BETA
+#ifndef BETA0
       if (!keyChecked)
       {
         if ( config.key )

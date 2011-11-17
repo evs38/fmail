@@ -29,7 +29,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__"/>
+    <USERDEFINES value="__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FToolsW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -85,7 +85,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=64
 Release=0
-Build=7
+Build=9
 Debug=0
 PreRelease=1
 Special=0
@@ -95,16 +95,15 @@ Locale=1033
 CodePage=1252
 
 [Version Info Keys]
-CompanyName=FMail
+CompanyName=FMail GPL
 FileDescription=FTools Windows 32 bit version
-FileVersion=1.64.0.7
+FileVersion=1.64.0.9
 InternalName=FTools
-LegalCopyright=
+LegalCopyright=Copyright (c) 1991 - 2011 FMail developers
 LegalTrademarks=
 OriginalFilename=FToolsW32.exe
 ProductName=FMail
 ProductVersion=1.64
-Comments=
 
 [HistoryLists\hlIncludePath]
 Count=1
@@ -119,13 +118,14 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=6
-Item0=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item1=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item2=_DEBUG;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item3=_DEBUG;P386;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item4=_DEBUG;P386;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUM__
-Item5=_DEBUG
+Count=7
+Item0=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
+Item1=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item2=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item3=_DEBUG;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item4=_DEBUG;P386;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item5=_DEBUG;P386;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUM__
+Item6=_DEBUG
 
 [HistoryLists\hlIntOutputDir]
 Count=1

@@ -227,7 +227,7 @@ static s16 execute(char *arcType, char *program, char *parameters
   logEntry(tempStr, LOG_EXEC | LOG_NOSCRN, 0);
 
 	printString("----------------------------external-program-start-----------------------------\n");
-	showCursor ();
+	showCursor();
 
 #if !defined __FMAILX__ && !defined __32BIT__
   if ((config.genOptions.swap)

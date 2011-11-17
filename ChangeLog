@@ -1,3 +1,8 @@
+2011-11-18  1.64.0.22-beta
+  * Added conio functions to re-enable some direct screen functionality
+  * Removed/Switched-of most "#define BETA" functionality
+  * Changed BETA version strings
+
 2011-10-09  1.64.0.18-beta
   * Replaced some more high ascii.
 

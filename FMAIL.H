@@ -64,24 +64,18 @@
 #define MBNAME "Hudson"
 #endif
 
-#ifdef BETA
-  #define VERNUM         "1.65.GPL"
-  #define SERIAL_MAJOR    1
-  #define SERIAL_MINOR    65
-#else
-  #define VERNUM         "1.64.GPL"
-  #define SERIAL_MAJOR    1
-  #define SERIAL_MINOR    64
-#endif
+#define VERNUM         "1.64.GPL"
+#define SERIAL_MAJOR    1
+#define SERIAL_MINOR    64
 
 #ifdef BETA
-   #define VERSION_STRING    "FMail"PTYPE MBTYPE" "VERNUM" beta+"
-   #define FTOOLS_VER_STRING "FTools"PTYPE MBTYPE" "VERNUM" beta+"
-   #define FSETUP_VER_STRING "FSetup"PTYPE MBTYPE" "VERNUM" beta+"
-   #define TEARLINE          PTYPE" "VERNUM"/beta+"
-   #define FMAIL_TID         "FMail"PTYPE" "VERNUM"/b+"
+   #define VERSION_STRING    "FMail"PTYPE MBTYPE" "VERNUM"-Beta"
+   #define FTOOLS_VER_STRING "FTools"PTYPE MBTYPE" "VERNUM"-Beta"
+   #define FSETUP_VER_STRING "FSetup"PTYPE MBTYPE" "VERNUM"-Beta"
+   #define TEARLINE          PTYPE" "VERNUM"-Beta"
+   #define FMAIL_TID         "FMail"PTYPE" "VERNUM"-b"
    #define FMAIL_PID         FMAIL_TID
-   #define FTOOLS_PID        "FTools"PTYPE" "VERNUM"/b+"
+   #define FTOOLS_PID        "FTools"PTYPE" "VERNUM"-b"
 #else
    #define VERSION_STRING    "FMail"PTYPE MBTYPE" "VERNUM
    #define FTOOLS_VER_STRING "FTools"PTYPE MBTYPE" "VERNUM

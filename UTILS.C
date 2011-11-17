@@ -1279,7 +1279,7 @@ void addVia (char *msgText, u16 aka)
 {
    struct tm *tmPtr;
    char      *helpPtr;
-#if !defined BETA
+#if !defined BETA0
    u32       tkey, tempKey;
    static u16 keyChecked = 0;
    u16       count;
@@ -1298,7 +1298,7 @@ void addVia (char *msgText, u16 aka)
          *(helpPtr++) = '\r';
       }
 
-#if !defined BETA
+#if !defined BETA0
       if (!keyChecked)
       {
          tkey = tempKey = (key.relKey1 & 0xffff);
@@ -1323,7 +1323,7 @@ void addVia (char *msgText, u16 aka)
                         tmPtr->tm_year, tmPtr->tm_mon+1, tmPtr->tm_mday,
                         tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec,
                         VERSION_STRING,
-#if !defined BETA
+#if !defined BETA0
                         keyChecked == 2 ? "+" : "" );
 #else
                         "");
