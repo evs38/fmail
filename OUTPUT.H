@@ -59,31 +59,37 @@
 
 
 void initOutput      (void);
-void setAttr         (u16 fgc, u16 bgc, u16 mattr);
 void cls             (void);
 u16  getTab          (void);
 void gotoTab         (u16 tab);
 void gotoPos         (u16 px, u16 py);
 #ifdef STDO
-#define newLine()      putchar('\n')
-#define printString(S) printf(S)
-#define printChar(C)   putchar(C)
+#define newLine()        putchar('\n')
+#define printString(S)   printf(S)
+#define printChar(C)     putchar(C)
+#define noCursor()       ((void)0)
+#define setAttr(f, b, m) ((void)0)
+#define showCursor()     ((void)0)
 #else
 void newLine         (void);
 void printString     (char *string);
 void printChar       (char ch);
+void noCursor        (void);
+void setAttr         (u16 fgc, u16 bgc, u16 mattr);
+void showCursor      (void);
 #endif
 
-//void printInt      (s16 p);
 #define printInt(a)  printLong(a)
 void printLong       (u32 p);
 void printFill       (void);
 void printStringFill (char *string);
-void noCursor        (void);
-void showCursor      (void);
 
 #ifdef __32BIT__
-void updCurrLine  (void);
+#ifdef STDO
+#define updCurrLine() ((void)0)
+#else
+void updCurrLine      (void);
+#endif
 #define updateCurrLine() updCurrLine()
 #else
 #define updateCurrLine();

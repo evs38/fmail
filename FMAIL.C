@@ -528,12 +528,12 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
 
             while ((!readPkt (message)) && (!diskError) && (!breakPressed))
             {
-              gotoTab (0);
-              printString ("Pkt message ");
-              printInt (++pktMsgCount);
-              printString (" "dARROW" ");
+              gotoTab(0);
+              printString("Pkt message ");
+              printInt(++pktMsgCount);
+              printString(" "dARROW" ");
 
-              areaIndex = getAreaCode (message->text);
+              areaIndex = getAreaCode(message->text);
 
               /* Personal Mail Check */
 
@@ -955,7 +955,7 @@ s16 handleScan (internalMsgType *message, u16 boardNum, u16 boardIndex)
   tempStrType    tempStr;
   char           *helpPtr1,
   *helpPtr2;
-#if !defined BETA
+#if !defined BETA0
   u32             tkey, tempKey;
 #endif
   static s16     keyChecked = 0;
@@ -966,7 +966,7 @@ s16 handleScan (internalMsgType *message, u16 boardNum, u16 boardIndex)
   {
     keyChecked = 1;
 
-#if !defined BETA
+#if !defined BETA0
 
 
     tkey = tempKey = (key.relKey1 & 0xffffL);
@@ -1019,7 +1019,7 @@ s16 handleScan (internalMsgType *message, u16 boardNum, u16 boardIndex)
         tearline[7] = 'i';
         strcpy (tearline+9, TEARLINE);
 
-#if !defined BETA
+#if !defined BETA0
         if ((tkey ^ 'F1') == ((key.relKey1 >> 16) ^ (key.relKey1 & 0xffffL)))
         {
           strcat (tearline, "+");
@@ -1257,11 +1257,7 @@ int cdecl main(int argc, char *argv[])
   gotoPos (3, 1);
 #endif
   printString(version);
-#ifdef BETA
-  printString(" - The Fast Echomail Processor - DO NOT DISTRIBUTE !");
-#else
   printString(" - The Fast Echomail Processor");
-#endif
 #ifndef STDO
   gotoPos(3, 2);
 #else

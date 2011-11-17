@@ -29,7 +29,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__"/>
+    <USERDEFINES value="FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FMailW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -94,7 +94,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=64
 Release=0
-Build=18
+Build=22
 Debug=0
 PreRelease=1
 Special=0
@@ -104,16 +104,15 @@ Locale=1043
 CodePage=1252
 
 [Version Info Keys]
-CompanyName=Fmail GPL
+CompanyName=FMail GPL
 FileDescription=FMail mail tosser
-FileVersion=1.64.0.18
+FileVersion=1.64.0.22
 InternalName=fmail
-LegalCopyright=FMail developers
-LegalTrademarks=FMail developers
-OriginalFilename=FMail.exe
+LegalCopyright=Copyright (c) 1991 - 2011 FMail developers
+LegalTrademarks=
+OriginalFilename=FMailW32.exe
 ProductName=FMail
 ProductVersion=1.64
-Comments=
 
 [HistoryLists\hlIncludePath]
 Count=1
@@ -128,12 +127,13 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=5
-Item0=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item1=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item2=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item3=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__486__
-Item4=_DEBUG
+Count=6
+Item0=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
+Item1=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item2=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item3=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item4=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__486__
+Item5=_DEBUG
 
 [HistoryLists\hlIntOutputDir]
 Count=2

@@ -418,12 +418,7 @@ int cdecl main(int argc, char *argv[])
   setAttr(YELLOW, RED, MONO_HIGH);
   gotoPos(3, 1);
 #endif
-  printString(FTOOLS_VER_STRING);
-#ifdef BETA
-  printString(" - The Fast Message Base Utility - DO NOT DISTRIBUTE\n");
-#else
-  printString(" - The Fast Message Base Utility\n");
-#endif
+  printString(FTOOLS_VER_STRING" - The Fast Message Base Utility\n");
 #ifndef STDO
   gotoPos(3, 2);
 #else

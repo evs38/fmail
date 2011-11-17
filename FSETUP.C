@@ -665,11 +665,7 @@ int cdecl main(int argc, char *argv[])
   if (!color)
     screen[81].attr = 0;
 #endif
-#ifdef BETA
-  sprintf (versionStr, VERSION_STRING" - Setup Utility - DO NOT DISTRIBUTE !");
-#else
   sprintf (versionStr, VERSION_STRING" - Setup Utility");
-#endif
 
   printString (versionStr, 3, 1, YELLOW, RED, MONO_HIGH);
   printString ("Copyright (C) 1991-2008 by Folkert J. Wijnstra - All rights reserved", 3, 2, YELLOW, RED, MONO_HIGH);
