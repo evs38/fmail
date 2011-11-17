@@ -44,15 +44,15 @@ static int checkKeyStd(u32 *relKey1, u32 *relKey2)
   u32 tempKey, crcName;
   u16 count;
 
-  if ((*relKey1 == 0) && (*relKey2 == 0))
+  if (*relKey1 == 0 && *relKey2 == 0)
     return 0;
 
   /* !!! nieuwe toevoeging t.o.v. originele keysysteem !!! */
   *relKey1 ^= 0x4fd34193L;
   *relKey2 ^= *relKey1;
 
-  keyResult = (u16)(*relKey2 >> 16) ^
-              (u16)(*relKey2 & 0xffff);
+  keyResult = (u16)(*relKey2 >> 16) 
+            ^ (u16)(*relKey2 & 0xffff);
 
   key = tempKey = (*relKey1 >> 16) ^ (*relKey1 & 0xffff);
 
@@ -70,9 +70,10 @@ static int checkKeyStd(u32 *relKey1, u32 *relKey2)
   tempKey ^= keyResult;
   tempKey %= N;
 
-  if ( key != tempKey ||
-       (*relKey1 == 957691693L && *relKey2 == 824577056L) || // gekraakte keys
-       (*relKey1 == 405825030L && *relKey2 == 1360920973L) ) // in gevonden lijst
+  if (  key != tempKey 
+     || (*relKey1 == 957691693L && *relKey2 == 824577056L ) // gekraakte keys
+     || (*relKey1 == 405825030L && *relKey2 == 1360920973L) // in gevonden lijst
+     )
   {
     return 0;
 #if 0
@@ -89,16 +90,14 @@ static int checkKeyStd(u32 *relKey1, u32 *relKey2)
   newLine ();
   newLine ();
 #endif
-//if ( crcName == 1423435765 && toupper(*config.sysopName) == 'F' ) // TEST "Folkert Wijnstra"
-  if ( crcName == 2852920193L && toupper(*config.sysopName) == 'B' ) // Bas Koot gaf zijn key vrij
+//if (crcName == 1423435765 && toupper(*config.sysopName) == 'F') // TEST "Folkert Wijnstra"
+  if (crcName == 2852920193L && toupper(*config.sysopName) == 'B') // Bas Koot gaf zijn key vrij
     return 0;
 
   return 1;
 }
 
-
 keyType key;
-
 
 int keyFileInit(void)
 {
@@ -111,20 +110,18 @@ int keyFileInit(void)
   if ((tempHandle = open(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1)
     return 0;
 
-  if ( read(tempHandle, &key, sizeof(keyType)) != sizeof(keyType) )
+  if (read(tempHandle, &key, sizeof(keyType)) != sizeof(keyType))
   {
     close(tempHandle);
     return 0;
   }
   close(tempHandle);
-  if ( (key.crc ^ 0x4c2de439L ^ (u32)key.data[173]) != crc32len((char *)&key, sizeof(keyType) - 4) )
-  {
-    close(tempHandle);
+  
+  if ((key.crc ^ 0x4c2de439L ^ (u32)key.data[173]) != crc32len((char *)&key, sizeof(keyType) - 4))
     return 0;
-  }
-  if ( !checkKeyStd(&key.relKey1, &key.relKey2) )
+
+  if (!checkKeyStd(&key.relKey1, &key.relKey2))
     return 0;
 
   return 1;
 }
-
