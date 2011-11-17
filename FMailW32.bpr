@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="FMailW32.exe"/>
+    <OBJFILES value="OBJ.6\W32\ARCHIVE.obj OBJ.6\W32\AREAFIX.obj OBJ.6\W32\AREAINFO.obj 
+      OBJ.6\W32\BCLFUN.obj OBJ.6\W32\CFGFILE.obj OBJ.6\W32\CONFIG.obj 
+      OBJ.6\W32\CRC.obj OBJ.6\W32\DUPS32.obj OBJ.6\W32\FILESYS.obj 
+      OBJ.6\W32\FMAIL.obj OBJ.6\W32\FTSCPROD.obj OBJ.6\W32\JAMFUN.obj 
+      OBJ.6\W32\JAMMAINT.obj OBJ.6\W32\JAMSCAN.obj OBJ.6\W32\KEYFILE.obj 
+      OBJ.6\W32\LOG.obj OBJ.6\W32\MSGMSG.obj OBJ.6\W32\MSGPKT.obj 
+      OBJ.6\W32\MSGRA.obj OBJ.6\W32\MTASK.obj OBJ.6\W32\NODEINFO.obj 
+      OBJ.6\W32\OUTPUT.obj OBJ.6\W32\PACK.obj OBJ.6\W32\SENDSMTP.obj 
+      OBJ.6\W32\SMTP.obj OBJ.6\W32\SORTHB.obj OBJ.6\W32\STRISTR.obj 
+      OBJ.6\W32\totalsec.obj OBJ.6\W32\UTILS.obj"/>
+    <RESFILES value="FMailW32.res"/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value=""/>
+    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi vcldb.bpi dbrtl.bpi bdertl.bpi vclie.bpi inet.bpi 
+      xmlrtl.bpi inetdbbde.bpi inetdbxpress.bpi"/>
+    <PATHCPP value=".;"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__"/>
+    <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
+    <MAINSOURCE value="FMailW32.bpf"/>
+    <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-O2 -Vx -Ve -C -X- -a1 -6 -b- -d -k- -vi -tWC -tWM- -c"/>
+    <PFLAGS value="-N2OBJ.6\W32 -N0OBJ.6\W32 -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-IOBJ.6\W32 -D&quot;&quot; -ap -Tpe -x -Gn"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cw32.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="FMailW32.res" FORMNAME="" UNITNAME="FMailW32.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FMailW32.bpf" FORMNAME="" UNITNAME="FMailW32" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ARCHIVE.C" FORMNAME="" UNITNAME="ARCHIVE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="AREAFIX.C" FORMNAME="" UNITNAME="AREAFIX" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="AREAINFO.C" FORMNAME="" UNITNAME="AREAINFO" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="BCLFUN.C" FORMNAME="" UNITNAME="BCLFUN" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="CFGFILE.C" FORMNAME="" UNITNAME="CFGFILE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="CONFIG.C" FORMNAME="" UNITNAME="CONFIG" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="CRC.C" FORMNAME="" UNITNAME="CRC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="DUPS32.C" FORMNAME="" UNITNAME="DUPS32" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FILESYS.C" FORMNAME="" UNITNAME="FILESYS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FMAIL.C" FORMNAME="" UNITNAME="FMAIL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FTSCPROD.C" FORMNAME="" UNITNAME="FTSCPROD" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="JAMFUN.C" FORMNAME="" UNITNAME="JAMFUN" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="JAMMAINT.C" FORMNAME="" UNITNAME="JAMMAINT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="JAMSCAN.C" FORMNAME="" UNITNAME="JAMSCAN" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="KEYFILE.C" FORMNAME="" UNITNAME="KEYFILE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="LOG.C" FORMNAME="" UNITNAME="LOG" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="MSGMSG.C" FORMNAME="" UNITNAME="MSGMSG" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="MSGPKT.C" FORMNAME="" UNITNAME="MSGPKT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="MSGRA.C" FORMNAME="" UNITNAME="MSGRA" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="MTASK.C" FORMNAME="" UNITNAME="MTASK" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="NODEINFO.C" FORMNAME="" UNITNAME="NODEINFO" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="OUTPUT.C" FORMNAME="" UNITNAME="OUTPUT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="PACK.C" FORMNAME="" UNITNAME="PACK" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="SENDSMTP.C" FORMNAME="" UNITNAME="SENDSMTP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="SMTP.C" FORMNAME="" UNITNAME="SMTP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="SORTHB.C" FORMNAME="" UNITNAME="SORTHB" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="STRISTR.C" FORMNAME="" UNITNAME="STRISTR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="totalsec.c" FORMNAME="" UNITNAME="totalsec" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UTILS.C" FORMNAME="" UNITNAME="UTILS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=1
+AutoIncBuild=1
+MajorVer=1
+MinorVer=64
+Release=0
+Build=18
+Debug=0
+PreRelease=1
+Special=0
+Private=0
+DLL=0
+Locale=1043
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=Fmail GPL
+FileDescription=FMail mail tosser
+FileVersion=1.64.0.18
+InternalName=fmail
+LegalCopyright=FMail developers
+LegalTrademarks=FMail developers
+OriginalFilename=FMail.exe
+ProductName=FMail
+ProductVersion=1.64
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=1
+Item0=$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=1
+Item0=$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=5
+Item0=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item1=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item2=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item3=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__486__
+Item4=_DEBUG
+
+[HistoryLists\hlIntOutputDir]
+Count=2
+Item0=OBJ.6\W32
+Item1=OBJ.6
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=TOSS
+Launcher=
+UseLauncher=0
+DebugCWD=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteLauncher=
+RemoteCWD=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+  </IDEOPTIONS>
+</PROJECT>

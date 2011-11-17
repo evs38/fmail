@@ -198,7 +198,7 @@ void openBBSWr ()
 
 
 
-s16 writeBBS (internalMsgType *message, u16 boardNum, s16 isNetmail)
+s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 {
    msgHdrRec   msgRa;
    msgIdxRec   msgIdx;
@@ -231,9 +231,10 @@ s16 writeBBS (internalMsgType *message, u16 boardNum, s16 isNetmail)
 		msgRa.SeeAlsoNum = 0;
 		msgRa.TRead      = 0;
 		msgRa.NetAttr    = 0;
-                msgRa.StartRec   = msgTxtRecNum = (u16)(filelength(msgTxtHandle) >> 8);
+    msgRa.StartRec   = 
+    msgTxtRecNum     = (u16)(filelength(msgTxtHandle) >> 8);
 		msgRa.Board      = boardNum;
-                msgHdrRecNum = (u16)(filelength(msgHdrHandle)/sizeof(msgHdrRec));
+    msgHdrRecNum = (u16)(filelength(msgHdrHandle)/sizeof(msgHdrRec));
 
                 if ((s16)(msgRa.MsgNum = ++infoRec.HighMsg) < 0)
 		{

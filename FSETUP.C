@@ -59,35 +59,6 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include "mtask.h"
 #include "nodeinfo.h"
 
-#if 0
-#undef close(a)
-#undef _close(a)
-
-int closet(int handle)
-{
-  char tempStr[80];
-  if ( handle >= 5 )
-    return close(handle);
-  sprintf(tempStr, "Trying to close handle %i, ignored", handle);
-  displayMessage(tempStr);
-  return -1;
-}
-
-int _closet(int handle)
-{
-  char tempStr[80];
-  if ( handle >= 5 )
-    return _rtl_close(handle);
-  sprintf(tempStr, "Trying to _close handle %i, ignored", handle);
-  displayMessage(tempStr);
-  return -1;
-}
-
-#define close(a)  closet(a)
-#define _close(a) _closet(a)
-#endif
-
-
 extern  u16 allowConversion;
 
 #ifdef __32BIT__
@@ -132,8 +103,30 @@ rawEchoType     echoDefaultsRec; /* used in IMPORT.C */
 u16 xOS2 = 0;
 #endif
 
-struct COUNTRY countryInfo;
-
+#ifdef __BORLANDC__
+#ifdef __WIN32__
+#ifndef __DPMI32__
+struct  COUNTRY
+{
+  short   co_date;
+  char    co_curr[5];
+  char    co_thsep[2];
+  char    co_desep[2];
+  char    co_dtsep[2];
+  char    co_tmsep[2];
+  char    co_currstyle;
+  char    co_digits;
+  char    co_time;
+  long    co_case;
+  char    co_dasep[2];
+  char    co_fill[10];
+};
+#endif
+#endif
+  struct COUNTRY countryInfo;
+#else
+  struct country countryInfo;
+#endif
 
 int cdecl main(int argc, char *argv[])
 {
@@ -211,7 +204,11 @@ int cdecl main(int argc, char *argv[])
     strcat (promptStr, "$n$g");
   putenv(promptStr);
 
+#ifndef __WIN32__
   country(0, &countryInfo);
+#else
+  countryInfo.co_tmsep[0] = ':';
+#endif
 
   for (count = 0; count < MAX_AKAS; count++)
   {
@@ -514,10 +511,12 @@ int cdecl main(int argc, char *argv[])
       mode = 1;
     if (stricmp (argv[1], "/C") == 0)
       mode = 2;
+#ifndef __32BIT__
 #ifdef __FMAILX__
     if ( !stricmp (argv[1], "/OS2") || !stricmp (argv[1], "/WIN") ||
          !stricmp (argv[1], "/X32") || !stricmp (argv[1], "/32") )
       xOS2 = 1;
+#endif
 #endif
   }
   arcToggle.data = (char*)&config.defaultArc;
@@ -667,13 +666,13 @@ int cdecl main(int argc, char *argv[])
     screen[81].attr = 0;
 #endif
 #ifdef BETA
-  sprintf (versionStr, VERSION_STRING" ù Setup Utility ù DO NOT DISTRIBUTE !");
+  sprintf (versionStr, VERSION_STRING" - Setup Utility - DO NOT DISTRIBUTE !");
 #else
-  sprintf (versionStr, VERSION_STRING" ù Setup Utility");
+  sprintf (versionStr, VERSION_STRING" - Setup Utility");
 #endif
 
   printString (versionStr, 3, 1, YELLOW, RED, MONO_HIGH);
-  printString ("Copyright (C) 1991-2008 by Folkert J. Wijnstra ù All rights reserved", 3, 2, YELLOW, RED, MONO_HIGH);
+  printString ("Copyright (C) 1991-2008 by Folkert J. Wijnstra - All rights reserved", 3, 2, YELLOW, RED, MONO_HIGH);
 
   fillRectangle ('Ü', 0, 4, 79, 4, BLUE, BLACK, 0);
   fillRectangle ('ß', 0, 23, 79, 23, BLUE, BLACK, 0);
@@ -754,13 +753,6 @@ int cdecl main(int argc, char *argv[])
     deInit (5);
     return (0);
   }
-
-//   if ((nodeInfo = calloc(MAX_NODES, sizeof(nodeInfoType))) == NULL)
-//   {
-//      displayMessage ("Not enough memory available");
-//      deInit (5);
-//      return(1);
-//   }
 
   strcpy(tempStr2, strcpy(tempStr, config.bbsPath));
   strcat (tempStr, "fmail.loc");
@@ -1274,8 +1266,6 @@ int cdecl main(int argc, char *argv[])
            "Email address that will be used as the sender address");
   addItem (internetMenu, WORD, "SMTP server", 0, config.smtpServer, 56, 0,
            "SMTP server that FMail can use to send Internet mail");
-// addItem (internetMenu, WORD, "POP3 server", 0, config._pop3Server, 56, 0,
-//          "POP3 server that FMail can use to receive Internet mail");
 
   if ((mailMenu = createMenu (" Mail ")) == NULL)
   {
@@ -1810,16 +1800,6 @@ int cdecl main(int argc, char *argv[])
     addItem (uplMenu, FUNC_VPAR, uplinkNodeStr[count+(MAX_UPLREQ/2)], 30, uplinkMenu, count+(MAX_UPLREQ/2), 0,
              " - Uplink system -");
   }
-  /*
-     if ((akaMatchMenu = createMenu (" AKA matching ", &windowLook)) == NULL)
-     {
-        goto nomem;
-     }
-     addItem (akaMatchMenu, NODE_MATCH, "1", 0, &config.akaMatch[0].amNode, 0, 0,
-  	    "?????????????");
-     addItem (akaMatchMenu, FUNC_PAR, "AKA", 32, &akaMatchFunc[0], 23, 0,
-  	    "AKA to be used");
-  */
   if ((miscMenu = createMenu (" Miscellaneous ")) == NULL)
   {
     goto nomem;
@@ -1955,9 +1935,6 @@ nomem:
       closeConfig(CFG_AREADEF);
     }
   }
-//   free(nodeInfo);
-
-// if ((update) || (boardEdit))
   autoUpdate ();
 
   deInit (5);

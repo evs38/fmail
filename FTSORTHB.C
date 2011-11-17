@@ -101,18 +101,8 @@ void sortBBS (u16 origTotalMsgBBS, s16 mbSharing)
       printString ("Can't open MsgHdr."MBEXTN" for update.\n");
       return;
    }
-/*
-   temp = 0;
-   if (isalpha(config.bbsPath[0])&& (config.bbsPath[1] == ':'))
-   {
-      temp = toupper(*config.bbsPath) - 'A' + 1;
-   }
-   getdfree (temp, &dtable);
-*/
    if (config.mbOptions.sortNew &&
-       (filelength(msgHdrHandle) > diskFree(config.bbsPath)))
-/*                                 dtable.df_avail*(s32)dtable.df_bsec*
-                                   dtable.df_sclus)) */
+       ((u32)filelength(msgHdrHandle) > diskFree(config.bbsPath)))
    {
       logEntry ("Not enough free diskspace to sort messages", LOG_ALWAYS, 0);
       if (!config.mbOptions.updateChains)

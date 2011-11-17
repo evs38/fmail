@@ -28,6 +28,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+
 #include "fmail.h"
 #include "fs_func.h"
 #include "window.h"
@@ -36,6 +37,7 @@
 #include "fs_util.h"
 #include "nodeinfo.h"
 
+#define dARROW "ออ"
 
 
 typedef struct
@@ -242,7 +244,7 @@ static s16 listData(u16 *totalElem, ldType listDataArray[MAX_AREAS], u16 *totalE
    do
    {
       for ( count = 0; count < MAX_LD_WINSIZE; count++ )
-      {                                                         
+      {
          if ( windowBase+count < *totalElem )
             strcpy(tempStr, listDataArray[windowBase+count].desc);
          else
@@ -361,16 +363,7 @@ static s16 listData(u16 *totalElem, ldType listDataArray[MAX_AREAS], u16 *totalE
    return -1;
 }
 
-
-
-
-
-
-
-
 nodeInfoType tempInfoN, updInfoN;
-
-
 
 s16 nodeNGOnly (s16 editType, s16 code)
 {
@@ -395,7 +388,7 @@ u16 editNM(s16 editType, u16 setdef)
    char         addressText[MAX_AKAS+1][34];
    char         tempStr[24];
    char         ch;
-   char         *helpPtr1, *helpPtr2; 
+   char         *helpPtr1, *helpPtr2;
 
    groupsSelect.numPtr = (u16*)&tempInfoN.groups;
    groupsSelect.f      = askGroups;
@@ -523,7 +516,7 @@ u16 editNM(s16 editType, u16 setdef)
                       "Max number of days between polls before auto-passive (1-9999, 0 = no max)");
    addItem (nodeMenu, WORD|UPCASE, "Packet pwd", 0, &tempInfoN.packetPwd, 8, 0,
                       "Password put in outgoing mail packets and required in incoming mail packets");
-   addItem (nodeMenu, BOOL_INT, "ออ Ignore   ", 22, &tempInfoN.options, BIT3, 0,
+   addItem (nodeMenu, BOOL_INT, dARROW" Ignore   ", 22, &tempInfoN.options, BIT3, 0,
                       "Put password in outgoing packets but do not check incoming packets for it");
    addItem (nodeMenu, NUM_INT, "AutoPassive size", 45, &tempInfoN.passiveSize, 4, 9999,
 		       "Max size of mail bundle before auto-passive (1-9999, 0 = no max)");

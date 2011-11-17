@@ -422,8 +422,7 @@ static s16 bgets (char *s, size_t n) // !MSGSIZE
    size_t m;
    char *helpPtr;
 
-   while ((helpPtr = memccpy (s+sLen, pktRdBuf+startBuf, 0,
-        	  	      m = min (n-sLen, endBuf-startBuf))) == NULL)
+   while ((helpPtr = memccpy(s + sLen, pktRdBuf + startBuf, 0, m = min(n - sLen, endBuf - startBuf))) == NULL)
    {
       sLen += m;
       if (sLen == n)
@@ -531,17 +530,17 @@ s16 bgetdate (char *dateStr,
       oldStart = 0;
       endBuf = _read (pktHandle, pktRdBuf, PKT_BUFSIZE);
    }
-   if ((strlen (dateStr) < 19) && (endBuf-startBuf > 0) &&
-       (((*(pktRdBuf+startBuf) > 0) && (*(pktRdBuf+startBuf) < 32)) ||
-        (*(pktRdBuf+startBuf) == 255)))
-      startBuf++;
+   if (  (strlen(dateStr) < 19)
+      && (endBuf - startBuf > 0)
+      && (((*(pktRdBuf + startBuf) > 0) && (*(pktRdBuf + startBuf) < 32))
+      || (*(pktRdBuf + startBuf) == (char)255))
+      )
+     startBuf++;
 
    return (0);
 }
 
-
-
-s16 readPkt (internalMsgType *message)
+s16 readPkt(internalMsgType *message)
 {
    u16 check = 0;
 
@@ -557,14 +556,14 @@ s16 readPkt (internalMsgType *message)
    {
       if (check++)
       {
-	 startBuf = oldStart;
-	 if (check == 2)
+    	 startBuf = oldStart;
+    	 if (check == 2)
          {  newLine();
             logEntry("Skipping garbage in PKT file...", LOG_ALWAYS, 0);
          }
       }
-      if (bscanstart ())
-	 return (EOF);
+      if (bscanstart())
+	      return (EOF);
       oldStart = startBuf;
    }
    while (bgetw (&message->srcNode.node)    ||
@@ -587,7 +586,8 @@ s16 readPkt (internalMsgType *message)
         ((key.relKey1 == 2103461921L && key.relKey2 == 479359711L ) ||
          (key.relKey1 == 957691693L  && key.relKey2 == 824577056L ) ||
          (key.relKey1 == 405825030L  && key.relKey2 == 1360920973L)) )
-   {  *((long*)message->text) = startTime;
+   {
+      *((long*)message->text) = startTime;
    }
 
    return (0);
@@ -611,12 +611,9 @@ s16 openPktWr (nodeFileRecType *nfInfoRec)
 
    nfInfoRec->bytesValid = 0;
 
-   sprintf (nfInfoRec->pktFileName, "%s%08lX.TMP",
-                                    config.outPath, uniqueID());
+   sprintf (nfInfoRec->pktFileName, "%s%08lx.tmp", config.outPath, uniqueID());
 
-   if ((pktHandle = openP(nfInfoRec->pktFileName,
-                          O_RDWR|O_CREAT|O_TRUNC|O_DENYALL,
-                          S_IREAD|S_IWRITE)) == -1)
+   if ((pktHandle = openP(nfInfoRec->pktFileName, O_RDWR|O_CREAT|O_TRUNC|O_DENYALL, S_IREAD|S_IWRITE)) == -1)
    {
       nfInfoRec->pktHandle    = 0;
       *nfInfoRec->pktFileName = 0;
@@ -658,7 +655,7 @@ s16 openPktWr (nodeFileRecType *nfInfoRec)
       msgPktHdr.prodCodeHi = 0x00;
    }
 
-  strncpy (msgPktHdr.password, nfInfoRec->nodePtr->packetPwd, 8);
+  strncpy(msgPktHdr.password, nfInfoRec->nodePtr->packetPwd, 8);
 
    if (nfInfoRec->nodePtr->capability & PKT_TYPE_2PLUS)
    {
@@ -666,21 +663,19 @@ s16 openPktWr (nodeFileRecType *nfInfoRec)
       msgPktHdr.cwValid       = (CAPABILITY >> 8) | (((char)CAPABILITY) << 8);
    }
 
-   if (_write (pktHandle, &msgPktHdr, 58) != 58)
+   if (_write(pktHandle, &msgPktHdr, 58) != 58)
    {
       close(pktHandle);
-      unlink (nfInfoRec->pktFileName);
+      unlink(nfInfoRec->pktFileName);
       nfInfoRec->pktHandle    = 0;
       *nfInfoRec->pktFileName = 0;
-      return (-1);
+      return -1;
    }
    nfInfoRec->nodePtr->lastMsgSentDat = startTime;
    return (0);
 }
 
-
-
-static s16 closeLuPkt (void)
+static s16 closeLuPkt(void)
 {
    u16 minimum;
    s16 minIndex;
@@ -775,15 +770,13 @@ s16 writeEchoPkt (internalMsgType *message, s16 tinySeenByArea,
 	    }
 	    else
 	    {
-	       if ((nodeFileInfo[count]->pktHandle =
-		      openP(nodeFileInfo[count]->pktFileName,
-			    O_WRONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) != -1)
+	       if ((nodeFileInfo[count]->pktHandle = openP(nodeFileInfo[count]->pktFileName, O_WRONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) != -1)
 	       {
-		  lseek (nodeFileInfo[count]->pktHandle, 0, SEEK_END);
+          lseek (nodeFileInfo[count]->pktHandle, 0, SEEK_END);
 	       }
 	       else
 	       {
-		  nodeFileInfo[count]->pktHandle = 0;
+          nodeFileInfo[count]->pktHandle = 0;
 	       }
 	    }
 
@@ -822,7 +815,7 @@ s16 writeEchoPkt (internalMsgType *message, s16 tinySeenByArea,
 
          if ( config.akaList[nodeFileInfo[count]->srcAka].nodeNum.zone &&
               nodeFileInfo[count]->srcAka != nodeFileInfo[count]->requestedAka )
-         { sprintf(helpPtr2 , "\1PATH: %u/%u\r", 
+         { sprintf(helpPtr2 , "\1PATH: %u/%u\r",
                               config.akaList[nodeFileInfo[count]->srcAka].nodeNum.net,
                               config.akaList[nodeFileInfo[count]->srcAka].nodeNum.node);
          }
@@ -840,11 +833,11 @@ s16 writeEchoPkt (internalMsgType *message, s16 tinySeenByArea,
 	 ((pmHdrType*)pktBufStart)->attribute = message->attribute;
 	 ((pmHdrType*)pktBufStart)->cost      = message->cost;
 
-         if ( _write (pktHandle, pktBufStart, pktBufLen) != pktBufLen )
+         if (_write (pktHandle, pktBufStart, pktBufLen) != (int)pktBufLen )
          {
-	    printString ("Cannot write to PKT file.\n");
-	    return (1);
-	 }
+     	    printString ("Cannot write to PKT file.\n");
+	        return 1;
+       	 }
 
 	 nodeFileInfo[count]->totalMsgs++;
 
@@ -860,13 +853,13 @@ s16 writeEchoPkt (internalMsgType *message, s16 tinySeenByArea,
 	    close(pktHandle);
 	    nodeFileInfo[count]->pktHandle = 0;
 
-	    if ((fnPtr = malloc (sizeof(fnRecType))) == NULL)
+	    if ((fnPtr = malloc(sizeof(fnRecType))) == NULL)
 	    {
 	       return (1);
 	    }
-	    memset (fnPtr, 0, sizeof(fnRecType));
+	    memset(fnPtr, 0, sizeof(fnRecType));
 
-	    strcpy (fnPtr->fileName, nodeFileInfo[count]->pktFileName);
+	    strcpy(fnPtr->fileName, nodeFileInfo[count]->pktFileName);
 
 	    fnPtr->nextRec = nodeFileInfo[count]->fnList;
 	    nodeFileInfo[count]->fnList = fnPtr;
@@ -965,7 +958,7 @@ s16 validateEchoPktWr (void)
       getdfree (*config.outPath - 'A' + 1, &dtable);
 */
       if (/*((s16)dtable.df_sclus != -1) &&*/
-          ((totalPktSize /* / 2 */) > diskFree(config.outPath)))
+          ((totalPktSize /* / 2 */) > (s32)diskFree(config.outPath)))
 /*           (dtable.df_avail * (s32) dtable.df_sclus * dtable.df_bsec))) */
       {
          printString ("\nFreeing up diskspace...\n");
@@ -1215,16 +1208,15 @@ s16 closeNetPktWr (nodeFileRecType *nfInfo)
 	 return (0);
       }
 
-      if (((pktHandle = openP(nfInfo->pktFileName,
-			      O_WRONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) == -1) ||
-	  (lseek (pktHandle, 0, SEEK_SET) == -1) ||
-	  (chsize (pktHandle, nfInfo->bytesValid) == -1) ||
-	  (lseek (pktHandle, 0, SEEK_END) == -1) ||
-	  (_write (pktHandle, &zero, 2) != 2) ||
-	  (close(pktHandle) == -1))
+      if (((pktHandle = openP(nfInfo->pktFileName, O_WRONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) == -1) ||
+            (lseek (pktHandle, 0, SEEK_SET) == -1) ||
+            (chsize (pktHandle, nfInfo->bytesValid) == -1) ||
+            (lseek (pktHandle, 0, SEEK_END) == -1) ||
+            (_write (pktHandle, &zero, 2) != 2) ||
+            (close(pktHandle) == -1))
       {
-	 logEntry ("ERROR: Cannot adjust length of file", LOG_ALWAYS, 0);
-	 return (1);
+       logEntry ("ERROR: Cannot adjust length of file", LOG_ALWAYS, 0);
+       return (1);
       }
 
       /* pack oude bundle */
@@ -1262,18 +1254,22 @@ s16 closeNetPktWr (nodeFileRecType *nfInfo)
         int     no_msg;
 static  int     no_log = 0;
 
-fhandle openP (const char *pathname, s16 access, u16 mode)
-{  fhandle handle;
-   u16     errcode;
-   u8     *helpPtr;
+fhandle openP (const char *pathname, int access, u16 mode)
+{
+  fhandle handle;
+  u16     errcode;
+  u8     *helpPtr;
 
    ++no_log;
    while ((handle = open(pathname, access, mode)) == -1)
-   {  errcode = errno;
+   {
+      errcode = errno;
       if ((errno != EMFILE) || (closeLuPkt()))
-      {  if ( !no_msg && (((config.logInfo & LOG_OPENERR) ||
+      {
+        if ( !no_msg && (((config.logInfo & LOG_OPENERR) ||
                (config.logInfo & LOG_ALWAYS)) && no_log == 1) )
-         {  tempStrType tempStr;
+         {
+            tempStrType tempStr;
             sprintf(tempStr, "Error opening %s: %s", pathname, strerror(errcode));
             helpPtr = strchr(tempStr, 0);
             *--helpPtr = 0;
@@ -1281,26 +1277,31 @@ fhandle openP (const char *pathname, s16 access, u16 mode)
          }
          --no_log;
          no_msg = 0;
-	 return (-1);
+         return (-1);
       }
    }
    --no_log;
    no_msg = 0;
-   return (handle);
+
+  return handle;
 }
 
-fhandle fsopenP (const char *pathname, s16 access, u16 mode)
-{  fhandle handle;
+fhandle fsopenP (const char *pathname, int access, u16 mode)
+{
+  fhandle handle;
    u16     errcode;
    u8     *helpPtr;
 
    ++no_log;
    while ((handle = fsopen(pathname, access, mode, 1)) == -1)
-   {  errcode = errno;
+   {
+    errcode = errno;
       if ((errno != EMFILE) || (closeLuPkt()))
-      {  if ( !no_msg && (((config.logInfo & LOG_OPENERR) ||
+      {
+        if ( !no_msg && (((config.logInfo & LOG_OPENERR) ||
                (config.logInfo & LOG_ALWAYS)) && no_log == 1) )
-         {  tempStrType tempStr;
+         {
+          tempStrType tempStr;
             sprintf(tempStr, "Error opening %s: %s", pathname, strerror(errcode));
             helpPtr = strchr(tempStr, 0);
             *--helpPtr = 0;
@@ -1308,14 +1309,12 @@ fhandle fsopenP (const char *pathname, s16 access, u16 mode)
          }
          --no_log;
          no_msg = 0;
-	 return (-1);
+	       return (-1);
       }
    }
    --no_log;
    no_msg = 0;
-   return (handle);
+
+  return handle;
 }
-
-
-
 

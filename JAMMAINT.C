@@ -110,7 +110,8 @@ s16 JAMremoveRe(char *buf, u32 *bufsize)
       return 0;
 
    while ( ((JAMBINSUBFIELD *)buf)->LoID != JAMSFLD_SUBJECT )
-   {  size = (u16)sizeof(JAMBINSUBFIELD)+(u16)((JAMBINSUBFIELD *)buf)->DatLen;
+   {
+      size = (u16)sizeof(JAMBINSUBFIELD)+(u16)((JAMBINSUBFIELD *)buf)->DatLen;
       buf += size;
       totalsize += size;
       if (totalsize >= *bufsize)

@@ -529,7 +529,7 @@ u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_su
 					internalMsgType *message)
 {  dummy = jam_code;
 
-   if ( fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 2) != jam_hdroffset )
+   if ( (u32)fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 2) != jam_hdroffset )
       return 0;
    if ( read(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR) )
       return 0;
@@ -559,7 +559,7 @@ u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_su
 u16 jam_puthdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec)
 {  dummy = jam_code;
 
-   if ( fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 3) != jam_hdroffset )
+   if ( (u32)fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 3) != jam_hdroffset )
       return 0;
    if ( write(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR) )
       return 0;
@@ -589,7 +589,7 @@ u16 jam_gettxt(u32 jam_code, u32 jam_txtoffset, u32 jam_txtlen, char *txt)
 	
    if ( jam_txtlen >= TEXT_SIZE )
       return 0;
-   if ( fmseek(jam_txthandle, jam_txtoffset, SEEK_SET, 4) != jam_txtoffset )
+   if ( (u32)fmseek(jam_txthandle, jam_txtoffset, SEEK_SET, 4) != jam_txtoffset )
       return 0;
 /* !!!!!!!!!! */
    if ( read(jam_txthandle, txt, (udef)jam_txtlen) != jam_txtlen )

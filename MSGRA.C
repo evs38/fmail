@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <dir.h>
+
 #include "fmail.h"
 #include "config.h"
 #include "areainfo.h"
@@ -45,14 +46,8 @@
 
 #include "dups.h"
 
-/*
-#define HDR_BUFSIZE 100 /* Max 350 */
-#define TXT_BUFSIZE 200 /* Max 255 */
-*/
-
 u16      HDR_BUFSIZE = 104;
 u16      TXT_BUFSIZE = 200;
-
 
 extern time_t            startTime;
 extern cookedEchoType    *echoAreaList;
@@ -130,8 +125,8 @@ void initBBS (void)
    else
       globVars.origTotalMsgBBS = 0;
 
-   if ( config.mbOptions.mbSharing &&
-	!findfirst(expandName("MSGTXT", 1), &ffblkData, 0) )
+   if (  config.mbOptions.mbSharing
+      && !findfirst(expandName("MSGTXT", 1), &ffblkData, 0) )
 #ifdef GOLDBASE
       globVars.baseTotalTxtRecs = ffblkData.ff_fsize / 256;
 #else
@@ -1004,7 +999,7 @@ static s16 processMsg(u16 areaIndex)
 	 }
       }
 
-      printStringFill ("ออ Duplicate message");
+      printStringFill (dARROW" Duplicate message");
       newLine();
       writeBBS (message, config.dupBoard, 1);
 //      if ( writeBBS (message, config.dupBoard, 1) )
@@ -1334,6 +1329,7 @@ s16 scanBBS (u32 index, internalMsgType *message, u16 rescan)
          logEntry ("Can't read MsgHdr."MBEXTN, LOG_ALWAYS, 0);
       return (0);
    }
+#if 0   
    if (rescan != 2)
    {
       gotoTab (1);
@@ -1346,6 +1342,7 @@ s16 scanBBS (u32 index, internalMsgType *message, u16 rescan)
       printString (") ");
       updateCurrLine();
    }
+#endif
 
    if ((((((msgRa.MsgAttr & RA_ECHO_OUT) && (!isNetmailBoard(msgRa.Board))) ||
           ((msgRa.MsgAttr & RA_NET_OUT ) && (isNetmailBoard(msgRa.Board)))) &&
@@ -1355,7 +1352,7 @@ s16 scanBBS (u32 index, internalMsgType *message, u16 rescan)
       if ( msgRa.NumRecs > ((u32)((u32)TEXT_SIZE-2048) >> 8) ) // !MSGSIZE
       {
          gotoTab (0);
-         sprintf (tempStr, "Message too big: message #%u in board #%u ออ Skipped",
+         sprintf (tempStr, "Message too big: message #%u in board #%u "dARROW" Skipped",
                            msgRa.MsgNum, (u16)msgRa.Board);
          logEntry (tempStr, LOG_ALWAYS, 0);
          return (-1);
@@ -1371,7 +1368,7 @@ s16 scanBBS (u32 index, internalMsgType *message, u16 rescan)
                     &message->hours, &message->minutes) != 0)
       {
          gotoTab (0);
-         sprintf (tempStr, "Bad date in message base: message #%u in board #%u ออ Skipped",
+         sprintf (tempStr, "Bad date in message base: message #%u in board #%u "dARROW" Skipped",
                            msgRa.MsgNum, msgRa.Board);
          logEntry (tempStr, LOG_MSGBASE, 0);
          return (-1);
@@ -1509,7 +1506,7 @@ s16 updateCurrHdrBBS (internalMsgType *message)
    {
       return (1);
    }
-   recNum = lseek (msgHdrHandle, -(u32)sizeof(msgHdrRec), SEEK_CUR) /
+   recNum = lseek (msgHdrHandle, -(long)(sizeof(msgHdrRec)), SEEK_CUR) /
             (u32)sizeof(msgHdrRec);
    if (_read (msgHdrHandle, &msgRa, sizeof(msgHdrRec)) != sizeof(msgHdrRec))
    {
@@ -1585,7 +1582,7 @@ s16 updateCurrHdrBBS (internalMsgType *message)
       validate2BBS(1);
    }
 
-   lseek (msgHdrHandle, -(u32)sizeof(msgHdrRec), SEEK_CUR);
+   lseek (msgHdrHandle, -(long)sizeof(msgHdrRec), SEEK_CUR);
    if (_write (msgHdrHandle, &msgRa, sizeof(msgHdrRec)) != sizeof(msgHdrRec))
    {
       lseek (msgHdrHandle, 0, SEEK_CUR);

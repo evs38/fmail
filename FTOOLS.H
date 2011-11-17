@@ -1,42 +1,43 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//-----------------------------------------------------------------------------
+//
+//  Copyright (C) 2007      Folkert J. Wijnstra
+//  Copyright (C) 2008-2011 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//-----------------------------------------------------------------------------
 
+#ifndef __ftools_h
+#define __ftools_h
 
 typedef struct
 {
-   uchar           *name;
-   uchar           aka;
-   uchar           defined;
-   areaOptionsType options;
-   u16             numDays;
-   u16             numDaysRcvd;
-   u16             numMsgs;  } boardInfoType;
+  uchar          *name;
+  uchar           aka;
+  uchar           defined;
+  areaOptionsType options;
+  u16             numDays;
+  u16             numDaysRcvd;
+  u16             numMsgs;  
+} boardInfoType;
 
-
-void initLog  (uchar *s, s32 switches);
-
-void logEntry (uchar *s, u16 entryType, u16 errorLevel);
-
-s32 getSwitchFT (int *argc, uchar *argv[], s32 mask);
-
+void initLog   (char *s, s32 switches);
+void logEntry  (char *s, u16 entryType, u16 errorLevel);
+s32 getSwitchFT(int *argc, char *argv[], s32 mask);
 
 #define SW_A  0x00000001L
 #define SW_B  0x00000002L
@@ -64,3 +65,5 @@ s32 getSwitchFT (int *argc, uchar *argv[], s32 mask);
 #define SW_X  0x00800000L
 #define SW_Y  0x01000000L
 #define SW_Z  0x02000000L
+
+#endif

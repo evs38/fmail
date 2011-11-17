@@ -20,7 +20,7 @@
  */
 
 
-uchar *expandName (uchar *fileName);
-void initLog  (uchar *s, s32 switches);
-void logEntry (uchar *s, u16 entryType, u16 errorLevel);
-void logActive (void);
+char *expandName(char *fileName);
+void initLog(char *s, s32 switches);
+void logEntry(char *s, u16 entryType, u16 errorLevel);
+void logActive(void);

@@ -21,5 +21,5 @@
 
 
 s32  getGroupCode    (uchar *groupString);
-uchar getGroupChar    (s32 groupCode);
-uchar *getGroupString (s32 groupCode, uchar *groupString);
+char getGroupChar    (s32 groupCode);
+uchar *getGroupString(s32 groupCode, uchar *groupString);

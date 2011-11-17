@@ -56,23 +56,23 @@
 #define SW_Z  0x02000000L
 
 int   moveFile        (char *oldName, char *newName);
-s16   existDir        (uchar *dir, uchar *descr);
-u32   diskFree        (uchar *path);
-s16   matchAka        (nodeNumType *node, uchar useAka);
-void  touch           (uchar *path, uchar *filename, uchar *t);
-s16   emptyText       (uchar *text);
-void  delete          (uchar *path, uchar *wildCard);
-s32   getSwitch       (int *argc, uchar *argv[], s32 mask);
+s16   existDir        (char *dir, char *descr);
+u32   diskFree        (char *path);
+s16   matchAka        (nodeNumType *node, char useAka);
+void  touch           (char *path, char *filename, char *t);
+s16   emptyText       (char *text);
+void  delete          (char *path, char *wildCard);
+s32   getSwitch       (int *argc, char *argv[], s32 mask);
 u32   uniqueID        (void);
 void  waitID          (void);
-uchar *removeRe       (uchar *string);
-void  removeLfSr      (uchar *msgText);
-uchar *srchar         (uchar *string, s16 t, s16 c);
-uchar *nodeStr        (nodeNumType *nodeNum);
-uchar *nodeStrZ       (nodeNumType *nodeNum);
-uchar *findCLStr      (uchar *s1, uchar *s2);
-uchar *findCLiStr     (uchar *s1, uchar *s2);
-void  removeLine      (uchar *s);
+char *removeRe        (char *string);
+void  removeLfSr      (char *msgText);
+char *srchar          (char *string, s16 t, s16 c);
+char *nodeStr         (nodeNumType *nodeNum);
+char *nodeStrZ        (nodeNumType *nodeNum);
+char *findCLStr       (char *s1, char *s2);
+char *findCLiStr      (char *s1, char *s2);
+void  removeLine      (char *s);
 void  addINTL         (internalMsgType *message);
 s16   getLocalAka     (nodeNumType *node);
 s16   isLocalPoint    (nodeNumType *node);
@@ -82,12 +82,12 @@ s16   node4d          (nodeNumType *node);
 void  point4d         (internalMsgType *message);
 void  make4d          (internalMsgType *message);
 s16   getLocalAkaNum  (nodeNumType *node);
-uchar *insertLine     (uchar *pos, uchar *line);
-uchar *insertLineN    (uchar *pos, uchar *line, u16 num);
-void  addPathSeenBy   (uchar *msgText, uchar *seenBy, uchar *tinySeen, uchar *path,
+char *insertLine      (char *pos, char *line);
+char *insertLineN     (char *pos, char *line, u16 num);
+void  addPathSeenBy   (char *msgText, char *seenBy, char *tinySeen, char *path,
                        echoToNodeType echoToNode, u16 areaIndex);
-void  addVia          (uchar *msgText, u16 aka);
-s16   scanDate        (uchar *datePtr, u16 *year, u16 *month, u16 *day,
+void  addVia          (char *msgText, u16 aka);
+s16   scanDate        (unsigned char *datePtr, u16 *year, u16 *month, u16 *day,
                        u16 *hours, u16 *minutes);
 s32   checkDate       (u16 year,  u16 month,  u16 day,
                        u16 hours, u16 minutes, u16 seconds);

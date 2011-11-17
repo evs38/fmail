@@ -62,14 +62,7 @@ typedef struct
 static dupHdrStruct dupHdr;
 
 #ifndef __OS2__
-int _stdcall _memint(u32 *p, u32 c, u32 size); 
-#define memint _memint
-#else
-void * _RTLENTRY  _EXPFUNC memint(const void * __s, int __c, size_t __n);
-#endif
-
-/*
-static _cdecl memintt(u32 *p, u32 c, u32 size)
+u32 *_memint(u32 *p, u32 c, u32 size)
 {
    u32 count = 0;
 
@@ -77,10 +70,12 @@ static _cdecl memintt(u32 *p, u32 c, u32 size)
       count++;
    if ( count == size )
       return NULL;
-   return p+count;
+   return p + count;
 }
-*/
-
+#define memint _memint
+#else
+void * _RTLENTRY  _EXPFUNC memint(const void * __s, int __c, size_t __n);
+#endif
 
 void openDup(void)
 {

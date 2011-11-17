@@ -72,7 +72,7 @@ struct  COUNTRY
 
 
 
-char *expandName (char *fileName)
+char *expandName(char *fileName)
 {
    static tempStrType tempStr[2];
    static tempIndex = 0;
@@ -132,7 +132,7 @@ void writeLogLine (fhandle logHandle, char *s)
 
 
 
-void initLog  (char *s, s32 switches)
+void initLog(char *s, s32 switches)
 {
    fhandle     logHandle;
    tempStrType tempStr,
@@ -212,7 +212,7 @@ void initLog  (char *s, s32 switches)
 
 
 
-void logEntry (char *s, u16 entryType, u16 errorLevel)
+void logEntry(char *s, u16 entryType, u16 errorLevel)
 {
    fhandle     logHandle;
    tempStrType tempStr;

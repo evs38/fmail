@@ -80,11 +80,11 @@ udef openBCL(uplinkReqType *uplinkReq)
 udef readBCL(u8 **tag, u8 **descr)
 {  static u8  buf[256];
 
-   if ( eof(bclHandle) )
+   if (eof(bclHandle))
       return 0;
-   if ( read(bclHandle, &bcl, sizeof(bcl_type)) != sizeof(bcl_type) )
+   if (read(bclHandle, &bcl, sizeof(bcl_type)) != sizeof(bcl_type))
       return 0;
-   if ( read(bclHandle, buf, bcl.EntryLength-sizeof(bcl_type)) != bcl.EntryLength-sizeof(bcl_type) )
+   if (read(bclHandle, buf, bcl.EntryLength-sizeof(bcl_type)) != bcl.EntryLength - sizeof(bcl_type))
       return 0;
    *tag = buf;
    *descr = strchr(buf, 0) + 1;

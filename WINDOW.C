@@ -28,9 +28,14 @@
 
 /* os2 */
 
-#if (__BORLANDC__ < 0x0452)
+#if (__BORLANDC__ < 0x0452) || ((__BORLANDC__ >= 0x0500) && defined(__32BIT__))
 #define __SegB000       0xb000
 #define __SegB800       0xb800
+#endif
+
+#if (__BORLANDC__ >= 0x0500) && defined(__32BIT__)
+#define MK_FP(seg,ofs) ((void *)((char *)(seg) + (ofs)))
+#define FP_SEG(fp)     ((void *)(fp))
 #endif
 
 #include <stdlib.h>
@@ -42,10 +47,10 @@
 #include <time.h>
 #include <process.h>
 #include <ctype.h>
-#ifndef __OS2__
-#include <bios.h>
-#else
+#if defined(__OS2__) || (__BORLANDC__ >= 0x0500)
 #include <conio.h>
+#else
+#include <bios.h>
 #endif
 #include "fmail.h"
 #include "fs_func.h"
@@ -70,12 +75,12 @@ extern char boardCodeInfo[512];
 #define columns 80
 
 
-#ifndef __OS2__
-#define keyWaiting bioskey(1)
-#define keyRead    bioskey(0)
-#else
+#if defined(__OS2__) || (__BORLANDC__ >= 0x0500)
 #define keyWaiting kbhit()
 #define keyRead    getch()
+#else
+#define keyWaiting bioskey(1)
+#define keyRead    bioskey(0)
 #endif
 
 
@@ -125,8 +130,30 @@ static char border[4][8] = { {'Ä', '³', 'Ú', '¿', 'À', 'Ù', '´', 'Ã'}
                            , {'Ä', 'º', 'Ö', '·', 'Ó', '½', '¶', 'Ç'}
                            , {'Í', 'º', 'É', '»', 'È', '¼', '¹', 'Ì'}
                            };
-
-extern struct COUNTRY countryInfo;
+#ifdef __BORLANDC__
+#ifdef __WIN32__
+#ifndef __DPMI32__
+struct  COUNTRY
+{
+  short   co_date;
+  char    co_curr[5];
+  char    co_thsep[2];
+  char    co_desep[2];
+  char    co_dtsep[2];
+  char    co_tmsep[2];
+  char    co_currstyle;
+  char    co_digits;
+  char    co_time;
+  long    co_case;
+  char    co_dasep[2];
+  char    co_fill[10];
+};
+#endif
+#endif
+  extern struct COUNTRY countryInfo;
+#else
+  extern struct country countryInfo;
+#endif
 
 s16 readKbd (void)
 {
@@ -179,14 +206,14 @@ s16 readKbd (void)
 //      VioShowBuf(0, 8000, 0);
 
       ch = keyRead;
-#ifdef __OS2__
-      if ( !ch )
-	 ch = keyRead<<8;
+#if defined(__OS2__) || (__BORLANDC__ >= 0x0500)
+   if ( !ch )
+  	 ch = keyRead<<8;
 #else
-      if (ch & 0x00ff)
-	 ch &= 0x00ff;
+   if (ch & 0x00ff)
+	   ch &= 0x00ff;
 #endif
-      if (ch == _K_ALTZ_)
+   if (ch == _K_ALTZ_)
       {
 	 if (((comspecPtr = getenv("COMSPEC")) != NULL) &&
 	     (windowSP < MAX_WINDOWS) &&
@@ -572,18 +599,6 @@ s16 groupToChar (s32 group)
       }
    return c;
 }
-
-
-
-/* wordt (nog) niet gebruikt!
-static s32 charToGroup (s16 c)
-{
-   if (isalpha(c))
-      return (1L << (toupper(c)-'A'));
-   else
-      return (1);
-}
-*/
 
 
 u16     es__8c = 0;
@@ -2813,10 +2828,10 @@ void askRemoveDir(char *path)
 
 
 
-void askRemoveJAM(uchar *msgBasePath)
+void askRemoveJAM(char *msgBasePath)
 {
    tempStrType tempStr;
-   uchar       *helpPtr;
+   char       *helpPtr;
    struct ffblk ffblkJAM;
 
    helpPtr = stpcpy(tempStr, msgBasePath);

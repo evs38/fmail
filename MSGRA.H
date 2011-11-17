@@ -287,7 +287,7 @@ s16  multiUpdate    (void);
 void readMsgInfo    (u16);
 void writeMsgInfo   (u16);
 
-uchar *expandName   (uchar *fileName, u16 orgName);
+char *expandName    (char *fileName, u16 orgName);
 void initBBS        (void);
 
 s16  testMBUnlockNow(void);
@@ -310,5 +310,5 @@ s16  updateCurrHdrBBS(internalMsgType *message);
 void moveBadBBS     (void);
 //void closeBBSRd   (void);
 
-s16 rescan (nodeInfoType *nodeInfo, uchar *areaName,
+s16 rescan (nodeInfoType *nodeInfo, char *areaName,
             u16 maxRescan, fhandle msgHandle1, fhandle msgHandle2);

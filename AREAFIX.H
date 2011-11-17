@@ -20,5 +20,5 @@
  */
 
 
-s16 toAreaFix (uchar *toName);
+s16 toAreaFix (char *toName);
 s16 areaFix (internalMsgType *message);

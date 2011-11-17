@@ -121,7 +121,7 @@ s16 packValid (nodeNumType *node, char *packedNodes)
       }
       stringNode = nodeStr(node);
 
-      for (count=0; count<strlen(nodeTempStr); count++)
+      for (count = 0; count < (u16)strlen(nodeTempStr); count++)
       {
          if (nodeTempStr[count]=='?')
          {
@@ -169,7 +169,7 @@ s16 packValid (nodeNumType *node, char *packedNodes)
 
 
 
-s16 notify (int argc, char *argv[])
+s16 notify(int argc, char *argv[])
 {
    char            *helpPtr;
    s32             switches;

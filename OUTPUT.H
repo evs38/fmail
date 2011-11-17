@@ -18,8 +18,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-
+#ifndef __output_h
+#define __output_h
+ 
 #define COLOR_BLINK     0x08
 
 #define MONO_NORM       0x07
@@ -56,20 +57,28 @@
 
 #define BLINK	  128	          /* blink bit */
 
+
 void initOutput      (void);
 void setAttr         (u16 fgc, u16 bgc, u16 mattr);
 void cls             (void);
 u16  getTab          (void);
 void gotoTab         (u16 tab);
 void gotoPos         (u16 px, u16 py);
+#ifdef STDO
+#define newLine()      putchar('\n')
+#define printString(S) printf(S)
+#define printChar(C)   putchar(C)
+#else
 void newLine         (void);
-void printString     (uchar *string);
+void printString     (char *string);
+void printChar       (char ch);
+#endif
+
 //void printInt      (s16 p);
 #define printInt(a)  printLong(a)
 void printLong       (u32 p);
 void printFill       (void);
-void printStringFill (uchar *string);
-void printChar       (uchar ch);
+void printStringFill (char *string);
 void noCursor        (void);
 void showCursor      (void);
 
@@ -80,4 +89,10 @@ void updCurrLine  (void);
 #define updateCurrLine();
 #endif
 
+#ifdef STDO
+#define dARROW "->"
+#else
+#define dARROW "ออ"
+#endif
 
+#endif
