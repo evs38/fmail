@@ -45,9 +45,6 @@
 #include "archive.h"
 #include "cfgfile.h"
 #include "bclfun.h"
-#include "keyfile.h"
-
-#define N 65339L
 
 #define ADD_ALL    1
 #define DELETE_ALL 2
@@ -483,11 +480,6 @@ s16 areaFix(internalMsgType *message)
   udef            komma;
   u8              *tag, *descr;
 
-  static s16      keyChecked = 0;
-#ifndef BETA0
-  u32             tkey, tempKey;
-#endif
-
   if ((areaSortList = malloc(sizeof(areaSortListType))) == NULL )
   {
     mgrLogEntry ("Not enough memory available for AreaFix");
@@ -579,74 +571,10 @@ s16 areaFix(internalMsgType *message)
     }
     else
     {
-      strupr (message->text);
-
-#ifndef BETA0
-      if (!keyChecked)
-      {
-        if ( config.key )
-        {
-          u16      keyResult;
-
-          if ( !((keyResult = (u16)(config.key & 0xffffL)) & 0x4000) )
-            keyChecked = -1;
-          else
-          {
-            tkey = tempKey = (config.key >> 16);
-
-            for (count = 1; count < 17; count++)
-            {
-              tkey *= tempKey;
-              tkey %= N;
-            }
-            tempKey = crc32old (config.sysopName);
-
-            tempKey ^= crc32old (nodeStr(&config.akaList[0].nodeNum));
-
-            tempKey ^= (tempKey >> 16);
-            tempKey &= 0x0000ffff;
-
-            tempKey ^= keyResult;
-            tempKey %= N;
-
-            if ((!(keyResult & 0x4000)) || (tkey != tempKey))
-              keyChecked = -1;
-            else
-              keyChecked = 1;
-          }
-        }
-        else
-        {
-          tkey = tempKey = (key.relKey2 & 0xffff);
-
-          for (count = 1; count < 17; count++)
-          {
-            tkey *= tempKey;
-            tkey %= N;
-          }
-          if ((tkey ^ 'J2') !=
-              ((key.relKey2 >> 16) ^ (key.relKey2 & 0xffff)))
-          {
-            keyChecked = -1;
-          }
-          else
-          {
-            keyChecked = 1;
-          }
-        }
-      }
-#endif
+      strupr(message->text);
       helpPtr = message->text;
       if ((helpPtr = findCLStr(++helpPtr, "%FROM ")) != NULL)
       {
-        if (keyChecked == -1)
-        {
-          strcpy (message->text, "Remote maintenance is only available to registered FMail users");
-          mgrLogEntry (message->text);
-          strcat (message->text, "\r");
-          strcpy (message->subject, "AreaMgr error report");
-          goto Send;
-        }
         memset (&tempNode, 0, sizeof(nodeNumType));
         if ((temp = sscanf (helpPtr+6, "%hu:%hu/%hu.%hu",
                             &tempNode.zone, &tempNode.net,

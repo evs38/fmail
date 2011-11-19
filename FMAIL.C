@@ -19,7 +19,6 @@
  *
  */
 
-
 #ifdef __OS2__
 #define INCL_DOSPROCESS
 #include <os2.h>
@@ -62,7 +61,6 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include "jammaint.h"
 #include "cfgfile.h"
 #include "bclfun.h"
-#include "keyfile.h"
 
 #if defined __WIN32__ && !defined __DPMI32__
 #include "sendsmtp.h"
@@ -116,8 +114,6 @@ int JamTestNew(JAMAPIRECptr JamApiRecPtr)
 #endif
 
 fhandle fmailLockHandle;
-
-extern s16 registered;
 
 extern u16 dayOfWeek;
 
@@ -557,7 +553,8 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
                     strstr(tempStr, config.topic1) != NULL) ||
                    (*config.topic2 &&
                     strstr(tempStr, config.topic2) != NULL) ||
-                   (registered && foundToUserName(message->toUserName))))
+                   foundToUserName(message->toUserName))
+                 )
               {
                 if (areaIndex == NETMSG)
                 {
@@ -566,14 +563,11 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
                   insertLine (message->text, tempStr);
                 }
                 if (areaIndex == BADMSG)
-                {
                   insertLine (message->text, "AREA: Bad Messages\r");
-                }
+
                 writeMsg (message, PERMSG, 0);
                 if ((areaIndex == NETMSG) || (areaIndex == BADMSG))
-                {
                   removeLine (message->text);
-                }
               }
 
               switch (areaIndex)
@@ -945,89 +939,30 @@ tossbad:
   return diskError;
 }
 
-
-#define N 65339L
-
-s16 handleScan (internalMsgType *message, u16 boardNum, u16 boardIndex)
+s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
 {
   u16            count;
   echoToNodeType tempEchoToNode;
   tempStrType    tempStr;
-  char           *helpPtr1,
-  *helpPtr2;
-#if !defined BETA0
-  u32             tkey, tempKey;
-#endif
-  static s16     keyChecked = 0;
-  static char    tearline[36];
-  /* u32            a, b, c, d; */
+  char          *helpPtr1,
+                *helpPtr2;
+  char           tearline[36] = "--- \r";
 
-  if (!keyChecked)
+  switch (config.tearType)
   {
-    keyChecked = 1;
-
-#if !defined BETA0
-
-
-    tkey = tempKey = (key.relKey1 & 0xffffL);
-
-    for (count = 1; count < 17; count++)
-    {
-      tkey *= tempKey;
-      tkey %= N;
-    }
-    /*
-                         a = (tkey ^ 'F1');
-                         b = (key.relKey1 >> 16);
-                         c = (key.relKey1 & 0xffffL);
-     	      d = b ^ c;
-     	      tearline[35] = a+b+c+d;
-    */
-    if ((tkey ^ 'F1') !=
-        ((key.relKey1 >> 16) ^ (key.relKey1 & 0xffffL)))
-    {
-      config.tearType = 0;
-      config.mbOptions.reTear = 1;
-      keyChecked = 2;
-    }
-#endif
-
-    tearline[4] = '\r';
-    tearline[2] = '-';
-    tearline[0] = '-';
-    tearline[5] = 0;
-    tearline[3] = ' ';
-    tearline[1] = '-';
-
-    switch (config.tearType)
-    {
-      case 1 :
-        strcpy (stpcpy (tearline+4, config.tearLine), "\r");
-        break;
-      case 2 :
-      case 3 :
-        break;
-      case 4 :
-      case 5 :
-        *tearline = 0;
-        break;
-      default:
-        tearline[8] = 'l';
-        tearline[4] = 'F';
-        tearline[6] = 'a';
-        tearline[5] = 'M';
-        tearline[7] = 'i';
-        strcpy (tearline+9, TEARLINE);
-
-#if !defined BETA0
-        if ((tkey ^ 'F1') == ((key.relKey1 >> 16) ^ (key.relKey1 & 0xffffL)))
-        {
-          strcat (tearline, "+");
-        }
-#endif
-        strcat (tearline, "\r");
-        break;
-    }
+    case 1:
+      strcpy(stpcpy(tearline + 4, config.tearLine), "\r");
+      break;
+    case 2:
+    case 3:
+      break;
+    case 4:
+    case 5:
+      *tearline = 0;
+      break;
+    default:
+      strcpy(stpcpy(tearline + 4, "FMail"TEARLINE), "\r");
+      break;
   }
 
   if ((boardNum && isNetmailBoard(boardNum)) ||
@@ -1135,19 +1070,13 @@ s16 handleScan (internalMsgType *message, u16 boardNum, u16 boardIndex)
                echoAreaList[count].originLine,
                nodeStr(&config.akaList[echoAreaList[count].address].nodeNum));
     }
-//    original:
-//    if ((config.tearType == 3) || (config.tearType == 5))
-//    new:
     if ( config.tearType )
     {
       if ((helpPtr1 = findCLStr (message->text, "\1TID:")) != NULL)
       {
         removeLine (helpPtr1);
       }
-      /*       sprintf (tempStr, "\1TID: "FMAIL_TID"%s\r", keyChecked == 1 ? "+":"");
-               insertLine (message->text, tempStr);
-      */
-      insertLine (message->text, "\1TID: "FMAIL_TID"\r");
+      insertLine(message->text, "\1TID: "FMAIL_TID"\r");
     }
 
     sprintf (tempStr, "AREA:%s\r", echoAreaList[count].areaName);
@@ -1186,10 +1115,9 @@ s16 handleScan (internalMsgType *message, u16 boardNum, u16 boardIndex)
            strstr(tempStr, config.topic1) != NULL) ||
           (*config.topic2 &&
            strstr(tempStr, config.topic2) != NULL) ||
-          (registered && foundToUserName(message->fromUserName))))
-    {
+          foundToUserName(message->fromUserName))
+       )
       writeMsg (message, PERMSG, 1);
-    }
 
     checkDup (message, echoAreaList[count].areaNameCRC);
     validateDups ();
@@ -2028,9 +1956,10 @@ skipHudson:
              strnicmp(message->toUserName,"RAID",4) != 0 &&
              strnicmp(message->toUserName,"FFGATE",6) != 0 &&
              (config.mbOptions.sysopImport ||
-              (stricmp (message->toUserName, config.sysopName) != 0 &&
-               (!registered || !foundToUserName(message->toUserName)))) &&
-             ((boardNum = getNetmailBoard(&message->destNode)) != -1) )
+              (stricmp(message->toUserName, config.sysopName) != 0 &&
+               !foundToUserName(message->toUserName))) &&
+             ((boardNum = getNetmailBoard(&message->destNode)) != -1) 
+           )
         {
           if ((message->attribute & FILE_ATT) &&
               (strchr(message->subject,'\\') == NULL) &&
@@ -2040,9 +1969,8 @@ skipHudson:
             strcpy (message->subject, tempStr);
           }
           if (config.mailOptions.privateImport)
-          {
             message->attribute |= PRIVATE;
-          }
+
           if ( !diskError )
           {
             if ( writeBBS(message, boardNum, 1) )
@@ -2213,13 +2141,10 @@ skipHudson:
   if (config.mailer == 2) /* D'Bridge */
   {
     if (globVars.mbCountV)
-    {
       touch (config.semaphorePath, "dbridge.emw", "Mail");
-    }
+
     if (globVars.perNetCountV)
-    {
       touch (config.semaphorePath, "dbridge.nmw", "");
-    }
   }
 
   if (diskError)

@@ -7,7 +7,7 @@
  *  FMail is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
+ * (at your option) any later version.
  *
  *  FMail is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,6 +19,8 @@
  *
  */
 
+#ifndef __fmail_windows_h 
+#define __fmail_windows_h 
 
 #define WB_DOUBLE_H      1
 #define WB_DOUBLE_V      2
@@ -26,8 +28,6 @@
 #define TITLE_RIGHT      8
 #define SHADOW          16
 #define NO_SAVE         32
-/* #define FAST_EDIT       64 */
-
 #define TEXT             1
 #define WORD             2
 #define ALPHA            3
@@ -136,19 +136,15 @@
 
 #define BLINK	  128	          /* blink bit */
 
-
+typedef struct
+{
+  uchar ch;
+  uchar attr;
+} screenCharType;
 
 typedef struct
 {
-   uchar ch;
-   uchar attr;
-}              screenCharType;
-
-
-
-typedef struct
-{
-   uchar background,
+  uchar background,
         actvborderfg,
         inactvborderfg,
         promptfg,
@@ -164,71 +160,62 @@ typedef struct
         commentbg,
         atttextfg,
         mono_attr,
-        wAttr;      } windowLookType;
-
-
+        wAttr;      
+} windowLookType;
 
 typedef struct
 {
-   u16      entryType;
-   uchar    *prompt;
-   uchar    key;
-   u16      offset;
+  u16      entryType;
+  uchar    *prompt;
+  uchar    key;
+  u16      offset;
 #ifndef __32BIT__
-   void     far *data;
+  void     far *data;
 #else
-   void     *data;
+  void     *data;
 #endif
-   u16      selected;
-   u16      par1, par2;
-   uchar    *comment;    } menuEntryType;
-
-
+  u16      selected;
+  u16      par1, par2;
+  uchar    *comment;    
+} menuEntryType;
 
 typedef struct
 {
-   uchar          *title;
-   u16            xWidth, yWidth, pdEdge, zDataSize;
-/*   windowLookType *look; */
-   u16            entryCount;
-   menuEntryType  menuEntry[MAX_ENTRIES]; } menuType;
-
-
+  uchar         *title;
+  u16            xWidth, yWidth, pdEdge, zDataSize;
+  u16            entryCount;
+  menuEntryType  menuEntry[MAX_ENTRIES]; 
+} menuType;
 
 typedef uchar *txtPtr;
-
-
-typedef s16 (*function)(void);
-typedef s16 (*functionPar)(u16 *v);
-typedef s16 (*functionVPar)(u16 v);
-
+typedef s16(*function)(void);
+typedef s16(*functionPar)(u16 *v);
+typedef s16(*functionVPar)(u16 v);
 
 typedef struct
 {
-   function f;
-   u16      *numPtr;  } funcParType;
-
-
+  function f;
+  u16      *numPtr;
+} funcParType;
 
 typedef struct
 {
-   unsigned uchar *data;
-   txtPtr         text[34];
-   uchar          retval[34];
+  unsigned uchar *data;
+  txtPtr         text[34];
+  uchar          retval[34];
 } toggleType;
 
-
-
 typedef struct
 {
-   u16            sx, sy;
-   u16            ex, ey;
-   u16            inactvborderfg, background;
-   screenCharType *oldScreen; } windowMemType;
+  u16            sx, sy;
+  u16            ex, ey;
+  u16            inactvborderfg, background;
+  screenCharType *oldScreen; 
+} windowMemType;
 
 
 
-#define testInit() if (initMagic != 0x4657) initWindow(0);
+#define testInit() if(initMagic != 0x4657) initWindow(0);
 
 
 #define showCharNA(px,py,chr)  \
@@ -238,21 +225,21 @@ typedef struct
 #define showChar(px,py,chr,att,matt)  \
 {                                     \
    screen[(py)*columns+px].ch = chr;    \
-   if (color)                         \
+   if(color)                         \
       screen[(py)*columns+(px)].attr = att; \
    else                               \
       screen[(py)*columns+(px)].attr = matt; \
 }
 
 
-#define getChar(px,py) (screen[(py)*columns+px].ch)
+#define getChar(px,py)(screen[(py)*columns+px].ch)
 
-#define getColor(px,py,att,matt) (screen[(py)*columns+px].attr)
+#define getColor(px,py,att,matt)(screen[(py)*columns+px].attr)
 
 
 #define changeColor(px,py,att,matt)  \
 {                                    \
-   if (color)                        \
+   if(color)                        \
       screen[(py)*columns+px].attr = att; \
    else                              \
       screen[(py)*columns+px].attr = matt; \
@@ -261,18 +248,16 @@ typedef struct
 
 #define shadow(px,py)                    \
 {                                        \
-   if (color)                            \
+   if(color)                            \
       screen[(py)*columns+px].attr = DARKGRAY; \
 }
 
 
 #define getAttr(fgc,bgc,att)   \
 {                              \
-   att = ((fgc & 0x0f) |       \
-	 ((bgc & 0x0f) << 4)); \
+   att =((fgc & 0x0f) |       \
+	((bgc & 0x0f) << 4)); \
 }
-
-
 
 #ifdef __OS2__
 
@@ -317,10 +302,10 @@ typedef struct
    _BH = 0x00;          \
    _DX = 0x0101;        \
    _AH = 0x02;          \
-   geninterrupt (0x10); \
+   geninterrupt(0x10); \
    _CX = 0x2000;        \
    _AH = 0x01;          \
-   geninterrupt (0x10); \
+   geninterrupt(0x10); \
 }
 
 #define locateCursor(px,py) \
@@ -329,12 +314,12 @@ typedef struct
    _DL = px;                \
    _AH = 0x02;              \
    _BH = 0;                 \
-   geninterrupt (0x10);     \
+   geninterrupt(0x10);     \
 }
 
 #define smallCursor()   \
 {                       \
-   if (cga)             \
+   if(cga)             \
    {                    \
       _CH = 6;          \
       _CL = 7;          \
@@ -345,12 +330,12 @@ typedef struct
      _CL = 12;          \
    }                    \
    _AH = 0x01;          \
-   geninterrupt (0x10); \
+   geninterrupt(0x10); \
 }
 
 #define largeCursor()   \
 {                       \
-   if (cga)             \
+   if(cga)             \
    {                    \
       _CH = 4;          \
       _CL = 7;          \
@@ -361,89 +346,61 @@ typedef struct
      _CL = 12;          \
    }                    \
    _AH = 0x01;          \
-   geninterrupt (0x10); \
+   geninterrupt(0x10); \
 }
 
 #endif
 
-
-
-s16 readKbd (void);
-
-void initWindow (u16 mode);
-
+s16  readKbd(void);
+void initWindow(u16 mode);
 menuType *createMenu(char *title);
-
-s16 displayWindow (char *title, u16 sx, u16 sy, u16 ex, u16 ey);
-
-void removeWindow (void);
-
-s16 addItem (menuType *menu, u16 entryType, char *prompt, u16 offset,
+s16  displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey);
+void removeWindow(void);
+s16  addItem(menuType *menu, u16 entryType, char *prompt, u16 offset,
              void *data, u16 par1, u16 par2, char *comment);
 
-s16 displayMenu (menuType *menu, u16 sx, u16 sy);
-
-s16 groupToChar (s32 group);
-
-//s32 charToGroup (s16 c);
-
-u16 editString (char *string, u16 width, u16 x, u16 y,
-                u16 fieldType);
-
-void processed (u16 updated, u16 total);
-
-s16 changeGlobal(menuType *menu, void *org, void *upd);
-
-s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc);
+s16  displayMenu(menuType *menu, u16 sx, u16 sy);
+s16  groupToChar(s32 group);
+u16  editString(char *string, u16 width, u16 x, u16 y, u16 fieldType);
+void processed(u16 updated, u16 total);
+s16  changeGlobal(menuType *menu, void *org, void *upd);
+s16  runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc);
 #define runMenuD(a,b,c,d,e) runMenuDE(a,b,c,d,e,0)
 #define runMenu(a,b,c) runMenuDE(a,b,c,NULL,0,0)
 
-void printChar (char ch, u16 sx,  u16 sy,
+void printChar(char ch, u16 sx,  u16 sy,
                          u16 fgc, u16 bgc,
                          u16 mAttr);
 
-void printString (char *string, u16 sx,  u16 sy,
+void printString(char *string, u16 sx,  u16 sy,
                                 u16 fgc, u16 bgc,
                                 u16 mAttr);
 
-void printStringFill (char *string, char ch, s16 num,
+void printStringFill(char *string, char ch, s16 num,
                             u16 x, u16 y,
                             u16 fgc, u16 bgc,
                             u16 mAttr);
 
-void displayData (menuType *menu, u16 sx, u16 sy, s16 mark);
+void displayData(menuType *menu, u16 sx, u16 sy, s16 mark);
 
-void fillRectangle (char ch, u16 sx, u16 sy,
+void fillRectangle(char ch, u16 sx, u16 sy,
                              u16 ex, u16 ey,
                              u16 fgc, u16 bgc,
                              u16 mAttr);
 
 nodeNumType getNodeNum(char *title, u16 sx, u16 sy, u16 aka);
-
-char *nodeStr (nodeNumType *nodeNum);
-
-char *getSourceFileName (char *title);
-
-char *getDestFileName (char *title);
-
-void displayMessage (char *msg);
-
-s16 askChar(char *prompt, u8 *keys);
-
-s16 askBoolean (char *prompt, s16 dfault);
-
-void working (void);
-
-s16 displayAreas (void);
-
-void deInit (u16 cursorLine);
-
+char *nodeStr(nodeNumType *nodeNum);
+char *getSourceFileName(char *title);
+char *getDestFileName(char *title);
+void displayMessage(char *msg);
+s16  askChar(char *prompt, u8 *keys);
+s16  askBoolean(char *prompt, s16 dfault);
+void working(void);
+s16  displayAreas(void);
+void deInit(u16 cursorLine);
 void saveWindowLook(void);
-
 void restoreWindowLook(void);
-
 void askRemoveDir(char *path);
-
 void askRemoveJAM(char *msgBasePath);
 
-
+#endif // __fmail_windows_h 

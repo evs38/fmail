@@ -1,3 +1,14 @@
+2011-11-18  1.64.0.24-beta
+  * Completely removed key checking code. FMail (with or without a key file) should behave as a registered version.
+  * FSetup doesn't show registered version options with: "{+}"
+  * Changed the version strings a bit
+  * Cosmetic code changes
+
+2011-11-18  1.64.0.22-beta
+  * Added conio functions to re-enable some direct screen functionality
+  * Removed/Switched-of most "#define BETA" functionality
+  * Changed BETA version strings
+
 2011-10-09  1.64.0.18-beta
   * Replaced some more high ascii.
 

@@ -19,7 +19,6 @@
  *
  */
 
-
 #ifdef __OS2__
 #define INCL_DOSPROCESS
 #include <os2.h>
@@ -28,9 +27,7 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 
 #endif
 
-
 /* os2 */
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <dos.h>
@@ -231,14 +228,12 @@ int cdecl main(int argc, char *argv[])
   {
     strcpy (configPath, helpPtr);
     if (configPath[strlen(configPath)-1] != '\\')
-    {
-      strcat (configPath, "\\");
-    }
+      strcat(configPath, "\\");
   }
 
-  memset (&config, 0, sizeof(configType));
-  strcpy (configFileName, configPath);
-  strcat (configFileName, "fmail.cfg");
+  memset(&config, 0, sizeof(configType));
+  strcpy(configFileName, configPath);
+  strcat(configFileName, "fmail.cfg");
 
   if (((configHandle = open(configFileName, O_BINARY|O_RDWR|O_DENYNONE)) == -1) ||
       ((count = _read (configHandle, &config, sizeof (configType))) == 0) ||
@@ -474,11 +469,9 @@ int cdecl main(int argc, char *argv[])
     config.tearType = 3;
   if ( config.tearType == 4 )
     config.tearType = 5;
-
   if (config.recBoard > MBBOARDS)
-  {
     config.recBoard = 0;
-  }
+
   if ((config.bbsProgram == BBS_RA1X) && config.genOptions._RA2)
   {
     config.bbsProgram = BBS_RA20;
@@ -490,9 +483,8 @@ int cdecl main(int argc, char *argv[])
   if (openConfig(CFG_AREADEF, &adefHeader, (void*)&adefBuf))
   {
     if (getRec(CFG_AREADEF, 0))
-    {
       memcpy (&echoDefaultsRec, adefBuf, RAWECHO_SIZE);
-    }
+
     closeConfig(CFG_AREADEF);
   }
   else
@@ -668,7 +660,8 @@ int cdecl main(int argc, char *argv[])
   sprintf (versionStr, VERSION_STRING" - Setup Utility");
 
   printString (versionStr, 3, 1, YELLOW, RED, MONO_HIGH);
-  printString ("Copyright (C) 1991-2008 by Folkert J. Wijnstra - All rights reserved", 3, 2, YELLOW, RED, MONO_HIGH);
+  sprintf(tempStr, "Copyright (C) 1991-%s by FMail Developers - All rights reserved", __DATE__ + 7);
+  printString (tempStr, 3, 2, YELLOW, RED, MONO_HIGH);
 
   fillRectangle ('‹', 0, 4, 79, 4, BLUE, BLACK, 0);
   fillRectangle ('ﬂ', 0, 23, 79, 23, BLUE, BLACK, 0);
@@ -884,9 +877,8 @@ int cdecl main(int argc, char *argv[])
            "Use comment instead of area tag for MESSAGES.RA / BOARDS.BBS");
 
   if ((anImpMenu = createMenu (" Import config ")) == NULL)
-  {
     goto nomem;
-  }
+ 
   addItem (anImpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem (anImpMenu, FUNCTION, "Import Areas.BBS", 0, importAreasBBS, 0, 0,
            "Convert Areas.BBS into FMail.Ar");
@@ -916,9 +908,8 @@ int cdecl main(int argc, char *argv[])
            "Convert IMAIL's IMAIL.Nd into FMail.Nod (IMAIL 1.40 and up)");
 
   if ((impExpMenu = createMenu (" Import/export ")) == NULL)
-  {
     goto nomem;
-  }
+ 
   addItem (impExpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem (impExpMenu, FUNCTION, "List area config", 0, listAreaConfig, 0, 0,
            "List area configuration");
@@ -951,9 +942,8 @@ int cdecl main(int argc, char *argv[])
 #endif
 
   if ((arcMenu = createMenu (" Compression programs ")) == NULL)
-  {
     goto nomem;
-  }
+ 
   addItem (arcMenu, ENUM_INT, "Def", 0, &arcToggle, 0, 10,
            "Compression program to be used for nodes not listed in the Node Manager");
   addItem (arcMenu, TEXT, "ARC", 0, config.arc.programName, sizeof(archiverInfo)-3, 0,
@@ -1010,9 +1000,8 @@ int cdecl main(int argc, char *argv[])
            "Amount of memory required (0-640 Kb, 0 = always swap)");
 
   if ((arc32Menu = createMenu (" Compression programs/32 ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (arc32Menu, ENUM_INT, "Def", 0, &arcToggle, 0, 10,
            "Compression program to be used for nodes not listed in the Node Manager");
   addItem (arc32Menu, TEXT, "ARC", 0, config.arc32.programName, sizeof(archiverInfo)-3, 0,
@@ -1069,9 +1058,8 @@ int cdecl main(int argc, char *argv[])
            "Amount of memory required (0-640 Kb, 0 = always swap)");
 
   if ((deArcMenu = createMenu (" Decompression programs ")) == NULL)
-  {
     goto nomem;
-  }
+  
   addItem (deArcMenu, TEXT, "ARC", 0, config.unArc.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
   addItem (deArcMenu, __MEM__, "Mem", 52, &config.unArc.memRequired, 3, 640,
@@ -1126,9 +1114,8 @@ int cdecl main(int argc, char *argv[])
            "Amount of memory required (0-640 Kb, 0 = always swap)");
 
   if ((deArc32Menu = createMenu (" Decompression programs/32 ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (deArc32Menu, TEXT, "ARC", 0, config.unArc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
   addItem (deArc32Menu, __MEM__, "Mem", 52, &config.unArc32.memRequired, 3, 640,
@@ -1184,9 +1171,8 @@ int cdecl main(int argc, char *argv[])
 #undef __MEM__
 
   if ((pathMenu = createMenu (" Directories ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (pathMenu, PATH|UPCASE, "Message base", 0, config.bbsPath, sizeof(pathType)-1, 0,
            "Where the RemoteAccess/SuperBBS/QuickBBS/TAG message base files are located");
   addItem (pathMenu, PATH|UPCASE, "Netmail", 0, config.netPath, sizeof(pathType)-1, 0,
@@ -1208,9 +1194,8 @@ int cdecl main(int argc, char *argv[])
            "Where the rescan semaphore files of your mailer should be created (optional)");
 
   if ((logMenu = createMenu (" Log files ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (logMenu, ENUM_INT, "Log style", 0, &logStyleToggle, 0, 4,
            "Which log file format should be used");
   addItem (logMenu, FILE_NAME|UPCASE, "Log file name", 0, config.logName, sizeof(pathType)-1, 0,
@@ -1253,9 +1238,8 @@ int cdecl main(int argc, char *argv[])
            "Name of the Toss Summary log file");
 
   if ((internetMenu = createMenu (" Internet settings ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (internetMenu, BOOL_INT, "Send smtp", 0, &config.inetOptions, BIT0, 0,
            "Send mail directly from FMail if possible");
   addItem (internetMenu, WORD, "Email address", 0, config.emailAddress, 56, 0,
@@ -1264,9 +1248,8 @@ int cdecl main(int argc, char *argv[])
            "SMTP server that FMail can use to send Internet mail");
 
   if ((mailMenu = createMenu (" Mail ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (mailMenu, BOOL_INT, "Never use ARCmail", 0, &config.mailOptions, BIT3, 0,
            "Never use the ARCmail 0.60 naming convention");
   addItem (mailMenu, BOOL_INT, "Dupe detection        ", 28, &config.mailOptions, BIT8, 0,
@@ -1320,9 +1303,8 @@ int cdecl main(int argc, char *argv[])
            "Create a new mail bundle every day");
 
   if ((mgrMenu = createMenu (" Mgr options ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (mgrMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem (mgrMenu, BOOL_INT, "Keep requests", 0, &config.mgrOptions, BIT0, 0,
            "Don't kill AreaMgr requests after they have been processed");
@@ -1362,9 +1344,8 @@ int cdecl main(int argc, char *argv[])
   	    "Immediatly remove an auto-disconnected area from the Area Manager");
 */
   if ((netMenu = createMenu (" Netmail boards ")) == NULL)
-  {
     goto nomem;
-  }
+
 // addItem (netMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem (netMenu, FUNC_VPAR, "Main", 0, netmailMenu, 0, 0,
            "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
@@ -1432,9 +1413,7 @@ int cdecl main(int argc, char *argv[])
            "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
 
   if ((mbMenu = createMenu (" Message base ")) == NULL)
-  {
     goto nomem;
-  }
 
   addItem (mbMenu, NEW_WINDOW, "Netmail boards", 0, netMenu, 2, -2,
            "Netmail boards in the message base");
@@ -1474,9 +1453,8 @@ int cdecl main(int argc, char *argv[])
            "List of echomail areas in which mail has been tossed");
 
   if ((groupMenu = createMenu (" Group names ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (groupMenu, TEXT, "A", 0, config.groupDescr[0], 26, 0,
            "Description of a group of echomail conferences");
   addItem (groupMenu, TEXT, "N", 32, config.groupDescr[13], 26, 0,
@@ -1533,9 +1511,8 @@ int cdecl main(int argc, char *argv[])
 #ifndef __FMAILX__
 #ifndef __32BIT__
   if ((swapMenu = createMenu (" Swapping ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (swapMenu, BOOL_INT, "Swapping", 0, &config.genOptions, BIT2, 0,
            "Swap FMail out of memory before executing de-/compression programs");
   addItem (swapMenu, BOOL_INT, "ÃÕ Use EMS", 0, &config.genOptions, BIT3, 0,
@@ -1547,9 +1524,8 @@ int cdecl main(int argc, char *argv[])
 #endif
 #endif
   if ((address1Menu = createMenu (" Addresses 1 ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (address1Menu, NODE, "Main", 0, &config.akaList[0], FAKE, 0,
            "Main Address  zone:net/node[.point][-fakenet]");
   addItem (address1Menu, NODE, "AKA  1", 0, &config.akaList[1], FAKE, 0,
@@ -1584,9 +1560,8 @@ int cdecl main(int argc, char *argv[])
            "AKA  zone:net/node[.point][-fakenet]");
 
   if ((address2Menu = createMenu (" Addresses 2 ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (address2Menu, NODE, "AKA 16", 0, &config.akaList[16], FAKE, 0,
            "Main Address  zone:net/node[.point][-fakenet]");
   addItem (address2Menu, NODE, "AKA 17", 0, &config.akaList[17], FAKE, 0,
@@ -1621,28 +1596,13 @@ int cdecl main(int argc, char *argv[])
            "AKA  zone:net/node[.point][-fakenet]");
 
   if ((genMenu = createMenu (" General ")) == NULL)
-  {
     goto nomem;
-  }
-  addItem (genMenu, TEXT, "SysOp name", 0, &config.sysopName, sizeof(config.sysopName)-1, 0,
-           "Name of the SysOp");
-#if 0
-  addItem (genMenu, NUM_LONG, "FMail key", 0, &config.key, 9, -1,
-           "Your personal FMail beta+ registration key");
-#endif
-  if ( config.relKey1 || config.relKey2 )
-  {
-    addItem (genMenu, DISPLAY|NUM_LONG, "FMail key 1", 0, &config.relKey1, 9, -1,
-             "Your first personal FMail registration key");
-    addItem (genMenu, DISPLAY|NUM_LONG, "FMail key 2", 0, &config.relKey2, 9, -1,
-             "Your second personal FMail registration key");
-  }
-//#endif
+
+  addItem (genMenu, TEXT, "SysOp name", 0, &config.sysopName, sizeof(config.sysopName)-1, 0, "Name of the SysOp");
   addItem (genMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem (genMenu, ENUM_INT, "Mailer", 0, &mailerToggle, 0, 6,
-           "Mailer used");
-  addItem (genMenu, BOOL_INT, "»Õ Busy flags", 0, &config.mailOptions, BIT4, 0,
-           "Create busy flags when mail is being compressed");
+  addItem (genMenu, ENUM_INT, "Mailer", 0, &mailerToggle, 0, 6, "Mailer used");
+  addItem (genMenu, BOOL_INT, "»Õ Busy flags", 0, &config.mailOptions, BIT4, 0
+          , "Create busy flags when mail is being compressed");
   addItem (genMenu,
 #ifdef GOLDBASE
            ENUM_INT|NO_EDIT,
@@ -1654,39 +1614,26 @@ int cdecl main(int argc, char *argv[])
   /* addItem (genMenu, BOOL_INT, "»Õ RA 2", 0, &config.genOptions, BIT15, 0,
               "If you are using RemoteAccess, are you using version 2.00 or higher?");
   */
-  addItem (genMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem (genMenu, ENUM_INT, "Tearline   {+}", 0, &tearToggle, 0, 4,
-           "Tearline type (registered users only)");
-  addItem (genMenu, TEXT, "»Õ Custom {+}", 0, &config.tearLine, 24, 0,
-           "Custom tearline (registered users only)");
-  addItem (genMenu, BOOL_INT, "ReTear     {+}", 0, &config.mbOptions, BIT3, 0,
-           "Replace an existing tear line (registered users only)");
+  addItem(genMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
+  addItem(genMenu, ENUM_INT, "Tearline      ", 0, &tearToggle, 0, 4, "Tearline type");
+  addItem(genMenu, TEXT  , "»Õ Custom    ", 0, &config.tearLine, 24, 0, "Custom tearline");
+  addItem(genMenu, BOOL_INT, "ReTear        ", 0, &config.mbOptions, BIT3, 0, "Replace an existing tear line");
 
   if ((userMenu = createMenu (" Users ")) == NULL)
-  {
     goto nomem;
-  }
-  addItem (userMenu, TEXT, " 1 ", 0, config.users[0].userName, 35, 0,
-           "Name of user");
-  addItem (userMenu, TEXT, " 2 ", 0, config.users[1].userName, 35, 0,
-           "Name of user");
-  addItem (userMenu, TEXT, " 3 ", 0, config.users[2].userName, 35, 0,
-           "Name of user");
-  addItem (userMenu, TEXT, " 4 ", 0, config.users[3].userName, 35, 0,
-           "Name of user");
-  addItem (userMenu, TEXT, " 5 ", 0, config.users[4].userName, 35, 0,
-           "Name of user");
-  addItem (userMenu, TEXT, " 6 ", 0, config.users[5].userName, 35, 0,
-           "Name of user");
-  addItem (userMenu, TEXT, " 7 ", 0, config.users[6].userName, 35, 0,
-           "Name of user");
-  addItem (userMenu, TEXT, " 8 ", 0, config.users[7].userName, 35, 0,
-           "Name of user");
+
+  addItem(userMenu, TEXT, " 1 ", 0, config.users[0].userName, 35, 0, "Name of user");
+  addItem(userMenu, TEXT, " 2 ", 0, config.users[1].userName, 35, 0, "Name of user");
+  addItem(userMenu, TEXT, " 3 ", 0, config.users[2].userName, 35, 0, "Name of user");
+  addItem(userMenu, TEXT, " 4 ", 0, config.users[3].userName, 35, 0, "Name of user");
+  addItem(userMenu, TEXT, " 5 ", 0, config.users[4].userName, 35, 0, "Name of user");
+  addItem(userMenu, TEXT, " 6 ", 0, config.users[5].userName, 35, 0, "Name of user");
+  addItem(userMenu, TEXT, " 7 ", 0, config.users[6].userName, 35, 0, "Name of user");
+  addItem(userMenu, TEXT, " 8 ", 0, config.users[7].userName, 35, 0, "Name of user");
 
   if ((pmailMenu = createMenu (" Personal mail ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (pmailMenu, PATH|UPCASE, "Pers. mail path", 0, config.pmailPath, sizeof(pathType)-1, 0,
            "Where copies of echo messages directed to the SysOp will be stored (optional)");
   addItem (pmailMenu, TEXT|UPCASE, "ÃÕ Topic 1", 0, config.topic1, 15, 0,
@@ -1699,13 +1646,12 @@ int cdecl main(int argc, char *argv[])
            "Include messages sent by the SysOp");
   addItem (pmailMenu, BOOL_INT, "New mail warning", 0, &config.mailOptions, BIT6, 0,
            "Let FMail send you a netmail message when new personal messages have arrived");
-  addItem (pmailMenu, NEW_WINDOW, "Users {+}", 0, userMenu, 2, 2,
-           "Scan echo/netmail messages also for the names of these users (reg'd users only)");
+  addItem (pmailMenu, NEW_WINDOW, "Users", 0, userMenu, 2, 2,
+           "Scan echo/netmail messages also for the names of these users");
 
   if ((sysMiscMenu = createMenu (" Miscellaneous ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (sysMiscMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem (sysMiscMenu, BOOL_INT, "Long file names", 0, &config.genOptions, BIT5, 0,
            "Use long file names for JAM bases if possible");
@@ -1751,9 +1697,8 @@ int cdecl main(int argc, char *argv[])
            "Color set used by FSetup (has no effect in monochrome mode)");
 
   if ((systemMenu = createMenu (" System info ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (systemMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem (systemMenu, NEW_WINDOW, "Miscellaneous", 0, sysMiscMenu, 2, -2,
            "File handles, colors, buffer sizes");
@@ -1786,9 +1731,8 @@ int cdecl main(int argc, char *argv[])
              config.uplinkReq[count].node.zone?nodeStr(&config.uplinkReq[count].node):"                       ");
   }
   if ((uplMenu = createMenu (" Uplink Manager ")) == NULL)
-  {
     goto nomem;
-  }
+
   for ( count = 0; count < MAX_UPLREQ/2; count++ )
   {
     addItem (uplMenu, FUNC_VPAR, uplinkNodeStr[count], 0, uplinkMenu, count, 0,
@@ -1797,9 +1741,8 @@ int cdecl main(int argc, char *argv[])
              " - Uplink system -");
   }
   if ((miscMenu = createMenu (" Miscellaneous ")) == NULL)
-  {
     goto nomem;
-  }
+
   addItem (miscMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem (miscMenu, NEW_WINDOW, "General options", 0, genMenu, 2, -1,
            "General options");

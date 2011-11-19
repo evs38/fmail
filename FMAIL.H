@@ -35,10 +35,10 @@
 #endif
 
 #ifdef __OS2__
-	#define PTYPE "/2"
+	#define PTYPE "/OS2"
 	#define P386
 #elif defined __WIN32__ && !defined __DPMI32__
-	#define PTYPE "/Win32"
+	#define PTYPE "-Win32"
    #define P386
 #elif defined __FMAILX__
 	#ifdef __DPMI32__
@@ -69,21 +69,21 @@
 #define SERIAL_MINOR    64
 
 #ifdef BETA
-   #define VERSION_STRING    "FMail"PTYPE MBTYPE" "VERNUM"-Beta"
-   #define FTOOLS_VER_STRING "FTools"PTYPE MBTYPE" "VERNUM"-Beta"
-   #define FSETUP_VER_STRING "FSetup"PTYPE MBTYPE" "VERNUM"-Beta"
-   #define TEARLINE          PTYPE" "VERNUM"-Beta"
-   #define FMAIL_TID         "FMail"PTYPE" "VERNUM"-b"
+   #define VERSION_STRING    "FMail"PTYPE MBTYPE"-"VERNUM"-Beta"
+   #define FTOOLS_VER_STRING "FTools"PTYPE MBTYPE"-"VERNUM"-Beta"
+   #define FSETUP_VER_STRING "FSetup"PTYPE MBTYPE"-"VERNUM"-Beta"
+   #define TEARLINE          PTYPE"-"VERNUM"-Beta"
+   #define FMAIL_TID         "FMail"PTYPE"-"VERNUM"-Beta"
    #define FMAIL_PID         FMAIL_TID
-   #define FTOOLS_PID        "FTools"PTYPE" "VERNUM"-b"
+   #define FTOOLS_PID        "FTools"PTYPE"-"VERNUM"-Beta"
 #else
-   #define VERSION_STRING    "FMail"PTYPE MBTYPE" "VERNUM
-   #define FTOOLS_VER_STRING "FTools"PTYPE MBTYPE" "VERNUM
-   #define FSETUP_VER_STRING "FSetup"PTYPE MBTYPE" "VERNUM
-   #define TEARLINE          PTYPE" "VERNUM
-   #define FMAIL_TID         "FMail"PTYPE" "VERNUM
+   #define VERSION_STRING    "FMail"PTYPE MBTYPE"-"VERNUM
+   #define FTOOLS_VER_STRING "FTools"PTYPE MBTYPE"-"VERNUM
+   #define FSETUP_VER_STRING "FSetup"PTYPE MBTYPE"-"VERNUM
+   #define TEARLINE          PTYPE"-"VERNUM
+   #define FMAIL_TID         "FMail"PTYPE"-"VERNUM
    #define FMAIL_PID         FMAIL_TID
-   #define FTOOLS_PID        "FTools"PTYPE" "VERNUM
+   #define FTOOLS_PID        "FTools"PTYPE"-"VERNUM
 #endif
 
 #define CONFIG_MAJOR         0

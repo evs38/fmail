@@ -585,19 +585,18 @@ u16 jam_newhdr(u32 jam_code, u32 *jam_hdrOffset, JAMHDR *jam_hdrrec, char *jam_s
 }
 
 u16 jam_gettxt(u32 jam_code, u32 jam_txtoffset, u32 jam_txtlen, char *txt)
-{  dummy = jam_code;
-	
-   if ( jam_txtlen >= TEXT_SIZE )
-      return 0;
-   if ( (u32)fmseek(jam_txthandle, jam_txtoffset, SEEK_SET, 4) != jam_txtoffset )
-      return 0;
-/* !!!!!!!!!! */
-   if ( read(jam_txthandle, txt, (udef)jam_txtlen) != jam_txtlen )
-      return 0;
-   return 1;
+{
+  dummy = jam_code;
+
+  if ( jam_txtlen >= TEXT_SIZE )
+    return 0;
+  if ( (u32)fmseek(jam_txthandle, jam_txtoffset, SEEK_SET, 4) != jam_txtoffset )
+    return 0;
+// !!!!!!!!!!
+  if (read(jam_txthandle, txt, (udef)jam_txtlen) != jam_txtlen)
+    return 0;
+  return 1;
 }
-
-
 
 u16 jam_puttext(JAMHDR *jam_hdrrec, char *txt)
 {
@@ -608,7 +607,6 @@ u16 jam_puttext(JAMHDR *jam_hdrrec, char *txt)
       return 0;
    return 1;
 }
-
 
 static s16 useLocks = -1;
 
