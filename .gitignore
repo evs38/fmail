@@ -1,7 +1,4 @@
 *.exe
-/*/*/.svn/*
-/*/.svn/*
-/.svn/*
 /doc/fmail0.msg
 /doc/fmail1.msg
 /doc/fmail2.msg
@@ -20,16 +17,12 @@
 /FMailW32.test.bat
 /ide.45/fmail.OBR
 /ide.45/FMAIL.~DE
-/LOG/FMAIL.LOG
-/MB/FMAIL.LOC
-/MB/MSGHDR.BBS
-/MB/MSGIDX.BBS
-/MB/MSGINFO.BBS
-/MB/MSGTOIDX.BBS
-/MB/MSGTXT.BBS
+/Jam
+/LOG
+/MSGBASE
 /obj.45/ob*/*.obj
-/old/*
-/tst.out/*
+/old
+/tst.out
 *.bak
 *.~*
 *.dsk
@@ -37,7 +30,4 @@
 *.C~
 /ide.45/fmail.mak
 *.tds
-/MB/lastread.bbs
-/MB/lastread.bbs
 /inbnd.tmp/000011bb.mo9
-/Jam
