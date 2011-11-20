@@ -1,3 +1,7 @@
+2011-11-20  1.64.0.27-beta
+  * Replaced preprocessor macro's for version and TID and PID strings with functions.
+  * Added extra option for the tearline: "Default + TID"
+  
 2011-11-18  1.64.0.24-beta
   * Completely removed key checking code. FMail (with or without a key file) should behave as a registered version.
   * FSetup doesn't show registered version options with: "{+}"

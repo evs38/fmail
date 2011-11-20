@@ -637,6 +637,8 @@ int cdecl main(int argc, char *argv[])
   tearToggle.retval[2] = 3;
   tearToggle.text[3] = "Absent + TID";
   tearToggle.retval[3] = 5;
+  tearToggle.text[4] = "Default + TID";
+  tearToggle.retval[4] = 6;
 
   initWindow (mode);
 #ifdef __32BIT__
@@ -1616,7 +1618,7 @@ int cdecl main(int argc, char *argv[])
               "If you are using RemoteAccess, are you using version 2.00 or higher?");
   */
   addItem(genMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(genMenu, ENUM_INT, "Tearline      ", 0, &tearToggle, 0, 4, "Tearline type");
+  addItem(genMenu, ENUM_INT, "Tearline      ", 0, &tearToggle, 0, 5, "Tearline type");
   addItem(genMenu, TEXT  , "»Õ Custom    ", 0, &config.tearLine, 24, 0, "Custom tearline");
   addItem(genMenu, BOOL_INT, "ReTear        ", 0, &config.mbOptions, BIT3, 0, "Replace an existing tear line");
 

@@ -29,7 +29,7 @@
 	#define PTYPE "/OS2"
 	#define P386
 #elif defined __WIN32__ && !defined __DPMI32__
-	#define PTYPE "-Win32"
+	#define PTYPE "-W32"
    #define P386
 #elif defined __FMAILX__
 	#ifdef __DPMI32__

@@ -960,6 +960,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
     case 5:
       *tearline = 0;
       break;
+    case 6:
     default:
       strcpy(tearline, TearlineStr());
       break;
@@ -1024,7 +1025,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
     }
   }
   else
-  {  /* JAM based message */
+  { // JAM based message
     count = boardIndex;
   }
 
@@ -1040,54 +1041,56 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
 
     memcpy (tempEchoToNode, echoToNode[count], sizeof(echoToNodeType));
 
-    /* Check origin */
+    // Check origin
 
     if ((helpPtr1 = findCLStr(message->text, " * Origin:")) != NULL)
     {
-      /* Retear message with FMail tearline */
-
+      // Retear message with FMail tearline
       if (config.mbOptions.reTear)
       {
         helpPtr2 = helpPtr1;
-        while ((helpPtr1 > message->text) &&
-               ((*--helpPtr1 == '\r') || (*helpPtr1 == '\n')));
-        while ((helpPtr1 > message->text) &&
-               (*(helpPtr1-1) != '\r') && (*(helpPtr1-1) != '\n'))
+        while ((helpPtr1 > message->text)
+              && ((*--helpPtr1 == '\r') || (*helpPtr1 == '\n'))
+              )
+          ;
+        while ((helpPtr1 > message->text)
+              && (*(helpPtr1-1) != '\r') && (*(helpPtr1-1) != '\n')
+              )
           helpPtr1--;
         if ((strncmp(helpPtr1, "---", 3) == 0) && (helpPtr1[3] != '-'))
         {
-          removeLine (helpPtr1);
-          insertLine (helpPtr1, tearline);
+          removeLine(helpPtr1);
+          insertLine(helpPtr1, tearline);
         }
         else
-          insertLine (helpPtr2, tearline);
+          insertLine(helpPtr2, tearline);
       }
     }
     else
     {
-      sprintf (strchr(message->text, 0), "%s * Origin: %s (%s)\r",
-               tearline,
-               echoAreaList[count].originLine,
-               nodeStr(&config.akaList[echoAreaList[count].address].nodeNum));
+      sprintf( strchr(message->text, 0), "%s * Origin: %s (%s)\r"
+             , tearline
+             , echoAreaList[count].originLine
+             , nodeStr(&config.akaList[echoAreaList[count].address].nodeNum)
+             );
     }
     if (config.tearType)
     {
-      if ((helpPtr1 = findCLStr (message->text, "\1TID:")) != NULL)
-      {
+      if ((helpPtr1 = findCLStr(message->text, "\1TID:")) != NULL)
         removeLine(helpPtr1);
-      }
+
       sprintf(tempStr, "\1TID: %s\r", TIDStr());
       insertLine(message->text, tempStr);
     }
 
-    sprintf (tempStr, "AREA:%s\r", echoAreaList[count].areaName);
-    insertLine (message->text, tempStr);
+    sprintf(tempStr, "AREA:%s\r", echoAreaList[count].areaName);
+    insertLine(message->text, tempStr);
 
-    addPathSeenBy (message->text,
-                   message->normSeen,
-                   message->tinySeen,
-                   message->normPath,
-                   tempEchoToNode, count);
+    addPathSeenBy(message->text,
+                  message->normSeen,
+                  message->tinySeen,
+                  message->normPath,
+                  tempEchoToNode, count);
 
     if (writeEchoPkt (message,
                       echoAreaList[count].options.tinySeenBy,
