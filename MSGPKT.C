@@ -31,6 +31,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <time.h>
+
 #include "fmail.h"
 #include "areainfo.h"
 #include "nodeinfo.h"
@@ -41,6 +42,7 @@
 #include "output.h"
 #include "mtask.h"
 #include "filesys.h"
+#include "version.h"
 
 u16 PKT_BUFSIZE = 32000;
 

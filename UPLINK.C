@@ -35,7 +35,7 @@
 #include "config.h"
 #include "window.h"
 #include "uplink.h"
-
+#include "version.h"
 
 #define NETMSG   -1
 #define PERMSG   -2
@@ -251,7 +251,8 @@ static s32 writeMsgLocal (internalMsgType *message, s16 msgType, s16 valid)
 
   /* PID kludge */
 
-  insertLine (message->text, "\1PID: "FMAIL_PID"\r");
+  sprintf(tempStr, "\1PID: %s\r", PIDStr());
+  insertLine(message->text, tempStr);
 
   /* MSGID kludge */
 

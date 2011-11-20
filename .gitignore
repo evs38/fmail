@@ -3,7 +3,6 @@
 /doc/fmail1.msg
 /doc/fmail2.msg
 /doc/fmail2.msg
-/doc/ftscprod.z11
 /doc/gpl-url.txt
 /doc/header.txt
 /doc/ReadMe.TXT
@@ -31,3 +30,4 @@
 /ide.45/fmail.mak
 *.tds
 /inbnd.tmp/000011bb.mo9
+/VersionTest*

@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 2007 Folkert J. Wijnstra
- *
+ *  Copyright (C) 2011 Wilfred van Velzen
  *
  *  This file is part of FMail.
  *
@@ -18,7 +18,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -45,6 +44,7 @@
 #include "archive.h"
 #include "cfgfile.h"
 #include "bclfun.h"
+#include "version.h"
 
 #define ADD_ALL    1
 #define DELETE_ALL 2
@@ -322,7 +322,8 @@ static void sendMsg (internalMsgType *message, char *replyStr,
   message->minutes   = timeRec.ti_min;
   message->seconds   = timeRec.ti_sec;
 
-  insertLine (message->text, "\1PID: "FMAIL_PID"\r");
+  sprintf(tempStr, "\1PID: %s\r", PIDStr());
+  insertLine (message->text, tempStr);
 
   *msgNum1 = 0;
   *msgNum2 = 0;

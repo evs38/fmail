@@ -55,6 +55,7 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include "cfgfile.h"
 #include "mtask.h"
 #include "nodeinfo.h"
+#include "version.h"
 
 extern  u16 allowConversion;
 
@@ -657,7 +658,7 @@ int cdecl main(int argc, char *argv[])
   if (!color)
     screen[81].attr = 0;
 #endif
-  sprintf (versionStr, VERSION_STRING" - Setup Utility");
+  sprintf(versionStr, "%s - Setup Utility", VersionStr());
 
   printString (versionStr, 3, 1, YELLOW, RED, MONO_HIGH);
   sprintf(tempStr, "Copyright (C) 1991-%s by FMail Developers - All rights reserved", __DATE__ + 7);

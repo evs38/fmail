@@ -26,6 +26,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+
 #include "fmail.h"
 #include "msgmsg.h"
 #include "nodeinfo.h"
@@ -34,6 +35,7 @@
 #include "log.h"
 #include "utils.h"
 #include "cfgfile.h"
+#include "version.h"
 
 
 
@@ -187,31 +189,40 @@ void closeNodeInfo (void)
             if ( nodeBuf->passiveSize && totalBundleSize[count]/1024 > nodeBuf->passiveSize*100L )
             {  message->destNode = config.akaList[0].nodeNum;
                strcpy(message->toUserName, config.sysopName);
-               sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r--- FMail"TEARLINE"\r",
-                       nodeStr(&nodeBuf->node), nodeBuf->sysopName, (u32)nodeBuf->passiveSize*100L, totalBundleSize[count]/1024);
-               writeMsgLocal (message, NETMSG, 1);
+               sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r%s"
+                      , nodeStr(&nodeBuf->node), nodeBuf->sysopName, (u32)nodeBuf->passiveSize*100L, totalBundleSize[count]/1024
+                      , TearlineStr()
+                      );
+               writeMsgLocal(message, NETMSG, 1);
                sprintf(message->text, "The status of your system %s has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r"
-                                      "You can reactivate your system by sending a message containing %ACTIVE to FMail.\r\r--- FMail"TEARLINE"\r",
-                                      nodeStr(&nodeBuf->node), (u32)nodeBuf->passiveSize*100L, totalBundleSize[count]/1024);
+                                      "You can reactivate your system by sending a message containing %ACTIVE to FMail.\r\r%s"
+                      , nodeStr(&nodeBuf->node), (u32)nodeBuf->passiveSize*100L, totalBundleSize[count]/1024
+                      , TearlineStr()
+                      );
                message->destNode = nodeBuf->node;
                strcpy(message->toUserName, nodeBuf->sysopName);
                writeMsgLocal (message, NETMSG, 1);
                nodeBuf->options.active = 0;
             }
             else if ( nodeBuf->passiveDays && nodeBuf->referenceLNBDat &&
-		      startTime-nodeBuf->referenceLNBDat >= (u32)nodeBuf->passiveDays*86400L )
-            {  message->destNode = config.akaList[0].nodeNum;
-               strcpy(message->toUserName, config.sysopName);
-               sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the system did not poll for at least %u days.\r\r--- FMail"TEARLINE"\r",
-                       nodeStr(&nodeBuf->node), nodeBuf->sysopName, nodeBuf->passiveDays);
-               writeMsgLocal (message, NETMSG, 1);
-               sprintf(message->text, "The status of your system %s has been changed to Passive because you did not poll for at least %u days.\r\r"
-                                      "You can reactivate your system by sending a message containing %ACTIVE to FMail.\r\r--- FMail"TEARLINE"\r",
-                                      nodeStr(&nodeBuf->node), nodeBuf->passiveDays);
-               message->destNode = nodeBuf->node;
-               strcpy(message->toUserName, nodeBuf->sysopName);
-               writeMsgLocal (message, NETMSG, 1);
-               nodeBuf->options.active = 0;
+            		      startTime-nodeBuf->referenceLNBDat >= (u32)nodeBuf->passiveDays*86400L )
+            {
+              message->destNode = config.akaList[0].nodeNum;
+              strcpy(message->toUserName, config.sysopName);
+              sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the system did not poll for at least %u days.\r\r%s"
+                     , nodeStr(&nodeBuf->node), nodeBuf->sysopName, nodeBuf->passiveDays
+                     , TearlineStr()
+                     );
+              writeMsgLocal (message, NETMSG, 1);
+              sprintf(message->text, "The status of your system %s has been changed to Passive because you did not poll for at least %u days.\r\r"
+                                     "You can reactivate your system by sending a message containing %ACTIVE to FMail.\r\r%s"
+                     , nodeStr(&nodeBuf->node), nodeBuf->passiveDays
+                     , TearlineStr()
+                     );
+              message->destNode = nodeBuf->node;
+              strcpy(message->toUserName, nodeBuf->sysopName);
+              writeMsgLocal(message, NETMSG, 1);
+              nodeBuf->options.active = 0;
             }
          }
          putRec(CFG_NODES,count);

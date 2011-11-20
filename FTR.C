@@ -31,6 +31,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <dir.h> /* notify */
+
 #include "fmail.h"
 #include "areainfo.h"
 #include "crc.h"
@@ -42,6 +43,7 @@
 #include "ftools.h"
 #include "ftr.h"
 #include "cfgfile.h"
+#include "version.h"
 
 extern configType config;
 extern const char *months;
@@ -51,10 +53,10 @@ void addInfo (internalMsgType *message, s16 isNetmail)
 {
   tempStrType tempStr;
 
-  insertLine (message->text, "\1PID: "FTOOLS_PID"\r");
+  sprintf(tempStr, "\1PID: %s\r", PIDStr());
+  insertLine(message->text, tempStr);
 
-  sprintf (tempStr, "\1MSGID: %s %08lx\r",
-           nodeStr (&message->srcNode), uniqueID());
+  sprintf(tempStr, "\1MSGID: %s %08lx\r", nodeStr(&message->srcNode), uniqueID());
   insertLine (message->text, tempStr);
 
   if (isNetmail)

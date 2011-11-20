@@ -40,6 +40,7 @@
 #include "msgpkt.h" /* for openP */
 #include "filesys.h"
 #include "fjlib.h"
+#include "version.h"
 
 extern time_t startTime;
 extern configType config;
@@ -1292,7 +1293,7 @@ void addVia(char *msgText, u16 aka)
                       nodeStr (&config.akaList[aka].nodeNum),
                       tmPtr->tm_year, tmPtr->tm_mon+1, tmPtr->tm_mday,
                       tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec,
-                      VERSION_STRING,
+                      VersionStr(),
                       "");
   }
 }

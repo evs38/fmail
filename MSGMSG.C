@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <time.h>
+
 #include "fmail.h"
 #include "areainfo.h"
 #include "nodeinfo.h"
@@ -39,7 +40,8 @@
 #include "areafix.h"
 #include "utils.h"
 #include "output.h"
-#include "msgpkt.h" /* for openP */
+#include "msgpkt.h"  // for openP
+#include "version.h"
 
 #define MAX_AFIX 256
 
@@ -854,10 +856,7 @@ s32 writeMsg (internalMsgType *message, s16 msgType, s16 valid)
   return (highMsgNum);
 }
 
-
-
-
-s32 writeMsgLocal (internalMsgType *message, s16 msgType, s16 valid)
+s32 writeMsgLocal(internalMsgType *message, s16 msgType, s16 valid)
 {
   struct date dateRec;
   struct time timeRec;
@@ -877,7 +876,8 @@ s32 writeMsgLocal (internalMsgType *message, s16 msgType, s16 valid)
 
   /* PID kludge */
 
-  insertLine (message->text, "\1PID: "FMAIL_PID"\r");
+  sprintf(tempStr, "\1PID: %s\r", PIDStr());
+  insertLine (message->text, tempStr);
 
   /* MSGID kludge */
 

@@ -13,7 +13,7 @@
       OBJ.6\W32\MTASK.obj OBJ.6\W32\NODEINFO.obj OBJ.6\W32\OUTPUT.obj 
       OBJ.6\W32\PACK.obj OBJ.6\W32\SENDSMTP.obj OBJ.6\W32\SMTP.obj 
       OBJ.6\W32\SORTHB.obj OBJ.6\W32\STRISTR.obj OBJ.6\W32\totalsec.obj 
-      OBJ.6\W32\UTILS.obj"/>
+      OBJ.6\W32\UTILS.obj OBJ.6\W32\Version.obj"/>
     <RESFILES value="FMailW32.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -82,6 +82,7 @@
       <FILE FILENAME="STRISTR.C" FORMNAME="" UNITNAME="STRISTR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="totalsec.c" FORMNAME="" UNITNAME="totalsec" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UTILS.C" FORMNAME="" UNITNAME="UTILS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Version.c" FORMNAME="" UNITNAME="Version" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -93,7 +94,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=64
 Release=1
-Build=24
+Build=26
 Debug=0
 PreRelease=1
 Special=0
@@ -105,7 +106,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FMail mail tosser
-FileVersion=1.64.1.24
+FileVersion=1.64.1.26
 InternalName=fmail
 LegalCopyright=Copyright (c) 1991 - 2011 FMail developers
 LegalTrademarks=

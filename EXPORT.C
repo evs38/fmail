@@ -28,6 +28,7 @@
 #include <time.h>
 #include <dir.h>
 #include <sys/stat.h>
+
 #include "fmail.h"
 #include "fs_util.h"
 #include "areainfo.h"
@@ -36,7 +37,7 @@
 #include "fdfolder.h"
 #include "export.h"
 #include "cfgfile.h"
-
+#include "version.h"
 
 const char *bar = "อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ";
 
@@ -173,8 +174,7 @@ s16 listGroups (void)
          freeAreaInfo ();
          return (0);
       }
-      fprintf (textFile, "\n"VERSION_STRING"  -  Group configuration  -  %s%s\n",
-                         ctime(&timer), bar);
+      fprintf (textFile, "\n%s  -  Group configuration  -  %s%s\n", VersionStr(), ctime(&timer), bar);
 
       mask = 1;
       for (count1 = 0; count1 < 26; count1++)
@@ -238,8 +238,7 @@ s16 listNodeEcho (void)
          freeAreaInfo ();
          return (0);
       }
-      fprintf (textFile, "\n"VERSION_STRING"  -  Active areas for %s  -  %s%s\n\n",
-                         nodeStr(&nodeNum), ctime(&timer), bar);
+      fprintf (textFile, "\n%s  -  Active areas for %s  -  %s%s\n\n", VersionStr(), nodeStr(&nodeNum), ctime(&timer), bar);
 
       for (count1 = 0; count1 < areaInfoCount; count1++)
       {
@@ -309,8 +308,7 @@ s16 listHudsonBoards(void)
          freeAreaInfo ();
          return (0);
       }
-      fprintf (textFile, "\n"VERSION_STRING"  -  List of "MBNAME" message base boards  -  %s%s\n\n",
-                         ctime(&timer), bar);
+      fprintf (textFile, "\n%s  -  List of "MBNAME" message base boards  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
       for (count1 = 1; count1 <= MBBOARDS; count1++)
       {
@@ -410,8 +408,7 @@ s16 listJAMBoards(void)
          freeAreaInfo ();
          return (0);
       }
-      fprintf (textFile, "\n"VERSION_STRING"  -  List of JAM message areas  -  %s%s\n\n",
-                         ctime(&timer), bar);
+      fprintf (textFile, "\n%s  -  List of JAM message areas  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
       for (count = 0; count < areaInfoCount; count++)
       {
@@ -456,8 +453,7 @@ s16 listPtAreas (void)
          freeAreaInfo ();
          return (0);
       }
-      fprintf (textFile, "\n"VERSION_STRING"  -  List of passthrough areas  -  %s%s\n\n",
-                         ctime(&timer), bar);
+      fprintf (textFile, "\n%s  -  List of passthrough areas  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
       for (count = 0; count < areaInfoCount; count++)
       {
@@ -511,8 +507,7 @@ s16 listPackConfig (void)
       displayMessage ("Can't open FMAIL.PCK");
       return (0);
    }
-   fprintf (textFile, "\n"VERSION_STRING"  -  Pack Manager  -  %s%s\n\n",
-                      ctime(&timer), bar);
+   fprintf (textFile, "\n%s  -  Pack Manager  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
    count = 0;
    while ((read (packHandle, tempStr, PACK_STR_SIZE) == PACK_STR_SIZE) &&
           (*tempStr))
@@ -556,8 +551,7 @@ s16 listAreaConfig (void)
          freeAreaInfo ();
          return (0);
       }
-      fprintf (textFile, "\n"VERSION_STRING"  -  Area configuration  -  %s%s\n\n",
-                         ctime(&timer), bar);
+      fprintf (textFile, "\n%s  -  Area configuration  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
       fprintf (textFile, "Switches:  A - Active                       D - Use arrival date when purging\n"
                          "           L - Local                        R - Do not delete messages that\n"
@@ -759,8 +753,7 @@ s16 listNodeConfig (void)
    openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf);
    nodeInfoCount = nodeHeader->totalRecords;
 
-   fprintf (textFile, "\n"VERSION_STRING"  -  Node configuration  -  %s%s\n\n",
-                      ctime(&timer), bar);
+   fprintf (textFile, "\n%s  -  Node configuration  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
    fprintf (textFile, "Switches:  A - Active\n"
                       "           P - Pack netmail\n"
@@ -897,8 +890,7 @@ s16 listGeneralConfig (void)
       displayMessage ("Can't open output file");
       return (0);
    }
-   fprintf (textFile, "\n"VERSION_STRING"  -  General configuration  -  %s%s\n\n",
-                      ctime(&timer), bar);
+   fprintf (textFile, "\n%s  -  General configuration  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
    fprintf (textFile, "SysOp Name         : %s\n\n", config.sysopName);
    fprintf (textFile, "Mailer             : %s\n", mailerName[config.mailer]);

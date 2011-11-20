@@ -61,6 +61,8 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include "jammaint.h"
 #include "cfgfile.h"
 #include "bclfun.h"
+#include "pp_date.h"
+#include "version.h"
 
 #if defined __WIN32__ && !defined __DPMI32__
 #include "sendsmtp.h"
@@ -262,8 +264,6 @@ u16      cdecl _openfd[TABLE_SIZE] = {0x2001, 0x2002, 0x2002, 0xa004,
                                      };
 #endif
 #endif
-
-char *version = VERSION_STRING;
 
 #if defined __WIN32__ && !defined __DPMI32__
 char *smtpID;
@@ -946,7 +946,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
   tempStrType    tempStr;
   char          *helpPtr1,
                 *helpPtr2;
-  char           tearline[36] = "--- \r";
+  char           tearline[80] = "--- \r";
 
   switch (config.tearType)
   {
@@ -961,7 +961,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
       *tearline = 0;
       break;
     default:
-      strcpy(stpcpy(tearline + 4, "FMail"TEARLINE), "\r");
+      strcpy(tearline, TearlineStr());
       break;
   }
 
@@ -1042,7 +1042,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
 
     /* Check origin */
 
-    if ((helpPtr1 = findCLStr (message->text, " * Origin:")) != NULL)
+    if ((helpPtr1 = findCLStr(message->text, " * Origin:")) != NULL)
     {
       /* Retear message with FMail tearline */
 
@@ -1070,13 +1070,14 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
                echoAreaList[count].originLine,
                nodeStr(&config.akaList[echoAreaList[count].address].nodeNum));
     }
-    if ( config.tearType )
+    if (config.tearType)
     {
       if ((helpPtr1 = findCLStr (message->text, "\1TID:")) != NULL)
       {
-        removeLine (helpPtr1);
+        removeLine(helpPtr1);
       }
-      insertLine(message->text, "\1TID: "FMAIL_TID"\r");
+      sprintf(tempStr, "\1TID: %s\r", TIDStr());
+      insertLine(message->text, tempStr);
     }
 
     sprintf (tempStr, "AREA:%s\r", echoAreaList[count].areaName);
@@ -1131,8 +1132,8 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
 int cdecl main(int argc, char *argv[])
 {
   s16            count;
-  s16            doneArc,
-  dayNum;
+  s16            doneArc
+               , dayNum;
   s16            boardNum;
   s16            temp;
   s16            diskErrorT;
@@ -1161,7 +1162,7 @@ int cdecl main(int argc, char *argv[])
   WinSetTitle(VERSION_STRING);
 #endif
 #if defined __WIN32__ && !defined __DPMI32__
-  smtpID = FMAIL_TID;
+  smtpID = TIDStr();
 #endif
 
   initOutput();
@@ -1184,7 +1185,7 @@ int cdecl main(int argc, char *argv[])
   setAttr (YELLOW, RED, MONO_HIGH);
   gotoPos (3, 1);
 #endif
-  printString(version);
+  printString(VersionStr());
   printString(" - The Fast Echomail Processor");
 #ifndef STDO
   gotoPos(3, 2);
@@ -1228,7 +1229,7 @@ int cdecl main(int argc, char *argv[])
   {
     char *str = "About FMail:\n"
                 "\n"
-                "    Version          : "VERSION_STRING"\n"
+                "    Version          : %s\n"
                 "    Operating system : "
 #ifdef __OS2__
                  "OS/2\n"
@@ -1251,14 +1252,15 @@ int cdecl main(int argc, char *argv[])
 #else
                  "8088/8086 and up\n"
 #endif
-                 "    Compiled on      : "__DATE__"\n";
-    printString(str);
-    sprintf(tempStr,
-            "    Message bases    : JAM and "MBNAME"\n"
-            "    Max. areas       : %u\n"
-            "    Max. nodes       : %u\n", MAX_AREAS, MAX_NODES);
-    printString(tempStr);
+                 "    Compiled on      : %d-%02d-%02d\n"
+                 "    Message bases    : JAM and "MBNAME"\n"
+                 "    Max. areas       : %u\n"
+                 "    Max. nodes       : %u\n";
+    char tStr[1024];
+    sprintf(tStr, str, VersionStr(), YEAR, MONTH + 1, DAY, MAX_AREAS, MAX_NODES);
+    printString(tStr);
     showCursor();
+
     return 0;
   }
   else if ((argc >= 2) &&
@@ -1408,8 +1410,9 @@ int cdecl main(int argc, char *argv[])
       message->srcNode   = message->destNode = config.akaList[0].nodeNum;
       message->attribute = PRIVATE;
 
-      strcpy (message->text, "New personal netmail and/or echomail messages have arrived on your system!\r\r--- FMail"TEARLINE"\r");
-      writeMsgLocal (message, NETMSG, 1);
+      sprintf(tempStr, "New personal netmail and/or echomail messages have arrived on your system!\r\r%s", TearlineStr());
+      strcpy(message->text, tempStr);
+      writeMsgLocal(message, NETMSG, 1);
     }
 
     closeBBSWr(0);
@@ -1451,7 +1454,7 @@ int cdecl main(int argc, char *argv[])
                         timeBlock.tm_year%100,
                         timeBlock.tm_hour,
                         timeBlock.tm_min,
-                        version));
+                        VersionStr()));
         write (tempHandle, tempStr,
                sprintf (tempStr, "Board  Area name                                           #Msgs  Dupes\n"));
         write (tempHandle, tempStr,
