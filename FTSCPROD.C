@@ -25,7 +25,7 @@
 
 // updated until ftscprod.011
 
-struct ftscps ftscprod[MAX_PRODCODES] =
+struct ftscps ftscprod[] =
 {
    { 0x0000, "Fido" },
    { 0x0001, "Rover" },
@@ -325,5 +325,6 @@ struct ftscps ftscprod[MAX_PRODCODES] =
    { 0x16FF, "RNtrack" },
    { 0x17FF, "Msg2Pkt" },
    { 0x18FF, "Marena" },
+   { 0x19FF, "jNode" },
    { 0xFFFF, ""}
 };

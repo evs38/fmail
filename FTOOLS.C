@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------
 //  Copyright (C) 2007 Folkert J. Wijnstra
-//  Copyright (C) 2011 Wilfred van Velzen
+//  Copyright (C) 2008 - 2013 Wilfred van Velzen
 //
 //  This file is part of FMail.
 //
@@ -1819,8 +1819,8 @@ nextarea:
                     "    -from    SysOp name as defined in FSetup\n"
                     "    -to      'All'\n"
                     "    -subj    <file name>\n"
-                    "    -dest                    (netmail only)\n"
-                    "    -aka     Board dependant (netmail only)\n\n"
+                    "    -dest    <node number> (netmail only)\n"
+                    "    -aka     Board dependant\n\n"
                     "Switches:\n"
                     "    /C  Crash status  (netmail only)     /R  File request       (netmail only)\n"
                     "    /H  Hold status   (netmail only)     /F  File attach        (netmail only)\n"
@@ -1874,7 +1874,7 @@ nextarea:
                 *message->subject = 0;
             }
             else
-              if (isNetmail && (stricmp(argv[count], "-aka") == 0))
+              if (stricmp(argv[count], "-aka") == 0)
               {
                 if (count + 1 < argc && *argv[count + 1] != '-'
                     && (temp = atoi(argv[++count])) < MAX_AKAS)
@@ -1941,8 +1941,7 @@ nextarea:
           insertLine(message->text, tempStr);
         }
 
-        if (writeNetMsg(message, srcAka, &message->destNode
-                        , PKT_TYPE_2PLUS, 0xFFFF) == 0)
+        if (writeNetMsg(message, srcAka, &message->destNode, PKT_TYPE_2PLUS, 0xFFFF) == 0)
         {
           sprintf(tempStr, "Sending netmail message to node %s", nodeStr(&message->destNode));
           logEntry(tempStr, LOG_ALWAYS, 0);

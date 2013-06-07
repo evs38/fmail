@@ -1,5 +1,6 @@
 /*
  *  Copyright (C) 2007 Folkert J. Wijnstra
+ *  Copyright (C) 2008 - 2013 Wilfred van Velzen
  *
  *
  *  This file is part of FMail.
@@ -535,41 +536,6 @@ s16 export (int argc, char *argv[])
   showCursor ();
   return (0);
 }
-
-
-/*
-extern boardInfoType boardInfo[256];
-
-s16 getBoardNum (char *text, s16 valid, u16 *aka)
-{
-   u16 count = 1;
-
-   if (valid < 1)
-   {
-      logEntry ("Bad or missing board number", LOG_ALWAYS, 4);
-   }
-   while ((count <= MBBOARDS) &&
-          (stricmp(boardInfo[count].name, text) != 0))
-   {
-      count++;
-   }
-   if (count <= MBBOARDS)
-   {
-      *aka = boardInfo[count].aka;
-      return (count);
-   }
-
-   if (((count = atoi(text)) <= MBBOARDS) && (count > 0))
-   {
-      *aka = boardInfo[count].aka;
-      return (count);
-   }
-
-   logEntry ("Bad or missing board number", LOG_ALWAYS, 4);
-
-   return (0);
-}
-*/
 
 
 static s16 getNetAka(char *areaTag)

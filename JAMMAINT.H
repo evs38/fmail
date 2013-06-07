@@ -19,5 +19,9 @@
  *
  */
 
+#ifndef __JAMMAINT_H__
+#define __JAMMAINT_H__
 
 s16 JAMmaint(rawEchoType *areaPtr, s32 switches, uchar *name, s32 *spaceSaved);
+
+#endif

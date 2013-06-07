@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------
 //
-// Copyright (C) 2011  Wilfred van Velzen
+// Copyright (C) 2011 - 2013  Wilfred van Velzen
 //
 // This file is part of FMail.
 //
@@ -21,9 +21,9 @@
 #ifndef __version_h
 #define __version_h
 
-#define VERNUM        "1.64"
+#define VERNUM        "1.66"
 #define SERIAL_MAJOR  1
-#define SERIAL_MINOR  64
+#define SERIAL_MINOR  66
 
 const char *VersionStr (void);
 const char *TearlineStr(void);

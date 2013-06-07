@@ -24,6 +24,9 @@
 #include "pp_date.h"
 
 #include <stdio.h>
+#ifdef __WIN32__
+#include <windows.h>
+#endif
 
 #ifdef __OS2__
 	#define PTYPE "/OS2"
@@ -89,10 +92,10 @@ const char *TearlineStr(void)
 #ifdef BETA
   if (*tearStr == 0)
     sprintf(tearStr, TEARLINE_STR"%04d%02d%02d\r", YEAR, MONTH + 1, DAY);
-#else    
+#else
   if (*tearStr == 0)
     sprintf(tearStr, TEARLINE_STR"\r");
-#endif    
+#endif
   return tearStr;
 }
 //----------------------------------------------------------------------------
@@ -106,8 +109,141 @@ const char *TIDStr(void)
 #ifdef BETA
   if (*tidStr == 0)
     sprintf(tidStr, TID_STR"%04d%02d%02d", YEAR, MONTH + 1, DAY);
-#endif    
+#endif
   return tidStr;
 }
 //----------------------------------------------------------------------------
+#ifdef __WIN32__
+char *VersionString(void)
+{
+  static char resultStr[MAX_PATH];
+  char        fullPath [MAX_PATH];
+  DWORD       dummy;
+  DWORD       verInfoSize;
 
+  GetModuleFileName(NULL, fullPath, sizeof(fullPath));
+  verInfoSize = GetFileVersionInfoSize(fullPath, &dummy);
+
+  if (verInfoSize == 0)
+    strcpy(resultStr, VERNUM);
+  else
+  {
+    unsigned int verValueSize;
+    VS_FIXEDFILEINFO *verValue;
+    DWORD dwFileVersionMS
+        , dwFileVersionLS;
+    byte *verInfo = malloc(verInfoSize);
+    GetFileVersionInfo(fullPath, 0, verInfoSize, verInfo);
+    VerQueryValue(verInfo, "\\", (void**)&verValue, &verValueSize);
+
+    dwFileVersionMS = verValue->dwFileVersionMS;
+    dwFileVersionLS = verValue->dwFileVersionLS;
+
+    sprintf(resultStr, "%d.%d.%d.%d", HIWORD(dwFileVersionMS), LOWORD(dwFileVersionMS), HIWORD(dwFileVersionLS), LOWORD(dwFileVersionLS));
+
+    free(verInfo);
+  }
+
+  return resultStr;
+}
+#if 0
+char *GetInfo(char *InfoItem)
+{
+  static char szResult  [MAX_PATH];
+  char        szFullPath[MAX_PATH];
+  char        szGetName [MAX_PATH];
+  LPSTR       lpVersion;        // String pointer to Item text
+  DWORD       dwVerInfoSize;    // Size of version information block
+  DWORD       dwVerHnd = 0;     // An 'ignored' parameter, always '0'
+  UINT        uVersionLen;
+  BOOL        bRetCode;
+
+  szResult[0] = 0;
+  GetModuleFileName(NULL, szFullPath, sizeof(szFullPath));
+  dwVerInfoSize = GetFileVersionInfoSize(szFullPath, &dwVerHnd);
+  if (dwVerInfoSize)
+  {
+    LPSTR  lpstrVffInfo;
+    HANDLE hMem;
+
+    hMem = GlobalAlloc(GMEM_MOVEABLE, dwVerInfoSize);
+    lpstrVffInfo = (LPSTR)GlobalLock(hMem);
+    GetFileVersionInfo(szFullPath, dwVerHnd, dwVerInfoSize, lpstrVffInfo);
+
+    // Get a codepage from base_file_info_sctructure
+    lstrcpy(szGetName, "\\VarFileInfo\\Translation");
+
+    uVersionLen = 0;
+    lpVersion   = NULL;
+    bRetCode    = VerQueryValue((LPVOID)lpstrVffInfo, (LPSTR)szGetName, (void **)&lpVersion, (UINT *)&uVersionLen);
+    if (bRetCode && uVersionLen && lpVersion)
+      sprintf(szResult, "%04x%04x", (WORD)(*((DWORD *)lpVersion)), (WORD)(*((DWORD *)lpVersion)>>16));
+    else
+    {
+      // 041904b0 is a very common one, because it means:
+      //   US English/Russia, Windows MultiLingual characterset
+      // Or to pull it all apart:
+      // 04------        = SUBLANG_ENGLISH_USA
+      // --09----        = LANG_ENGLISH
+      // --19----        = LANG_RUSSIA
+      // ----04b0 = 1200 = Codepage for Windows:Multilingual
+      lstrcpy(szResult, "041904b0");
+    }
+
+    // Add a codepage to base_file_info_sctructure
+    sprintf(szGetName, "\\StringFileInfo\\%s\\", szResult);
+    // Get a specific item
+    lstrcat(szGetName, InfoItem);
+
+    uVersionLen = 0;
+    lpVersion   = NULL;
+    bRetCode    = VerQueryValue((LPVOID)lpstrVffInfo, (LPSTR)szGetName, (void **)&lpVersion, (UINT *)&uVersionLen);
+    if (bRetCode && uVersionLen && lpVersion)
+      lstrcpy(szResult, lpVersion);
+    else
+      lstrcpy(szResult, "");
+  }
+  return szResult;
+}
+//---------------------------------------------------------------------------
+void GetFileVersionOfApplication()
+{
+   //give your application full path
+   LPTSTR lpszFilePath = "D:\\SAN\\MyTest.exe";
+
+   DWORD dwDummy;
+   DWORD dwFVISize = GetFileVersionInfoSize( lpszFilePath , &dwDummy );
+
+   LPBYTE lpVersionInfo = new BYTE[dwFVISize];
+
+   GetFileVersionInfo( lpszFilePath , 0 , dwFVISize , lpVersionInfo );
+
+   UINT uLen;
+   VS_FIXEDFILEINFO *lpFfi;
+
+   VerQueryValue( lpVersionInfo , _T("\\") , (LPVOID *)&lpFfi , &uLen );
+
+   DWORD dwFileVersionMS = lpFfi->dwFileVersionMS;
+   DWORD dwFileVersionLS = lpFfi->dwFileVersionLS;
+
+   delete [] lpVersionInfo;
+
+   printf( "Higher: %x\n" , dwFileVersionMS );
+
+   printf( "Lower: %x\n" , dwFileVersionLS );
+
+   DWORD dwLeftMost     = HIWORD(dwFileVersionMS);
+   DWORD dwSecondLeft   = LOWORD(dwFileVersionMS);
+   DWORD dwSecondRight  = HIWORD(dwFileVersionLS);
+   DWORD dwRightMost    = LOWORD(dwFileVersionLS);
+
+   CString str;
+
+   str.Format("Version: %d.%d.%d.%d\n" , dwLeftMost, dwSecondLeft,
+      dwSecondRight, dwRightMost);
+
+   AfxMessageBox(str);
+}
+#endif
+#endif
+//----------------------------------------------------------------------------

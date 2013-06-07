@@ -28,13 +28,13 @@ extern "C" {
 #define __JAMPROT_H__
 
 /*
-**  Initialization of the JAMAPIREC structure 
+**  Initialization of the JAMAPIREC structure
 */
 int _JAMPROC JAMsysInitApiRec(JAMAPIRECptr apirec, CHAR8ptr pFile, UINT32 Size);
 int _JAMPROC JAMsysDeinitApiRec(JAMAPIRECptr apirec);
 
 /*
-**  I/O functions 
+**  I/O functions
 */
 int _JAMPROC JAMsysClose(JAMAPIRECptr apirec, FHANDLE fh);
 FHANDLE _JAMPROC JAMsysCreate(JAMAPIRECptr apirec, CHAR8ptr pFileName);
@@ -95,5 +95,4 @@ JAMTMptr _JAMPROC JAMsysLocalTime(UINT32ptr pt);
 }
 #endif
 
-/* end of file "jamprot.h" */
 /* end of file "jamprot.h" */
