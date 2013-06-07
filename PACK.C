@@ -19,7 +19,6 @@
  *
  */
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -52,9 +51,6 @@
 //extern u16          nodeCount;
 
 
-extern s16 registered;
-
-
 typedef struct
 {
   u32           msgNum;
@@ -66,20 +62,15 @@ typedef struct
 
 typedef netRecType netListType[MAXNETREC];
 
-
-
 extern configType      config;
 extern internalMsgType *message;
 extern globVarsType    globVars;
-extern char	       configPath[128];
-
+extern char	           configPath[128];
 
 static s16             errorDisplay=0;
 static u16             netIndex;
 static s32             msgNum;
-static netListType     *netList;
-
-
+static netListType    *netList;
 
 s16 packValid (nodeNumType *node, char *packedNodes)
 {
@@ -524,7 +515,9 @@ s16 pack (s16 argc, char *argv[], s32 switches)
                 strstr(tempStr, config.topic1) != NULL) ||
                (*config.topic2 &&
                 strstr(tempStr, config.topic2) != NULL) ||
-               (registered && foundToUserName(message->fromUserName))))
+               foundToUserName(message->fromUserName)
+              )
+             )
           {
             insertLine(message->text, "AREA: Netmail  SOURCE: Local\r");
             writeMsg(message, PERMSG, 1);

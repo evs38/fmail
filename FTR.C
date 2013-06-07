@@ -1,5 +1,6 @@
 /*
  *  Copyright (C) 2007 Folkert J. Wijnstra
+ *  Copyright (C) 2008 - 2013 Wilfred van Velzen
  *
  *
  *  This file is part of FMail.
@@ -31,6 +32,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <dir.h> /* notify */
+
 #include "fmail.h"
 #include "areainfo.h"
 #include "crc.h"
@@ -42,6 +44,7 @@
 #include "ftools.h"
 #include "ftr.h"
 #include "cfgfile.h"
+#include "version.h"
 
 extern configType config;
 extern const char *months;
@@ -51,10 +54,10 @@ void addInfo (internalMsgType *message, s16 isNetmail)
 {
   tempStrType tempStr;
 
-  insertLine (message->text, "\1PID: "FTOOLS_PID"\r");
+  sprintf(tempStr, "\1PID: %s\r", PIDStr());
+  insertLine(message->text, tempStr);
 
-  sprintf (tempStr, "\1MSGID: %s %08lx\r",
-           nodeStr (&message->srcNode), uniqueID());
+  sprintf(tempStr, "\1MSGID: %s %08lx\r", nodeStr(&message->srcNode), uniqueID());
   insertLine (message->text, tempStr);
 
   if (isNetmail)
@@ -533,41 +536,6 @@ s16 export (int argc, char *argv[])
   showCursor ();
   return (0);
 }
-
-
-/*
-extern boardInfoType boardInfo[256];
-
-s16 getBoardNum (char *text, s16 valid, u16 *aka)
-{
-   u16 count = 1;
-
-   if (valid < 1)
-   {
-      logEntry ("Bad or missing board number", LOG_ALWAYS, 4);
-   }
-   while ((count <= MBBOARDS) &&
-          (stricmp(boardInfo[count].name, text) != 0))
-   {
-      count++;
-   }
-   if (count <= MBBOARDS)
-   {
-      *aka = boardInfo[count].aka;
-      return (count);
-   }
-
-   if (((count = atoi(text)) <= MBBOARDS) && (count > 0))
-   {
-      *aka = boardInfo[count].aka;
-      return (count);
-   }
-
-   logEntry ("Bad or missing board number", LOG_ALWAYS, 4);
-
-   return (0);
-}
-*/
 
 
 static s16 getNetAka(char *areaTag)

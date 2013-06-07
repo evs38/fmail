@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------
 //  Copyright (C) 2007 Folkert J. Wijnstra
-//  Copyright (C) 2011 Wilfred van Velzen
+//  Copyright (C) 2008 - 2013 Wilfred van Velzen
 //
 //  This file is part of FMail.
 //
@@ -37,6 +37,8 @@
 #include "output.h"
 #include "sorthb.h"
 #include "utils.h"
+#include "pp_date.h"
+#include "version.h"
 
 #ifdef __OS2__
 #define INCL_DOSPROCESS
@@ -111,8 +113,6 @@ u16 forwNodeCount;
 nodeFileType nodeFileInfo;
 cookedEchoType *echoAreaList;
 
-char *version = FTOOLS_VER_STRING;
-
 typedef linkRecType *linkRecPtrType;
 
 typedef u16 lastReadType[256];
@@ -157,7 +157,7 @@ const uchar bitCountTab[256] =
 void About(void)
 {
   char *str = "About FTools:\n\n"
-              "    Version          : "VERSION_STRING"\n"
+              "    Version          : %s\n"
               "    Operating system : "
 #if   defined(__OS2__)
               "OS/2\n"
@@ -180,8 +180,10 @@ void About(void)
 #else
               "8088/8086 and up\n"
 #endif
-              "    Compiled on      : "__DATE__"\n";
-  printString(str);
+              "    Compiled on      : %d-%02d-%02d\n";
+  char tStr[1024];
+  sprintf(tStr, str, VersionStr, YEAR, MONTH + 1, DAY);
+  printString(tStr);
   showCursor();
 }
 //----------------------------------------------------------------------------
@@ -403,7 +405,7 @@ int cdecl main(int argc, char *argv[])
   ctrlbrk(c_break);
 #endif
 #ifdef __WIN32__
-  smtpID = FMAIL_TID;
+  smtpID = TIDStr();
 #endif
   initOutput();
   cls();
@@ -418,7 +420,8 @@ int cdecl main(int argc, char *argv[])
   setAttr(YELLOW, RED, MONO_HIGH);
   gotoPos(3, 1);
 #endif
-  printString(FTOOLS_VER_STRING" - The Fast Message Base Utility\n");
+  sprintf(tempStr, "%s - The Fast Message Base Utility\n", VersionStr());
+  printString(tempStr);
 #ifndef STDO
   gotoPos(3, 2);
 #else
@@ -1816,8 +1819,8 @@ nextarea:
                     "    -from    SysOp name as defined in FSetup\n"
                     "    -to      'All'\n"
                     "    -subj    <file name>\n"
-                    "    -dest                    (netmail only)\n"
-                    "    -aka     Board dependant (netmail only)\n\n"
+                    "    -dest    <node number> (netmail only)\n"
+                    "    -aka     Board dependant\n\n"
                     "Switches:\n"
                     "    /C  Crash status  (netmail only)     /R  File request       (netmail only)\n"
                     "    /H  Hold status   (netmail only)     /F  File attach        (netmail only)\n"
@@ -1871,7 +1874,7 @@ nextarea:
                 *message->subject = 0;
             }
             else
-              if (isNetmail && (stricmp(argv[count], "-aka") == 0))
+              if (stricmp(argv[count], "-aka") == 0)
               {
                 if (count + 1 < argc && *argv[count + 1] != '-'
                     && (temp = atoi(argv[++count])) < MAX_AKAS)
@@ -1938,8 +1941,7 @@ nextarea:
           insertLine(message->text, tempStr);
         }
 
-        if (writeNetMsg(message, srcAka, &message->destNode
-                        , PKT_TYPE_2PLUS, 0xFFFF) == 0)
+        if (writeNetMsg(message, srcAka, &message->destNode, PKT_TYPE_2PLUS, 0xFFFF) == 0)
         {
           sprintf(tempStr, "Sending netmail message to node %s", nodeStr(&message->destNode));
           logEntry(tempStr, LOG_ALWAYS, 0);

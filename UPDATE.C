@@ -27,6 +27,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <time.h>
+
 #include "fmail.h"
 #include "fs_util.h"
 #include "areainfo.h"
@@ -35,6 +36,7 @@
 #include "imfolder.h"
 #include "msgra.h"
 #include "cfgfile.h"
+#include "version.h"
 
 #ifndef FSETUP
 #include "log.h"
@@ -440,8 +442,8 @@ void autoUpdate (void)
       {
         fprintf (textFile, "%s ! ", nodeStr(&config.akaList[0].nodeNum));
       }
-      fprintf (textFile, "%s\n", config.sysopName);
-      fprintf (textFile, "; Created by "VERSION_STRING" - %s", ctime(&timer));
+      fprintf(textFile, "%s\n", config.sysopName);
+      fprintf(textFile, "; Created by %s - %s", VersionStr(), ctime(&timer));
 
       for (count = 0; count < areaInfoCount; count++)
       {

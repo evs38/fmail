@@ -126,4 +126,3 @@ typedef struct JAMtm
 #endif
 
 /* end of file "jamsys.h" */
-/* end of file "jamsys.h" */

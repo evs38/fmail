@@ -28,15 +28,15 @@
 #include <time.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+
 #include "fmail.h"
 #include "areainfo.h"
 #include "dups.h"
 #include "output.h"
 #include "ftlog.h"
 #include "msgpkt.h"
+#include "version.h"
 
-
-extern char       *version;
 extern configType config;
 
 time_t   startTime;
@@ -168,7 +168,7 @@ void initLog(char *s, s32 switches)
    }
    else
    {
-      sprintf (tempStr2, "%s - %s", version, s);
+      sprintf (tempStr2, "%s - %s", VersionStr(), s);
       helpPtr = strchr (tempStr2, 0);
 
       for (count = 0; count < 26; count++)

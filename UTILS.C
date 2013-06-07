@@ -39,10 +39,8 @@
 #include "output.h"
 #include "msgpkt.h" /* for openP */
 #include "filesys.h"
-// for addVia:
-#include "keyfile.h"
-
 #include "fjlib.h"
+#include "version.h"
 
 extern time_t startTime;
 extern configType config;
@@ -1273,74 +1271,33 @@ void addPathSeenBy (char *msgText, char *seenBy, char *tinySeen, char *path,
 
 #ifdef FMAIL
 
-#define CODENUM 65339L
-
-void addVia (char *msgText, u16 aka)
+void addVia(char *msgText, u16 aka)
 {
-   struct tm *tmPtr;
-   char      *helpPtr;
-#if !defined BETA0
-   u32       tkey, tempKey;
-   static u16 keyChecked = 0;
-   u16       count;
-#endif
+  struct tm *tmPtr;
+  char      *helpPtr;
 
-   tmPtr = gmtime(&startTime);
+  tmPtr = gmtime(&startTime);
 
-   if ((tmPtr->tm_year += 1900) < 1980)
-      tmPtr->tm_year += 100;
+  if ((tmPtr->tm_year += 1900) < 1980)
+    tmPtr->tm_year += 100;
 
-   if ((helpPtr = strchr (msgText, 0)) != NULL)
-   {
-      if ((*(helpPtr-1) != '\r') &&
-          ((*(helpPtr-1) != '\n') || (*(helpPtr-2) != '\r')))
-      {
-         *(helpPtr++) = '\r';
-      }
+  if ((helpPtr = strchr (msgText, 0)) != NULL)
+  {
+    if ((*(helpPtr-1) != '\r') &&
+        ((*(helpPtr-1) != '\n') || (*(helpPtr-2) != '\r')))
+    {
+      *(helpPtr++) = '\r';
+    }
 
-#if !defined BETA0
-      if (!keyChecked)
-      {
-         tkey = tempKey = (key.relKey1 & 0xffff);
-
-         for (count = 1; count < 17; count++)
-         {
-            tkey *= tempKey;
-            tkey %= CODENUM;
-         }
-
-         if ((tkey ^ 'F1') !=
-             ((key.relKey1 >> 16) ^ (key.relKey1 & 0xffff)))
-            keyChecked = 1;
-         else
-            keyChecked = 2;
-      }
-#endif
-
-
-      sprintf (helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s%s\r",
-                        nodeStr (&config.akaList[aka].nodeNum),
-                        tmPtr->tm_year, tmPtr->tm_mon+1, tmPtr->tm_mday,
-                        tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec,
-                        VERSION_STRING,
-#if !defined BETA0
-                        keyChecked == 2 ? "+" : "" );
-#else
-                        "");
-#endif
-/*
-      sprintf (helpPtr, "\x1Via FMail %s, %s %u %.3s %u %u:%02u\r",
-                        nodeStr (&config.akaList[aka].nodeNum),
-                        dayName[tmPtr->tm_wday],
-			tmPtr->tm_mday, months+(tmPtr->tm_mon*3),
-			tmPtr->tm_year, tmPtr->tm_hour, tmPtr->tm_min);
-*/
-   }
+    sprintf (helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s%s\r",
+                      nodeStr (&config.akaList[aka].nodeNum),
+                      tmPtr->tm_year, tmPtr->tm_mon+1, tmPtr->tm_mday,
+                      tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec,
+                      VersionStr(),
+                      "");
+  }
 }
-
 #endif
-
-
 
 uchar *makeName (uchar *path, uchar *name)
 {  static tempStrType tempStr;
@@ -1371,7 +1328,7 @@ uchar *makeName (uchar *path, uchar *name)
            (echoAreaList[count].JAMdirPtr == NULL ||
             stricmp(tempStr, echoAreaList[count].JAMdirPtr) != 0) )
    {
-      count++;
+     count++;
    }
    if (count < echoCount)
    {

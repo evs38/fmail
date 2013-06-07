@@ -20,12 +20,12 @@
  */
 
 
-#define MAX_PRODCODES  299
+#define MAX_PRODCODES  300
 
 typedef struct ftscps
 {  u32  prodcode;
    u8   *prodname;
 };
 
-extern struct ftscps ftscprod[MAX_PRODCODES];
+extern struct ftscps ftscprod[];
 

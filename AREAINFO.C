@@ -36,11 +36,12 @@
 #include "crc.h"
 #include "output.h"
 #include "cfgfile.h"
+#include "version.h"
 
 struct orgLineListType
 {
-   struct orgLineListType *next;
-   char originLine[ORGLINE_LEN];
+  struct orgLineListType *next;
+  char originLine[ORGLINE_LEN];
 };
 
 static struct orgLineListType *orgLineListPtr = NULL;
@@ -304,7 +305,7 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
          count++;
       }
 
-      if (config.mgrOptions.autoDiscArea &&
+    if (config.mgrOptions.autoDiscArea &&
 	  !areaBuf->options.disconnected &&
 	  areaBuf->options.active     &&
 	  !areaBuf->options.local     &&
@@ -312,108 +313,105 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
 	  (*areaBuf->msgBasePath == 0)&&
 	  areaBuf->export[0].nodeNum.zone &&
 	  !areaBuf->export[1].nodeNum.zone)
-      {
-         count = 0;
-	 while ((count < MAX_UPLREQ) &&
+    {
+      count = 0;
+	    while ((count < MAX_UPLREQ) &&
                 (memcmp(&areaBuf->export[0].nodeNum, &config.uplinkReq[count].node, sizeof(nodeNumType)) != 0))
-	 {
-            count++;
-         }
-         if (count < MAX_UPLREQ)
-         {
-	    areaBuf->options.disconnected = 1;
-	    strcpy (areaBuf->comment, "AutoDisconnected");
-            memset (&areaBuf->export[0], 0, sizeof(nodeNumXType));
-	    putRec (CFG_ECHOAREAS, echoCount);
-
-            echoAreaList[echoCount].options._reserved = 1;
-	    echoAreaList[echoCount].msgCount = count;
-	    autoDisconnectCount++;
-	 }
-      }
-   }
-
-   /* delete auto-disconnected areas, TEMPORARILY ALWAYS DONE ! */
-
-/* if (config.mgrOptions.autoDiscDel) */
-      for (count = echoCount-1; count >= 0; count--)
-	 if (echoAreaList[count].options._reserved)
-            delRec(CFG_ECHOAREAS, count);
-
-   closeConfig (CFG_ECHOAREAS);
-
-   if (errorDisplay)
-   {
-      newLine();
-   }
-
-   if (error != 0)
-   {
-      logEntry ("One or more origin addresses are not defined", LOG_ALWAYS, 4);
-   }
-
-   memset (message, 0, INTMSG_SIZE);
-
-   if (autoDisconnectCount)
-   {
-      for (count = 0; count < MAX_UPLREQ; count++)
-      {
-	 helpPtr = message->text;
-	 for (count2 = 0; count2 < echoCount; count2++)
-	 {
-            if (echoAreaList[count2].options._reserved &&
-		(echoAreaList[count2].msgCount == count))
 	    {
-	       helpPtr += sprintf (helpPtr, "-%s\r", echoAreaList[count2].areaName);
-	    }
-	 }
-
-	 if (helpPtr != message->text)
-	 {
-	    strcpy (message->fromUserName, config.sysopName);
-	    strcpy (message->toUserName,   config.uplinkReq[count].program);
-	    strcpy (message->subject,      config.uplinkReq[count].password);
-	    message->srcNode   = config.akaList[config.uplinkReq[count].originAka].nodeNum;
-	    message->destNode  = config.uplinkReq[count].node;
-            message->attribute = PRIVATE|KILLSENT;
-
-	    strcpy (helpPtr, "--- FMail"TEARLINE"\r");
-	    writeMsgLocal (message, NETMSG, 1);
-	 }
+        count++;
       }
-
-      strcpy (message->fromUserName, "FMail");
-      strcpy (message->toUserName, config.sysopName);
-      strcpy (message->subject, "Areas disconnected from uplink");
-      message->destNode  = message->srcNode
-			 = config.akaList[0].nodeNum;
-      message->attribute = PRIVATE;
-
-      helpPtr = message->text;
-      for (count = 0; count < echoCount; count++)
+      if (count < MAX_UPLREQ)
       {
-         if (echoAreaList[count].options._reserved)
-	 {
-            sprintf(tempStr, "Area %s has been disconnected from %s",
-			     echoAreaList[count].areaName,
-			     nodeStr(&config.uplinkReq[echoAreaList[count].msgCount].node));
-	    logEntry (tempStr, LOG_ALWAYS, 0);
-	    helpPtr += sprintf (helpPtr, "%s\r", tempStr);
+	      areaBuf->options.disconnected = 1;
+	      strcpy(areaBuf->comment, "AutoDisconnected");
+        memset(&areaBuf->export[0], 0, sizeof(nodeNumXType));
+	      putRec(CFG_ECHOAREAS, echoCount);
 
-            echoAreaList[count].options._reserved = 0;
-	    echoAreaList[count].msgCount = 0;
-	 }
-      }
-      strcpy (helpPtr, "\r--- FMail"TEARLINE"\r");
-      writeMsgLocal (message, NETMSG, 1);
+        echoAreaList[echoCount].options._reserved = 1;
+	      echoAreaList[echoCount].msgCount = count;
+	      autoDisconnectCount++;
+	    }
+    }
+  }
 
-      newLine();
-   }
+  /* delete auto-disconnected areas, TEMPORARILY ALWAYS DONE ! */
+
+  for (count = echoCount-1; count >= 0; count--)
+	  if (echoAreaList[count].options._reserved)
+      delRec(CFG_ECHOAREAS, count);
+
+  closeConfig (CFG_ECHOAREAS);
+
+  if (errorDisplay)
+  {
+    newLine();
+  }
+
+  if (error != 0)
+  {
+    logEntry ("One or more origin addresses are not defined", LOG_ALWAYS, 4);
+  }
+
+  memset (message, 0, INTMSG_SIZE);
+
+  if (autoDisconnectCount)
+  {
+    for (count = 0; count < MAX_UPLREQ; count++)
+    {
+	    helpPtr = message->text;
+	    for (count2 = 0; count2 < echoCount; count2++)
+      {
+        if (echoAreaList[count2].options._reserved &&
+		      (echoAreaList[count2].msgCount == count))
+	      {
+	        helpPtr += sprintf (helpPtr, "-%s\r", echoAreaList[count2].areaName);
+	      }
+	    }
+
+	    if (helpPtr != message->text)
+	    {
+	      strcpy (message->fromUserName, config.sysopName);
+	      strcpy (message->toUserName,   config.uplinkReq[count].program);
+	      strcpy (message->subject,      config.uplinkReq[count].password);
+	      message->srcNode   = config.akaList[config.uplinkReq[count].originAka].nodeNum;
+	      message->destNode  = config.uplinkReq[count].node;
+        message->attribute = PRIVATE|KILLSENT;
+
+	      strcpy(helpPtr, TearlineStr());
+	      writeMsgLocal(message, NETMSG, 1);
+  	  }
+    }
+
+    strcpy(message->fromUserName, "FMail");
+    strcpy(message->toUserName, config.sysopName);
+    strcpy(message->subject, "Areas disconnected from uplink");
+    message->destNode  = message->srcNode
+                   		 = config.akaList[0].nodeNum;
+    message->attribute = PRIVATE;
+
+    helpPtr = message->text;
+    for (count = 0; count < echoCount; count++)
+    {
+      if (echoAreaList[count].options._reserved)
+	    {
+        sprintf(tempStr, "Area %s has been disconnected from %s",
+			  echoAreaList[count].areaName,
+			  nodeStr(&config.uplinkReq[echoAreaList[count].msgCount].node));
+	      logEntry (tempStr, LOG_ALWAYS, 0);
+	      helpPtr += sprintf (helpPtr, "%s\r", tempStr);
+
+        echoAreaList[count].options._reserved = 0;
+	      echoAreaList[count].msgCount = 0;
+	    }
+    }
+    strcpy(helpPtr, TearlineStr());
+    writeMsgLocal(message, NETMSG, 1);
+
+    newLine();
+  }
 }
 
-
-
-void deInitAreaInfo (void)
+void deInitAreaInfo(void)
 {
    u16      count, count2;
    struct orgLineListType *helpPtr;

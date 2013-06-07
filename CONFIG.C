@@ -61,7 +61,6 @@ extern unsigned _cdecl _psp;
 #include "mtask.h"
 #include "crc.h"
 #include "msgpkt.h" /* for openP */
-#include "keyfile.h"
 
 extern   fhandle fmailLockHandle;
 
@@ -75,7 +74,6 @@ extern	time_t	startTime;
 
 configType config;
 s16        zero = 0;
-s16        registered = 0;
 
 extern s16 diskError;
 
@@ -88,10 +86,7 @@ extern psType *pathArray;
 
 fhandle fmLockHandle;
 
-
-
 s16 breakPressed = 0;
-
 
 #ifdef __STDIO__
 #define keyWaiting (kbhit()?getch():0)
@@ -99,7 +94,6 @@ s16 breakPressed = 0;
 #define keyWaiting bioskey(1)
 #define keyRead    bioskey(0)
 #endif
-
 
 #if !defined __STDIO__ && !defined __32BIT__
 
@@ -170,8 +164,6 @@ void handles20(void)
    }
 }
 
-
-
 void handlesReset40 (void)
 {
    if (config.extraHandles)
@@ -184,56 +176,7 @@ void handlesReset40 (void)
    }
 }
 
-#endif /* __32BIT__ */
-
-
-#define N 65339L
-
-#ifdef BETA0
-
-static u16 checkKeyBeta(void)
-{
-   u16      keyResult;
-   u32      key;
-   u32      tempKey;
-   u16      count;
-
-//#pragma message ("Controleer bij aanpassen key systeem!")
-   if ( config.key && !((keyResult = (u16)(config.key & 0xffffL)) & 0x4000) )
-   {
-      diskError = DERR_HACKER;
-   }
-
-   key = tempKey = (config.key >> 16);
-
-   for (count = 1; count < 17; count++)
-	{
-      key *= tempKey;
-      key %= N;
-   }
-
-   tempKey = crc32old (config.sysopName);
-
-   tempKey ^= crc32old (nodeStr(&config.akaList[0].nodeNum));
-
-   tempKey ^= (tempKey >> 16);
-   tempKey &= 0x0000ffff;
-
-   tempKey ^= keyResult;
-   tempKey %= N;
-
-   if ((!(keyResult & 0x4000)) || (key != tempKey))
-   {
-#ifdef BETA0
-      setAttr (LIGHTRED, BLACK, MONO_HIGH);
-      logEntry ("Beta registration key is missing or invalid", LOG_ALWAYS, 100);
-#endif
-      return 0;
-   }
-   return ++registered;
-}
-
-#endif
+#endif // __32BIT__
 
 
 s16 getNetmailBoard (nodeNumType *akaNode)
@@ -252,8 +195,6 @@ s16 getNetmailBoard (nodeNumType *akaNode)
    }
    return config.netmailBoard[count];
 }
-
-
 
 s16 isNetmailBoard (u16 board)
 {
@@ -335,21 +276,20 @@ void initFMail (char *s, s32 switches)
 				      S_IREAD|S_IWRITE)) == -1) &&
 		  (!config.activTimeOut || time2-time1 < config.activTimeOut) && ((ch = (keyWaiting & 0xff)) != 27))
       {
-	 if (ch == 0 || ch == -1)
-	 {  time2a = time2+1;
-	    while ( time(&time2) <= time2a )
-	       returnTimeSlice(1);
-	 }
+         if (ch == 0 || ch == -1)
+         {  time2a = time2+1;
+            while ( time(&time2) <= time2a )
+               returnTimeSlice(1);
+         }
 #ifndef __STDIO__
-	 else
-	    keyRead;
+         else
+            keyRead;
 #endif
       }
 #ifndef __STDIO__
       if (ch != 0 && ch != -1)
-	 keyRead;
+        keyRead;
 #endif
-
       if (fmailLockHandle == -1)
       {
          printString ("\nAnother copy of FMail, FTools or FSetup did not finish in time...\n\nExiting...\n");
@@ -437,81 +377,27 @@ void initFMail (char *s, s32 switches)
 #endif
 
    newLine();
-
-#ifndef BETA0
-   registered = keyFileInit();
-#else
-   registered = checkKeyBeta();
-   !!!
-#endif
-
-   if ( registered )
-   {  setAttr (LIGHTGREEN, BLACK, MONO_HIGH);
-      printString ("Registered to ");
-      printString (config.sysopName);
-      setAttr (LIGHTGRAY, BLACK, MONO_NORM);
-   }
-   else
-   {  if ( config.key )
-      {  setAttr (LIGHTRED, BLACK, MONO_HIGH);
-         logEntry ("Registration keys are invalid", LOG_ALWAYS, 100);
-      }
-      setAttr (LIGHTGREEN, BLACK, MONO_HIGH);
-      printString ("Unregistered version");
-      setAttr (LIGHTGRAY, BLACK, MONO_NORM);
-   }
-   newLine ();
-   newLine ();
+   newLine();  // todo : misschien remove?
 }
 
 
 void deinitFMail(void)
 {
-   fhandle     configHandle;
-   tempStrType tempStr;
-   u16         counter;
+  fhandle     configHandle;
+  tempStrType tempStr;
+  u16         counter;
 
-   strcpy (tempStr, configPath);
-   strcat (tempStr, "FMail.CFG");
+  strcpy(stpcpy(tempStr, configPath), "FMail.CFG");
 
-
-   if ( !(startTime & 0x001F) &&
-        ((key.relKey1 == 2103461921L && key.relKey2 == 479359711L)  ||
-         (key.relKey1 == 2146266905L && key.relKey2 == 579690730L)  ||
-         (key.relKey1 == 1909407035L && key.relKey2 == 740316073L)  ||
-         (key.relKey1 == 659038778L  && key.relKey2 == 412971433L)  ||
-         (key.relKey1 == 1039097288L && key.relKey2 == 1077836572L) ||
-         (key.relKey1 == 1381959498L && key.relKey2 == 298979948L)  ||
-         (key.relKey1 == 1056834494L && key.relKey2 == 972832725L)  ||
-         (key.relKey1 == 1248593969L && key.relKey2 == 727542166L)  ||
-         (key.relKey1 == 1022716332L && key.relKey2 == 2120709631L) ||
-         (key.relKey1 == 208164969L  && key.relKey2 == 1209153882L) ||
-         (key.relKey1 == 69886344L   && key.relKey2 == 1407278542L) ||
-         (key.relKey1 == 1909407035L && key.relKey2 == 740316073L)) )
-   {
-      if ( (configHandle = openP(tempStr, O_WRONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1 ||
-           lseek(configHandle, 0, SEEK_SET) == -1L )
-      {
-         close(configHandle);
-         logEntry("Can't write FMail.CFG", LOG_ALWAYS, 0);
-         showCursor();
-      }
-      for ( counter = 0; counter < 400; counter++ )
-            memset((u8 *)&config + counter * 32, 'q', 3);
-      write(configHandle, &config, sizeof(configType));
-      close(configHandle);
-   }
-   else
-   {  if ( (configHandle = openP(tempStr, O_WRONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1 ||
-           lseek(configHandle, offsetof(configType, uplinkReq), SEEK_SET) == -1L ||
-           write(configHandle, &config.uplinkReq, sizeof(uplinkReqType)*MAX_UPLREQ) < sizeof(uplinkReqType)*MAX_UPLREQ ||
-           lseek(configHandle, offsetof(configType, lastUniqueID), SEEK_SET) == -1L ||
-           write(configHandle, &config.lastUniqueID, sizeof(config.lastUniqueID)) < sizeof(config.lastUniqueID) ||
-           close(configHandle) == -1 )
-      {
-         close(configHandle);
-         logEntry("Can't write FMail.CFG", LOG_ALWAYS, 0);
-         showCursor();
-      }
-   }
+  if ( (configHandle = openP(tempStr, O_WRONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1 ||
+       lseek(configHandle, offsetof(configType, uplinkReq), SEEK_SET) == -1L ||
+       write(configHandle, &config.uplinkReq, sizeof(uplinkReqType)*MAX_UPLREQ) < sizeof(uplinkReqType)*MAX_UPLREQ ||
+       lseek(configHandle, offsetof(configType, lastUniqueID), SEEK_SET) == -1L ||
+       write(configHandle, &config.lastUniqueID, sizeof(config.lastUniqueID)) < sizeof(config.lastUniqueID) ||
+       close(configHandle) == -1 )
+  {
+    close(configHandle);
+    logEntry("Can't write FMail.CFG", LOG_ALWAYS, 0);
+    showCursor();
+  }
 }

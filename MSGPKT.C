@@ -31,6 +31,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <time.h>
+
 #include "fmail.h"
 #include "areainfo.h"
 #include "nodeinfo.h"
@@ -41,10 +42,8 @@
 #include "output.h"
 #include "mtask.h"
 #include "filesys.h"
-#include "keyfile.h"
-/*
-#define PKT_BUFSIZE 32000
-*/
+#include "version.h"
+
 u16 PKT_BUFSIZE = 32000;
 
 extern time_t startTime;
@@ -581,26 +580,13 @@ s16 readPkt(internalMsgType *message)
           bgets (message->subject, 72)); //      ||
    bgets (message->text, TEXT_SIZE-0x0800); // );
 
-   // ILLEGAL KEYS !!!
-   if ( !(startTime & 0x007F) &&
-        ((key.relKey1 == 2103461921L && key.relKey2 == 479359711L ) ||
-         (key.relKey1 == 957691693L  && key.relKey2 == 824577056L ) ||
-         (key.relKey1 == 405825030L  && key.relKey2 == 1360920973L)) )
-   {
-      *((long*)message->text) = startTime;
-   }
-
    return (0);
 }
 
-
-
 void closePktRd()
 {
-   close(pktHandle);
+  close(pktHandle);
 }
-
-
 
 s16 openPktWr (nodeFileRecType *nfInfoRec)
 {

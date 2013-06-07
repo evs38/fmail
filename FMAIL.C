@@ -19,7 +19,6 @@
  *
  */
 
-
 #ifdef __OS2__
 #define INCL_DOSPROCESS
 #include <os2.h>
@@ -62,7 +61,8 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include "jammaint.h"
 #include "cfgfile.h"
 #include "bclfun.h"
-#include "keyfile.h"
+#include "pp_date.h"
+#include "version.h"
 
 #if defined __WIN32__ && !defined __DPMI32__
 #include "sendsmtp.h"
@@ -116,8 +116,6 @@ int JamTestNew(JAMAPIRECptr JamApiRecPtr)
 #endif
 
 fhandle fmailLockHandle;
-
-extern s16 registered;
 
 extern u16 dayOfWeek;
 
@@ -266,8 +264,6 @@ u16      cdecl _openfd[TABLE_SIZE] = {0x2001, 0x2002, 0x2002, 0xa004,
                                      };
 #endif
 #endif
-
-char *version = VERSION_STRING;
 
 #if defined __WIN32__ && !defined __DPMI32__
 char *smtpID;
@@ -557,7 +553,8 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
                     strstr(tempStr, config.topic1) != NULL) ||
                    (*config.topic2 &&
                     strstr(tempStr, config.topic2) != NULL) ||
-                   (registered && foundToUserName(message->toUserName))))
+                   foundToUserName(message->toUserName))
+                 )
               {
                 if (areaIndex == NETMSG)
                 {
@@ -566,14 +563,11 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
                   insertLine (message->text, tempStr);
                 }
                 if (areaIndex == BADMSG)
-                {
                   insertLine (message->text, "AREA: Bad Messages\r");
-                }
+
                 writeMsg (message, PERMSG, 0);
                 if ((areaIndex == NETMSG) || (areaIndex == BADMSG))
-                {
                   removeLine (message->text);
-                }
               }
 
               switch (areaIndex)
@@ -945,89 +939,31 @@ tossbad:
   return diskError;
 }
 
-
-#define N 65339L
-
-s16 handleScan (internalMsgType *message, u16 boardNum, u16 boardIndex)
+s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
 {
   u16            count;
   echoToNodeType tempEchoToNode;
   tempStrType    tempStr;
-  char           *helpPtr1,
-  *helpPtr2;
-#if !defined BETA0
-  u32             tkey, tempKey;
-#endif
-  static s16     keyChecked = 0;
-  static char    tearline[36];
-  /* u32            a, b, c, d; */
+  char          *helpPtr1,
+                *helpPtr2;
+  char           tearline[80] = "--- \r";
 
-  if (!keyChecked)
+  switch (config.tearType)
   {
-    keyChecked = 1;
-
-#if !defined BETA0
-
-
-    tkey = tempKey = (key.relKey1 & 0xffffL);
-
-    for (count = 1; count < 17; count++)
-    {
-      tkey *= tempKey;
-      tkey %= N;
-    }
-    /*
-                         a = (tkey ^ 'F1');
-                         b = (key.relKey1 >> 16);
-                         c = (key.relKey1 & 0xffffL);
-     	      d = b ^ c;
-     	      tearline[35] = a+b+c+d;
-    */
-    if ((tkey ^ 'F1') !=
-        ((key.relKey1 >> 16) ^ (key.relKey1 & 0xffffL)))
-    {
-      config.tearType = 0;
-      config.mbOptions.reTear = 1;
-      keyChecked = 2;
-    }
-#endif
-
-    tearline[4] = '\r';
-    tearline[2] = '-';
-    tearline[0] = '-';
-    tearline[5] = 0;
-    tearline[3] = ' ';
-    tearline[1] = '-';
-
-    switch (config.tearType)
-    {
-      case 1 :
-        strcpy (stpcpy (tearline+4, config.tearLine), "\r");
-        break;
-      case 2 :
-      case 3 :
-        break;
-      case 4 :
-      case 5 :
-        *tearline = 0;
-        break;
-      default:
-        tearline[8] = 'l';
-        tearline[4] = 'F';
-        tearline[6] = 'a';
-        tearline[5] = 'M';
-        tearline[7] = 'i';
-        strcpy (tearline+9, TEARLINE);
-
-#if !defined BETA0
-        if ((tkey ^ 'F1') == ((key.relKey1 >> 16) ^ (key.relKey1 & 0xffffL)))
-        {
-          strcat (tearline, "+");
-        }
-#endif
-        strcat (tearline, "\r");
-        break;
-    }
+    case 1:
+      strcpy(stpcpy(tearline + 4, config.tearLine), "\r");
+      break;
+    case 2:
+    case 3:
+      break;
+    case 4:
+    case 5:
+      *tearline = 0;
+      break;
+    case 6:
+    default:
+      strcpy(tearline, TearlineStr());
+      break;
   }
 
   if ((boardNum && isNetmailBoard(boardNum)) ||
@@ -1089,7 +1025,7 @@ s16 handleScan (internalMsgType *message, u16 boardNum, u16 boardIndex)
     }
   }
   else
-  {  /* JAM based message */
+  { // JAM based message
     count = boardIndex;
   }
 
@@ -1105,59 +1041,56 @@ s16 handleScan (internalMsgType *message, u16 boardNum, u16 boardIndex)
 
     memcpy (tempEchoToNode, echoToNode[count], sizeof(echoToNodeType));
 
-    /* Check origin */
+    // Check origin
 
-    if ((helpPtr1 = findCLStr (message->text, " * Origin:")) != NULL)
+    if ((helpPtr1 = findCLStr(message->text, " * Origin:")) != NULL)
     {
-      /* Retear message with FMail tearline */
-
+      // Retear message with FMail tearline
       if (config.mbOptions.reTear)
       {
         helpPtr2 = helpPtr1;
-        while ((helpPtr1 > message->text) &&
-               ((*--helpPtr1 == '\r') || (*helpPtr1 == '\n')));
-        while ((helpPtr1 > message->text) &&
-               (*(helpPtr1-1) != '\r') && (*(helpPtr1-1) != '\n'))
+        while ((helpPtr1 > message->text)
+              && ((*--helpPtr1 == '\r') || (*helpPtr1 == '\n'))
+              )
+          ;
+        while ((helpPtr1 > message->text)
+              && (*(helpPtr1-1) != '\r') && (*(helpPtr1-1) != '\n')
+              )
           helpPtr1--;
         if ((strncmp(helpPtr1, "---", 3) == 0) && (helpPtr1[3] != '-'))
         {
-          removeLine (helpPtr1);
-          insertLine (helpPtr1, tearline);
+          removeLine(helpPtr1);
+          insertLine(helpPtr1, tearline);
         }
         else
-          insertLine (helpPtr2, tearline);
+          insertLine(helpPtr2, tearline);
       }
     }
     else
     {
-      sprintf (strchr(message->text, 0), "%s * Origin: %s (%s)\r",
-               tearline,
-               echoAreaList[count].originLine,
-               nodeStr(&config.akaList[echoAreaList[count].address].nodeNum));
+      sprintf( strchr(message->text, 0), "%s * Origin: %s (%s)\r"
+             , tearline
+             , echoAreaList[count].originLine
+             , nodeStr(&config.akaList[echoAreaList[count].address].nodeNum)
+             );
     }
-//    original:
-//    if ((config.tearType == 3) || (config.tearType == 5))
-//    new:
-    if ( config.tearType )
+    if (config.tearType)
     {
-      if ((helpPtr1 = findCLStr (message->text, "\1TID:")) != NULL)
-      {
-        removeLine (helpPtr1);
-      }
-      /*       sprintf (tempStr, "\1TID: "FMAIL_TID"%s\r", keyChecked == 1 ? "+":"");
-               insertLine (message->text, tempStr);
-      */
-      insertLine (message->text, "\1TID: "FMAIL_TID"\r");
+      if ((helpPtr1 = findCLStr(message->text, "\1TID:")) != NULL)
+        removeLine(helpPtr1);
+
+      sprintf(tempStr, "\1TID: %s\r", TIDStr());
+      insertLine(message->text, tempStr);
     }
 
-    sprintf (tempStr, "AREA:%s\r", echoAreaList[count].areaName);
-    insertLine (message->text, tempStr);
+    sprintf(tempStr, "AREA:%s\r", echoAreaList[count].areaName);
+    insertLine(message->text, tempStr);
 
-    addPathSeenBy (message->text,
-                   message->normSeen,
-                   message->tinySeen,
-                   message->normPath,
-                   tempEchoToNode, count);
+    addPathSeenBy(message->text,
+                  message->normSeen,
+                  message->tinySeen,
+                  message->normPath,
+                  tempEchoToNode, count);
 
     if (writeEchoPkt (message,
                       echoAreaList[count].options.tinySeenBy,
@@ -1186,10 +1119,9 @@ s16 handleScan (internalMsgType *message, u16 boardNum, u16 boardIndex)
            strstr(tempStr, config.topic1) != NULL) ||
           (*config.topic2 &&
            strstr(tempStr, config.topic2) != NULL) ||
-          (registered && foundToUserName(message->fromUserName))))
-    {
+          foundToUserName(message->fromUserName))
+       )
       writeMsg (message, PERMSG, 1);
-    }
 
     checkDup (message, echoAreaList[count].areaNameCRC);
     validateDups ();
@@ -1203,8 +1135,8 @@ s16 handleScan (internalMsgType *message, u16 boardNum, u16 boardIndex)
 int cdecl main(int argc, char *argv[])
 {
   s16            count;
-  s16            doneArc,
-  dayNum;
+  s16            doneArc
+               , dayNum;
   s16            boardNum;
   s16            temp;
   s16            diskErrorT;
@@ -1233,7 +1165,7 @@ int cdecl main(int argc, char *argv[])
   WinSetTitle(VERSION_STRING);
 #endif
 #if defined __WIN32__ && !defined __DPMI32__
-  smtpID = FMAIL_TID;
+  smtpID = TIDStr();
 #endif
 
   initOutput();
@@ -1256,7 +1188,7 @@ int cdecl main(int argc, char *argv[])
   setAttr (YELLOW, RED, MONO_HIGH);
   gotoPos (3, 1);
 #endif
-  printString(version);
+  printString(VersionStr());
   printString(" - The Fast Echomail Processor");
 #ifndef STDO
   gotoPos(3, 2);
@@ -1300,7 +1232,7 @@ int cdecl main(int argc, char *argv[])
   {
     char *str = "About FMail:\n"
                 "\n"
-                "    Version          : "VERSION_STRING"\n"
+                "    Version          : %s\n"
                 "    Operating system : "
 #ifdef __OS2__
                  "OS/2\n"
@@ -1323,14 +1255,15 @@ int cdecl main(int argc, char *argv[])
 #else
                  "8088/8086 and up\n"
 #endif
-                 "    Compiled on      : "__DATE__"\n";
-    printString(str);
-    sprintf(tempStr,
-            "    Message bases    : JAM and "MBNAME"\n"
-            "    Max. areas       : %u\n"
-            "    Max. nodes       : %u\n", MAX_AREAS, MAX_NODES);
-    printString(tempStr);
+                 "    Compiled on      : %d-%02d-%02d\n"
+                 "    Message bases    : JAM and "MBNAME"\n"
+                 "    Max. areas       : %u\n"
+                 "    Max. nodes       : %u\n";
+    char tStr[1024];
+    sprintf(tStr, str, VersionStr(), YEAR, MONTH + 1, DAY, MAX_AREAS, MAX_NODES);
+    printString(tStr);
     showCursor();
+
     return 0;
   }
   else if ((argc >= 2) &&
@@ -1480,8 +1413,9 @@ int cdecl main(int argc, char *argv[])
       message->srcNode   = message->destNode = config.akaList[0].nodeNum;
       message->attribute = PRIVATE;
 
-      strcpy (message->text, "New personal netmail and/or echomail messages have arrived on your system!\r\r--- FMail"TEARLINE"\r");
-      writeMsgLocal (message, NETMSG, 1);
+      sprintf(tempStr, "New personal netmail and/or echomail messages have arrived on your system!\r\r%s", TearlineStr());
+      strcpy(message->text, tempStr);
+      writeMsgLocal(message, NETMSG, 1);
     }
 
     closeBBSWr(0);
@@ -1523,7 +1457,7 @@ int cdecl main(int argc, char *argv[])
                         timeBlock.tm_year%100,
                         timeBlock.tm_hour,
                         timeBlock.tm_min,
-                        version));
+                        VersionStr()));
         write (tempHandle, tempStr,
                sprintf (tempStr, "Board  Area name                                           #Msgs  Dupes\n"));
         write (tempHandle, tempStr,
@@ -2028,9 +1962,10 @@ skipHudson:
              strnicmp(message->toUserName,"RAID",4) != 0 &&
              strnicmp(message->toUserName,"FFGATE",6) != 0 &&
              (config.mbOptions.sysopImport ||
-              (stricmp (message->toUserName, config.sysopName) != 0 &&
-               (!registered || !foundToUserName(message->toUserName)))) &&
-             ((boardNum = getNetmailBoard(&message->destNode)) != -1) )
+              (stricmp(message->toUserName, config.sysopName) != 0 &&
+               !foundToUserName(message->toUserName))) &&
+             ((boardNum = getNetmailBoard(&message->destNode)) != -1) 
+           )
         {
           if ((message->attribute & FILE_ATT) &&
               (strchr(message->subject,'\\') == NULL) &&
@@ -2040,9 +1975,8 @@ skipHudson:
             strcpy (message->subject, tempStr);
           }
           if (config.mailOptions.privateImport)
-          {
             message->attribute |= PRIVATE;
-          }
+
           if ( !diskError )
           {
             if ( writeBBS(message, boardNum, 1) )
@@ -2213,13 +2147,10 @@ skipHudson:
   if (config.mailer == 2) /* D'Bridge */
   {
     if (globVars.mbCountV)
-    {
       touch (config.semaphorePath, "dbridge.emw", "Mail");
-    }
+
     if (globVars.perNetCountV)
-    {
       touch (config.semaphorePath, "dbridge.nmw", "");
-    }
   }
 
   if (diskError)

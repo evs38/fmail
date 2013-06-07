@@ -28,15 +28,16 @@
 #include <time.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+
 #include "fmail.h"
 #include "areainfo.h"
 #include "dups.h"
 #include "output.h"
 #include "log.h"
 #include "msgpkt.h"
+#include "version.h"
 
 
-extern char       *version;
 extern configType config;
 extern char       *dayName[7];
 extern char       *months;
@@ -120,9 +121,7 @@ static void writeLogLine (fhandle logHandle, char *s)
    write (logHandle, tempStr, strlen(tempStr));
 }
 
-
-
-void initLog  (char *s, s32 switches)
+void initLog(char *s, s32 switches)
 {
    fhandle     logHandle;
    tempStrType tempStr,
@@ -136,11 +135,10 @@ void initLog  (char *s, s32 switches)
    dayOfWeek = timeBlock.tm_wday;
 
    if (!*config.logName)
-   {  config.logInfo = 0;
-   }
+     config.logInfo = 0;
+
    if (!config.logInfo)
-   {  return;
-   }
+     return;
 
 #ifndef __WIN32__
    country(0, &countryInfo);
@@ -151,13 +149,13 @@ void initLog  (char *s, s32 switches)
    if ((logHandle = openP(config.logName, O_RDWR|O_CREAT|O_APPEND|O_TEXT|O_DENYNONE,
                  S_IREAD|S_IWRITE)) == -1)
    {
-      printString ("WARNING: Can't open log file\n\n");
-      config.logInfo = 0;
+     printString ("WARNING: Can't open log file\n\n");
+     config.logInfo = 0;
    }
    else
    {
-      sprintf (tempStr2, "%s - %s", version, s);
-      helpPtr = strchr (tempStr2, 0);
+      sprintf(tempStr2, "%s - %s", VersionStr(), s);
+      helpPtr = strchr(tempStr2, 0);
 
       for (count = 0; count < 26; count++)
       {
@@ -261,7 +259,7 @@ void logEntry (char *s, u16 entryType, u16 errorLevel)
 
 
 
-void mgrLogEntry (char *s)
+void mgrLogEntry(char *s)
 {
    fhandle     logHandle;
    tempStrType tempStr;
@@ -281,7 +279,7 @@ void mgrLogEntry (char *s)
                            timeBlock.tm_mday,
                            months+(timeBlock.tm_mon*3),
                            timeBlock.tm_year%100,
-                           version);
+                           VersionStr());
          write (logHandle, tempStr, strlen(tempStr));
       }
       else

@@ -1,3 +1,19 @@
+2013-06-07  1.66.0.nn-beta
+  * ftools.c:
+    -aka option can now be used while posting to an echomail area.
+  * ftscprod.c:
+    Added code for jNode (2012-09-21)
+
+2011-11-20  1.64.0.27-beta
+  * Replaced preprocessor macro's for version and TID and PID strings with functions.
+  * Added extra option for the tearline: "Default + TID"
+  
+2011-11-18  1.64.0.24-beta
+  * Completely removed key checking code. FMail (with or without a key file) should behave as a registered version.
+  * FSetup doesn't show registered version options with: "{+}"
+  * Changed the version strings a bit
+  * Cosmetic code changes
+
 2011-11-18  1.64.0.22-beta
   * Added conio functions to re-enable some direct screen functionality
   * Removed/Switched-of most "#define BETA" functionality

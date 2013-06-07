@@ -476,7 +476,7 @@ u16 editNM(s16 editType, u16 setdef)
                       "Groups of message areas available to a node");
    addItem (nodeMenu, DATE|DISPLAY, "Last BCL", 47, &tempInfoN.lastSentBCL, 0, 0,
                       "Last time a BCL file was sent to this node");
-// addItem (nodeMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
+
    addItem (nodeMenu, NUM_INT, "Write level", 0, &tempInfoN.writeLevel, 5, 32767,
                       "Level should be >= than Write Level of an area in order to be allowed to write");
    addItem (nodeMenu, ENUM_INT, "Capability   ", 22, &pktTypeToggle, 0, 2,
@@ -493,8 +493,8 @@ u16 editNM(s16 editType, u16 setdef)
                       "Not Active means that a node will only receive echomail directed to SysOp Name");
    addItem (nodeMenu, BOOL_INT, "Forw.requests", 22, &tempInfoN.options, BIT12, 0,
                       "Automatically send requests by this node for new areas to your uplinks");
-   addItem (nodeMenu, BOOL_INT, "Rem.maint (+)   ", 45, &tempInfoN.options, BIT13, 0,
-                      "If this node is allowed to perform remote maintenance (registered users only)");
+   addItem (nodeMenu, BOOL_INT, "Rem.maint       ", 45, &tempInfoN.options, BIT13, 0,
+                      "If this node is allowed to perform remote maintenance");
    addItem (nodeMenu, BOOL_INT, "Notify", 0, &tempInfoN.options, BIT15, 0,
                       "Send list of active areas to this node with the FTools Notify command");
    addItem (nodeMenu, BOOL_INT, "Allow rescan ", 22, &tempInfoN.options, BIT14, 0,
