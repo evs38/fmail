@@ -1,5 +1,6 @@
 /*
- *  Copyright (C) 2007 Folkert J. Wijnstra
+ *  Copyright (C) 2007         Folkert J. Wijnstra
+ *  Copyright (C) 2007 - 2013  Wilfred van Velzen
  *
  *
  *  This file is part of FMail.
@@ -1091,9 +1092,7 @@ void make4d (internalMsgType *message)
    }
    point4d (message);
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 getLocalAkaNum (nodeNumType *node)
 {
    u16 count = 0;
@@ -1110,9 +1109,15 @@ s16 getLocalAkaNum (nodeNumType *node)
    }
    return (-1);
 }
+//---------------------------------------------------------------------------
+int comparSeenBy(const void* p1, const void* p2)
+{
+  if (((psRecType*)p1)->net == ((psRecType*)p2)->net)
+    return ((psRecType*)p1)->node - ((psRecType*)p2)->node;
 
-
-
+  return ((psRecType*)p1)->net - ((psRecType*)p2)->net;
+}
+//---------------------------------------------------------------------------
 void addPathSeenBy (char *msgText, char *seenBy, char *tinySeen, char *path,
 		    echoToNodeType echoToNode, u16 areaIndex)
 {
@@ -1173,6 +1178,10 @@ void addPathSeenBy (char *msgText, char *seenBy, char *tinySeen, char *path,
          }
       }
    }
+
+  // Sort seen-by list
+
+  qsort(seenByArray, seenByCount, sizeof(psRecType), comparSeenBy);
 
    /* Add other nodes to SEENBY */
 
@@ -1372,7 +1381,7 @@ uchar *makeFullPath(uchar *deflt, uchar *override, uchar *name)
 {
    static tempStrType tempStr;
    uchar  *helpPtr;
-   
+
    helpPtr = stpcpy(tempStr, (override && *override) ? override : deflt);
    if ( *(helpPtr-1) != '\\' )
       *helpPtr++ = '\\';
