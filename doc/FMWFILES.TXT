@@ -1,0 +1,44 @@
+The FMail/Win32 echomail utility package consists of the
+following files:
+
+README.1ST      Important information about this release!
+
+FSETUPX.EXE     Used to create and update the system data files
+                and to export them to text files and
+                configuration files used by other programs.
+
+                IMPORTANT: Start FSetupX with the parameter /WIN
+                to enable a few specific Windows options in FSetup!
+
+FMAILW32.EXE    The main program. It is used for importing and
+                exporting messages, packing of netmail messages
+                and the AreaMgr function.
+
+FTOOLSW3.EXE    Message base maintenance utility.
+
+FMAIL.TXT       The FMAIL 1.60 manual.
+
+NEW_IN.160      New features in FMail 1.60.
+
+EXPFIX.ZIP      A fix for problems with export addresses in the Area Manager
+                when installing over an older version of FMail.
+
+FMWFILES.TXT    This file.
+
+AREAMGR.HLP     An example help file that can be sent automatically
+                to downlinks by FMail upon their request.
+
+FMSTRUCT.ZIP    C structures  used by FMail. It contains the
+                following files:
+                FMSTRUCT.H - FMail structures header file
+                CFGFILE.H  - Structures used by CFGFILE.C
+                CFGFILE.C  - C routines to read and write config files.
+                DELPHI.ZIP - Delphi 5 structs
+
+REGFORMS.ZIP    FMail registration forms.
+
+DPMI.INF        Additional information about DPMI.
+
+RTM.EXE         Run-time manager for the 16 bit DPMI executables (FSETUPX).
+
+FILE_ID.DIZ     Description of the FMail package.
