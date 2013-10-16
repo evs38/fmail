@@ -1,19 +1,4 @@
 
-NEW KEY SYSTEM
-==============
-In January 1999, a new key system has been introduced. FMail 1.60 only
-accepts the new key file. IMPORTANT: if you register FMail from now on,
-you should receive one key file and no longer two numeric keys. You should
-put the key file in the directory where the FMail config files are
-located.
-
-There is a free automatic update procedure for original keys. Please see
-the FMail pages on the Internet for more information about the key conversion:
-http://fmail.nl.eu.org. If you don't have access to the Internet, please
-send me both original keys and the SysOp name by netmail. Allow about a week
-for processing. Then poll my system again for the key file.
-
-
 IF YOU ARE USING A VERSION OF FMAIL EARLIER THAN 1.46
 =====================================================
 Please make a backup of both data files AND program files first before

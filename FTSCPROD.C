@@ -1,5 +1,6 @@
 /*
- *  Copyright (C) 2007 Folkert J. Wijnstra
+ *  Copyright (C) 2007        Folkert J. Wijnstra
+ *  Copyright (C) 2007 - 2013 Wilfred van Velzen
  *
  *
  *  This file is part of FMail.
@@ -23,8 +24,9 @@
 #include "fmstruct.h"
 #include "ftscprod.h"
 
-// updated until ftscprod.011
-
+//---------------------------------------------------------------------------
+// Updated upto ftscprod.013
+//---------------------------------------------------------------------------
 struct ftscps ftscprod[] =
 {
    { 0x0000, "Fido" },
@@ -328,3 +330,4 @@ struct ftscps ftscprod[] =
    { 0x19FF, "jNode" },
    { 0xFFFF, ""}
 };
+//---------------------------------------------------------------------------

@@ -21,8 +21,7 @@
     <LIBFILES value=""/>
     <LIBRARIES value="rtl.lib"/>
     <SPARELIBS value="rtl.lib"/>
-    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi 
-      inetdbxpress.bpi"/>
+    <PACKAGES value=""/>
     <PATHCPP value=".;"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
@@ -30,7 +29,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA"/>
+    <USERDEFINES value="FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FToolsW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -87,7 +86,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=66
 Release=0
-Build=12
+Build=31
 Debug=0
 PreRelease=1
 Special=0
@@ -99,13 +98,38 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FTools Windows 32 bit version
-FileVersion=1.66.0.12
+FileVersion=1.66.0.31
 InternalName=FTools
 LegalCopyright=Copyright (c) 1991 - 2013 FMail developers
 LegalTrademarks=
 OriginalFilename=FToolsW32.exe
 ProductName=FMail
 ProductVersion=1.66
+
+[Excluded Packages]
+C:\Program Files\Borland\CBuilder6\Bin\dclstd60.bpl=Borland Standard Components
+C:\Program Files\Borland\CBuilder6\Bin\dclnet60.bpl=Borland Internet Components
+c:\program files\borland\cbuilder6\Bin\dcl31w60.bpl=Delphi 1.0 Compatibility Components
+c:\program files\borland\cbuilder6\Bin\applet60.bpl=Borland Control Panel Applet Package
+C:\Program Files\Borland\CBuilder6\Bin\dclclxstd60.bpl=Borland CLX Standard Components
+C:\Program Files\Borland\CBuilder6\Bin\dbx60.bpl=Borland SQL Explorer UI Package
+C:\Program Files\Borland\CBuilder6\Bin\dcldb60.bpl=Borland Database Components
+c:\program files\borland\cbuilder6\Bin\dclbde60.bpl=Borland BDE DB Components
+c:\program files\borland\cbuilder6\Bin\dclcds60.bpl=Borland Base Cached ClientDataset Component
+C:\Program Files\Borland\CBuilder6\Bin\dclmid60.bpl=Borland MyBase DataAccess Components
+c:\program files\borland\cbuilder6\Bin\dclbdecds60.bpl=Borland Local BDE ClientDataset Components
+c:\program files\borland\cbuilder6\Bin\dcltee60.bpl=TeeChart Components
+c:\program files\borland\cbuilder6\Bin\dcltqr60.bpl=TeeChart for QuickReport Components
+c:\program files\borland\cbuilder6\Bin\dclib60.bpl=InterBase Data Access Components
+c:\program files\borland\cbuilder6\Bin\dclclxdb60.bpl=Borland CLX Database Components
+c:\program files\borland\cbuilder6\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
+c:\program files\borland\cbuilder6\Bin\bcbie60.bpl=Borland C++Builder Internet Explorer 5 Components Package
+c:\program files\borland\cbuilder6\Bin\dclsoap60.bpl=Borland SOAP Components
+c:\program files\borland\cbuilder6\Bin\dcldbx60.bpl=Borland dbExpress Components
+c:\program files\borland\cbuilder6\Bin\dcldbxcds60.bpl=Borland Local DBX ClientDataset Components
+c:\program files\borland\cbuilder6\Bin\bcb2kaxserver60.bpl=Borland C++Builder COM Server Components Sample Package
+c:\program files\borland\cbuilder6\Bin\dclado60.bpl=Borland ADO DB Components
+c:\program files\borland\cbuilder6\Bin\dclact60.bpl=Borland ActionBar Components
 
 [HistoryLists\hlIncludePath]
 Count=1
@@ -120,15 +144,16 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=8
-Item0=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
-Item1=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
-Item2=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item3=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item4=_DEBUG;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item5=_DEBUG;P386;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item6=_DEBUG;P386;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUM__
-Item7=_DEBUG
+Count=9
+Item0=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item1=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
+Item2=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
+Item3=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item4=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item5=_DEBUG;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item6=_DEBUG;P386;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item7=_DEBUG;P386;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUM__
+Item8=_DEBUG
 
 [HistoryLists\hlIntOutputDir]
 Count=1

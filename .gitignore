@@ -5,8 +5,6 @@
 /doc/fmail2.msg
 /doc/gpl-url.txt
 /doc/header.txt
-/doc/ReadMe.TXT
-/doc/ReadMe.TXT
 /FMAIL.AR
 /FMAIL.ARD
 /FMAIL.CFG
@@ -29,5 +27,7 @@
 *.C~
 /ide.45/fmail.mak
 *.tds
-/inbnd.tmp/000011bb.mo9
+/inbnd.tmp/000011bb.*
 /VersionTest*
+
+/Release/W32
