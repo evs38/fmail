@@ -1,3 +1,6 @@
+2013-10-17  1.66.0.33
+  * Version string was wrong in the output of the 'about' function of FToolsW32.exe.
+
 2013-10-15  1.66.0.32
   * Dropped the BETA status
 

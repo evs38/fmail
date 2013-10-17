@@ -182,7 +182,7 @@ void About(void)
 #endif
               "    Compiled on      : %d-%02d-%02d\n";
   char tStr[1024];
-  sprintf(tStr, str, VersionStr, YEAR, MONTH + 1, DAY);
+  sprintf(tStr, str, VersionStr(), YEAR, MONTH + 1, DAY);
   printString(tStr);
   showCursor();
 }
@@ -191,6 +191,7 @@ void Usage(void)
 {
   char *str = "Usage:   FTools <command> [parameters]\n\n"
               "Commands:\n\n"
+              "   About     Print program info\n"
 #ifndef GOLDBASE
               "   Maint     Message base maintenance (also updates reply chains)\n"
               "   Delete    Delete all messages in one board\n"
