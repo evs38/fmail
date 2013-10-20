@@ -1,0 +1,18 @@
+I have released a new version of FMail (1.66).
+
+For now, only the Win32 version has been created. You can download it from sourceforge here:
+
+http://goo.gl/IAJxKN
+http://sourceforge.net/projects/fmail/files/FMail/1.66/FMailW32-1.66.0.33.gpl.zip
+
+If you need any one of the other versions (DOS, 386, ...) please let me know and I see what I can do...
+
+The main latest changes are:
+
+- Sort SEEN-BY list before usage. This fixes a bug where exporting didn't function properly when SEEN-BY's were used.
+- -aka Option can now be used while posting to an echomail area.
+- Completely removed key checking code. FMail (with or without a key file) should behave as a registered version.
+
+But there are more little changes and some bug fixes. You can read the complete list here:
+
+http://sourceforge.net/p/fmail/code/ci/master/tree/doc/ChangeLog
