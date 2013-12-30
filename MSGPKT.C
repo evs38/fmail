@@ -1,23 +1,25 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//--------------------------------------------------------------------------- 
 
 
 #include <stdio.h>
@@ -415,7 +417,7 @@ s16 bgetw (u16 *w)
 
 
 
-static s16 bgets (char *s, size_t n) // !MSGSIZE
+static s16 bgets(char *s, size_t n) // !MSGSIZE
 {
    size_t sLen = 0;
    size_t m;
@@ -862,7 +864,7 @@ s16 writeEchoPkt (internalMsgType *message, s16 tinySeenByArea,
 
 
 
-void freePktHandles (void)
+void freePktHandles(void)
 {
    u16 count;
 
@@ -876,18 +878,15 @@ void freePktHandles (void)
       }
    }
 }
-
-
-
-s16 validateEchoPktWr (void)
+//---------------------------------------------------------------------------
+s16 validateEchoPktWr(void)
 {
    u16           count;
-   fnRecType     *fnPtr;
+   fnRecType    *fnPtr;
    tempStrType   tempStr;
    fhandle       tempHandle;
-   s32           tempLen[MAX_OUTPKT];
-   s32           totalPktSize = 0;
-/*   struct dfree  dtable; */
+   long          tempLen[MAX_OUTPKT];
+   u32           totalPktSize = 0;
 
    for (count = 0; count < forwNodeCount; count++)
    {
@@ -899,7 +898,7 @@ s16 validateEchoPktWr (void)
              (close(nodeFileInfo[count]->pktHandle) == -1))
          {
             logEntry ("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
-            return (1);
+            return 1;
          }
          nodeFileInfo[count]->pktHandle = 0;
       }
@@ -909,14 +908,14 @@ s16 validateEchoPktWr (void)
    {
       if (*nodeFileInfo[count]->pktFileName != 0)
       {
-	 if (tempLen[count] == -1)
+	       if (tempLen[count] == -1)
          {
             if (((tempHandle = openP(nodeFileInfo[count]->pktFileName, O_RDONLY|O_BINARY|O_DENYNONE,S_IREAD|S_IWRITE)) == -1) ||
                 ((tempLen[count] = filelength(tempHandle)) == -1) ||
                 (close(tempHandle) == -1))
             {
                logEntry ("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
-               return (1);
+               return 1;
             }
          }
          nodeFileInfo[count]->bytesValid = tempLen[count];
@@ -929,40 +928,28 @@ s16 validateEchoPktWr (void)
       fnPtr = nodeFileInfo[count]->fnList;
       while (fnPtr != NULL)
       {
-         strcpy (tempStr, fnPtr->fileName);
-         strcpy (fnPtr->fileName+strlen(tempStr)-3, "QQQ");
+         strcpy(tempStr, fnPtr->fileName);
+         strcpy(fnPtr->fileName + strlen(tempStr) - 3, "QQQ");
 
-         rename (tempStr, fnPtr->fileName);
-	 fnPtr->valid = 1;
+         rename(tempStr, fnPtr->fileName);
+      	 fnPtr->valid = 1;
          fnPtr = fnPtr->nextRec;
       }
    }
 
-   if (*config.outPath == *config.inPath) /* Same drive ? */ /* was pktPath */
+   if (*config.outPath == *config.inPath) // Same drive ?
    {
-/*
-      getdfree (*config.outPath - 'A' + 1, &dtable);
-*/
-      if (/*((s16)dtable.df_sclus != -1) &&*/
-          ((totalPktSize /* / 2 */) > (s32)diskFree(config.outPath)))
-/*           (dtable.df_avail * (s32) dtable.df_sclus * dtable.df_bsec))) */
+      if (totalPktSize > diskFree(config.outPath))
       {
-         printString ("\nFreeing up diskspace...\n");
-         return (closeEchoPktWr ());
+         printString("\nFreeing up diskspace...\n");
+
+         return closeEchoPktWr();
       }
    }
 
-   for (count = 0; count < forwNodeCount; count++)
-   {
-      nodeFileInfo[count]->totalMsgsV = nodeFileInfo[count]->totalMsgs;
-   }
-
-   return (0);
+   return 0;
 }
-
-
-
-
+//---------------------------------------------------------------------------
 s16 closeEchoPktWr(void)
 {
    u16         count;
@@ -1165,7 +1152,7 @@ s16 writeNetPktValid (internalMsgType *message, nodeFileRecType *nfInfo)
       *nfInfo->pktFileName = 0;
       nfInfo->bytesValid   = 0;
    }
-   else 
+   else
       error |= close(pktHandle);
 
    nfInfo->pktHandle = 0;

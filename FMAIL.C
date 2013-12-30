@@ -1,23 +1,25 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #ifdef __OS2__
 #define INCL_DOSPROCESS
@@ -42,28 +44,30 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include <errno.h>
 
 #include "fmail.h"
-#include "config.h"
-#include "areainfo.h"
-#include "nodeinfo.h"
-#include "msgra.h"
-#include "pack.h"
-#include "msgpkt.h"
-#include "msgmsg.h"
-#include "dups.h"
+
 #include "archive.h"
-#include "utils.h"
-#include "sorthb.h"
 #include "areafix.h"
-#include "log.h"
-#include "output.h"
+#include "areainfo.h"
+#include "bclfun.h"
+#include "cfgfile.h"
+#include "config.h"
+#include "dups.h"
 #include "ftscprod.h"
 #include "jamfun.h"
 #include "jammaint.h"
-#include "cfgfile.h"
-#include "bclfun.h"
+#include "log.h"
+#include "msgmsg.h"
+#include "msgpkt.h"
+#include "msgra.h"
+#include "nodeinfo.h"
+#include "output.h"
+#include "pack.h"
 #include "pp_date.h"
+#include "sorthb.h"
+#include "utils.h"
 #include "version.h"
 
+//---------------------------------------------------------------------------
 #if defined __WIN32__ && !defined __DPMI32__
 #include "sendsmtp.h"
 #endif
@@ -358,7 +362,7 @@ u16 getAreaCode (char *msgText)
 
   if (*echoName == 0)
   {
-    printString ("Message has no valid area tag ");
+    printString("Message has no valid area tag ");
   }
   else
   {
@@ -398,17 +402,17 @@ u16 getAreaCode (char *msgText)
         return (low);
       }
       if (echoAreaList[low].options.local)
-        printString ("Area is local: ");
+        printString("Area is local: ");
       else
-        printString ("Area is not active: ");
-      printString (echoName);
-      printChar (' ');
+        printString("Area is not active: ");
+      printString(echoName);
+      printChar(' ');
     }
     else
     {
-      printString ("Unknown area: ");
-      printString (echoName);
-      printChar (' ');
+      printString("Unknown area: ");
+      printString(echoName);
+      printChar(' ');
 
       if (badEchoCount < MAX_BAD_ECHOS)
       {
@@ -522,7 +526,7 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
 
             pktMsgCount = 0;
 
-            while ((!readPkt (message)) && (!diskError) && (!breakPressed))
+            while (!readPkt(message) && !diskError && !breakPressed)
             {
               gotoTab(0);
               printString("Pkt message ");
@@ -535,7 +539,7 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
 
               if (areaIndex == NETMSG) /* for getLocalAka, moved here from case NETMSG statement */
               {
-                make4d (message);
+                make4d(message);
                 localAkaNum = getLocalAka(&message->destNode);
               }
 
@@ -558,14 +562,13 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
               {
                 if (areaIndex == NETMSG)
                 {
-                  sprintf (tempStr, "AREA: Netmail  SOURCE: %s\r",
-                           nodeStr(&message->srcNode));
-                  insertLine (message->text, tempStr);
+                  sprintf(tempStr, "AREA: Netmail  SOURCE: %s\r", nodeStr(&message->srcNode));
+                  insertLine(message->text, tempStr);
                 }
                 if (areaIndex == BADMSG)
-                  insertLine (message->text, "AREA: Bad Messages\r");
+                  insertLine(message->text, "AREA: Bad Messages\r");
 
-                writeMsg (message, PERMSG, 0);
+                writeMsg(message, PERMSG, 0);
                 if ((areaIndex == NETMSG) || (areaIndex == BADMSG))
                   removeLine (message->text);
               }
@@ -573,7 +576,7 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
               switch (areaIndex)
               {
                 case NETMSG :
-                  printString ("NETMAIL");
+                  printString("NETMAIL");
 
                   message->attribute &= PRIVATE     | FILE_ATT |
                                         RET_REC_REQ |
@@ -585,13 +588,13 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
                       (!noAreaFix) &&
                       (toAreaFix(message->toUserName)))
                   {
-                    if ( config.mgrOptions.keepRequest ||
-                         findCLiStr(message->text, "%NOTE") != NULL )
+                    if (  config.mgrOptions.keepRequest
+                       || findCLiStr(message->text, "%NOTE") != NULL)
                     {
                       message->attribute |= RECEIVED;
-                      writeMsg (message, NETMSG, 1);
+                      writeMsg(message, NETMSG, 1);
                     }
-                    printChar (' ');
+                    printChar(' ');
                     areaFixRep = !areaFix(message);
                   }
                   if (!areaFixRep)
@@ -618,28 +621,28 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
                     }
                     if (localAkaNum >= 0)
                     {
-                      printFill ();
-                      if ((stricmp (message->toUserName, "SysOp") == 0) ||
-                          (stricmp (message->toUserName, config.sysopName) == 0))
+                      printFill();
+                      if ((stricmp(message->toUserName, "SysOp") == 0) ||
+                          (stricmp(message->toUserName, config.sysopName) == 0))
                       {
-                        strcpy (message->toUserName, config.sysopName);
+                        strcpy(message->toUserName, config.sysopName);
                         globVars.perNetCount++;
                       }
                     }
                     else
                     {
-                      if ( secure == 2 && getLocalAka(&message->srcNode) >= 0 )
+                      if (secure == 2 && getLocalAka(&message->srcNode) >= 0)
                       {
-                        printStringFill (" (local secure)");
+                        printStringFill(" (local secure)");
                         message->attribute |= LOCAL | KILLSENT;
                       }
                       else
                       {
-                        printStringFill (" (in transit)");
+                        printStringFill(" (in transit)");
                         message->attribute |= IN_TRANSIT | KILLSENT;
                       }
-                      if ((!(getNodeInfo (&message->destNode)->capability & PKT_TYPE_2PLUS)) &&
-                          (isLocalPoint (&message->destNode)))
+                      if ((!(getNodeInfo(&message->destNode)->capability & PKT_TYPE_2PLUS)) &&
+                          (isLocalPoint(&message->destNode)))
                       {
                         make2d (message);
                       }
@@ -649,8 +652,8 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
                         ((strchr(message->subject, '*') != 0) ||
                          (strchr(message->subject, '?') != 0)))
                     {
-                      insertLine (message->text, "\1FLAGS LOK\r");
-                      writeMsg (message, NETMSG, 2);
+                      insertLine(message->text, "\1FLAGS LOK\r");
+                      writeMsg(message, NETMSG, 2);
                     }
                     else
                     {
@@ -658,26 +661,25 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
                     }
                   }
                   break;
-                case BADMSG :
-                printStringFill (dARROW" Bad message");
-
+                case BADMSG:
+                  printStringFill(dARROW" Bad message");
 tossbad:
                   sprintf (tempStr, "\r\1FMAIL DEST: %s", nodeStr(&globVars.packetDestNode));
-                  if ((helpPtr = strchr (message->text, '\r')) != NULL)
+                  if ((helpPtr = strchr(message->text, '\r')) != NULL)
+                  {
+                    insertLine(helpPtr, tempStr);
+                  }
+                  sprintf(tempStr, "\r\1FMAIL SRC: %s", nodeStr(&globVars.packetSrcNode));
+                  if ((helpPtr = strchr(message->text, '\r')) != NULL)
                   {
                     insertLine (helpPtr, tempStr);
                   }
-                  sprintf (tempStr, "\r\1FMAIL SRC: %s", nodeStr(&globVars.packetSrcNode));
-                  if ((helpPtr = strchr (message->text, '\r')) != NULL)
-                  {
-                    insertLine (helpPtr, tempStr);
-                  }
-                  if ( writeBBS (message, config.badBoard, 1) )
+                  if (writeBBS(message, config.badBoard, 1))
                     diskError = DERR_WRHBAD;
                   globVars.badCount++;
                   break;
-                default     :
-                  printString (echoAreaList[areaIndex].areaName);
+                default:
+                  printString(echoAreaList[areaIndex].areaName);
 
                   /* Security Check */
 
@@ -720,35 +722,33 @@ tossbad:
                       }
                       if ( count != -1 )
                         ++globVars.fromNoExpSec;
-                      printStringFill (" Security violation "dARROW" Bad message");
+                      printStringFill(" Security violation "dARROW" Bad message");
                       goto tossbad;
                     }
                   }
 
-                  if (checkDup (message,
-                                echoAreaList[areaIndex].areaNameCRC))
+                  if (checkDup(message, echoAreaList[areaIndex].areaNameCRC))
                   {
                     for (count = 0; count < forwNodeCount; count++)
                     {
-                      if ( /*nodeFileInfo[count]->srcAka == globVars.packetDestAka) &&*/
-                        memcmp(&nodeFileInfo[count]->destNode4d.net,
-                               &globVars.packetSrcNode.net, 6) == 0 )
+                      if (memcmp( &nodeFileInfo[count]->destNode4d.net
+                                , &globVars.packetSrcNode.net, 6) == 0)
                       {
                         nodeFileInfo[count]->fromNodeDup++;
                         count = -1;
                         break;
                       }
                     }
-                    if ( count != -1 )
+                    if (count != -1)
                       ++globVars.fromNoExpDup;
-                    printStringFill (" "dARROW" Duplicate message");
+                    printStringFill(" "dARROW" Duplicate message");
                     if ( writeBBS (message, config.dupBoard, 1) )
                       diskError = DERR_WRHDUP;
                     echoAreaList[areaIndex].dupCount++;
                     globVars.dupCount++;
                     break;
                   }
-                  printFill ();
+                  printFill();
 
                   echoAreaList[areaIndex].msgCount++;
                   globVars.echoCount++;
@@ -758,17 +758,15 @@ tossbad:
                   else
                     message->attribute = 0;
 
-                  memcpy (tempEchoToNode,
-                          echoToNode[areaIndex],
-                          sizeof(echoToNodeType));
+                  memcpy(tempEchoToNode, echoToNode[areaIndex], sizeof(echoToNodeType));
                   echoToNodeCount = echoAreaList[areaIndex].echoToNodeCount;
 
                   for (count = 0; count < forwNodeCount; count++)
                   {
-                    if (memcmp (&nodeFileInfo[count]->destNode4d.net,
-                                &globVars.packetSrcNode.net, 6) == 0)
+                    if (memcmp( &nodeFileInfo[count]->destNode4d.net
+                              , &globVars.packetSrcNode.net, 6) == 0)
                     {
-                      if ( ETN_ANYACCESS(tempEchoToNode[ETN_INDEX(count)], count) )
+                      if (ETN_ANYACCESS(tempEchoToNode[ETN_INDEX(count)], count))
                       {
                         tempEchoToNode[ETN_INDEX(count)] &= ETN_RESET(count);
                         echoToNodeCount--;
@@ -777,28 +775,27 @@ tossbad:
                   }
                   for (count = 0; count < forwNodeCount; count++)
                   {
-                    if ( /*nodeFileInfo[count]->srcAka == globVars.packetDestAka &&*/
-                      memcmp(&nodeFileInfo[count]->destNode4d.net,
-                             &globVars.packetSrcNode.net, 6) == 0 )
+                    if (memcmp( &nodeFileInfo[count]->destNode4d.net
+                              , &globVars.packetSrcNode.net, 6) == 0)
                     {
                       nodeFileInfo[count]->fromNodeMsg++;
                       count = -1;
                       break;
                     }
                   }
-                  if ( count != -1 )
+                  if (count != -1)
                     ++globVars.fromNoExpMsg;
 
                   if (echoToNodeCount)
                   {
-                    addPathSeenBy (message->text,
+                    addPathSeenBy(message->text,
                                    message->normSeen,
                                    message->tinySeen,
                                    message->normPath,
                                    tempEchoToNode,
                                    areaIndex);
 
-                    if ( writeEchoPkt (message,
+                    if (writeEchoPkt(message,
                                        echoAreaList[areaIndex].options.tinySeenBy,
                                        tempEchoToNode) )
                       diskError = DERR_WRPKTE;
@@ -868,33 +865,31 @@ tossbad:
                   }
                   break;
               }
-              if ((config.allowedNumNetmail != 0) &&
-                  (globVars.netCount >= config.allowedNumNetmail))
+              if (config.allowedNumNetmail != 0 && globVars.netCount >= config.allowedNumNetmail)
               {
                 mailBomb++;
                 breakPressed++;
               }
             }
-            closePktRd ();
+            closePktRd();
 
-            freePktHandles ();
+            freePktHandles();
 
+            newLine();
             if (mailBomb)
             {
-              strcpy (tempStr, pktStr);
-              strcpy (strchr(tempStr, '.'), ".mlb");
-              rename (pktStr, tempStr);
-              unlink (pktStr);
-              newLine ();
-              sprintf (tempStr, "Max # net msgs per packet exceeded in packet from %s", nodeStr(&globVars.packetSrcNode));
-              logEntry (tempStr, LOG_ALWAYS, 0);
-              sprintf (tempStr, "Packet %s has been renamed to .mlb", pktStr);
-              logEntry (tempStr, LOG_ALWAYS, 0);
+              strcpy(tempStr, pktStr);
+              strcpy(strchr(tempStr, '.'), ".mlb");
+              rename(pktStr, tempStr);
+              unlink(pktStr);
+              sprintf(tempStr, "Max # net msgs per packet exceeded in packet from %s", nodeStr(&globVars.packetSrcNode));
+              logEntry(tempStr, LOG_ALWAYS, 0);
+              sprintf(tempStr, "Packet %s has been renamed to .mlb", pktStr);
+              logEntry(tempStr, LOG_ALWAYS, 0);
             }
             else
             {
-              if ((!diskError) && (!breakPressed) &&
-                  ((validate1BBS () || validateEchoPktWr ()) == 0))
+              if (!diskError && !breakPressed && ((validate1BBS() || validateEchoPktWr()) == 0))
               {
                 validate2BBS(0);
                 validateMsg();
@@ -906,35 +901,27 @@ tossbad:
                   echoAreaList[count].dupCountV = echoAreaList[count].dupCount;
                 }
               }
-              else if ( !diskError && !breakPressed )
+              else if (!diskError && !breakPressed)
                 diskError = DERR_VAL;
-              newLine ();
             }
           }
           else if (headerStat == 1)
-            printString ("Error opening packet\n");
+            printString("Error opening packet\n");
           else if (headerStat == 2)
-            logEntry ("Packet is addressed to another node �� packet is renamed to .DST",
-                      LOG_ALWAYS, 0);
+            logEntry("Packet is addressed to another node �� packet is renamed to .DST",
+                     LOG_ALWAYS, 0);
           else if (headerStat == 3)
-            logEntry ("Packet password security violation �� packet is renamed to .SEC",
-                      LOG_ALWAYS, 0);
+            logEntry("Packet password security violation �� packet is renamed to .SEC",
+                     LOG_ALWAYS, 0);
         }
         donePkt = findnext(&ffblkPkt);
       }
-      if (!mailBomb) newLine ();
-#if 0
-      if (diskError)
-      {
-        if (diskError == xxx)
-          logEntry ("JAM-related error", LOG_ALWAYS, 0);
-        else
-          logEntry ("Disk-related error (probably disk full)", LOG_ALWAYS, 0);
-      }
-#endif
+      if (!mailBomb)
+        newLine();
     }
   }
-  while ((!diskError) && (!breakPressed) && (secure--));
+  while (!diskError && !breakPressed && secure--)
+    ;
   jam_closeall();
   return diskError;
 }
@@ -1321,7 +1308,7 @@ int cdecl main(int argc, char *argv[])
 
     openBBSWr(0);
 
-    if ((!diskError) && (!breakPressed))
+    if (!diskError && !breakPressed)
     {
       printString ("Tossing messages...\n");
 
@@ -1329,9 +1316,9 @@ int cdecl main(int argc, char *argv[])
 
       dayNum = 0;
       bundlePtr = NULL;
-      while ((dayNum < 8) && (!diskError) && (!breakPressed))
+      while (dayNum < 7 && !diskError && !breakPressed)
       {
-        sprintf (tempStr, "%s*.%.2s?", config.inPath, dayName[dayNum++]);
+        sprintf(tempStr, "%s*.%.2s?", config.inPath, dayName[dayNum++]);
 
         doneArc = findfirst (tempStr, &ffblkMsg, 0);
 
@@ -1370,7 +1357,7 @@ int cdecl main(int argc, char *argv[])
           doneArc = findnext (&ffblkMsg);
         }
       }
-      if ( bundlePtr == NULL )
+      if (bundlePtr == NULL)
         newLine();
       else
       {
@@ -1436,28 +1423,29 @@ int cdecl main(int argc, char *argv[])
       {
         for (count = 0; count < echoCount; count++)
         {
-          if ( echoAreaList[count].msgCountV )
+          if (echoAreaList[count].msgCountV)
           {
-            write (tempHandle, tempStr,
-                   sprintf (tempStr, "%s\n",
-                            echoAreaList[count].areaName));
+            write(tempHandle, tempStr,
+                  sprintf (tempStr, "%s\n", echoAreaList[count].areaName));
           }
         }
       }
-      if ( *config.summaryLogName &&
+      if (*config.summaryLogName &&
            (tempHandle = openP(config.summaryLogName,
-                               O_WRONLY|O_CREAT|O_APPEND|O_TEXT,
-                               S_IREAD|S_IWRITE)) != -1)
+                               O_WRONLY | O_CREAT | O_APPEND | O_TEXT,
+                               S_IREAD | S_IWRITE)) != -1)
       {
-        write (tempHandle, tempStr,
-               sprintf (tempStr, "\n----------  %s %2u %.3s %2.2u %u:%02u, %s - Toss Summary\n\n\n",
-                        dayName[timeBlock.tm_wday],
-                        timeBlock.tm_mday,
-                        months+(timeBlock.tm_mon*3),
-                        timeBlock.tm_year%100,
-                        timeBlock.tm_hour,
-                        timeBlock.tm_min,
-                        VersionStr()));
+        write( tempHandle, tempStr
+             , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u %02u:%02u, %s - Toss Summary\n\n"
+                      , dayName[timeBlock.tm_wday]
+                      , timeBlock.tm_year + 1900
+                      , timeBlock.tm_mon + 1
+                      , timeBlock.tm_mday
+                      , timeBlock.tm_hour
+                      , timeBlock.tm_min
+                      , VersionStr()
+                      )
+             );
         write (tempHandle, tempStr,
                sprintf (tempStr, "Board  Area name                                           #Msgs  Dupes\n"));
         write (tempHandle, tempStr,
@@ -1488,7 +1476,7 @@ int cdecl main(int argc, char *argv[])
             {
               write (tempHandle, tempStr,
                      sprintf (tempStr, "%5s  %-50s  %5u  %5u\n",
-                              (echoAreaList[count].JAMdirPtr==NULL)?"None":"JAM",
+                               (echoAreaList[count].JAMdirPtr == NULL) ? "None" : "JAM",
                               echoAreaList[count].areaName,
                               echoAreaList[count].msgCountV,
                               echoAreaList[count].dupCountV));
@@ -1513,7 +1501,7 @@ int cdecl main(int argc, char *argv[])
             if (!temp)
             {
               write (tempHandle, tempStr,
-                     sprintf (tempStr, "\n\nReceived from node        #Msgs  Dupes  Sec V\n"
+                     sprintf (tempStr, "\nReceived from node        #Msgs  Dupes  Sec V\n"
                               "------------------------  -----  -----  -----\n"));
               temp++;
             }
@@ -1531,7 +1519,7 @@ int cdecl main(int argc, char *argv[])
           if (!temp)
           {
             write (tempHandle, tempStr,
-                   sprintf (tempStr, "\n\nReceived from node        #Msgs  Dupes  Sec V\n"
+                   sprintf (tempStr, "\nReceived from node        #Msgs  Dupes  Sec V\n"
                             "------------------------  -----  -----  -----\n"));
           }
           write (tempHandle, tempStr,
@@ -1543,22 +1531,22 @@ int cdecl main(int argc, char *argv[])
         temp = 0;
         for (count = 0; count < forwNodeCount; count++)
         {
-          if (nodeFileInfo[count]->totalMsgsV)
+          if (nodeFileInfo[count]->totalMsgs)
           {
             if (!temp)
             {
-              write (tempHandle, tempStr,
-                     sprintf (tempStr, "\n\nSent to node              #Msgs\n"
-                              "------------------------  -----\n"));
+              write(tempHandle, tempStr
+                   , sprintf(tempStr, "\nSent to node              #Msgs\n"
+                                        "------------------------  -----\n"));
               temp++;
             }
-            write (tempHandle, tempStr,
-                   sprintf (tempStr, "%-24s  %5u\n",
-                            nodeStr(&nodeFileInfo[count]->destNode4d),
-                            nodeFileInfo[count]->totalMsgsV));
+            write(tempHandle, tempStr
+                 , sprintf(tempStr, "%-24s  %5u\n"
+                          , nodeStr(&nodeFileInfo[count]->destNode4d)
+                          , nodeFileInfo[count]->totalMsgs));
           }
         }
-        write (tempHandle, "\n\n\n", 3);
+        write(tempHandle, "\n", 1);
         close(tempHandle);
       }
     }
@@ -1600,7 +1588,7 @@ int cdecl main(int argc, char *argv[])
       }
     }
 
-    deInitAreaInfo ();
+    deInitAreaInfo();
 
     /* See also end of PACK block */
 
@@ -1754,9 +1742,9 @@ int cdecl main(int argc, char *argv[])
         }
       }
 
-      if ((infoBad) || (config.mbOptions.scanAlways) || (switches & SW_S))
+      if (infoBad || config.mbOptions.scanAlways || (switches & SW_S))
       {
-        for (count=0; count<echoCount; count++)
+        for (count=0; count < echoCount; count++)
         {
           if ((echoAreaList[count].JAMdirPtr != NULL &&
                echoAreaList[count].options.active &&
@@ -1866,7 +1854,7 @@ skipJAM:
       }
     }
 
-    if ((infoBad) || (config.mbOptions.scanAlways) || (switches & SW_S))
+    if (infoBad || config.mbOptions.scanAlways || (switches & SW_S))
     {
       index = 0;
       while (((boardNum = scanBBS (index++, message, 0)) != 0) &&
@@ -1895,18 +1883,16 @@ skipJAM:
 
 skipHudson:
 
-    if ( closeEchoPktWr() )
+    if (closeEchoPktWr())
       diskError = DERR_CLPKTE;
 
     closeBBSWr(1); // was: closeBBSRd();
 #ifdef __WINDOWS32__
     sendmail_smtp();
 #endif
-    closeNodeInfo ();
-    deInitAreaInfo ();
+    closeNodeInfo();
+    deInitAreaInfo();
     closeDup ();
-
-    /* newLine (); */
   }
   else if ((argc >= 2) &&
            ((stricmp(argv[1], "I") == 0) || (stricmp(argv[1], "IMPORT") == 0)))
@@ -1925,12 +1911,12 @@ skipHudson:
 
     initFMail("IMPORT", switches);
 
-    initPkt ();
-    initNodeInfo ();
-    initAreaInfo (); /* for AreaFix */
+    initPkt();
+    initNodeInfo();
+    initAreaInfo(); /* for AreaFix */
 
-    initMsg ((u16)(switches & SW_A));  /* After initNodeInfo */
-    retryArc (); /* After initMsg */
+    initMsg((u16)(switches & SW_A));  /* After initNodeInfo */
+    retryArc(); /* After initMsg */
     scan_bcl();
     _mb_upderr = multiUpdate ();
 
@@ -1964,7 +1950,7 @@ skipHudson:
              (config.mbOptions.sysopImport ||
               (stricmp(message->toUserName, config.sysopName) != 0 &&
                !foundToUserName(message->toUserName))) &&
-             ((boardNum = getNetmailBoard(&message->destNode)) != -1) 
+             ((boardNum = getNetmailBoard(&message->destNode)) != -1)
            )
         {
           if ((message->attribute & FILE_ATT) &&
@@ -2053,21 +2039,21 @@ skipHudson:
 
     initFMail("PACK", switches);
 
-    initPkt ();
-    initNodeInfo ();
-    initAreaInfo (); /* for AreaFix */
+    initPkt();
+    initNodeInfo();
+    initAreaInfo(); /* for AreaFix */
 
-    initMsg ((u16)(switches & SW_A));  /* after initNodeInfo */
-    retryArc (); /* after initMsg */
+    initMsg((u16)(switches & SW_A));  /* after initNodeInfo */
+    retryArc(); /* after initMsg */
     scan_bcl();
-    _mb_upderr = multiUpdate ();
+    _mb_upderr = multiUpdate();
 
-    pack (argc, argv, switches);
+    pack(argc, argv, switches);
 
 #ifdef __WINDOWS32__
     sendmail_smtp();
 #endif
-    closeNodeInfo ();
+    closeNodeInfo();
   }
   else if ((argc >= 2) &&
            ((stricmp(argv[1], "M") == 0) || (stricmp(argv[1], "MGR") == 0)))
@@ -2086,11 +2072,11 @@ skipHudson:
 
     initFMail("MGR", switches);
 
-    initPkt ();
-    initNodeInfo ();
-    initAreaInfo (); /* for AreaFix */
+    initPkt();
+    initNodeInfo();
+    initAreaInfo(); /* for AreaFix */
 
-    initMsg (0);  /* after initNodeInfo */
+    initMsg(0);  /* after initNodeInfo */
     scan_bcl();
 
 #ifdef __WINDOWS32__
@@ -2156,7 +2142,7 @@ skipHudson:
   if (diskError)
   {
     newLine ();
-    switch ( diskError )
+    switch (diskError)
     {
       case DERR_HACKER:
         logEntry("Internal overflow control error", LOG_ALWAYS, 1);

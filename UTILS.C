@@ -1,47 +1,56 @@
-/*
- *  Copyright (C) 2007         Folkert J. Wijnstra
- *  Copyright (C) 2007 - 2013  Wilfred van Velzen
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <io.h>
-#include <string.h>
-#include <dos.h>
-#include <dir.h>
-#include <fcntl.h>
-#include <time.h>
 #include <ctype.h>
-#include <sys/stat.h>
+#include <dir.h>
+#include <dos.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <time.h>
 
 #include "fmail.h"
+
 #include "areainfo.h"
-#include "utils.h"
-#include "log.h"
-#include "output.h"
-#include "msgpkt.h" /* for openP */
 #include "filesys.h"
 #include "fjlib.h"
+#include "log.h"
+#include "msgpkt.h"  // for openP
+#include "output.h"
+#include "utils.h"
 #include "version.h"
+
+#define CANUSE64BIT
+
+#ifdef CANUSE64BIT
+#include <stdint.h>
+#else
+#define UINT32_MAX (4294967295UL)
+#endif
 
 extern time_t startTime;
 extern configType config;
@@ -49,45 +58,47 @@ psType *seenByArray;
 psType *pathArray;
 psType *tinySeenArray;
 
-extern u16      echoCount;
-extern u16      forwNodeCount;
+extern u16 echoCount;
+extern u16 forwNodeCount;
 
 extern cookedEchoType *echoAreaList;
-extern nodeFileType   nodeFileInfo;
-
+extern nodeFileType    nodeFileInfo;
 
 extern const char *months;
 extern const char *dayName[7];
 
 extern char *version;
 
-
-
-
-
+//---------------------------------------------------------------------------
 int moveFile(char *oldName, char *newName)
-{  fhandle h1, h2;
+{
+   fhandle h1, h2;
    char    *buf;
    size_t  count, size;
    struct ftime ftm;
 
-   if ( rename(oldName, newName) )
-   {  if ( errno != ENOTSAM ||
+   if (rename(oldName, newName))
+   {
+      if ( errno != ENOTSAM ||
 	   (h1 = openP(oldName, O_RDONLY|O_BINARY|O_DENYALL, 0)) == -1 )
-      {  return -1;
+      {
+         return -1;
       }
       if ( (h2 = openP(newName, O_WRONLY|O_BINARY|O_CREAT|O_TRUNC|O_DENYALL, S_IREAD|S_IWRITE)) == -1 )
-      {  close(h1);
-	 return -1;
+      {
+         close(h1);
+	       return -1;
       }
       size = min(32767, (size_t)filelength(h1));
       if ( (buf = malloc(size)) == NULL )
-      {  close(h1);
-	 close(h2);
-	 return -1;
+      {
+        close(h1);
+        close(h2);
+	      return -1;
       }
       while ( (count = read(h1, buf, size)) > 0 )
-      {  write(h2, buf, count);
+      {
+        write(h2, buf, count);
       }
       getftime(h1, &ftm);
       setftime(h2, &ftm);
@@ -98,62 +109,89 @@ int moveFile(char *oldName, char *newName)
    }
    return 0;
 }
-
-
-s16 existDir (char *dir, char *descr)
+//---------------------------------------------------------------------------
+s16 existDir(char *dir, char *descr)
 {
 	struct ffblk tempBlk;
 	char     tempStr[MAXDIR];
-   pathType dirStr;
+  pathType dirStr;
 
-   strcpy (dirStr, dir);
-   *(dirStr+strlen(dirStr)-1) = 0;
+  strcpy(dirStr, dir);
+  *(dirStr + strlen(dirStr) - 1) = 0;
 
-   if (!(*dirStr &&
-         ((dirStr[1] != ':') || !getcurdir(dirStr[0]-'@', tempStr)) &&
-         ((strlen(dirStr) == 2) ||
-          ((!findfirst (dirStr, &tempBlk, FA_DIREC)) &&
-           (tempBlk.ff_attrib & FA_DIREC)))))
-    {   sprintf (tempStr, "The %s directory does not exist", descr);
-	logEntry (tempStr, LOG_ALWAYS, 0);
-        return (0);
-    }
-    return (1);
+  if (!(*dirStr &&
+        ((dirStr[1] != ':') || !getcurdir(dirStr[0]-'@', tempStr)) &&
+        ((strlen(dirStr) == 2) ||
+         ((!findfirst (dirStr, &tempBlk, FA_DIREC)) &&
+          (tempBlk.ff_attrib & FA_DIREC)))))
+  {
+    sprintf(tempStr, "The %s directory does not exist", descr);
+  	logEntry(tempStr, LOG_ALWAYS, 0);
+
+    return 0;
+  }
+  return 1;
 }
-
-
-
-u32 diskFree (char *path)
+//---------------------------------------------------------------------------
+u32 diskFree(char *path)
 {
-   tempStrType  tempStr;
-   struct dfree dtable;
-   char   *helpPtr;
+  tempStrType  tempStr;
+  struct dfree dtable;
+  char        *helpPtr;
+#ifdef CANUSE64BIT
+  uint64_t dfs;
+#endif
 
-   helpPtr = (strchr(path,0)-1);
-   if (*helpPtr == '\\')
-      *helpPtr = 0;
-   else
-      helpPtr = NULL;
+  helpPtr = (strchr(path, 0) - 1);
+  if (*helpPtr == '\\')
+    *helpPtr = 0;
+  else
+    helpPtr = NULL;
 
-   if ((isalpha(path[0])) && (path[1] == ':'))
-   {
-      getdfree (toupper(path[0])-'A'+1, &dtable);
-   }
-   else
-   {
-      getcwd (tempStr, sizeof(tempStrType));
-      chdir (path);
-      getdfree (0, &dtable);
-      chdir (tempStr);
-   }
+  if (isalpha(path[0]) && path[1] == ':')
+  {
+    getdfree(toupper(path[0]) - 'A' + 1, &dtable);
+  }
+  else
+  {
+    getcwd(tempStr, sizeof(tempStrType));
+    chdir(path);
+    getdfree(0, &dtable);
+    chdir(tempStr);
+  }
 
-   if (helpPtr != NULL) *helpPtr = '\\';
-   if (dtable.df_sclus == (unsigned)-1)
-      return (0xffffffffL);
-   return dtable.df_avail*(u32)dtable.df_bsec*dtable.df_sclus;
+  if (helpPtr != NULL)
+    *helpPtr = '\\';
+
+  if (dtable.df_sclus == (unsigned)-1)
+    return UINT32_MAX;
+#ifdef CANUSE64BIT
+  dfs = (uint64_t)dtable.df_avail * (uint64_t)dtable.df_bsec * (uint64_t)dtable.df_sclus;
+  if (dfs >= 100ui64 * 1024)
+  {
+    if (dfs >= 100ui64 * 1024 * 1024)
+    {
+      if (dfs >= 100ui64 * 1024 * 1024 * 1024)
+        sprintf(tempStr, "Disk %s free: %Lu GB", path, dfs / (1024 * 1024 * 1024));
+      else
+        sprintf(tempStr, "Disk %s free: %Lu MB", path, dfs / (1024 * 1024));
+    }
+    else
+      sprintf(tempStr, "Disk %s free: %Lu KB", path, dfs / 1024);
+  }
+  else
+    sprintf(tempStr, "Disk %s free: %Lu", path, dfs);
+	logEntry(tempStr, LOG_ALWAYS, 0);
+
+  if (dfs > (uint64_t)UINT32_MAX)
+    return UINT32_MAX;
+
+  return (uint32_t)dfs;
+#else
+  return dtable.df_avail * (u32)dtable.df_bsec * dtable.df_sclus;
+#endif
 }
-
-
+//---------------------------------------------------------------------------
 s16 matchAka(nodeNumType *node, char useAka)
 {
    s16      srcAka = -1;
@@ -266,9 +304,9 @@ s32 getSwitch (int *argc, char *argv[], s32 mask)
       if ((strlen(argv[count]) != 2) ||
           (!(isalpha(argv[count][1]))))
       {
-         printString ("Illegal switch: ");
-         printString (argv[count]);
-         newLine ();
+         printString("Illegal switch: ");
+         printString(argv[count]);
+         newLine();
          error++;
       }
       else
@@ -540,8 +578,8 @@ s32 checkDate (u16 year,  u16 month,   u16 day,
        seconds = 0;
     }
 
-    tms.tm_year = year-1900;
-    tms.tm_mon  = month-1;
+    tms.tm_year = year - 1900;
+    tms.tm_mon  = month - 1;
     tms.tm_mday = day;
     tms.tm_hour = hours;
     tms.tm_min  = minutes;
@@ -1298,9 +1336,9 @@ void addVia(char *msgText, u16 aka)
       *(helpPtr++) = '\r';
     }
 
-    sprintf (helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s%s\r",
+    sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s%s\r",
                       nodeStr (&config.akaList[aka].nodeNum),
-                      tmPtr->tm_year, tmPtr->tm_mon+1, tmPtr->tm_mday,
+                      tmPtr->tm_year, tmPtr->tm_mon + 1, tmPtr->tm_mday,
                       tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec,
                       VersionStr(),
                       "");

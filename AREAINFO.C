@@ -1,24 +1,25 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -26,18 +27,21 @@
 #include <dos.h>
 #include <fcntl.h>
 #include <string.h>
+
 #include "fmail.h"
+
 #include "areainfo.h"
-#include "nodeinfo.h"
-#include "msgmsg.h"
-#include "utils.h"
-#include "log.h"
-#include "time.h"
-#include "crc.h"
-#include "output.h"
 #include "cfgfile.h"
+#include "crc.h"
+#include "log.h"
+#include "msgmsg.h"
+#include "nodeinfo.h"
+#include "output.h"
+#include "time.h"
+#include "utils.h"
 #include "version.h"
 
+//---------------------------------------------------------------------------
 struct orgLineListType
 {
   struct orgLineListType *next;
@@ -61,7 +65,8 @@ extern internalMsgType *message;
 
 extern u16 status;
 
-s16 makeNFInfo (nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
+//---------------------------------------------------------------------------
+s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
 {
    tempStrType tempStr;
    s16         errorDisplay = 0;
@@ -116,10 +121,8 @@ s16 makeNFInfo (nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
    }
    return (errorDisplay);
 }
-
-
-
-void initAreaInfo (void)
+//---------------------------------------------------------------------------
+void initAreaInfo(void)
 {
    tempStrType   tempStr;
    char		 *helpPtr;
@@ -131,7 +134,7 @@ void initAreaInfo (void)
    headerType    *areaHeader;
    rawEchoType   *areaBuf;
 
-   memset (nodeFileInfo, 0, sizeof(nodeFileType));
+   memset(nodeFileInfo, 0, sizeof(nodeFileType));
 
    echoCount = 0;
    forwNodeCount = 0;
@@ -239,7 +242,7 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
 
       count = 0;
       while ((count < MAX_FORWARD) &&
-	     (areaBuf->export[count].nodeNum.zone != 0))
+	           (areaBuf->export[count].nodeNum.zone != 0))
       {
          if ( areaBuf->export[count].flags.locked )
          {  count++;
@@ -260,9 +263,9 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
             sprintf (tempStr, "Warning: Can't forward area %s to a local AKA",
 			      areaBuf->areaName);
             logEntry (tempStr, LOG_ALWAYS, 0);
-	    errorDisplay++;
+            errorDisplay++;
          }
-	 else
+         else
          {
             c = 0;
             while ((c < forwNodeCount) &&
@@ -274,18 +277,18 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
                c++;
             }
 
-	    if (c >= MAX_OUTPKT)
+            if (c >= MAX_OUTPKT)
             {
                logEntry ("Can't send mail to more than "MAX_OUTPKT_STR" nodes in one run", LOG_ALWAYS, 4);
             }
             if (c == forwNodeCount)
             {
-	       if ((nodeFileInfo[forwNodeCount] = malloc(sizeof(nodeFileRecType))) == NULL)
+               if ((nodeFileInfo[forwNodeCount] = malloc(sizeof(nodeFileRecType))) == NULL)
                {
-		  logEntry ("Not enough memory available", LOG_ALWAYS, 2);
+                  logEntry ("Not enough memory available", LOG_ALWAYS, 2);
                }
-               errorDisplay |= makeNFInfo (nodeFileInfo[forwNodeCount++],
-					   areaBuf->address,
+               errorDisplay |= makeNFInfo(nodeFileInfo[forwNodeCount++],
+                                          areaBuf->address,
                                            &(areaBuf->export[count].nodeNum));
             }
             if ( !(areaBuf->export[count].flags.readOnly &&
@@ -410,7 +413,7 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
     newLine();
   }
 }
-
+//---------------------------------------------------------------------------
 void deInitAreaInfo(void)
 {
    u16      count, count2;
@@ -427,15 +430,20 @@ void deInitAreaInfo(void)
    if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
       logEntry ("Bad or missing FMAIL.AR", LOG_ALWAYS, 1);
    for (count = 0; count < areaHeader->totalRecords; count++)
-   {  getRec(CFG_ECHOAREAS, count);
+   {
+      getRec(CFG_ECHOAREAS, count);
       for (count2 = 0; count2 < echoCount; count2++)
-      {  if ( !strcmp(echoAreaList[count2].areaName, areaBuf->areaName) )
-         {  if ( echoAreaList[count2].msgCountV )
-            {  if ( status == 1 )
+      {
+         if ( !strcmp(echoAreaList[count2].areaName, areaBuf->areaName) )
+         {
+            if ( echoAreaList[count2].msgCountV )
+            {
+               if ( status == 1 )
                   areaBuf->lastMsgScanDat = startTime;
                if ( status == 2 )
-               {  areaBuf->lastMsgTossDat = startTime;
-		  areaBuf->stat.tossedTo = 1;
+               {
+                  areaBuf->lastMsgTossDat = startTime;
+                  areaBuf->stat.tossedTo = 1;
                }
                if ( status )
                   putRec(CFG_ECHOAREAS, count);
@@ -447,12 +455,17 @@ void deInitAreaInfo(void)
    closeConfig (CFG_ECHOAREAS);
 
    for (count = 0; count < echoCount; count++)
-   {  if (echoAreaList[count].JAMdirPtr != NULL)
+   {
+      if (echoAreaList[count].JAMdirPtr != NULL)
       {
-	 free(echoAreaList[count].JAMdirPtr);
+         free(echoAreaList[count].JAMdirPtr);
       }
       free(echoAreaList[count].areaName);
       free(echoToNode[count]);
    }
    free (echoAreaList);
+   for (count = 0; count < forwNodeCount; count++)
+      free(nodeFileInfo[count]);
 }
+//---------------------------------------------------------------------------
+

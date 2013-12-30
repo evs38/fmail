@@ -1,24 +1,25 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -30,11 +31,12 @@
 #include <sys/stat.h>
 
 #include "fmail.h"
+
 #include "areainfo.h"
 #include "dups.h"
-#include "output.h"
 #include "ftlog.h"
 #include "msgpkt.h"
+#include "output.h"
 #include "version.h"
 
 extern configType config;
@@ -50,18 +52,18 @@ const char *dayName[7] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 #ifndef __DPMI32__
 struct  COUNTRY
 {
-    short   co_date;
-    char    co_curr[5];
-    char    co_thsep[2];
-    char    co_desep[2];
-    char    co_dtsep[2];
-    char    co_tmsep[2];
-    char    co_currstyle;
-    char    co_digits;
-    char    co_time;
-    long    co_case;
-    char    co_dasep[2];
-    char    co_fill[10];
+  short co_date;
+  char  co_curr[5];
+  char  co_thsep[2];
+  char  co_desep[2];
+  char  co_dtsep[2];
+  char  co_tmsep[2];
+  char  co_currstyle;
+  char  co_digits;
+  char  co_time;
+  long  co_case;
+  char  co_dasep[2];
+  char  co_fill[10];
 };
 #endif
 #endif
@@ -185,13 +187,15 @@ void initLog(char *s, s32 switches)
 
       if (config.logStyle == 0)
       {
-         sprintf (tempStr, "\n----------  %s %2u %.3s %02u, %s\n",
-                           dayName[timeBlock.tm_wday],
-                           timeBlock.tm_mday,
-                           months+(timeBlock.tm_mon*3),
-                           timeBlock.tm_year%100,
-                           tempStr2);
-         write (logHandle, tempStr, strlen(tempStr));
+        write( logHandle, tempStr
+             , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u, %s\n"
+                      , dayName[timeBlock.tm_wday]
+                      , timeBlock.tm_year + 1900
+                      , timeBlock.tm_mon + 1
+                      , timeBlock.tm_mday
+                      , tempStr2
+                      )
+             );
       }
       else
       {

@@ -1,3 +1,13 @@
+2013-12-30  1.67.0.45
+  * Disk free space calculation uses 64 bit integers. The standard 32 bit integers aren't big enough to hold todays big disk sizes.
+    This also fixes the bug where the 'Sent to node' report wasn't always written to the log when tossing.
+  * Print free disk space to log file when calculated.
+  * Write dates in log files in iso format (YYYY-MM-DD).
+  * Updated products code list to FTSCPROD.016.
+  * Toss logging is more compact: uses less newlines.
+  * On WIN32 printed version string now has 4 digits.
+  * Lots of cosmetic code changes, and a few little fixes.
+
 2013-10-17  1.66.0.33
   * Version string was wrong in the output of the 'about' function of FToolsW32.exe.
 
