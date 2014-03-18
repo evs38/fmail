@@ -172,15 +172,16 @@ u32 diskFree(char *path)
     if (dfs >= 100ui64 * 1024 * 1024)
     {
       if (dfs >= 100ui64 * 1024 * 1024 * 1024)
-        sprintf(tempStr, "Disk %s free: %Lu GB", path, dfs / (1024 * 1024 * 1024));
+        sprintf(tempStr, "Disk %s free: %LuGB", path, dfs / (1024 * 1024 * 1024));
       else
-        sprintf(tempStr, "Disk %s free: %Lu MB", path, dfs / (1024 * 1024));
+        sprintf(tempStr, "Disk %s free: %LuMB", path, dfs / (1024 * 1024));
     }
     else
-      sprintf(tempStr, "Disk %s free: %Lu KB", path, dfs / 1024);
+      sprintf(tempStr, "Disk %s free: %LuKB", path, dfs / 1024);
   }
   else
     sprintf(tempStr, "Disk %s free: %Lu", path, dfs);
+
 	logEntry(tempStr, LOG_ALWAYS, 0);
 
   if (dfs > (uint64_t)UINT32_MAX)

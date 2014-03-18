@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -908,10 +908,10 @@ tossbad:
           else if (headerStat == 1)
             printString("Error opening packet\n");
           else if (headerStat == 2)
-            logEntry("Packet is addressed to another node �� packet is renamed to .DST",
+            logEntry("Packet is addressed to another node --> packet is renamed to .DST",
                      LOG_ALWAYS, 0);
           else if (headerStat == 3)
-            logEntry("Packet password security violation �� packet is renamed to .SEC",
+            logEntry("Packet password security violation --> packet is renamed to .SEC",
                      LOG_ALWAYS, 0);
         }
         donePkt = findnext(&ffblkPkt);
@@ -1436,13 +1436,14 @@ int cdecl main(int argc, char *argv[])
                                S_IREAD | S_IWRITE)) != -1)
       {
         write( tempHandle, tempStr
-             , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u %02u:%02u, %s - Toss Summary\n\n"
+             , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u %02u:%02u:%02u, %s - Toss Summary\n\n"
                       , dayName[timeBlock.tm_wday]
                       , timeBlock.tm_year + 1900
                       , timeBlock.tm_mon + 1
                       , timeBlock.tm_mday
                       , timeBlock.tm_hour
                       , timeBlock.tm_min
+                      , timeBlock.tm_sec
                       , VersionStr()
                       )
              );
