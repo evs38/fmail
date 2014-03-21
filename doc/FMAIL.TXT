@@ -11,7 +11,7 @@
 
 
 
-                            FMail 1.66
+                            FMail 1.67
 
 
 
@@ -39,8 +39,8 @@
 
 
 
-          Copyright (C) 1991, 1999  Folkert J. Wijnstra
-          Copyright (C) 2013        Wilfred van Velzen
+          Copyright (C) 1991 - 1999  Folkert J. Wijnstra
+          Copyright (C) 2013 - 2014  Wilfred van Velzen
 
 
                         All rights reserved

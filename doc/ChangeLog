@@ -1,3 +1,7 @@
+2014-03-21  1.67.1.47
+  * Fixed some high ASCII usage.
+  * Print seconds in header of toss summary.
+
 2013-12-30  1.67.0.45
   * Disk free space calculation uses 64 bit integers. The standard 32 bit integers aren't big enough to hold todays big disk sizes.
     This also fixes the bug where the 'Sent to node' report wasn't always written to the log when tossing.
