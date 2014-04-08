@@ -2087,32 +2087,32 @@ skipHudson:
   }
   else
   {
-    printString ("Usage:\n"
-                 "\n"
-                 "   FMail <command> [parameters]\n"
-                 "\n"
-                 "Commands:\n"
-                 "\n"
-                 "   About    Show some information about the program\n"
-                 "   Scan     Scan the message base for outgoing messages\n"
-                 "   Toss     Toss and forward incoming mailbundles\n"
-                 "   Import   Import netmail messages into the message base\n"
-                 "   Pack     Pack and compress outgoing netmail found in the netmail directory\n"
-                 "   Mgr      Only process AreaMgr requests\n"
-                 "\n"
-                 "Enter 'FMail <command> ?' for more information about [parameters]\n");
-    showCursor ();
-    return (0);
+    printString("Usage:\n"
+                "\n"
+                "   FMail <command> [parameters]\n"
+                "\n"
+                "Commands:\n"
+                "\n"
+                "   About    Show some information about the program\n"
+                "   Scan     Scan the message base for outgoing messages\n"
+                "   Toss     Toss and forward incoming mailbundles\n"
+                "   Import   Import netmail messages into the message base\n"
+                "   Pack     Pack and compress outgoing netmail found in the netmail directory\n"
+                "   Mgr      Only process AreaMgr requests\n"
+                "\n"
+                "Enter 'FMail <command> ?' for more information about [parameters]\n");
+    showCursor();
+    return 0;
   }
 
-  sprintf (tempStr, "Netmail: %u,  Personal: %u,  "MBNAME": %u,  JAMbase: %u",
+  sprintf(tempStr, "Netmail: %u,  Personal: %u,  "MBNAME": %u,  JAMbase: %u",
            globVars.netCountV, globVars.perCountV,
            globVars.mbCountV,  globVars.jamCountV);
-  logEntry (tempStr, LOG_STATS, 0);
-  sprintf (tempStr, "Msgbase net: %u, echo: %u, dup: %u, bad: %u",
+  logEntry(tempStr, LOG_STATS, 0);
+  sprintf(tempStr, "Msgbase net: %u, echo: %u, dup: %u, bad: %u",
            globVars.nmbCountV, globVars.echoCountV,
            globVars.dupCountV, globVars.badCountV);
-  logEntry (tempStr, LOG_STATS, 0);
+  logEntry(tempStr, LOG_STATS, 0);
 
 
   /* Semaphore files */
@@ -2127,7 +2127,7 @@ skipHudson:
     if (config.mailer <= 1)
     {
       tempStr[1] = 'M';
-      touch (config.semaphorePath, tempStr, "");
+      touch(config.semaphorePath, tempStr, "");
     }
   }
 
@@ -2142,7 +2142,7 @@ skipHudson:
 
   if (diskError)
   {
-    newLine ();
+    newLine();
     switch (diskError)
     {
       case DERR_HACKER:
@@ -2184,9 +2184,9 @@ skipHudson:
   {
     newLine ();
     if (mailBomb)
-      logEntry ("Mail bomb protection", LOG_ALWAYS, 5);
+      logEntry("Mail bomb protection", LOG_ALWAYS, 5);
     else
-      logEntry ("Control-break pressed", LOG_ALWAYS, 3);
+      logEntry("Control-break pressed", LOG_ALWAYS, 3);
   }
 
   logActive();
@@ -2194,14 +2194,16 @@ skipHudson:
   deinitFMail();
   close(fmailLockHandle);
 
-  return (_mb_upderr ? 50 : 0);
+  return _mb_upderr ? 50 : 0;
 }
 //----------------------------------------------------------------------------
 void myexit(void)
 {
 #pragma exit myexit
 #ifdef _DEBUG
+  printString("\nPress any key to continue... ");
   getch();
+  newLine();
 #endif
 }
 //----------------------------------------------------------------------------

@@ -19,73 +19,70 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
 
-
+#include <ctype.h>
+#include <dir.h>
+#include <dos.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dir.h>
-#include <dos.h>
-#include <io.h>
-#include <errno.h>
 #include <sys/stat.h>
-#include <ctype.h>
-#include <fcntl.h>
 #include <time.h>
 
 #include "fmail.h"
-#include "areainfo.h"
-#include "nodeinfo.h"
-#include "utils.h"
+
 #include "archive.h"
-#include "msgpkt.h"
-#include "log.h"
-#include "output.h"
-#include "mtask.h"
+#include "areainfo.h"
 #include "filesys.h"
+#include "log.h"
+#include "msgpkt.h"
+#include "mtask.h"
+#include "nodeinfo.h"
+#include "output.h"
+#include "utils.h"
 #include "version.h"
 
+//---------------------------------------------------------------------------
 u16 PKT_BUFSIZE = 32000;
 
 extern time_t startTime;
 
-
 typedef struct
 {
-   u16 two;
-   u16 srcNode;
-   u16 destNode;
-   u16 srcNet;
-   u16 destNet;
-   u16 attribute;
-   u16 cost;
-}                   pmHdrType;
+  u16 two;
+  u16 srcNode;
+  u16 destNode;
+  u16 srcNet;
+  u16 destNet;
+  u16 attribute;
+  u16 cost;
+} pmHdrType;
 
+u16 inBuf
+  , startBuf
+  , endBuf
+  , oldStart;
 
-
-u16        inBuf,
-	   startBuf,
-	   endBuf,
-	   oldStart;
-char       *pktRdBuf;
+char      *pktRdBuf;
 fhandle    pktHandle;
 pmHdrType  pmHdr;
 
-
-
-extern s16          zero;
-extern char         *months,
-		    *upcaseMonths;
-extern u16          forwNodeCount;
+extern s16   zero;
+extern char *months,
+            *upcaseMonths;
+extern u16   forwNodeCount;
 
 extern nodeFileType nodeFileInfo;
 extern globVarsType globVars;
 extern configType   config;
 
-
 s16 twist = 0;
 
+//---------------------------------------------------------------------------
 void initPkt ()
 {
    twist = (getenv ("TWIST") != NULL);
@@ -106,16 +103,12 @@ void initPkt ()
                                  ((config.bufSize==3) ? 6 : 7)))));
 #endif
 }
-
-
-
+//---------------------------------------------------------------------------
 void deInitPkt ()
 {
-   free(pktRdBuf);
+  free(pktRdBuf);
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 openPktRd (char *pktName, s16 secure)
 {
    u16             srcCapability;
@@ -326,21 +319,11 @@ s16 openPktRd (char *pktName, s16 secure)
    globVars.day   = fileTime.ft_day;
    globVars.month = fileTime.ft_month;
    globVars.year  = fileTime.ft_year+1980;
-/*
-   /* Update capability word */
 
-   if ((nodeInfoPtr->node.zone != 0) &&
-       (nodeInfoPtr->options.autoDetect))
-   {
-      nodeInfoPtr->capability = srcCapability;
-   }
-*/
    nodeInfoPtr->lastMsgRcvdDat = startTime;
-   return (0);
+   return 0;
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 bscanstart (void)
 {
    u16 offset;
@@ -366,32 +349,7 @@ s16 bscanstart (void)
    startBuf++;
    return (0);
 }
-
-
-/*
-s16 bcheckendw (void)
-{
-   u16 offset;
-
-   if (endBuf-startBuf < 2)
-   {
-      offset = 0;
-      if (endBuf-startBuf == 1)
-      {
-	 pktRdBuf[0] = pktRdBuf[startBuf];
-	 offset = 1;
-      }
-      startBuf = 0;
-      oldStart = 0;
-      endBuf = _read (pktHandle, pktRdBuf+offset, PKT_BUFSIZE-offset) + offset;
-   }
-   return (!(((endBuf-startBuf) < 2) ||
-             (*((u16*)(pktRdBuf+startBuf)) == 0) ||
-             (*((u16*)(pktRdBuf+startBuf)) == 2)));
-}
-*/
-
-
+//---------------------------------------------------------------------------
 s16 bgetw (u16 *w)
 {
    u16 offset;
@@ -414,9 +372,7 @@ s16 bgetw (u16 *w)
    startBuf += 2;
    return (0);
 }
-
-
-
+//---------------------------------------------------------------------------
 static s16 bgets(char *s, size_t n) // !MSGSIZE
 {
    size_t sLen = 0;
@@ -454,9 +410,7 @@ static s16 bgets(char *s, size_t n) // !MSGSIZE
 #endif
    return (0);
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 bgetdate (char *dateStr,
               u16 *year,  u16 *month,   u16 *day,
               u16 *hours, u16 *minutes, u16 *seconds)
@@ -540,7 +494,7 @@ s16 bgetdate (char *dateStr,
 
    return (0);
 }
-
+//---------------------------------------------------------------------------
 s16 readPkt(internalMsgType *message)
 {
    u16 check = 0;
@@ -584,12 +538,12 @@ s16 readPkt(internalMsgType *message)
 
    return (0);
 }
-
+//---------------------------------------------------------------------------
 void closePktRd()
 {
   close(pktHandle);
 }
-
+//---------------------------------------------------------------------------
 s16 openPktWr (nodeFileRecType *nfInfoRec)
 {
    pktHdrType   msgPktHdr;
@@ -662,7 +616,7 @@ s16 openPktWr (nodeFileRecType *nfInfoRec)
    nfInfoRec->nodePtr->lastMsgSentDat = startTime;
    return (0);
 }
-
+//---------------------------------------------------------------------------
 static s16 closeLuPkt(void)
 {
    u16 minimum;
@@ -688,182 +642,181 @@ static s16 closeLuPkt(void)
    }
    if (minIndex == -1)
    {
-      logEntry ("ERROR: Not enough file handles available", LOG_ALWAYS, 0);
-      return (1);
+      logEntry("ERROR: Not enough file handles available", LOG_ALWAYS, 0);
+      return 1;
    }
    close(nodeFileInfo[minIndex]->pktHandle);
    nodeFileInfo[minIndex]->pktHandle = 0;
-   return (0);
+
+   return 0;
 }
-
-
-
-s16 writeEchoPkt (internalMsgType *message, s16 tinySeenByArea,
-                  echoToNodeType echoToNode)
+//---------------------------------------------------------------------------
+void RemoveNetKludge(char *text, char *kludge)
 {
-   s16         count;
-   fhandle     pktHandle;
-   fnRecType   *fnPtr;
-   char        dateStr[24];
-   char        *ftsPtr;
-   char        *helpPtr, *helpPtr2;
-   char        *pktBufStart;
-   char        *psbStart;
-   udef        pktBufLen;
+  char       *helpPtr;
+  tempStrType tempStr;
 
-// returnTimeSlice(0);
-
-   if (config.mailOptions.removeNetKludges)
-   {
-      if ((helpPtr = findCLStr (message->text, "\1INTL")) != NULL)
-      {
-	 removeLine (helpPtr);
-      }
-      if ((helpPtr = findCLStr (message->text, "\1FMPT")) != NULL)
-      {
-	 removeLine (helpPtr);
-      }
-      if ((helpPtr = findCLStr (message->text, "\1TOPT")) != NULL)
-      {
-	 removeLine (helpPtr);
-      }
-   }
-
-   strcpy (ftsPtr = message->pktInfo + PKT_INFO_SIZE - 1 -
-			    strlen(message->subject), message->subject);
-   strcpy (ftsPtr -= strlen(message->fromUserName)+1, message->fromUserName);
-   strcpy (ftsPtr -= strlen(message->toUserName)+1,   message->toUserName);
-
-   psbStart = strchr (message->text, 0);
-
-   /* Remove multiple trailing cr/lfs */
-
-   while ((*(psbStart-1)=='\r') || (*(psbStart-1)=='\n'))
-   {
-      psbStart--;
-   }
-   *(psbStart++) = '\r';
-
-   for (count = 0; (count < forwNodeCount); count++)
-   {
-      if ( ETN_READACCESS(echoToNode[ETN_INDEX(count)], count) &&
-           (nodeFileInfo[count]->nodePtr->options.active ||
-            (stricmp(nodeFileInfo[count]->nodePtr->sysopName, message->toUserName) == 0)))
-      {
-	 if (nodeFileInfo[count]->pktHandle == 0)
-	 {
-	    if (*nodeFileInfo[count]->pktFileName == 0)
-	    {
-	       openPktWr (nodeFileInfo[count]);
-	    }
-	    else
-	    {
-	       if ((nodeFileInfo[count]->pktHandle = openP(nodeFileInfo[count]->pktFileName, O_WRONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) != -1)
-	       {
-          lseek (nodeFileInfo[count]->pktHandle, 0, SEEK_END);
-	       }
-	       else
-	       {
-          nodeFileInfo[count]->pktHandle = 0;
-	       }
-	    }
-
-	    if (nodeFileInfo[count]->pktHandle == 0)
-	    {
-	       return (1);
-	    }
-	 }
-
-	 pktHandle = nodeFileInfo[count]->pktHandle;
-
-	 if ((nodeFileInfo[count]->nodePtr->options.fixDate) ||
-	     (*message->dateStr == 0))
-	 {
-	    sprintf (dateStr, "%02d %.3s %02d  %02d:%02d:%02d",
-			      message->day, months+(message->month-1)*3,
-			      message->year%100, message->hours,
-			      message->minutes,  message->seconds);
-	    strcpy (helpPtr = ftsPtr - strlen(dateStr) - 1, dateStr);
-	 }
-	 else
-	 {  strcpy (helpPtr = ftsPtr - strlen(message->dateStr) - 1,
-		    message->dateStr);
-	 }
-
-         helpPtr2 = psbStart;
-	 if (nodeFileInfo[count]->nodePtr->options.tinySeenBy ||
-	     tinySeenByArea)
-	 {
-	    helpPtr2 = stpcpy(helpPtr2, message->tinySeen);
-	 }
-	 else
-	 {  helpPtr2 = stpcpy(helpPtr2, message->normSeen);
-	 }
-	 helpPtr2 = stpcpy(helpPtr2, message->normPath);
-
-         if ( config.akaList[nodeFileInfo[count]->srcAka].nodeNum.zone &&
-              nodeFileInfo[count]->srcAka != nodeFileInfo[count]->requestedAka )
-         { sprintf(helpPtr2 , "\1PATH: %u/%u\r",
-                              config.akaList[nodeFileInfo[count]->srcAka].nodeNum.net,
-                              config.akaList[nodeFileInfo[count]->srcAka].nodeNum.node);
-         }
-
-	 pktBufStart = helpPtr - sizeof(pmHdrType);
-         pktBufLen   = (udef)strchr(message->text, 0) -
-                       (udef)pktBufStart + 1;
-
-	 ((pmHdrType*)pktBufStart)->two       = 2;
-	 ((pmHdrType*)pktBufStart)->srcNode   = nodeFileInfo[count]->srcNode.node;
-	 ((pmHdrType*)pktBufStart)->destNode  = nodeFileInfo[count]->destNode.node;
-	 ((pmHdrType*)pktBufStart)->srcNet    = nodeFileInfo[count]->srcNode.net;
-	 ((pmHdrType*)pktBufStart)->destNet   = nodeFileInfo[count]->destNode.net;
-
-	 ((pmHdrType*)pktBufStart)->attribute = message->attribute;
-	 ((pmHdrType*)pktBufStart)->cost      = message->cost;
-
-         if (_write (pktHandle, pktBufStart, pktBufLen) != (int)pktBufLen )
-         {
-     	    printString ("Cannot write to PKT file.\n");
-	        return 1;
-       	 }
-
-	 nodeFileInfo[count]->totalMsgs++;
-
-	 if ((config.maxPktSize != 0) &&
-	     (filelength (pktHandle) >= config.maxPktSize*(s32)1000))
-	 {
-	    if (_write (pktHandle, &zero, 2) != 2)
-	    {
-	       printString ("Cannot write to PKT file.\n");
-	       close(pktHandle);
-	       return (1);
-	    }
-	    close(pktHandle);
-	    nodeFileInfo[count]->pktHandle = 0;
-
-	    if ((fnPtr = malloc(sizeof(fnRecType))) == NULL)
-	    {
-	       return (1);
-	    }
-	    memset(fnPtr, 0, sizeof(fnRecType));
-
-	    strcpy(fnPtr->fileName, nodeFileInfo[count]->pktFileName);
-
-	    fnPtr->nextRec = nodeFileInfo[count]->fnList;
-	    nodeFileInfo[count]->fnList = fnPtr;
-
-	    *nodeFileInfo[count]->pktFileName = 0;
-	    nodeFileInfo[count]->bytesValid   = 0;
-	 }
-      }
-   }
-   *psbStart = 0;
-
-   return (0);
+  if ((helpPtr = findCLStr(text, kludge)) != NULL)
+  {
+    sprintf(tempStr, "Found netmail kludge in echomail: '%s'.", helpPtr + 1);
+    if (config.mailOptions.removeNetKludges)
+    {
+      strcat(tempStr, " Removed it.");
+      removeLine(helpPtr);
+    }
+    logEntry(tempStr, LOG_INBOUND | LOG_OUTBOUND, 0);
+  }
 }
+//---------------------------------------------------------------------------
+s16 writeEchoPkt(internalMsgType *message, s16 tinySeenByArea, echoToNodeType echoToNode)
+{
+  s16        count;
+  fhandle    pktHandle;
+  fnRecType *fnPtr;
+  char       dateStr[24];
+  char      *ftsPtr;
+  char      *helpPtr, *helpPtr2;
+  char      *pktBufStart;
+  char      *psbStart;
+  udef       pktBufLen;
 
+  RemoveNetKludge(message->text, "\1INTL");
+  RemoveNetKludge(message->text, "\1FMPT");
+  RemoveNetKludge(message->text, "\1TOPT");
 
+  strcpy(ftsPtr = message->pktInfo + PKT_INFO_SIZE - 1 - strlen(message->subject), message->subject);
+  strcpy(ftsPtr -= strlen(message->fromUserName)+1, message->fromUserName);
+  strcpy(ftsPtr -= strlen(message->toUserName  )+1, message->toUserName  );
 
+  psbStart = strchr (message->text, 0);
+
+  /* Remove multiple trailing cr/lfs */
+
+  while ((*(psbStart - 1)=='\r') || (*(psbStart - 1)=='\n'))
+  {
+    psbStart--;
+  }
+  *(psbStart++) = '\r';
+
+  for (count = 0; (count < forwNodeCount); count++)
+  {
+    if ( ETN_READACCESS(echoToNode[ETN_INDEX(count)], count) &&
+         (nodeFileInfo[count]->nodePtr->options.active ||
+          (stricmp(nodeFileInfo[count]->nodePtr->sysopName, message->toUserName) == 0)))
+    {
+      if (nodeFileInfo[count]->pktHandle == 0)
+      {
+        if (*nodeFileInfo[count]->pktFileName == 0)
+        {
+           openPktWr (nodeFileInfo[count]);
+        }
+        else
+        {
+          if ((nodeFileInfo[count]->pktHandle = openP(nodeFileInfo[count]->pktFileName, O_WRONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) != -1)
+          {
+            lseek (nodeFileInfo[count]->pktHandle, 0, SEEK_END);
+          }
+          else
+          {
+            nodeFileInfo[count]->pktHandle = 0;
+          }
+        }
+
+        if (nodeFileInfo[count]->pktHandle == 0)
+        {
+           return (1);
+        }
+      }
+
+	    pktHandle = nodeFileInfo[count]->pktHandle;
+
+      if (nodeFileInfo[count]->nodePtr->options.fixDate || *message->dateStr == 0)
+      {
+        sprintf( dateStr, "%02d %.3s %02d  %02d:%02d:%02d"
+               , message->day, months + (message->month - 1) * 3
+               , message->year % 100, message->hours
+               , message->minutes   , message->seconds
+               );
+        strcpy(helpPtr = ftsPtr - strlen(dateStr) - 1, dateStr);
+      }
+      else
+      {
+        strcpy(helpPtr = ftsPtr - strlen(message->dateStr) - 1, message->dateStr);
+      }
+
+      helpPtr2 = psbStart;
+      if (nodeFileInfo[count]->nodePtr->options.tinySeenBy || tinySeenByArea)
+      {
+        helpPtr2 = stpcpy(helpPtr2, message->tinySeen);
+      }
+      else
+      {
+        helpPtr2 = stpcpy(helpPtr2, message->normSeen);
+      }
+      helpPtr2 = stpcpy(helpPtr2, message->normPath);
+
+      if (  config.akaList[nodeFileInfo[count]->srcAka].nodeNum.zone
+         && nodeFileInfo[count]->srcAka != nodeFileInfo[count]->requestedAka
+         )
+      {
+        sprintf( helpPtr2 , "\1PATH: %u/%u\r"
+               , config.akaList[nodeFileInfo[count]->srcAka].nodeNum.net
+               , config.akaList[nodeFileInfo[count]->srcAka].nodeNum.node
+               );
+      }
+
+      pktBufStart = helpPtr - sizeof(pmHdrType);
+      pktBufLen   = (udef)strchr(message->text, 0) - (udef)pktBufStart + 1;
+
+      ((pmHdrType*)pktBufStart)->two       = 2;
+      ((pmHdrType*)pktBufStart)->srcNode   = nodeFileInfo[count]->srcNode.node;
+      ((pmHdrType*)pktBufStart)->destNode  = nodeFileInfo[count]->destNode.node;
+      ((pmHdrType*)pktBufStart)->srcNet    = nodeFileInfo[count]->srcNode.net;
+      ((pmHdrType*)pktBufStart)->destNet   = nodeFileInfo[count]->destNode.net;
+
+      ((pmHdrType*)pktBufStart)->attribute = message->attribute;
+      ((pmHdrType*)pktBufStart)->cost      = message->cost;
+
+      if (_write (pktHandle, pktBufStart, pktBufLen) != (int)pktBufLen )
+      {
+        printString ("Cannot write to PKT file.\n");
+        return 1;
+      }
+
+      nodeFileInfo[count]->totalMsgs++;
+
+      if (config.maxPktSize != 0 && filelength(pktHandle) >= config.maxPktSize*(s32)1000)
+      {
+        if (_write(pktHandle, &zero, 2) != 2)
+        {
+          printString("Cannot write to PKT file.\n");
+          close(pktHandle);
+          return (1);
+        }
+        close(pktHandle);
+        nodeFileInfo[count]->pktHandle = 0;
+
+        if ((fnPtr = malloc(sizeof(fnRecType))) == NULL)
+        {
+          return (1);
+        }
+        memset(fnPtr, 0, sizeof(fnRecType));
+
+        strcpy(fnPtr->fileName, nodeFileInfo[count]->pktFileName);
+
+        fnPtr->nextRec = nodeFileInfo[count]->fnList;
+        nodeFileInfo[count]->fnList = fnPtr;
+
+        *nodeFileInfo[count]->pktFileName = 0;
+        nodeFileInfo[count]->bytesValid   = 0;
+      }
+    }
+  }
+  *psbStart = 0;
+
+  return 0;
+}
+//---------------------------------------------------------------------------
 void freePktHandles(void)
 {
    u16 count;
@@ -1047,9 +1000,7 @@ s16 closeEchoPktWr(void)
    }
    return (0);
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 writeNetPktValid (internalMsgType *message, nodeFileRecType *nfInfo)
 {
    u16         len;
@@ -1057,8 +1008,6 @@ s16 writeNetPktValid (internalMsgType *message, nodeFileRecType *nfInfo)
    s32         tempLen;
    s16         error = 0;
    fnRecType   *fnPtr;
-
-// returnTimeSlice(0);
 
    if (nfInfo->pktHandle == 0)
    {
@@ -1164,9 +1113,7 @@ s16 writeNetPktValid (internalMsgType *message, nodeFileRecType *nfInfo)
    nfInfo->bytesValid = tempLen;
    return (0);
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 closeNetPktWr (nodeFileRecType *nfInfo)
 {
    fhandle     pktHandle;
@@ -1220,13 +1167,13 @@ s16 closeNetPktWr (nodeFileRecType *nfInfo)
 
    return (0);
 }
-
-
+//---------------------------------------------------------------------------
 #undef open
 
         int     no_msg;
 static  int     no_log = 0;
 
+//---------------------------------------------------------------------------
 fhandle openP (const char *pathname, int access, u16 mode)
 {
   fhandle handle;
@@ -1258,7 +1205,7 @@ fhandle openP (const char *pathname, int access, u16 mode)
 
   return handle;
 }
-
+//---------------------------------------------------------------------------
 fhandle fsopenP (const char *pathname, int access, u16 mode)
 {
   fhandle handle;
@@ -1290,4 +1237,4 @@ fhandle fsopenP (const char *pathname, int access, u16 mode)
 
   return handle;
 }
-
+//---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,14 +21,14 @@
 //
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <dos.h>
-#include <io.h>
-#include <string.h>
-#include <time.h>
 #include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include "fmail.h"
 
@@ -39,10 +39,10 @@
 #include "output.h"
 #include "version.h"
 
-
+//---------------------------------------------------------------------------
 extern configType config;
-extern char       *dayName[7];
-extern char       *months;
+extern char      *dayName[7];
+extern char      *months;
 
 time_t            startTime;
 struct tm         timeBlock;
@@ -56,18 +56,18 @@ u16               mgrLogUsed = 0;
 #ifndef __DPMI32__
 struct  COUNTRY
 {
-    short   co_date;
-    char    co_curr[5];
-    char    co_thsep[2];
-    char    co_desep[2];
-    char    co_dtsep[2];
-    char    co_tmsep[2];
-    char    co_currstyle;
-    char    co_digits;
-    char    co_time;
-    long    co_case;
-    char    co_dasep[2];
-    char    co_fill[10];
+  short co_date;
+  char  co_curr [ 5];
+  char  co_thsep[ 2];
+  char  co_desep[ 2];
+  char  co_dtsep[ 2];
+  char  co_tmsep[ 2];
+  char  co_currstyle;
+  char  co_digits;
+  char  co_time;
+  long  co_case;
+  char  co_dasep[ 2];
+  char  co_fill [10];
 };
 #endif
 #endif
@@ -76,53 +76,58 @@ struct  COUNTRY
    struct country countryInfo;
 #endif
 
-
-static void writeLogLine (fhandle logHandle, char *s)
+//---------------------------------------------------------------------------
+static void writeLogLine(fhandle logHandle, const char *s)
 {
-   time_t      timer;
-   struct tm   timeBlockL;
-   uchar       tempStr[256+32];
+  time_t    timer;
+  struct tm timeBlockL;
+  uchar     tempStr[256+32];
+  int       sl;
 
-   time (&timer);
-   timeBlockL = *gmtime(&timer);
+  time (&timer);
+  timeBlockL = *gmtime(&timer);
 
-   switch (config.logStyle)
-   {
-      case 1  : /* QuickBBS */
-      sprintf (tempStr ,"%02u-%.3s-%02u %02u:%02u  %s\n",
-              timeBlockL.tm_mday,
-              months+(timeBlockL.tm_mon*3),
-              timeBlockL.tm_year%100,
-              timeBlockL.tm_hour,
-              timeBlockL.tm_min, s);
+  switch (config.logStyle)
+  {
+    case 1  : /* QuickBBS */
+      sl = sprintf( tempStr ,"%02u-%.3s-%02u %02u:%02u  %s\n"
+                  , timeBlockL.tm_mday
+                  , months + (timeBlockL.tm_mon * 3)
+                  , timeBlockL.tm_year % 100
+                  , timeBlockL.tm_hour
+                  , timeBlockL.tm_min, s
+                  );
       break;
-      case 2  : /* D'Bridge */
-      sprintf (tempStr ,"%02u/%02u/%02u %02u:%02u  %s\n",
-              timeBlockL.tm_mon+1,
-              timeBlockL.tm_mday,
-              timeBlockL.tm_year%100,
-              timeBlockL.tm_hour,
-              timeBlockL.tm_min, s);
+    case 2  : /* D'Bridge */
+      sl = sprintf( tempStr ,"%02u/%02u/%02u %02u:%02u  %s\n"
+                  , timeBlockL.tm_mon + 1
+                  , timeBlockL.tm_mday
+                  , timeBlockL.tm_year % 100
+                  , timeBlockL.tm_hour
+                  , timeBlockL.tm_min, s
+                  );
       break;
-      case 3  : /* Binkley */
-      sprintf (tempStr ,"> %02u %.3s %02u %02u:%02u:%02u FMAIL  %s\n",
-              timeBlockL.tm_mday,
-              months+(timeBlockL.tm_mon*3),
-              timeBlockL.tm_year%100,
-              timeBlockL.tm_hour,
-              timeBlockL.tm_min,
-              timeBlockL.tm_sec, s);
+    case 3  : /* Binkley */
+      sl = sprintf( tempStr ,"> %02u %.3s %02u %02u:%02u:%02u FMAIL  %s\n"
+                  , timeBlockL.tm_mday
+                  , months + (timeBlockL.tm_mon * 3)
+                  , timeBlockL.tm_year % 100
+                  , timeBlockL.tm_hour
+                  , timeBlockL.tm_min
+                  , timeBlockL.tm_sec, s
+                  );
       break;
-      default : /* FrontDoor */
-      sprintf (tempStr, "  %2u%c%02u%c%02u  %s\n",
-              timeBlockL.tm_hour, countryInfo.co_tmsep[0],
-              timeBlockL.tm_min, countryInfo.co_tmsep[0],
-              timeBlockL.tm_sec, s);
+    default : /* FrontDoor */
+      sl = sprintf( tempStr, "  %2u%c%02u%c%02u  %s\n"
+                  , timeBlockL.tm_hour, countryInfo.co_tmsep[0]
+                  , timeBlockL.tm_min , countryInfo.co_tmsep[0]
+                  , timeBlockL.tm_sec , s
+                  );
       break;
-   }
-   write (logHandle, tempStr, strlen(tempStr));
+  }
+  write(logHandle, tempStr, sl);
 }
-
+//---------------------------------------------------------------------------
 void initLog(char *s, s32 switches)
 {
    fhandle     logHandle;
@@ -156,173 +161,167 @@ void initLog(char *s, s32 switches)
    }
    else
    {
-      sprintf(tempStr2, "%s - %s", VersionStr(), s);
-      helpPtr = strchr(tempStr2, 0);
+     sprintf(tempStr2, "%s - %s", VersionStr(), s);
+     helpPtr = strchr(tempStr2, 0);
 
-      for (count = 0; count < 26; count++)
-      {
-         if (switches & select)
-         {
-            *(helpPtr++) = ' ';
-            *(helpPtr++) = '/';
-            *(helpPtr++) = 'A'+count;
-         }
-         select <<= 1;
-      }
-      *helpPtr = 0;
+     for (count = 0; count < 26; count++)
+     {
+       if (switches & select)
+       {
+         *(helpPtr++) = ' ';
+         *(helpPtr++) = '/';
+         *(helpPtr++) = 'A'+count;
+       }
+       select <<= 1;
+     }
+     *helpPtr = 0;
 
-      if (config.logStyle == 0)
-      {
-        write( logHandle, tempStr
-             , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u, %s\n"
-                      , dayName[timeBlock.tm_wday]
-                      , timeBlock.tm_year + 1900
-                      , timeBlock.tm_mon + 1
-                      , timeBlock.tm_mday
-                      , tempStr2
-                      )
-             );
-      }
-      else
-      {
-         if (config.logStyle == 1)
-         {
-            writeLogLine (logHandle, "**************************************************");
-         }
-         if (config.logStyle == 3)
-         {
-            write (logHandle, "\n", 1);
-         }
-         writeLogLine (logHandle, tempStr2);
-      }
-      close(logHandle);
+     if (config.logStyle == 0)
+     {
+       write( logHandle, tempStr
+            , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u, %s\n"
+                     , dayName[timeBlock.tm_wday]
+                     , timeBlock.tm_year + 1900
+                     , timeBlock.tm_mon + 1
+                     , timeBlock.tm_mday
+                     , tempStr2
+                     )
+            );
+     }
+     else
+     {
+       if (config.logStyle == 1)
+         writeLogLine(logHandle, "**************************************************");
+
+       if (config.logStyle == 3)
+         write(logHandle, "\n", 1);
+
+       writeLogLine(logHandle, tempStr2);
+     }
+     close(logHandle);
    }
 }
-
-
-
-void logEntry (char *s, u16 entryType, u16 errorLevel)
+//---------------------------------------------------------------------------
+void logEntry(char *s, u16 entryType, u16 errorLevel)
 {
-   fhandle     logHandle;
-   tempStrType tempStr;
+  fhandle     logHandle;
+  tempStrType tempStr;
 
-   if (!(entryType & LOG_NOSCRN))
-   {
-      printString (s);
-      newLine ();
-   }
+  if (!(entryType & LOG_NOSCRN))
+  {
+    printString(s);
+    newLine();
+  }
 
-   if ((entryType == LOG_NEVER) ||
-       ((((config.logInfo | LOG_ALWAYS) & entryType) == 0) &&
-        ((config.logInfo & LOG_DEBUG) == 0)))
-   {
-      if (errorLevel)
-      {
-         if (errorLevel != 100)
-         {
-            sprintf (tempStr, "Exiting with errorlevel %u", errorLevel);
-            printString (tempStr);
-            newLine ();
-            if (entryType != LOG_NEVER)
-               closeDup ();
-         }
-         showCursor ();
-         exit (errorLevel==100 ? 0 : errorLevel);
-      }
-      return;
-   }
-
-   if ((logHandle = openP(config.logName, O_RDWR|O_APPEND|O_TEXT|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
-   {
-      writeLogLine (logHandle, s);
-   }
-
-   if (errorLevel)
-   {
+  if (  entryType == LOG_NEVER
+     || ( ((config.logInfo | LOG_ALWAYS) & entryType) == 0
+        && (config.logInfo & LOG_DEBUG) == 0
+        )
+     )
+  {
+    if (errorLevel)
+    {
       if (errorLevel != 100)
       {
-         sprintf (tempStr, "Exiting with errorlevel %u", errorLevel);
-         printString (tempStr);
-         newLine();
-         if (logHandle != -1)
-         {
-            writeLogLine (logHandle, tempStr);
-            close(logHandle);
-         }
-         if (entryType != LOG_NEVER)
-            closeDup ();
+        sprintf(tempStr, "Exiting with errorlevel %u", errorLevel);
+        printString(tempStr);
+        newLine();
+        if (entryType != LOG_NEVER)
+          closeDup();
       }
-      showCursor ();
-      exit (errorLevel==100 ? 0 : errorLevel);
-   }
-   if (logHandle != -1)
-   {
-      close(logHandle);
-   }
+      showCursor();
+      exit(errorLevel == 100 ? 0 : errorLevel);
+    }
+    return;
+  }
+
+  if ((logHandle = openP(config.logName, O_RDWR|O_APPEND|O_TEXT|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
+  {
+    writeLogLine(logHandle, s);
+  }
+
+  if (errorLevel)
+  {
+    if (errorLevel != 100)
+    {
+      sprintf(tempStr, "Exiting with errorlevel %u", errorLevel);
+      printString(tempStr);
+      newLine();
+      if (logHandle != -1)
+      {
+        writeLogLine(logHandle, tempStr);
+        close(logHandle);
+      }
+      if (entryType != LOG_NEVER)
+        closeDup();
+    }
+    showCursor();
+    exit (errorLevel==100 ? 0 : errorLevel);
+  }
+  if (logHandle != -1)
+  {
+    close(logHandle);
+  }
 }
-
-
-
+//---------------------------------------------------------------------------
 void mgrLogEntry(char *s)
 {
-   fhandle     logHandle;
-   tempStrType tempStr;
+  fhandle     logHandle;
+  tempStrType tempStr;
 
-   printString (s);
-   newLine ();
+  printString(s);
+  newLine();
 
-   if ((*config.areaMgrLogName) && (!(mgrLogUsed++)) &&
-       stricmp(config.logName, config.areaMgrLogName) &&
-       ((logHandle = openP(config.areaMgrLogName, O_RDWR|O_CREAT|O_APPEND|O_TEXT|O_DENYNONE,
-                                                  S_IREAD|S_IWRITE)) != -1))
-   {
-      if (config.logStyle == 0)
+  if ((*config.areaMgrLogName) && (!(mgrLogUsed++)) &&
+      stricmp(config.logName, config.areaMgrLogName) &&
+      ((logHandle = openP(config.areaMgrLogName, O_RDWR|O_CREAT|O_APPEND|O_TEXT|O_DENYNONE,
+                                                 S_IREAD|S_IWRITE)) != -1))
+  {
+    if (config.logStyle == 0)
+    {
+      write( logHandle, tempStr
+           , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u, %s - AreaMgr\n"
+                    , dayName[timeBlock.tm_wday]
+                    , timeBlock.tm_year + 1900
+                    , timeBlock.tm_mon + 1
+                    , timeBlock.tm_mday
+                    , VersionStr()
+                    )
+           );
+    }
+    else
+    {
+      if (config.logStyle == 1)
       {
-        write( logHandle, tempStr
-             , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u, %s - AreaMgr\n"
-                      , dayName[timeBlock.tm_wday]
-                      , timeBlock.tm_year + 1900
-                      , timeBlock.tm_mon + 1
-                      , timeBlock.tm_mday
-                      , VersionStr()
-                      )
-             );
+        writeLogLine(logHandle, "**************************************************");
       }
-      else
+      if (config.logStyle == 3)
       {
-         if (config.logStyle == 1)
-         {
-            writeLogLine (logHandle, "**************************************************");
-         }
-         if (config.logStyle == 3)
-         {
-            write (logHandle, "\n", 1);
-         }
-         writeLogLine (logHandle, s);
+        write(logHandle, "\n", 1);
       }
-      close(logHandle);
-   }
+      writeLogLine(logHandle, s);
+    }
+    close(logHandle);
+  }
 
-   if (((logHandle = openP(*config.areaMgrLogName ?
-                            config.areaMgrLogName : config.logName,
-             O_RDWR|O_APPEND|O_TEXT|O_DENYNONE, S_IREAD|S_IWRITE)) != -1))
-   {
-      writeLogLine (logHandle, s);
-      close(logHandle);
-   }
+  if (((logHandle = openP(*config.areaMgrLogName ?
+                           config.areaMgrLogName : config.logName,
+            O_RDWR|O_APPEND|O_TEXT|O_DENYNONE, S_IREAD|S_IWRITE)) != -1))
+  {
+    writeLogLine (logHandle, s);
+    close(logHandle);
+  }
 }
-
-
-
+//---------------------------------------------------------------------------
 void logActive (void)
 {
-   time_t endTime;
-   char   timeStr[32];
+  time_t endTime;
+  char   timeStr[32];
 
-   newLine ();
-   time(&endTime);
-   endTime -= startTime;
-   sprintf(timeStr, "Active: %2u:%02u", (u16)(endTime/60),
-               (u16)(endTime%60));
-   logEntry (timeStr, LOG_STATS, 0);
+  newLine();
+  time(&endTime);
+  endTime -= startTime;
+  sprintf(timeStr, "Active: %2u:%02u", (u16)(endTime / 60), (u16)(endTime % 60));
+  logEntry(timeStr, LOG_STATS, 0);
 }
+//---------------------------------------------------------------------------
