@@ -1,24 +1,25 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,17 +32,19 @@
 #include <sys/stat.h>
 
 #include "fmail.h"
+
 #include "areainfo.h"
+#include "config.h"
+#include "crc.h"
+#include "filesys.h"
 #include "jam.h"
 #include "jamfun.h"
+#include "log.h"
+#include "msgpkt.h"
+#include "mtask.h"
 #include "output.h"
 #include "utils.h"
-#include "msgpkt.h"
-#include "crc.h"
-#include "log.h"
-#include "config.h"
-#include "filesys.h"
-#include "mtask.h"
+
 
 char jam_subfields[_JAM_MAXSUBLENTOT];
 
@@ -540,11 +543,10 @@ u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_su
    if ( read(jam_hdrhandle, jam_subfields, (udef)jam_hdrrec->SubfieldLen) != jam_hdrrec->SubfieldLen )
       return 0;
    if ( message != NULL )
-   {  struct tm tm;
-
-      tm = *jam_gettime(jam_hdrrec->DateWritten);
-      message->year    = tm.tm_year+1900;
-      message->month   = tm.tm_mon+1;
+   {  
+      struct tm tm = *jam_gettime(jam_hdrrec->DateWritten);
+      message->year    = tm.tm_year + 1900;
+      message->month   = tm.tm_mon + 1;
       message->day     = tm.tm_mday;
       message->hours   = tm.tm_hour;
       message->minutes = tm.tm_min;

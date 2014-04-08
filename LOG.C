@@ -1,24 +1,25 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -30,11 +31,12 @@
 #include <sys/stat.h>
 
 #include "fmail.h"
+
 #include "areainfo.h"
 #include "dups.h"
-#include "output.h"
 #include "log.h"
 #include "msgpkt.h"
+#include "output.h"
 #include "version.h"
 
 
@@ -52,7 +54,7 @@ u16               mgrLogUsed = 0;
 #ifdef __BORLANDC__
 #ifdef __WIN32__
 #ifndef __DPMI32__
-struct  COUNTRY                
+struct  COUNTRY
 {
     short   co_date;
     char    co_curr[5];
@@ -82,7 +84,7 @@ static void writeLogLine (fhandle logHandle, char *s)
    uchar       tempStr[256+32];
 
    time (&timer);
-   timeBlockL = *gmtime (&timer);
+   timeBlockL = *gmtime(&timer);
 
    switch (config.logStyle)
    {
@@ -131,7 +133,7 @@ void initLog(char *s, s32 switches)
    char        *helpPtr;
 
    time(&startTime);
-   timeBlock = *gmtime (&startTime);
+   timeBlock = *gmtime(&startTime);
    dayOfWeek = timeBlock.tm_wday;
 
    if (!*config.logName)
@@ -171,13 +173,15 @@ void initLog(char *s, s32 switches)
 
       if (config.logStyle == 0)
       {
-         sprintf (tempStr, "\n----------  %s %2u %.3s %02u, %s\n",
-                           dayName[timeBlock.tm_wday],
-                           timeBlock.tm_mday,
-                           months+(timeBlock.tm_mon*3),
-                           timeBlock.tm_year%100,
-                           tempStr2);
-         write (logHandle, tempStr, strlen(tempStr));
+        write( logHandle, tempStr
+             , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u, %s\n"
+                      , dayName[timeBlock.tm_wday]
+                      , timeBlock.tm_year + 1900
+                      , timeBlock.tm_mon + 1
+                      , timeBlock.tm_mday
+                      , tempStr2
+                      )
+             );
       }
       else
       {
@@ -274,13 +278,15 @@ void mgrLogEntry(char *s)
    {
       if (config.logStyle == 0)
       {
-         sprintf (tempStr, "\n----------  %s %2u %.3s %02u, %s - AreaMgr\n",
-                           dayName[timeBlock.tm_wday],
-                           timeBlock.tm_mday,
-                           months+(timeBlock.tm_mon*3),
-                           timeBlock.tm_year%100,
-                           VersionStr());
-         write (logHandle, tempStr, strlen(tempStr));
+        write( logHandle, tempStr
+             , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u, %s - AreaMgr\n"
+                      , dayName[timeBlock.tm_wday]
+                      , timeBlock.tm_year + 1900
+                      , timeBlock.tm_mon + 1
+                      , timeBlock.tm_mday
+                      , VersionStr()
+                      )
+             );
       }
       else
       {

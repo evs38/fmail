@@ -95,45 +95,35 @@ const s32 crc32tab[256] =
    0xb40bbe37L, 0xc30c8ea1L, 0x5a05df1bL, 0x2d02ef8dL
 };
 
-
-
-u32 crc32 (char *string)
+u32 crc32(char *string)
 {
-   u32 crc = 0xffffffffL;
+  u32 crc = 0xffffffffL;
 
-   while (*string)
-   {
-      crc = crc32tab [((char)crc)^((char)toupper(*(string++)))] ^ (crc >> 8);
-   }
-   return (crc);
+  while (*string)
+    crc = crc32tab[((u8)crc) ^ ((u8)toupper(*(string++)))] ^ (crc >> 8);
+
+  return crc;
 }
 
-
-
-u32 crc32old (char *string)
+u32 crc32old(char *string)
 {
-   s32 crc = 0xffffffffL;
+  s32 crc = 0xffffffffL;
 
-   while (*string)
-   {
-      crc = crc32tab [((char)crc)^((char)toupper(*(string++)))] ^ (crc >> 8);
-   }
-   return (crc);
+  while (*string)
+    crc = crc32tab[((u8)crc) ^ ((u8)toupper(*(string++)))] ^ (crc >> 8);
+
+  return crc;
 }
 
-
-
-u32 crc32len (char *string, s16 len)
+u32 crc32len(char *string, s16 len)
 {
-   u32 crc = 0xffffffffL;
+  u32 crc = 0xffffffffL;
 
-   while (len--)
-   {
-      crc = crc32tab [((char)crc)^((char)toupper(*(string++)))] ^ (crc >> 8);
-   }
-   return (crc);
+  while (len--)
+    crc = crc32tab[((u8)crc) ^ ((u8)toupper(*(string++)))] ^ (crc >> 8);
+
+  return crc;
 }
-
 
 #if 0
 /* was used by original JAM code */

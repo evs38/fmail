@@ -1,3 +1,8 @@
+2014-03-21
+
+Release of FMailW32 1.67 (GPL)
+
+
 2013-10-15
 
 Release of FMailW32 1.66 (GPL)

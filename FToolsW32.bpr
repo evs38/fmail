@@ -84,11 +84,11 @@
 IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
-MinorVer=66
+MinorVer=67
 Release=0
-Build=32
+Build=45
 Debug=0
-PreRelease=1
+PreRelease=0
 Special=0
 Private=0
 DLL=0
@@ -98,13 +98,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FTools Windows 32 bit version
-FileVersion=1.66.0.32
+FileVersion=1.67.0.45
 InternalName=FTools
 LegalCopyright=Copyright (c) 1991 - 2013 FMail developers
 LegalTrademarks=
 OriginalFilename=FToolsW32.exe
 ProductName=FMail
-ProductVersion=1.66
+ProductVersion=1.67
 
 [Excluded Packages]
 C:\Program Files\Borland\CBuilder6\Bin\dclstd60.bpl=Borland Standard Components

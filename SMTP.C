@@ -1,39 +1,42 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 
-#include "stdio.h"
-#include "time.h"
-#include "dir.h"
-#include "io.h"
-#include "fcntl.h"
-#include "sys/stat.h"
-#include "winsock.h"
+#include <dir.h>
+#include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <winsock.h>
 
 #include "fmail.h"
+
 #include "areainfo.h"
-#include "output.h"
-#include "utils.h"
 #include "log.h"
+#include "output.h"
 #include "smtp.h"
+#include "utils.h"
 
 
 // ALGEMENE VARIABELEN ========================================================
@@ -99,7 +102,7 @@ static void addsbuf(char *data)
 // Do not add entries past this one
 
 // Note: the order of the entries is important.
-//       They must be synchronized with eResponse entries. 
+//       They must be synchronized with eResponse entries.
 static int response_code[4] =
 {
 	250,              // GENERIC_SUCCESS
@@ -158,10 +161,10 @@ int  nMask[] = { 0, 1, 3, 7, 15, 31, 63, 127, 255 };
 
 #define         BYTES_TO_READ          54
 static  char    szInput[BYTES_TO_READ];
-static	int	nInputSize, nBitsRemaining;      
+static	int	nInputSize, nBitsRemaining;
 static	int	lBitStorage;
 
-                
+
 int read_bits(int nNumBits, int *pBitsRead, int *lp)
 {
    long lScratch;
@@ -339,7 +342,7 @@ static int openConnection(u8 *SMTPServerName)
    {  sprintf(buf, "Hostname not found: %s", SMTPServerName);
       logEntry(buf, LOG_ALWAYS, 0);
       goto einde;
-   }                                             
+   }
    if ( (servent = getservbyname("smtp", "tcp")) == NULL )
    {  logEntry("Service SMTP(TCP) not found", LOG_ALWAYS, 0);
       goto einde;
@@ -357,7 +360,7 @@ static int openConnection(u8 *SMTPServerName)
    memset(&sockaddrR, 0, sizeof(sockaddrR));
    sockaddrR.sin_family = AF_INET;
    sockaddrR.sin_port = servent->s_port;
-   memcpy((char FAR *)&(sockaddrR.sin_addr), hostent->h_addr_list[0], hostent->h_length); 
+   memcpy((char FAR *)&(sockaddrR.sin_addr), hostent->h_addr_list[0], hostent->h_length);
    if ( connect(ws, (SOCKADDR *)&sockaddrR, sizeof(sockaddrR)) )
    {  logEntry("Can't connect to host", LOG_ALWAYS, 0);
       goto einde;

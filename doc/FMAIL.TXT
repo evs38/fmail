@@ -11,7 +11,7 @@
 
 
 
-                            FMail 1.66
+                            FMail 1.67
 
 
 
@@ -39,8 +39,8 @@
 
 
 
-          Copyright (C) 1991, 1999  Folkert J. Wijnstra
-          Copyright (C) 2013        Wilfred van Velzen
+          Copyright (C) 1991 - 1999  Folkert J. Wijnstra
+          Copyright (C) 2013 - 2014  Wilfred van Velzen
 
 
                         All rights reserved
@@ -1721,7 +1721,7 @@ Origin address
 
 The syntax to be used for Pack Manager entries:
 
-<node> ... [EXCEPT <node> ...] [VIA <node>|HOST] [/A] [/C] [/H]
+<node>... [EXCEPT <node>...] [VIA <node>|HOST] [/A] [/C] [/H]
 [/I] [/L] [/O]
 
 The one or more <node> entries before the optional VIA keyword
@@ -1733,7 +1733,7 @@ specifies nodes 2:283/600, 610, 620, 630 etc. The wildcard '#' is
 substituted by digits 0-9 in subsequent evaluations. If the VIA
 node is 'HOST', the mail bundles will be sent to the net hosts.
 
-Five switches may be used:
+The following switches may be used:
 
 /A        Do not process AreaMgr requests
 
@@ -2339,9 +2339,12 @@ routed through a specified system or may be sent directly.
 
 The syntax of FMail Pack:
 
-          FMail Pack     [<node> ... [EXCEPT <node>]
-                         [VIA <node>|HOST]
-                         [/A] [/C] [/H] [/I] [/L] [/O] ]
+          FMail Pack  [ <node>...
+                        [EXCEPT <node>...]
+                        [VIA <node>|HOST]
+                        [/A] [/C] [/H] [/I] [/L] [/O]
+                      ]
+
 
 This syntax is the same as the syntax of Pack Manager entries and
 is described in section 3.7. If the command line does not contain

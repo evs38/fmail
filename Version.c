@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------
 //
-// Copyright (C) 2011  Wilfred van Velzen
+// Copyright (C) 2011-2014  Wilfred van Velzen
 //
 // This file is part of FMail.
 //
@@ -65,7 +65,7 @@
 #else
   #define BLSTR ""
   #define BSSTR ""
-#endif  
+#endif
 
 #if   defined(FSETUP)
   #define TOOL "FSetup"
@@ -73,77 +73,89 @@
   #define TOOL "FTools"
 #else // FMAIL
   #define TOOL "FMail"
-#endif  
+#endif
 
-#define VERSION_STR  TOOL PTYPE MBTYPE"-"VERNUM BLSTR
-#define TEARLINE_STR "--- "TOOL PTYPE"-"VERNUM BSSTR
-#define TID_STR      TOOL PTYPE"-"VERNUM BSSTR
-
+#define VERSION_STR  TOOL PTYPE MBTYPE "-%s" BLSTR
+#define TEARLINE_STR "--- " TOOL PTYPE "-%s" BSSTR
+#define TID_STR      TOOL PTYPE "-%s" BSSTR
+#ifdef __WIN32__
+#define VERSTR VersionString()
+#else
+#define VERSTR VERNUM
+#endif
 //----------------------------------------------------------------------------
-const char versionStr[] = VERSION_STR;
+char versionStr[82] = { 0 };
+
 const char *VersionStr(void)
 {
+  if (*versionStr == 0)
+#ifdef BETA
+    sprintf(versionStr, VERSION_STR"%04d%02d%02d", VERSTR, YEAR, MONTH + 1, DAY);
+#else
+    sprintf(versionStr, VERSION_STR, VERSTR);
+#endif
   return versionStr;
 }
 //----------------------------------------------------------------------------
 char tearStr[82] = { 0 };
+
 const char *TearlineStr(void)
 {
+  if (*tearStr == 0)
 #ifdef BETA
-  if (*tearStr == 0)
-    sprintf(tearStr, TEARLINE_STR"%04d%02d%02d\r", YEAR, MONTH + 1, DAY);
+    sprintf(tearStr, TEARLINE_STR"%04d%02d%02d\r", VERSTR, YEAR, MONTH + 1, DAY);
 #else
-  if (*tearStr == 0)
-    sprintf(tearStr, TEARLINE_STR"\r");
+    sprintf(tearStr, TEARLINE_STR"\r", VERSTR);
 #endif
   return tearStr;
 }
 //----------------------------------------------------------------------------
-#ifdef BETA
 char tidStr[82] = { 0 };
-#else
-const char tidStr[] = TID_STR;
-#endif
+
 const char *TIDStr(void)
 {
-#ifdef BETA
   if (*tidStr == 0)
-    sprintf(tidStr, TID_STR"%04d%02d%02d", YEAR, MONTH + 1, DAY);
+#ifdef BETA
+    sprintf(tidStr, TID_STR"%04d%02d%02d", VERSTR, YEAR, MONTH + 1, DAY);
+#else
+    sprintf(tidStr, TID_STR, VERSTR);
 #endif
   return tidStr;
 }
 //----------------------------------------------------------------------------
 #ifdef __WIN32__
-char *VersionString(void)
+const char *VersionString(void)
 {
-  static char resultStr[MAX_PATH];
+  static char resultStr[MAX_PATH] = { 0 };
   char        fullPath [MAX_PATH];
   DWORD       dummy;
   DWORD       verInfoSize;
 
-  GetModuleFileName(NULL, fullPath, sizeof(fullPath));
-  verInfoSize = GetFileVersionInfoSize(fullPath, &dummy);
-
-  if (verInfoSize == 0)
-    strcpy(resultStr, VERNUM);
-  else
+  if (*resultStr == 0)
   {
-    unsigned int verValueSize;
-    VS_FIXEDFILEINFO *verValue;
-    DWORD dwFileVersionMS
-        , dwFileVersionLS;
-    byte *verInfo = malloc(verInfoSize);
-    GetFileVersionInfo(fullPath, 0, verInfoSize, verInfo);
-    VerQueryValue(verInfo, "\\", (void**)&verValue, &verValueSize);
+    GetModuleFileName(NULL, fullPath, sizeof(fullPath));
+    verInfoSize = GetFileVersionInfoSize(fullPath, &dummy);
 
-    dwFileVersionMS = verValue->dwFileVersionMS;
-    dwFileVersionLS = verValue->dwFileVersionLS;
+    if (verInfoSize == 0)
+      strcpy(resultStr, VERNUM);
+    else
+    {
+      unsigned int verValueSize;
+      VS_FIXEDFILEINFO *verValue;
+      DWORD dwFileVersionMS
+          , dwFileVersionLS;
+      byte *verInfo = malloc(verInfoSize);
+      GetFileVersionInfo(fullPath, 0, verInfoSize, verInfo);
+      VerQueryValue(verInfo, "\\", (void**)&verValue, &verValueSize);
 
-    sprintf(resultStr, "%d.%d.%d.%d", HIWORD(dwFileVersionMS), LOWORD(dwFileVersionMS), HIWORD(dwFileVersionLS), LOWORD(dwFileVersionLS));
+      dwFileVersionMS = verValue->dwFileVersionMS;
+      dwFileVersionLS = verValue->dwFileVersionLS;
 
-    free(verInfo);
+      sprintf(resultStr, "%d.%d.%d.%d", HIWORD(dwFileVersionMS), LOWORD(dwFileVersionMS), HIWORD(dwFileVersionLS), LOWORD(dwFileVersionLS));
+
+      free(verInfo);
+    }
   }
-
   return resultStr;
 }
 #if 0

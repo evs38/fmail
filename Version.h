@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------
 //
-// Copyright (C) 2011 - 2013  Wilfred van Velzen
+// Copyright (C) 2011 - 2014  Wilfred van Velzen
 //
 // This file is part of FMail.
 //
@@ -21,13 +21,16 @@
 #ifndef __version_h
 #define __version_h
 
-#define VERNUM        "1.66"
+#define VERNUM        "1.67"
 #define SERIAL_MAJOR  1
-#define SERIAL_MINOR  66
+#define SERIAL_MINOR  67
 
-const char *VersionStr (void);
-const char *TearlineStr(void);
-const char *TIDStr     (void);
+const char *VersionStr   (void);
+const char *TearlineStr  (void);
+const char *TIDStr       (void);
+#ifdef __WIN32__
+const char *VersionString(void);
+#endif
 
 #define PIDStr() TIDStr()
 
