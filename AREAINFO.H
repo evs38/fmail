@@ -1,5 +1,6 @@
 /*
- *  Copyright (C) 2007 Folkert J. Wijnstra
+ *  Copyright (C) 2007        Folkert J. Wijnstra
+ *  Copyright (C) 2008 - 2013 Wilfred van Velzen
  *
  *
  *  This file is part of FMail.
@@ -35,9 +36,11 @@
 
 
 typedef struct
-{  tempStrType fileName;
-   s16         valid;
-   void        *nextRec;  } fnRecType;
+{  
+  tempStrType fileName;
+  s16         valid;
+  void        *nextRec;  
+} fnRecType;
 
 
 typedef u16 echoToNodeType[MAX_OUTPKT/8];
@@ -45,22 +48,23 @@ typedef u16 *echoToNodePtrType;
 
 typedef struct
 {
-   uchar           *areaName;
-   uchar           *oldAreaName;
-   u16             writeLevel;
-   u16             board;
-   uchar           *JAMdirPtr;
-   uchar           address;
-   u32             alsoSeenBy;
-   areaOptionsType options;
-   uchar           outStatus;
-   uchar           *originLine;
-   u32             areaNameCRC;
-   u16             msgCount;
-   u16             dupCount;
-   u16             msgCountV;
-   u16             dupCountV;
-   u16             echoToNodeCount;     } cookedEchoType;
+  uchar           *areaName;
+  uchar           *oldAreaName;
+  u16             writeLevel;
+  u16             board;
+  uchar           *JAMdirPtr;
+  uchar           address;
+  u32             alsoSeenBy;
+  areaOptionsType options;
+  uchar           outStatus;
+  uchar           *originLine;
+  u32             areaNameCRC;
+  u16             msgCount;
+  u16             dupCount;
+  u16             msgCountV;
+  u16             dupCountV;
+  u16             echoToNodeCount;     
+} cookedEchoType;
 
 
 typedef cookedEchoType *cookedEchoPtrType;
@@ -70,22 +74,23 @@ typedef cookedEchoType *cookedEchoPtrType;
 
 typedef struct
 {
-   nodeNumType  srcNode;
-   nodeNumType  destNode;
-   nodeNumType  destNode4d;
-   s16          srcAka;       /* has to be s16 */
-   s16          requestedAka; /* has to be s16 */
-   u16          destFake;
-   s32          bytesValid;
-   nodeInfoType *nodePtr;
-   fnRecType    *fnList;
-   tempStrType  pktFileName;
-   s16          pktHandle;
-   u16          fromNodeSec,
-		fromNodeDup,
-		fromNodeMsg;
-   u16          totalMsgs;
-   u16          totalMsgsV;   } nodeFileRecType;
+  nodeNumType  srcNode;
+  nodeNumType  destNode;
+  nodeNumType  destNode4d;
+  s16          srcAka;       /* has to be s16 */
+  s16          requestedAka; /* has to be s16 */
+  u16          destFake;
+  s32          bytesValid;
+  nodeInfoType *nodePtr;
+  fnRecType    *fnList;
+  tempStrType  pktFileName;
+  s16          pktHandle;
+  u16          fromNodeSec,
+  fromNodeDup,
+  fromNodeMsg;
+  u16          totalMsgs;
+  u16          totalMsgsV;   
+} nodeFileRecType;
 
 
 typedef nodeFileRecType *nodeFileType[MAX_OUTPKT];
@@ -93,15 +98,16 @@ typedef nodeFileRecType *nodeFileType[MAX_OUTPKT];
 
 typedef struct
 {
-   uchar           *areaName;
-   uchar           *comment;         
-   u16             boardNumRA;
-   uchar           msgBaseType;
-   uchar           *msgBasePath;
-   u16             board;
-   areaOptionsType options;
-   u16             address;
-   u32             group;     } rawEchoTypeX;
+  uchar           *areaName;
+  uchar           *comment;         
+  u16             boardNumRA;
+  uchar           msgBaseType;
+  uchar           *msgBasePath;
+  u16             board;
+  areaOptionsType options;
+  u16             address;
+  u32             group;     
+} rawEchoTypeX;
 
 
 

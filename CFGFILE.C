@@ -31,6 +31,7 @@
 #include "fmstruct.h"
 #include "cfgfile.h"
 #include "internal.h" /* not necessary for 3rd party programs */
+#include "o_deny.h"
 
 
 /* set to non-zero value if automatic conversion is desired */
@@ -55,26 +56,27 @@ typedef struct
 
 
 static configFileInfoType fileData[MAX_CFG_FILES] =
-   {
-	/* CFG_GENERAL */
-	{       "FMAIL.CFG", 0, sizeof(configType), -1, NULL,
-		"FMail Configuration File rev. 1.1\x1a",
-		 0x0110, DATATYPE_CF, 'CF', 0 },
-	/* CFG_NODES */
-	{       "FMAIL.NOD", 0, sizeof(nodeInfoType), -1, NULL,
-		"FMail Node File rev. 1.1\x1a",
-		 0x0110, DATATYPE_NO, 'NO', 0 },
-	/* CFG_ECHOAREAS */
-	{       "FMAIL.AR", 0, RAWECHO_SIZE, -1, NULL,
-		"FMail Area File rev. 1.1\x1a",
-		 0x0110, DATATYPE_AE, 'AE', 0 },
-	/* CFG_AREADEF */
-	{       "FMAIL.ARD", 0, RAWECHO_SIZE, -1, NULL,
-		"FMail Area File rev. 1.1\x1a",
-		 0x0110, DATATYPE_AD, 'AD', 0 } };
+{
+    /* CFG_GENERAL */
+    {       "FMAIL.CFG", 0, sizeof(configType), -1, NULL,
+            "FMail Configuration File rev. 1.1\x1a",
+            0x0110, DATATYPE_CF, 'CF', 0 },
+    /* CFG_NODES */
+    {       "FMAIL.NOD", 0, sizeof(nodeInfoType), -1, NULL,
+            "FMail Node File rev. 1.1\x1a",
+            0x0110, DATATYPE_NO, 'NO', 0 },
+    /* CFG_ECHOAREAS */
+    {       "FMAIL.AR", 0, RAWECHO_SIZE, -1, NULL,
+            "FMail Area File rev. 1.1\x1a",
+            0x0110, DATATYPE_AE, 'AE', 0 },
+    /* CFG_AREADEF */
+    {       "FMAIL.ARD", 0, RAWECHO_SIZE, -1, NULL,
+            "FMail Area File rev. 1.1\x1a",
+            0x0110, DATATYPE_AD, 'AD', 0 }
+};
 
 
-static configFileInfoType cfiArr[MAX_CFG_FILES];
+static configFileInfoType cfiArr[MAX_CFG_FILES] = { 0 };
 
 extern char configPath[128]; /* Path to directory with FMail config files */
 
@@ -84,7 +86,7 @@ s16 openConfig(u16 fileType, headerType **header, void **buf)
 {
    pathType areaInfoPath, tempPath;
    fhandle  temphandle;
-   uchar    *helpPtr;
+   char    *helpPtr;
    u16      count, count2;
    u16      orgRecSize;
    nodeNumType *nodeNumBuf;
@@ -95,8 +97,8 @@ s16 openConfig(u16 fileType, headerType **header, void **buf)
 
    fileData[fileType].recordSize = fileData[fileType].bufferSize;
    if ( fileType == CFG_ECHOAREAS || fileType == CFG_AREADEF )
-      fileData[fileType].recordSize -= 
- 	 (MAX_FORWARDDEF - config.maxForward)*sizeof(nodeNumXType);
+      fileData[fileType].recordSize -=
+     (MAX_FORWARDDEF - config.maxForward)*sizeof(nodeNumXType);
 
 restart:
    strcpy(areaInfoPath, configPath);
@@ -111,7 +113,7 @@ restart:
    }
    if (filelength(cfiArr[fileType].handle) == 0)
    {
-      strcpy(cfiArr[fileType].header.versionString, fileData[fileType].revString);
+      strcpy((char*)cfiArr[fileType].header.versionString, fileData[fileType].revString);
       cfiArr[fileType].header.revNumber    = fileData[fileType].revNumber;
       cfiArr[fileType].header.headerSize   = sizeof(headerType);
       cfiArr[fileType].header.recordSize   = fileData[fileType].recordSize;
@@ -128,13 +130,13 @@ restart:
       if (memcmp(cfiArr[fileType].header.versionString, "FMail", 5) ||
           (cfiArr[fileType].header.headerSize < sizeof(headerType)) ||
           ((!allowConversion || converted) && cfiArr[fileType].header.recordSize < fileData[fileType].recordSize) ||
-	  (cfiArr[fileType].header.dataType != fileData[fileType].dataType))
+      (cfiArr[fileType].header.dataType != fileData[fileType].dataType))
       {
 error:   close(cfiArr[fileType].handle);
-	 cfiArr[fileType].handle = -1;
-	 *header = NULL;
-	 *buf = NULL;
-	 return 0;
+     cfiArr[fileType].handle = -1;
+     *header = NULL;
+     *buf = NULL;
+     return 0;
       }
       if ( cfiArr[fileType].header.recordSize < fileData[fileType].recordSize ||
            ((fileType == CFG_ECHOAREAS || fileType == CFG_AREADEF) &&
@@ -148,9 +150,9 @@ error:   close(cfiArr[fileType].handle);
          if ( (helpPtr = strrchr(tempPath, '.')) == NULL )
             goto error;
          strcpy(helpPtr+1, "$$$");
-         if ( (cfiArr[fileType].recBuf = malloc(fileData[fileType].bufferSize)) == NULL )
+         if ( (cfiArr[fileType].recBuf = (char*)malloc(fileData[fileType].bufferSize)) == NULL )
             goto error;
-         if ( (nodeNumBuf = malloc(MAX_FORWARDOLD * sizeof(nodeNumType))) == NULL )
+         if ( (nodeNumBuf = (nodeNumType*)malloc(MAX_FORWARDOLD * sizeof(nodeNumType))) == NULL )
          {  free(cfiArr[fileType].recBuf);
             goto error;
          }
@@ -158,9 +160,9 @@ error:   close(cfiArr[fileType].handle);
          {  free(cfiArr[fileType].recBuf);
             cfiArr[fileType].recBuf = NULL;
             goto error;
-	 }
+     }
          orgRecSize = cfiArr[fileType].header.recordSize;
-         strcpy(cfiArr[fileType].header.versionString, fileData[fileType].revString);
+         strcpy((char*)cfiArr[fileType].header.versionString, fileData[fileType].revString);
          cfiArr[fileType].header.revNumber    = fileData[fileType].revNumber;
          cfiArr[fileType].header.headerSize   = sizeof(headerType);
          cfiArr[fileType].header.recordSize   = fileData[fileType].recordSize;
@@ -170,12 +172,12 @@ error:   close(cfiArr[fileType].handle);
          for ( count = 0; count < cfiArr[fileType].header.totalRecords; count++ )
          {  memset(cfiArr[fileType].recBuf, 0, fileData[fileType].recordSize);
             if ( read(cfiArr[fileType].handle, cfiArr[fileType].recBuf, orgRecSize) != orgRecSize )
-	    {  free(cfiArr[fileType].recBuf);
-	       cfiArr[fileType].recBuf = NULL;
-	       close(temphandle);
-	       unlink(tempPath);
-	       goto error;
-	    }
+        {  free(cfiArr[fileType].recBuf);
+           cfiArr[fileType].recBuf = NULL;
+           close(temphandle);
+           unlink(tempPath);
+           goto error;
+        }
             if ( oldAreasFile )
             {  memcpy(nodeNumBuf, &((rawEchoType*)cfiArr[fileType].recBuf)->readSecRA, MAX_FORWARDOLD * sizeof(nodeNumType));
                memcpy(cfiArr[fileType].recBuf + offsetof(rawEchoType, readSecRA),
@@ -206,8 +208,8 @@ error:   close(cfiArr[fileType].handle);
          close(cfiArr[fileType].handle);
          unlink(areaInfoPath);
          rename(tempPath, areaInfoPath);
-	 cfiArr[fileType].handle = -1;
-	 *header = NULL;
+     cfiArr[fileType].handle = -1;
+     *header = NULL;
          *buf = NULL;
          goto restart;
       }
@@ -250,7 +252,7 @@ s16 putRec(u16 fileType, s16 index)
    {  return 0;
    }
    if (write (cfiArr[fileType].handle, cfiArr[fileType].recBuf,
-	      cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
+          cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
    {  return 0;
    }
    cfiArr[fileType].status = 1;
@@ -267,24 +269,24 @@ s16 insRec(u16 fileType, s16 index)
 
    *(u16*)cfiArr[fileType].recBuf = fileData[fileType].init;
 
-   if ((tempBuf = malloc(cfiArr[fileType].header.recordSize)) == NULL) 
+   if ((tempBuf = malloc(cfiArr[fileType].header.recordSize)) == NULL)
       return 0;
 
    count = cfiArr[fileType].header.totalRecords;
 
    while (--count >= index)
    {  if (lseek(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
-		cfiArr[fileType].header.recordSize*(s32)count, SEEK_SET) == -1)
+        cfiArr[fileType].header.recordSize*(s32)count, SEEK_SET) == -1)
       {  free(tempBuf);
-	 return 0;
+     return 0;
       }
       if (read(cfiArr[fileType].handle, tempBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
       {  free(tempBuf);
-	 return 0;
+     return 0;
       }
       if (write(cfiArr[fileType].handle, tempBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
       {  free(tempBuf);
-	 return 0;
+     return 0;
       }
    }
    free(tempBuf);
@@ -359,7 +361,7 @@ s16 closeConfig(u16 fileType)
       time(&cfiArr[fileType].header.lastModified);
       write(cfiArr[fileType].handle, &cfiArr[fileType].header, cfiArr[fileType].header.headerSize);
       chsize(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
-				      cfiArr[fileType].header.recordSize*
+                      cfiArr[fileType].header.recordSize*
                                       (s32)cfiArr[fileType].header.totalRecords);
    }
    close(cfiArr[fileType].handle);

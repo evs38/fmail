@@ -4,11 +4,11 @@
         File structures for FMail 1.59/beta
         Copyright (C) 2001 Folkert J. Wijnstra. All rights reserved.
 
-	All information in this document is subject to change at any time
-	without prior notice!
+    All information in this document is subject to change at any time
+    without prior notice!
 
-	Strings are NUL terminated arrays of char type.
-	Path names always end on a \ character (followed by NUL).
+    Strings are NUL terminated arrays of char type.
+    Path names always end on a \ character (followed by NUL).
 */
 
 
@@ -41,37 +41,37 @@
 typedef struct
 {
   uchar programName[46];
-  u16   memRequired;      
+  u16   memRequired;
 } archiverInfo;
 
-typedef uchar pathType[48];
+typedef char pathType[48];
 
 typedef struct
 {
   u16   zone;
   u16   net;
   u16   node;
-  u16   point; 
+  u16   point;
 } nodeNumType;
 
 typedef struct
-{  
+{
   unsigned readOnly   : 1;  /* Bit  0    */
   unsigned writeOnly  : 1;  /* Bit  1    */
   unsigned locked     : 1;  /* Bit  2    */
-  unsigned reserved   : 13; /* Bits 3-15 */   
+  unsigned reserved   : 13; /* Bits 3-15 */
 } nodeFlagsType;
 
 typedef struct
-{ 
+{
   nodeNumType   nodeNum;
-  nodeFlagsType flags;     
+  nodeFlagsType flags;
 } nodeNumXType;
 
 typedef struct
-{ 
+{
   nodeNumType nodeNum;
-  u16         fakeNet; 
+  u16         fakeNet;
 } nodeFakeType;
 
 
@@ -83,7 +83,7 @@ typedef struct
 #define DATATYPE_AE    0x0402 /* area file for echo mail          */
 
 typedef struct
-{  
+{
   uchar versionString[32]; /* Always starts with 'FMail' */
   u16   revNumber;         /* Is now 0x0100 */
   u16   dataType;          /* See #defines above */
@@ -99,7 +99,7 @@ typedef struct
    by the Config File */
 
 typedef struct
-{  
+{
   unsigned active      : 1; /* Bit  0 */
   unsigned tinySeenBy  : 1; /* Bit  1 */
   unsigned security    : 1; /* Bit  2 */
@@ -115,7 +115,7 @@ typedef struct
   unsigned export2BBS  : 1; /* Bit 12 */
   unsigned             : 1; /* Bit 13 */
   unsigned arrivalDate : 1; /* Bit 14 */
-  unsigned sysopRead   : 1; /* Bit 15 */   
+  unsigned sysopRead   : 1; /* Bit 15 */
 } areaOptionsType;
 
 
@@ -179,7 +179,7 @@ typedef struct
   unsigned ctrlcodes    : 1; /* BIT 12 */
   unsigned timeSliceFM  : 1; /* BIT 13 */
   unsigned timeSliceFT  : 1; /* BIT 14 */
-  unsigned _RA2         : 1; /* BIT 15 */  
+  unsigned _RA2         : 1; /* BIT 15 */
 } genOptionsType;
 
 typedef struct
@@ -199,7 +199,7 @@ typedef struct
   unsigned persNetmail      : 1; /* Bit 12 */
   unsigned privateImport    : 1; /* Bit 13 */
   unsigned keepExpNetmail   : 1; /* Bit 14 */
-  unsigned killEmptyNetmail : 1; /* Bit 15 */  
+  unsigned killEmptyNetmail : 1; /* Bit 15 */
 } mailOptionsType;
 
 typedef struct
@@ -219,7 +219,7 @@ typedef struct
   unsigned quickToss    : 1; /* bit 12   */
   unsigned checkNetBoard: 1; /* bit 13   */
   unsigned persSent     : 1; /* bit 14   */
-  unsigned sysopImport  : 1; /* bit 15   */ 
+  unsigned sysopImport  : 1; /* bit 15   */
 } mbOptionsType;
 
 typedef struct
@@ -237,7 +237,7 @@ typedef struct
   unsigned allowPassword: 1; /* Bit 12 */
   unsigned allowPktPwd  : 1; /* Bit 13 */
   unsigned allowNotify  : 1; /* Bit 14 */
-  unsigned allowCompr   : 1; /* Bit 15 */  
+  unsigned allowCompr   : 1; /* Bit 15 */
 } mgrOptionsType;
 #if 0
 typedef struct
@@ -255,14 +255,14 @@ typedef struct
   unsigned passThrough : 1; /* Bit 10 */
   unsigned             : 3; /* Bit 11-13 */
   unsigned arrivalDate : 1; /* Bit 14 */
-  unsigned sysopRead   : 1; /* Bit 15 */     
+  unsigned sysopRead   : 1; /* Bit 15 */
 } defaultOptionsType;
 #endif
 
 typedef struct
 {
   unsigned smtpImm : 1;  /* BIT 0 */
-  unsigned         : 15; /* BIT 1-15 */  
+  unsigned         : 15; /* BIT 1-15 */
 } inetOptionsType;
 
 typedef struct
@@ -270,7 +270,7 @@ typedef struct
   unsigned addPlusPrefix :  1; /* BIT 0 */
   unsigned               :  3;
   unsigned unconditional :  1; /* BIT 4 */
-  unsigned               : 11;    
+  unsigned               : 11;
 } uplOptType;
 
 typedef struct
@@ -289,21 +289,21 @@ typedef struct
   u32         groups;
   uchar       originAka;
   uplOptType  options;
-  uchar       reserved[9];  
+  uchar       reserved[9];
 } uplinkReqType;
 
 typedef struct
-{  
+{
   u16   valid;
   u16   zone;
   u16   net;
-  u16   node;    
+  u16   node;
 } akaMatchNodeType;
 
 typedef struct
 {
   akaMatchNodeType amNode;
-  u16              aka;    
+  u16              aka;
 } akaMatchType;
 
 // ATTENTION: FMAIL.CFG does NOT use the new config file type yet (no header) !!!
@@ -528,7 +528,7 @@ typedef uchar areaNameType[ECHONAME_LEN];
 typedef struct
 {
   unsigned tossedTo     : 1;  /* BIT 0 */
-  unsigned              : 15; /* BIT 1-15 */  
+  unsigned              : 15; /* BIT 1-15 */
 } areaStatType;
 
 typedef struct
@@ -582,7 +582,7 @@ typedef struct
   areaStatType    stat;
   uchar           reserved[180];
 
-  nodeNumXType    export[MAX_FORWARDDEF];
+  nodeNumXType    forwards[MAX_FORWARDDEF];
 } rawEchoType;
 
 
@@ -615,7 +615,7 @@ typedef struct
   unsigned forwardReq  : 1; /* Bit 12 */
   unsigned remMaint    : 1; /* Bit 13 */
   unsigned allowRescan : 1; /* Bit 14 */
-  unsigned notify      : 1;   
+  unsigned notify      : 1;
 } nodeOptionsType;
 
 typedef struct /* OLD !!! */
@@ -632,7 +632,7 @@ typedef struct /* OLD !!! */
   uchar           packetPwd[10];
   uchar           reserved[2];
   nodeNumType     viaNode;
-  uchar           sysopName[36];   
+  uchar           sysopName[36];
 } nodeInfoTypeOld;
 
 /* NOTE: see above for the file header structure !!! */
@@ -664,7 +664,7 @@ typedef struct
   u32             referenceLNBDat;
   uchar           reserved2[17];
   uchar           email[PKTOUT_PATH_LEN];
-  uchar           reserved3[11];           
+  uchar           reserved3[11];
 } nodeInfoType;
 
 
@@ -687,7 +687,7 @@ typedef struct
 {
   areaNameType badEchoName;
   nodeNumType  srcNode;
-  s16          destAka;      
+  s16          destAka;
 } badEchoType;
 
 #include <poppack.h>
