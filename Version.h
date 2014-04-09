@@ -21,9 +21,9 @@
 #ifndef __version_h
 #define __version_h
 
-#define VERNUM        "1.67"
+#define VERNUM       "1.68"
 #define SERIAL_MAJOR  1
-#define SERIAL_MINOR  67
+#define SERIAL_MINOR  68
 
 const char *VersionStr   (void);
 const char *TearlineStr  (void);
