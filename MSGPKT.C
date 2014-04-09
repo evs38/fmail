@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -658,10 +658,10 @@ void RemoveNetKludge(char *text, char *kludge)
 
   if ((helpPtr = findCLStr(text, kludge)) != NULL)
   {
-    sprintf(tempStr, "Found netmail kludge in echomail: '%s'.", helpPtr + 1);
+    sprintf(tempStr, "Warning: Found netmail kludge in echomail: '%s'.", helpPtr + 1);
     if (config.mailOptions.removeNetKludges)
     {
-      strcat(tempStr, " Removed it.");
+      strcat(tempStr, " -> Removed it.");
       removeLine(helpPtr);
     }
     logEntry(tempStr, LOG_INBOUND | LOG_OUTBOUND, 0);

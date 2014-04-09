@@ -1,40 +1,41 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
-
-#include <stdlib.h>
-#include <stddef.h>
-#include <string.h>
 #include <fcntl.h>
-#include <sys/stat.h>
 #include <io.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 #include <time.h>
 
-#include "fmstruct.h"
 #include "cfgfile.h"
-#include "internal.h" /* not necessary for 3rd party programs */
-#include "o_deny.h"
+
+#include "internal.h" // not necessary for 3rd party programs
+//#include "o_deny.h"
 
 
-/* set to non-zero value if automatic conversion is desired */
+// set to non-zero value if automatic conversion is desired
 u16  allowConversion = 0;
 extern configType config;
 
@@ -182,12 +183,12 @@ error:   close(cfiArr[fileType].handle);
             {  memcpy(nodeNumBuf, &((rawEchoType*)cfiArr[fileType].recBuf)->readSecRA, MAX_FORWARDOLD * sizeof(nodeNumType));
                memcpy(cfiArr[fileType].recBuf + offsetof(rawEchoType, readSecRA),
                       cfiArr[fileType].recBuf + offsetof(rawEchoType, readSecRA) + MAX_FORWARDOLD * sizeof(nodeNumType),
-                      offsetof(rawEchoType, export) - offsetof(rawEchoType, readSecRA));
+                      offsetof(rawEchoType, forwards) - offsetof(rawEchoType, readSecRA));
                for ( count2 = 0; count2 < MAX_FORWARDOLD; count2++ )
-               {  memset(&((rawEchoType*)cfiArr[fileType].recBuf)->export[count2], 0, sizeof(nodeNumXType));
-                  ((rawEchoType*)cfiArr[fileType].recBuf)->export[count2].nodeNum = nodeNumBuf[count2];
+               {  memset(&((rawEchoType*)cfiArr[fileType].recBuf)->forwards[count2], 0, sizeof(nodeNumXType));
+                  ((rawEchoType*)cfiArr[fileType].recBuf)->forwards[count2].nodeNum = nodeNumBuf[count2];
                }
-               memset(&((rawEchoType*)cfiArr[fileType].recBuf)->export[MAX_FORWARDOLD], 0, (MAX_FORWARD-MAX_FORWARDOLD)*sizeof(nodeNumXType));
+               memset(&((rawEchoType*)cfiArr[fileType].recBuf)->forwards[MAX_FORWARDOLD], 0, (MAX_FORWARD-MAX_FORWARDOLD)*sizeof(nodeNumXType));
                /* BBS export flag! */
                ((rawEchoType*)cfiArr[fileType].recBuf)->options.export2BBS = 1;
             }

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,11 +21,11 @@
 //
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <io.h>
 #include <dos.h>
 #include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "fmail.h"
@@ -242,16 +242,16 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
 
       count = 0;
       while ((count < MAX_FORWARD) &&
-	           (areaBuf->export[count].nodeNum.zone != 0))
+	           (areaBuf->forwards[count].nodeNum.zone != 0))
       {
-         if ( areaBuf->export[count].flags.locked )
+         if ( areaBuf->forwards[count].flags.locked )
          {  count++;
             continue;
          }
 
          c = 0;
          while ((c < MAX_AKAS) &&
-                (memcmp (&areaBuf->export[count].nodeNum,
+                (memcmp (&areaBuf->forwards[count].nodeNum,
                          &config.akaList[c].nodeNum,
                          sizeof (nodeNumType)) != 0))
          {
@@ -270,7 +270,7 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
             c = 0;
             while ((c < forwNodeCount) &&
                    ((areaBuf->address != nodeFileInfo[c]->requestedAka) ||
-                    (memcmp (&areaBuf->export[count].nodeNum,
+                    (memcmp (&areaBuf->forwards[count].nodeNum,
                              &nodeFileInfo[c]->destNode4d,
                              sizeof (nodeNumType)) != 0)))
             {
@@ -289,18 +289,18 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
                }
                errorDisplay |= makeNFInfo(nodeFileInfo[forwNodeCount++],
                                           areaBuf->address,
-                                           &(areaBuf->export[count].nodeNum));
+                                           &(areaBuf->forwards[count].nodeNum));
             }
-            if ( !(areaBuf->export[count].flags.readOnly &&
-                   areaBuf->export[count].flags.writeOnly) )
-            {  if ( areaBuf->export[count].flags.readOnly )
+            if ( !(areaBuf->forwards[count].flags.readOnly &&
+                   areaBuf->forwards[count].flags.writeOnly) )
+            {  if ( areaBuf->forwards[count].flags.readOnly )
                   echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SETRO(c);
-               else if ( areaBuf->export[count].flags.writeOnly )
+               else if ( areaBuf->forwards[count].flags.writeOnly )
                   echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SETWO(c);
                else
                   echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SET(c);
                echoAreaList[echoCount].echoToNodeCount++;
-               if ( !areaBuf->export[count].flags.writeOnly &&
+               if ( !areaBuf->forwards[count].flags.writeOnly &&
                     nodeFileInfo[c]->nodePtr->useAka )
                   echoAreaList[echoCount].alsoSeenBy |= 1L << (nodeFileInfo[c]->nodePtr->useAka - 1);
             }
@@ -314,12 +314,12 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
 	  !areaBuf->options.local     &&
 	  (areaBuf->board == 0)       &&
 	  (*areaBuf->msgBasePath == 0)&&
-	  areaBuf->export[0].nodeNum.zone &&
-	  !areaBuf->export[1].nodeNum.zone)
+	  areaBuf->forwards[0].nodeNum.zone &&
+	  !areaBuf->forwards[1].nodeNum.zone)
     {
       count = 0;
 	    while ((count < MAX_UPLREQ) &&
-                (memcmp(&areaBuf->export[0].nodeNum, &config.uplinkReq[count].node, sizeof(nodeNumType)) != 0))
+                (memcmp(&areaBuf->forwards[0].nodeNum, &config.uplinkReq[count].node, sizeof(nodeNumType)) != 0))
 	    {
         count++;
       }
@@ -327,7 +327,7 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
       {
 	      areaBuf->options.disconnected = 1;
 	      strcpy(areaBuf->comment, "AutoDisconnected");
-        memset(&areaBuf->export[0], 0, sizeof(nodeNumXType));
+        memset(&areaBuf->forwards[0], 0, sizeof(nodeNumXType));
 	      putRec(CFG_ECHOAREAS, echoCount);
 
         echoAreaList[echoCount].options._reserved = 1;

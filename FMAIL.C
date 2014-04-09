@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -29,19 +29,19 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <alloc.h>
-#include <string.h>
-#include <dir.h>
-#include <dos.h>
-#include <io.h>
-#include <fcntl.h>
-#include <time.h>
 #include <conio.h>
 #include <ctype.h>
-#include <sys/stat.h>
+#include <dir.h>
+#include <dos.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <time.h>
 
 #include "fmail.h"
 

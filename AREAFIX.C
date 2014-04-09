@@ -1,49 +1,53 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *  Copyright (C) 2011 Wilfred van Velzen
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <dos.h>
-#include <io.h>
-#include <time.h>
-#include <sys/stat.h>
 #include <ctype.h>
+#include <dos.h>
 #include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <time.h>
+
 #include "fmail.h"
-#include "config.h"
-#include "areainfo.h"
-#include "nodeinfo.h"
-#include "msgmsg.h"
-#include "utils.h"
-#include "output.h"
-#include "log.h"
-#include "crc.h"
-#include "areafix.h"
-#include "msgra.h"
-#include "msgpkt.h"
-#include "pack.h"
+
 #include "archive.h"
-#include "cfgfile.h"
+#include "areafix.h"
+#include "areainfo.h"
 #include "bclfun.h"
+#include "cfgfile.h"
+#include "config.h"
+#include "crc.h"
+#include "log.h"
+#include "msgmsg.h"
+#include "msgpkt.h"
+#include "msgra.h"
+#include "nodeinfo.h"
+#include "output.h"
+#include "pack.h"
+#include "utils.h"
 #include "version.h"
 
 #define ADD_ALL    1
@@ -1010,7 +1014,7 @@ s16 areaFix(internalMsgType *message)
             {
               c = 0;
               while ((c < MAX_FORWARD) &&
-                     (memcmp (&(areaBuf->export[c].nodeNum),
+                     (memcmp (&(areaBuf->forwards[c].nodeNum),
                               &nodeInfoPtr->node,
                               sizeof(nodeNumType)) != 0))
               {
@@ -1018,17 +1022,17 @@ s16 areaFix(internalMsgType *message)
               }
               if (c < MAX_FORWARD)
               {
-                if ( areaBuf->export[c].flags.readOnly ||
-                     areaBuf->export[c].flags.writeOnly )
+                if ( areaBuf->forwards[c].flags.readOnly ||
+                     areaBuf->forwards[c].flags.writeOnly )
                 {
                   (*areaFixList)[count].remove = 7; // new in 1.41
                 }
                 else
                 {
-                  memcpy (&(areaBuf->export[c]),
-                          &(areaBuf->export[c+1]),
+                  memcpy (&(areaBuf->forwards[c]),
+                          &(areaBuf->forwards[c+1]),
                           (MAX_FORWARD-1 - c ) * sizeof(nodeNumXType));
-                  memset (&(areaBuf->export[MAX_FORWARD-1]), 0,
+                  memset (&(areaBuf->forwards[MAX_FORWARD-1]), 0,
                           sizeof(nodeNumXType));
                   (*areaFixList)[count].remove = 4;
                 }
@@ -1041,32 +1045,32 @@ s16 areaFix(internalMsgType *message)
             {
               c = 0;
               while ((c < MAX_FORWARD) &&
-                     (areaBuf->export[c].nodeNum.zone != 0) &&
-                     ((nodeInfoPtr->node.zone > areaBuf->export[c].nodeNum.zone) ||
-                      ((nodeInfoPtr->node.zone == areaBuf->export[c].nodeNum.zone) &&
-                       (nodeInfoPtr->node.net > areaBuf->export[c].nodeNum.net)) ||
-                      ((nodeInfoPtr->node.zone == areaBuf->export[c].nodeNum.zone) &&
-                       (nodeInfoPtr->node.net == areaBuf->export[c].nodeNum.net) &&
-                       (nodeInfoPtr->node.node > areaBuf->export[c].nodeNum.node)) ||
-                      ((nodeInfoPtr->node.zone == areaBuf->export[c].nodeNum.zone) &&
-                       (nodeInfoPtr->node.net == areaBuf->export[c].nodeNum.net) &&
-                       (nodeInfoPtr->node.node == areaBuf->export[c].nodeNum.node) &&
-                       (nodeInfoPtr->node.point > areaBuf->export[c].nodeNum.point))))
+                     (areaBuf->forwards[c].nodeNum.zone != 0) &&
+                     ((nodeInfoPtr->node.zone > areaBuf->forwards[c].nodeNum.zone) ||
+                      ((nodeInfoPtr->node.zone == areaBuf->forwards[c].nodeNum.zone) &&
+                       (nodeInfoPtr->node.net > areaBuf->forwards[c].nodeNum.net)) ||
+                      ((nodeInfoPtr->node.zone == areaBuf->forwards[c].nodeNum.zone) &&
+                       (nodeInfoPtr->node.net == areaBuf->forwards[c].nodeNum.net) &&
+                       (nodeInfoPtr->node.node > areaBuf->forwards[c].nodeNum.node)) ||
+                      ((nodeInfoPtr->node.zone == areaBuf->forwards[c].nodeNum.zone) &&
+                       (nodeInfoPtr->node.net == areaBuf->forwards[c].nodeNum.net) &&
+                       (nodeInfoPtr->node.node == areaBuf->forwards[c].nodeNum.node) &&
+                       (nodeInfoPtr->node.point > areaBuf->forwards[c].nodeNum.point))))
               {
                 c++;
               }
               if ((c < MAX_FORWARD) &&
                   (memcmp (&nodeInfoPtr->node,
-                           &(areaBuf->export[c].nodeNum),
+                           &(areaBuf->forwards[c].nodeNum),
                            sizeof(nodeNumType)) != 0))
               {
                 if (areaBuf->group & nodeInfoPtr->groups)
                 {
-                  memmove (&(areaBuf->export[c+1]),
-                           &(areaBuf->export[c]),
+                  memmove (&(areaBuf->forwards[c+1]),
+                           &(areaBuf->forwards[c]),
                            (MAX_FORWARD-1 - c) * sizeof(nodeNumXType));
-                  memset(&(areaBuf->export[c]), 0, sizeof(nodeNumXType));
-                  areaBuf->export[c].nodeNum = nodeInfoPtr->node;
+                  memset(&(areaBuf->forwards[c]), 0, sizeof(nodeNumXType));
+                  areaBuf->forwards[c].nodeNum = nodeInfoPtr->node;
                   (*areaFixList)[count].remove = 2;
                 }
                 else
@@ -1093,7 +1097,7 @@ s16 areaFix(internalMsgType *message)
         {
           c = 0;
           while ((c < MAX_FORWARD) &&
-                 (memcmp (&(areaBuf->export[c].nodeNum), &nodeInfoPtr->node,
+                 (memcmp (&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node,
                           sizeof(nodeNumType)) != 0))
           {
             c++;
@@ -1104,7 +1108,7 @@ s16 areaFix(internalMsgType *message)
 
             if ( (*areaFixList)[count].remove == 8 &&
                  (!nodeInfoPtr->options.allowRescan ||
-                  areaBuf->export[c].flags.writeOnly) )
+                  areaBuf->forwards[c].flags.writeOnly) )
             {
               (*areaFixList)[count].remove = 9;
             }
@@ -1532,13 +1536,13 @@ Send:
                (config.uplinkReq[count].node.node == nodeInfoPtr->node.node) &&
                (config.uplinkReq[count].node.point > nodeInfoPtr->node.point)))
           {
-            rawEchoInfo2.export[0].nodeNum = nodeInfoPtr->node;
-            rawEchoInfo2.export[1].nodeNum = config.uplinkReq[count].node;
+            rawEchoInfo2.forwards[0].nodeNum = nodeInfoPtr->node;
+            rawEchoInfo2.forwards[1].nodeNum = config.uplinkReq[count].node;
           }
           else
           {
-            rawEchoInfo2.export[0].nodeNum = config.uplinkReq[count].node;
-            rawEchoInfo2.export[1].nodeNum = nodeInfoPtr->node;
+            rawEchoInfo2.forwards[0].nodeNum = config.uplinkReq[count].node;
+            rawEchoInfo2.forwards[1].nodeNum = nodeInfoPtr->node;
           }
 
           temp = 0;
@@ -1682,7 +1686,7 @@ Send:
 
       c = 0;
       while ((c < MAX_FORWARD) &&
-             (memcmp (&(areaBuf->export[c].nodeNum), &nodeInfoPtr->node,
+             (memcmp (&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node,
                       sizeof(nodeNumType)) != 0))
       {
         c++;
@@ -1722,18 +1726,18 @@ Send:
           }
         }
 
-        if ( c < MAX_FORWARD && !areaBuf->export[c].flags.locked )
+        if ( c < MAX_FORWARD && !areaBuf->forwards[c].flags.locked )
         {
-//               if ( areaBuf->export[c].flags.locked )
+//               if ( areaBuf->forwards[c].flags.locked )
 //               {  c = '-';
 //                  semaFlag |= BIT2;
 //               }
-          if ( areaBuf->export[c].flags.readOnly )
+          if ( areaBuf->forwards[c].flags.readOnly )
           {
             c = 'R';
             semaFlag |= BIT3;
           }
-          if ( areaBuf->export[c].flags.writeOnly )
+          if ( areaBuf->forwards[c].flags.writeOnly )
           {
             c = 'W';
             semaFlag |= BIT4;
@@ -1851,12 +1855,12 @@ Send:
       {
         c = 0;
         while ((c < MAX_FORWARD) &&
-               (memcmp (&(areaBuf->export[c].nodeNum), &nodeInfoPtr->node,
+               (memcmp (&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node,
                         sizeof(nodeNumType)) != 0))
         {
           c++;
         }
-        if ( c < MAX_FORWARD && !areaBuf->export[c].flags.locked )
+        if ( c < MAX_FORWARD && !areaBuf->forwards[c].flags.locked )
         {
           if ((strlen(areaBuf->areaName) >= ECHONAME_LEN_OLD) && *areaBuf->comment)
           {
@@ -1875,9 +1879,9 @@ Send:
                               ?"%s\r                          %s\r"
                               :"%-24s  %s\r",
                               areaBuf->areaName, areaBuf->comment);
-          if ( areaBuf->export[c].flags.readOnly )
+          if ( areaBuf->forwards[c].flags.readOnly )
             helpPtr += sprintf (helpPtr, "                          The area is ReadOnly\r");
-          if ( areaBuf->export[c].flags.writeOnly )
+          if ( areaBuf->forwards[c].flags.writeOnly )
             helpPtr += sprintf (helpPtr, "                          The area is WriteOnly\r");
           availCount++;
         }
@@ -1912,7 +1916,7 @@ Send:
       {
         c = 0;
         while ((c < MAX_FORWARD) &&
-               (memcmp (&(areaBuf->export[c].nodeNum), &nodeInfoPtr->node,
+               (memcmp (&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node,
                         sizeof(nodeNumType)) != 0))
         {
           c++;

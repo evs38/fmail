@@ -1,3 +1,5 @@
+#ifndef fmailH
+#define fmailH
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
@@ -303,3 +305,7 @@ u16 getAreaCode (char *msgText);
 )
 
 u16 foundToUserName(u8 *toUserName);
+
+//---------------------------------------------------------------------------
+#endif  // fmailH
+

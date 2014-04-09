@@ -1,18 +1,33 @@
-/*
-   FMSTRUCT.H
+#ifndef fmstructH
+#define fmstructH
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//
+//  File structures for FMail
+//  Strings are NUL terminated arrays of char type.
+//  Path names always end on a \ character (followed by NUL).
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
-        File structures for FMail 1.59/beta
-        Copyright (C) 2001 Folkert J. Wijnstra. All rights reserved.
 
-    All information in this document is subject to change at any time
-    without prior notice!
-
-    Strings are NUL terminated arrays of char type.
-    Path names always end on a \ character (followed by NUL).
-*/
-
-
-/**** Modify the type definitions below if necessary for your compiler ****/
+// **** Modify the type definitions below if necessary for your compiler ****
 
 #define fhandle signed int
 #define u8    unsigned char
@@ -691,3 +706,7 @@ typedef struct
 } badEchoType;
 
 #include <poppack.h>
+
+//---------------------------------------------------------------------------
+#endif // fmstructH
+
