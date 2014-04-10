@@ -1,24 +1,27 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
+#ifndef msgpktH
+#define msgpktH
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 typedef struct
 {
@@ -69,7 +72,8 @@ typedef struct
 	     destZone;
    uchar     origDomain[8],
              destDomain[8];
-   uchar     prodData[4];    } FSC45pktHdrType;
+   uchar     prodData[4];
+} FSC45pktHdrType;
 
 
 /*       0       2     Originating node number
@@ -93,6 +97,7 @@ typedef struct
 
                      * Field only guaranteed accurate in a type 2.2 header
 */
+//---------------------------------------------------------------------------
 
 void initPkt (void);
 void deInitPkt (void);
@@ -112,4 +117,7 @@ s16  validateEchoPktWr (void);
 s16  closeEchoPktWr    (void);
 s16  writeNetPktValid  (internalMsgType *message, nodeFileRecType *nfInfoRec);
 s16  closeNetPktWr     (nodeFileRecType *nfInfoRec);
+
+//---------------------------------------------------------------------------
+#endif  // msgpktH
 

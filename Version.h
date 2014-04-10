@@ -18,8 +18,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------
-#ifndef __version_h
-#define __version_h
+#ifndef versionH
+#define versionH
 
 #define VERNUM       "1.68"
 #define SERIAL_MAJOR  1
@@ -34,4 +34,5 @@ const char *VersionString(void);
 
 #define PIDStr() TIDStr()
 
-#endif  // __version_h
+#endif  // versionH
+

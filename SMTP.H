@@ -20,7 +20,7 @@
  */
 
 
-extern  u8      *smtpID;
+extern const char *smtpID;
 
 int sendMessage(u8 *SMTPServerName, u8 *mailfrom, u8 *mailto, internalMsgType *message, u8 *attach);
 

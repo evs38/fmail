@@ -651,17 +651,25 @@ static s16 closeLuPkt(void)
    return 0;
 }
 //---------------------------------------------------------------------------
-void RemoveNetKludge(char *text, char *kludge)
+void RemoveNetKludge(char *text, const char *kludge)
 {
-  char       *helpPtr;
-  tempStrType tempStr;
+  char *helpPtr;
 
   if ((helpPtr = findCLStr(text, kludge)) != NULL)
   {
-    sprintf(tempStr, "Warning: Found netmail kludge in echomail: '%s'.", helpPtr + 1);
+    tempStrType tempStr = "Warning: Found netmail kludge in echomail: ";
+    char *p = helpPtr + 1
+       , *pt = tempStr + strlen(tempStr);
+    int l = 0;
+
+    while (l++ < 60 && *p != '\r' && *p != 0)
+      *pt++ = *p++;
+
+    *pt = 0;
+
     if (config.mailOptions.removeNetKludges)
     {
-      strcat(tempStr, " -> Removed it.");
+      strcpy(pt, " -> Removed it.");
       removeLine(helpPtr);
     }
     logEntry(tempStr, LOG_INBOUND | LOG_OUTBOUND, 0);

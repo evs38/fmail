@@ -5,10 +5,6 @@
 //  Copyright (C) 2007         Folkert J. Wijnstra
 //  Copyright (C) 2007 - 2014  Wilfred van Velzen
 //
-//  File structures for FMail
-//  Strings are NUL terminated arrays of char type.
-//  Path names always end on a \ character (followed by NUL).
-//
 //  This file is part of FMail.
 //
 //  FMail is free software; you can redistribute it and/or modify
@@ -23,6 +19,16 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
+//
+//  File structures for FMail
+//
+//  All information in this document is subject to change at any time
+//  without prior notice!
+//
+//  Strings are NUL terminated arrays of char type.
+//  Path names always end on a \ character (followed by NUL).
 //
 //---------------------------------------------------------------------------
 
@@ -49,7 +55,7 @@
 #define MAXU32 0xFFFFFFFFL
 
 
-/* ********** General structures ********** */
+// ********** General structures **********
 
 #include <pshpack1.h>
 
@@ -90,7 +96,7 @@ typedef struct
 } nodeFakeType;
 
 
-/* ********** File header structure ********** */
+// ********** File header structure **********
 
 #define DATATYPE_CF    0x0102 /* not used yet			  */
 #define DATATYPE_NO    0x0202 /* node file                        */
@@ -134,7 +140,7 @@ typedef struct
 } areaOptionsType;
 
 
-/* ********** FMAIL.CFG ********** */
+// ********** FMAIL.CFG **********
 
 #define MAX_AKAS      32
 #define MAX_AKAS_F    64
@@ -254,25 +260,6 @@ typedef struct
   unsigned allowNotify  : 1; /* Bit 14 */
   unsigned allowCompr   : 1; /* Bit 15 */
 } mgrOptionsType;
-#if 0
-typedef struct
-{
-  unsigned active      : 1; /* Bit  0 */
-  unsigned tinySeenBy  : 1; /* Bit  1 */
-  unsigned security    : 1; /* Bit  2 */
-  unsigned             : 1; /* Bit  3 */
-  unsigned allowPrivate: 1; /* Bit  4 */
-  unsigned impSeenBy   : 1; /* Bit  5 */
-  unsigned checkSeenBy : 1; /* Bit  6 */
-  unsigned             : 1; /* Bit  7 */
-  unsigned local       : 1; /* Bit  8 */
-  unsigned             : 1; /* Bit  9 */
-  unsigned passThrough : 1; /* Bit 10 */
-  unsigned             : 3; /* Bit 11-13 */
-  unsigned arrivalDate : 1; /* Bit 14 */
-  unsigned sysopRead   : 1; /* Bit 15 */
-} defaultOptionsType;
-#endif
 
 typedef struct
 {
@@ -514,7 +501,7 @@ typedef struct
 } configType;
 
 
-/* ********** FMAIL.AR ********** */
+// ********** FMAIL.AR **********
 
 #if defined(__FMAILX__) || defined(__32BIT__)
 #define MAX_AREAS   8000
@@ -522,7 +509,6 @@ typedef struct
 #define MAX_AREAS    512
 #endif
 
-//#define MAX_FORWARD   64
 #define MAX_FORWARDOLD  64
 #define MAX_FORWARDDEF 256    // NOTE: this is a dummy. 'config.maxForward'
                               // contains the real size. 256 is the maximum.
@@ -538,7 +524,7 @@ typedef struct
 
 typedef uchar areaNameType[ECHONAME_LEN];
 
-/* NOTE: See above for the file header structure !!! */
+// NOTE: See above for the file header structure !!!
 
 typedef struct
 {
@@ -602,7 +588,7 @@ typedef struct
 
 
 
-/* ********** FMAIL.NOD ********** */
+// ********** FMAIL.NOD **********
 
 #if defined __32BIT__ || defined __FMAILX__
 #define MAX_NODES        1024
@@ -650,7 +636,7 @@ typedef struct /* OLD !!! */
   uchar           sysopName[36];
 } nodeInfoTypeOld;
 
-/* NOTE: see above for the file header structure !!! */
+// NOTE: see above for the file header structure !!!
 
 typedef struct
 {
@@ -684,7 +670,7 @@ typedef struct
 
 
 
-/* ********** FMAIL.PCK ********** */
+// ********** FMAIL.PCK **********
 
 #define PACK_STR_SIZE 64
 #define MAX_PACK      128
@@ -694,7 +680,7 @@ typedef packEntryType packType[MAX_PACK];
 
 
 
-/* ********** FMAIL.BDE ********** */
+// ********** FMAIL.BDE **********
 
 #define MAX_BAD_ECHOS 50
 
@@ -708,5 +694,4 @@ typedef struct
 #include <poppack.h>
 
 //---------------------------------------------------------------------------
-#endif // fmstructH
-
+#endif  // fmstructH

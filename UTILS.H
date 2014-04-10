@@ -1,23 +1,27 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+#ifndef utilH
+#define utilH
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 
 #define ECHO_SEENBY 0
@@ -55,11 +59,12 @@
 #define SW_Y  0x01000000L
 #define SW_Z  0x02000000L
 
-int   moveFile        (char *oldName, char *newName);
-s16   existDir        (char *dir, char *descr);
-u32   diskFree        (char *path);
+//---------------------------------------------------------------------------
+int   moveFile        (const char *oldName, const char *newName);
+s16   existDir        (const char *dir, const char *descr);
+u32   diskFree        (const char *path);
 s16   matchAka        (nodeNumType *node, char useAka);
-void  touch           (char *path, char *filename, char *t);
+void  touch           (const char *path, const char *filename, const char *t);
 s16   emptyText       (char *text);
 void  delete          (char *path, char *wildCard);
 s32   getSwitch       (int *argc, char *argv[], s32 mask);
@@ -70,8 +75,8 @@ void  removeLfSr      (char *msgText);
 char *srchar          (char *string, s16 t, s16 c);
 char *nodeStr         (nodeNumType *nodeNum);
 char *nodeStrZ        (nodeNumType *nodeNum);
-char *findCLStr       (char *s1, char *s2);
-char *findCLiStr      (char *s1, char *s2);
+char *findCLStr       (char *s1, const char *s2);
+char *findCLiStr      (char *s1, const char *s2);
 void  removeLine      (char *s);
 void  addINTL         (internalMsgType *message);
 s16   getLocalAka     (nodeNumType *node);
@@ -82,7 +87,7 @@ s16   node4d          (nodeNumType *node);
 void  point4d         (internalMsgType *message);
 void  make4d          (internalMsgType *message);
 s16   getLocalAkaNum  (nodeNumType *node);
-char *insertLine      (char *pos, char *line);
+char *insertLine      (char *pos, const char *line);
 char *insertLineN     (char *pos, char *line, u16 num);
 void  addPathSeenBy   (char *msgText, char *seenBy, char *tinySeen, char *path,
                        echoToNodeType echoToNode, u16 areaIndex);
@@ -99,3 +104,5 @@ void  getKludgeNode   (char *txt, char *kludge, nodeNumType *nodeNum);
 u16   firstFile       (u8 *string, u8 **filename);
 u16   nextFile        (u8 **filename);
 
+//---------------------------------------------------------------------------
+#endif  // utilH

@@ -270,7 +270,7 @@ u16      cdecl _openfd[TABLE_SIZE] = {0x2001, 0x2002, 0x2002, 0xa004,
 #endif
 
 #if defined __WIN32__ && !defined __DPMI32__
-char *smtpID;
+const char *smtpID;
 #endif
 
 globVarsType globVars;

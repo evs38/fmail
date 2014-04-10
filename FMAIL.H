@@ -61,14 +61,14 @@
 
 #define TABLE_SIZE 255 // max 40 handles
 
-#define DEF_TEXT_SIZE 0xc000
+#define DEF_TEXT_SIZE 0xF000
 #ifdef __32BIT__
 // 1 megabyte
 #define TEXT_SIZE     (config.maxMsgSize * 1024L)
 #else
-#define TEXT_SIZE     0xc000
+#define TEXT_SIZE     0xF000
 #endif
-#define INTMSG_SIZE   (sizeof(internalMsgType)-DEF_TEXT_SIZE+TEXT_SIZE)
+#define INTMSG_SIZE   (sizeof(internalMsgType) - DEF_TEXT_SIZE + TEXT_SIZE)
 
 #define PKT_INFO_SIZE    192
 
@@ -113,7 +113,7 @@ typedef struct
 } psRecType;
 
 typedef psRecType psType[];
-typedef uchar tempStrType[128];
+typedef uchar tempStrType[256];
 
 typedef struct
 {

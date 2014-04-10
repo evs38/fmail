@@ -70,7 +70,7 @@ extern const char *dayName[7];
 extern char *version;
 
 //---------------------------------------------------------------------------
-int moveFile(char *oldName, char *newName)
+int moveFile(const char *oldName, const char *newName)
 {
    fhandle h1, h2;
    char    *buf;
@@ -110,7 +110,7 @@ int moveFile(char *oldName, char *newName)
    return 0;
 }
 //---------------------------------------------------------------------------
-s16 existDir(char *dir, char *descr)
+s16 existDir(const char *dir, const char *descr)
 {
 	struct ffblk tempBlk;
 	char     tempStr[MAXDIR];
@@ -122,7 +122,7 @@ s16 existDir(char *dir, char *descr)
   if (!(*dirStr &&
         ((dirStr[1] != ':') || !getcurdir(dirStr[0]-'@', tempStr)) &&
         ((strlen(dirStr) == 2) ||
-         ((!findfirst (dirStr, &tempBlk, FA_DIREC)) &&
+         ((!findfirst(dirStr, &tempBlk, FA_DIREC)) &&
           (tempBlk.ff_attrib & FA_DIREC)))))
   {
     sprintf(tempStr, "The %s directory does not exist", descr);
@@ -133,7 +133,7 @@ s16 existDir(char *dir, char *descr)
   return 1;
 }
 //---------------------------------------------------------------------------
-u32 diskFree(char *path)
+u32 diskFree(const char *path)
 {
   tempStrType  tempStr;
   struct dfree dtable;
@@ -222,23 +222,19 @@ s16 matchAka(nodeNumType *node, char useAka)
    }
    return (srcAka);
 }
-
-
-
-void touch (char *path, char *filename, char *t)
+//---------------------------------------------------------------------------
+void touch (const char *path, const char *filename, const char *t)
 {
-   tempStrType tempStr;
-   fhandle    tempHandle;
+  tempStrType tempStr;
+  fhandle     tempHandle;
 
-   strcpy (stpcpy (tempStr, path), filename);
-   tempHandle = open(tempStr, O_RDWR|O_CREAT|O_TRUNC|O_DENYNONE,
+  strcpy(stpcpy(tempStr, path), filename);
+  tempHandle = open(tempStr, O_RDWR|O_CREAT|O_TRUNC|O_DENYNONE,
                               S_IREAD|S_IWRITE);
-   write (tempHandle, t, strlen(t));
-   close (tempHandle);
+  write(tempHandle, t, strlen(t));
+  close(tempHandle);
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 emptyText (char *text)
 {
    s16  code;
@@ -335,28 +331,31 @@ s32 getSwitch (int *argc, char *argv[], s32 mask)
 
 static u32 lastID = 0;
 
-u32 uniqueID (void)
+u32 uniqueID(void)
 {
-   if ( lastID == 0 )
-   {  lastID = startTime << 4;
-      if ( config.lastUniqueID > lastID && config.lastUniqueID < lastID + 0x01000000L )
-         lastID = config.lastUniqueID;
-   }
-   else
-      lastID++;
-   return lastID;
+  if (lastID == 0)
+  {
+    lastID = (u32)startTime << 4;
+    if (config.lastUniqueID > lastID && config.lastUniqueID < lastID + 0x01000000L)
+      lastID = config.lastUniqueID;
+  }
+  else
+    lastID++;
+
+  return lastID;
 }
 
 
 
 void waitID(void)
 {
-   time_t newTime;
+  time_t newTime;
 
-   do
-   {  time(&newTime);
-   }
-   while ( (newTime<<4) <= lastID );
+  do
+  {
+    time(&newTime);
+  }
+  while (((u32)newTime << 4) <= lastID);
 }
 
 
@@ -379,14 +378,14 @@ char *removeRe (char *string)
          string++;
          update++;
       }
-   }
-   while (update);
-   return (string);
+   } while (update);
+
+   return string;
 }
 
 
 
-void removeLfSr (char *msgText)
+void removeLfSr(char *msgText)
 {
    char *oldStart,
         *newEnd,
@@ -395,9 +394,9 @@ void removeLfSr (char *msgText)
    /* Remove linefeeds (only if preceeded by a (soft) carriage return) */
 
    oldStart = newEnd = helpPtr = msgText;
-   while ((helpPtr = strchr (helpPtr, '\n')) != NULL)
+   while ((helpPtr = strchr(helpPtr, '\n')) != NULL)
    {
-      if ((*(helpPtr-1) == '\r') || (*(helpPtr-1) == 0x8d))
+      if ((*(helpPtr-1) == '\r') || (*(helpPtr-1) == (char)0x8d))
       {
          *helpPtr = 0;
          strcpy (newEnd, oldStart);
@@ -414,7 +413,7 @@ void removeLfSr (char *msgText)
    /* Remove soft CR's */
 
    oldStart = newEnd = helpPtr = msgText;
-   while ((helpPtr = strchr (helpPtr, 0x8d)) != NULL)
+   while ((helpPtr = strchr(helpPtr, 0x8d)) != NULL)
    {
       if (*(helpPtr+1) == '\r')
       {
@@ -484,47 +483,39 @@ char *nodeStrZ (nodeNumType *nodeNum)
 
    return (nodeNameStr[nodeStrIndex]);
 }
-
-
-
-char *findCLStr (char *s1, char *s2)
+//---------------------------------------------------------------------------
+char *findCLStr(char *s1, const char *s2)
 {
-   char *helpPtr;
+  char *helpPtr;
 
-   if (strncmp(s1, s2, strlen(s2)) == 0)
-      return (s1);
+  if (strncmp(s1, s2, strlen(s2)) == 0)
+    return s1;
 
-   helpPtr = s1;
+  helpPtr = s1;
 
-   while ((helpPtr = strstr(helpPtr+1, s2)) != NULL)
-   {
-      if ((*(helpPtr-1) == '\r') || (*(helpPtr-1) == '\n'))
-         return (helpPtr);
-   }
-   return (NULL);
+  while ((helpPtr = strstr(helpPtr + 1, s2)) != NULL)
+    if ((*(helpPtr - 1) == '\r') || (*(helpPtr - 1) == '\n'))
+      return helpPtr;
+
+  return NULL;
 }
-
-
-
-char *findCLiStr (char *s1, char *s2)
+//---------------------------------------------------------------------------
+char *findCLiStr(char *s1, const char *s2)
 {
-   char *helpPtr;
+  char *helpPtr;
 
-   if (strnicmp(s1, s2, strlen(s2)) == 0)
-      return (s1);
+  if (strnicmp(s1, s2, strlen(s2)) == 0)
+    return s1;
 
-   helpPtr = s1;
+  helpPtr = s1;
 
-   while ((helpPtr = stristr(helpPtr+1, s2)) != NULL)
-   {
-      if ((*(helpPtr-1) == '\r') || (*(helpPtr-1) == '\n'))
-         return (helpPtr);
-   }
-   return (NULL);
+  while ((helpPtr = stristr(helpPtr+1, s2)) != NULL)
+    if ((*(helpPtr-1) == '\r') || (*(helpPtr-1) == '\n'))
+      return helpPtr;
+
+  return NULL;
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 scanDate (unsigned char *dtPtr,
 	      u16 *year,  u16 *month, u16 *day,
 	      u16 *hours, u16 *minutes)
@@ -588,80 +579,32 @@ s32 checkDate (u16 year,  u16 month,   u16 day,
 
     return mktime(&tms);
 }
-
-
-#if 0
-s32 checkDate (u16 year,  u16 month,   u16 day,
-	       u16 hours, u16 minutes, u16 seconds)
+//---------------------------------------------------------------------------
+void removeLine(char *s)
 {
-    struct date d;
-    struct time t;
+  char *helpPtr;
 
-    if (((year >= 100) && (year  < 1980)) || (year  > 2099) ||
-	(month < 1)    || (month > 12)   ||
-	(day   < 1)    || (day   > 31))
-    {
-       year  = 1980;
-       month = 1;
-       day   = 1;
-    }
-    if (year < 100)
-    {
-       if (year >= 80)
-          year += 1900;
-       else
-          year += 2000;
-    }
-    if ((hours >= 24) || (minutes >= 60) || (seconds >= 60))
-    {
-       hours   = 0;
-       minutes = 0;
-       seconds = 0;
-    }
+  if ((helpPtr = strchr(s, 0x0d)) == NULL)
+    *s = 0;
+  else
+  {
+    if (*(helpPtr + 1) == 0x0a)
+      helpPtr++;
 
-    d.da_year = year;
-    d.da_mon  = month;
-    d.da_day  = day;
-    t.ti_hour = hours;
-    t.ti_min  = minutes;
-    t.ti_sec  = seconds;
-    t.ti_hund = 0;
-
-    return (dostounix(&d, &t));
+    strcpy(s, helpPtr + 1);
+  }
 }
-#endif
-
-
-void removeLine (char *s)
+//---------------------------------------------------------------------------
+char *insertLine(char *pos, const char *line)
 {
-   char *helpPtr;
+  u16 s = strlen(line);
 
-   if ((helpPtr = strchr (s, 0x0d)) == NULL)
-   {
-      *s = 0;
-   }
-   else
-   {
-      if (*(helpPtr+1) == 0x0a)
-      {
-         helpPtr++;
-      }
-      strcpy (s, helpPtr+1);
-   }
+  memmove(pos + s, pos, strlen(pos) + 1);
+  memcpy(pos, line, s);
+
+  return pos + s;
 }
-
-
-
-char *insertLine (char *pos, char *line)
-{
-   u16 s;
-   memmove (pos+(s=strlen(line)), pos, strlen(pos)+1);
-   memcpy (pos, line, s);
-   return (pos+s);
-}
-
-
-
+//---------------------------------------------------------------------------
 char *insertLineN (char *pos, char *line, u16 num)
 {
    char *helpPtr;
@@ -752,8 +695,10 @@ static void readPathSeenBy (u16 type, char *msgText, psType *psArray,
             }
          }
 
-         while ((*helpPtr2 == '\r'+0x80) || (*helpPtr2 == '\r') ||
-                                            (*helpPtr2 == '\n'))
+         while ( (*helpPtr2 == '\r' + (char)0x80)
+               || *helpPtr2 == '\r'
+               || *helpPtr2 == '\n'
+               )
          {
             helpPtr2++;
          }
