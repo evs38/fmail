@@ -24,11 +24,12 @@
 /ide.45/fmail.mak
 /ide.45/fmail.OBR
 /ide.45/FMAIL.~DE
-/inbnd.tmp/000011bb.*
+/inbnd.tmp
 /Jam
 /LOG
 /MSGBASE
 /obj.45/ob*/*.obj
+/OBJ.6/*/*.obj
 /old
 /Release/W32
 /tst.out

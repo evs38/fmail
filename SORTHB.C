@@ -72,7 +72,6 @@ void sortBBS (u16 origTotalMsgBBS, s16 mbSharing)
 		msgIdxHandle;
    u16          areaSubjChain[MBBOARDS + 1];
    u16          year, month, day, hours, minutes;
-/*   struct dfree dtable; */
 
    u16          *sli_recNum,
 		*sli_msgNum,
@@ -100,18 +99,7 @@ void sortBBS (u16 origTotalMsgBBS, s16 mbSharing)
       printString ("Can't open MsgHdr."MBEXTN" for update.\n");
       return;
    }
-/*
-   temp = 0;
-   if (isalpha(config.bbsPath[0])&& (config.bbsPath[1] == ':'))
-   {
-      temp = toupper(*config.bbsPath) - 'A' + 1;
-   }
-   getdfree (temp, &dtable);
-*/
-   if (config.mbOptions.sortNew &&
-       (filelength(msgHdrHandle) > diskFree(config.bbsPath)))
-/*                                 dtable.df_avail*(s32)dtable.df_bsec*
-                                   dtable.df_sclus)) */
+   if (config.mbOptions.sortNew && (fileLength(msgHdrHandle) > diskFree(config.bbsPath)))
    {
       logEntry ("Not enough free diskspace to sort new messages", LOG_ALWAYS, 0);
       if (!config.mbOptions.updateChains)
@@ -120,18 +108,18 @@ void sortBBS (u16 origTotalMsgBBS, s16 mbSharing)
       }
       config.mbOptions.sortNew = 0;
    }
-   newTotalMsgBBS = (u16)(filelength(msgHdrHandle)/sizeof(msgHdrRec));
+   newTotalMsgBBS = (u16)(fileLength(msgHdrHandle) / sizeof(msgHdrRec));
    if (newTotalMsgBBS == origTotalMsgBBS)
    {
-      close (msgHdrHandle);
-      printString ("There are no new messages to sort and/or link.\n");
+      close(msgHdrHandle);
+      printString("There are no new messages to sort and/or link.\n");
       return;
    }
 
    if (config.mbOptions.sortNew)
    {
-      if (((sli_bsTimeStampHi = calloc (newTotalMsgBBS, 2)) == NULL) ||
-          ((sli_bsTimeStampLo = calloc (newTotalMsgBBS, 2)) == NULL))
+      if (((sli_bsTimeStampHi = calloc(newTotalMsgBBS, 2)) == NULL) ||
+          ((sli_bsTimeStampLo = calloc(newTotalMsgBBS, 2)) == NULL))
       {
          close (msgHdrHandle);
          logEntry ("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
@@ -440,11 +428,11 @@ void sortBBS (u16 origTotalMsgBBS, s16 mbSharing)
          bufCount++;
       }
 
-      write (msgHdrHandle, msgHdrBuf, bufCount*sizeof(msgHdrRec));
-      write (msgIdxHandle, msgIdxBuf, bufCount*sizeof(msgIdxRec));
-      write (msgToIdxHandle, msgToIdxBuf, bufCount*sizeof(msgToIdxRec));
+      write (msgHdrHandle  , msgHdrBuf  , bufCount * sizeof(msgHdrRec  ));
+      write (msgIdxHandle  , msgIdxBuf  , bufCount * sizeof(msgIdxRec  ));
+      write (msgToIdxHandle, msgToIdxBuf, bufCount * sizeof(msgToIdxRec));
 
-      temp = (filelength (oldHdrHandle) == filelength (msgHdrHandle));
+      temp = (filelength(oldHdrHandle) == filelength(msgHdrHandle));
 
       close (oldHdrHandle);
       close (msgHdrHandle);

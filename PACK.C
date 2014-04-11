@@ -47,10 +47,6 @@
 #define DEST_HOST       2
 
 
-//extern nodeInfoType *nodeInfo;
-//extern u16          nodeCount;
-
-
 typedef struct
 {
   u32           msgNum;
@@ -62,27 +58,29 @@ typedef struct
 
 typedef netRecType netListType[MAXNETREC];
 
-extern configType      config;
+extern configType       config;
 extern internalMsgType *message;
-extern globVarsType    globVars;
-extern char	           configPath[128];
+extern globVarsType     globVars;
+extern char	            configPath[128];
 
-static s16             errorDisplay=0;
-static u16             netIndex;
-static s32             msgNum;
-static netListType    *netList;
+static s16              errorDisplay=0;
+static u16              netIndex;
+static u32              msgNum;
+static netListType     *netList;
 
 s16 packValid (nodeNumType *node, char *packedNodes)
 {
   tempStrType tempStr;
-  char        *helpPtr, *helpPtr2;
-  char        *stringNode;
-  u16         count;
+  char       *helpPtr
+           , *helpPtr2;
+  char       *stringNode;
   char        nodeTempStr[32];
+  size_t      count;
 
-  if (packedNodes == NULL) return (0);
+  if (packedNodes == NULL)
+    return 0;
 
-  strcpy (tempStr, packedNodes);
+  strcpy(tempStr, packedNodes);
   helpPtr = strtok (tempStr, " ");
 
   *nodeTempStr = 0;
@@ -135,7 +133,7 @@ s16 packValid (nodeNumType *node, char *packedNodes)
     }
     stringNode = nodeStr(node);
 
-    for (count=0; count<strlen(nodeTempStr); count++)
+    for (count = 0; count < strlen(nodeTempStr); count++)
     {
       if ((nodeTempStr[count]=='?') && isdigit(stringNode[count]))
       {
@@ -143,16 +141,16 @@ s16 packValid (nodeNumType *node, char *packedNodes)
       }
       if (nodeTempStr[count]=='*')
       {
-        if (nodeTempStr[count+1] != 0)
+        if (nodeTempStr[count + 1] != 0)
         {
           logEntry ("Asterisk only allowed as last character of node number", LOG_ALWAYS, 4);
         }
         nodeTempStr[count] = 0;
         stringNode[count] = 0;
-        if (count && (nodeTempStr[count-1] == '.') &&
-            (stringNode[count-1] == 0))
+        if (count && (nodeTempStr[count - 1] == '.') &&
+            (stringNode[count - 1] == 0))
         {
-          nodeTempStr[count-1] = 0;
+          nodeTempStr[count - 1] = 0;
         }
         break;
       }
@@ -322,16 +320,20 @@ static void processPackLine(char *line, s32 switches)
 }
 
 
-s16 pack (s16 argc, char *argv[], s32 switches)
+s16 pack(s16 argc, char *argv[], s32 switches)
 {
   s16             doneMsg;
-  u16             low, mid, high;
-  s16             index, count, count2;
+  u16             low
+                , mid
+                , high;
+  s16             index
+                , count
+                , count2;
   tempStrType     tempStr;
-  char            *helpPtr;
+  char           *helpPtr;
   struct ffblk    ffblkMsg;
   fhandle         fileHandle;
-  packType        *pack;
+  packType       *pack;
   nodeFileRecType nodeFileInfo;
   u16             oldAttribute;
   nodeNumType     tempNode;
@@ -369,12 +371,12 @@ s16 pack (s16 argc, char *argv[], s32 switches)
 
   while ( !doneMsg )
   {
-    msgNum = strtoul (ffblkMsg.ff_name, &helpPtr, 10);
+    msgNum = strtoul(ffblkMsg.ff_name, &helpPtr, 10);
 
     if ((msgNum != 0) && (netIndex < MAXNETREC) &&
         (*helpPtr == '.') &&
         (!(ffblkMsg.ff_attrib & FA_SPEC)) &&
-        (readMsg (message, msgNum) == 0) &&
+        (readMsg(message, msgNum) == 0) &&
         (message->attribute & (IN_TRANSIT | LOCAL)) &&
         !(message->attribute & FILE_ATT))
     {
@@ -453,9 +455,9 @@ s16 pack (s16 argc, char *argv[], s32 switches)
       oldAttribute = (*netList)[count].attribute;
       msgNum       = (*netList)[count].msgNum;
 
-      if ((readMsg (message, msgNum) == 0) &&
+      if ((readMsg(message, msgNum) == 0) &&
           (oldAttribute == message->attribute) &&
-          (memcmp (&message->destNode,
+          (memcmp(&message->destNode,
                    &(*netList)[count].destNode, sizeof(nodeNumType)) == 0) &&
           ((!isLocalPoint(&message->destNode)) ||
            (memcmp(&(*netList)[count].viaNode,
@@ -470,8 +472,8 @@ s16 pack (s16 argc, char *argv[], s32 switches)
           newLine();
         }
 
-        sprintf (tempStr, "Message #%lu : %s "dARROW" %s", msgNum,
-                 nodeStr(&message->srcNode), nodeStr(&message->destNode));
+        sprintf ( tempStr, "Message #%lu : %s "dARROW" %s", msgNum
+                , nodeStr(&message->srcNode), nodeStr(&message->destNode));
         if (memcmp(&(*netList)[count].viaNode,
                    &message->destNode, sizeof(nodeNumType))!=0)
         {
@@ -531,7 +533,7 @@ s16 pack (s16 argc, char *argv[], s32 switches)
           fileHandle = -1;
           if (oldAttribute & KILLSENT)
           {
-            sprintf (tempStr, "%s%u.msg", config.netPath, msgNum);
+            sprintf(tempStr, "%s%u.msg", config.netPath, msgNum);
 
             if ((fileHandle = openP(tempStr, O_RDWR|O_DENYALL|O_BINARY, S_IREAD|S_IWRITE)) != -1)
             {
@@ -541,7 +543,7 @@ s16 pack (s16 argc, char *argv[], s32 switches)
           }
           if (fileHandle == -1)
           {
-            attribMsg (oldAttribute|SENT, msgNum);
+            attribMsg(oldAttribute|SENT, msgNum);
           }
         }
         memset(&(*netList)[count].viaNode, 0, sizeof(nodeNumType));

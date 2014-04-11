@@ -113,17 +113,21 @@ nodeInfoType *getNodeInfo (nodeNumType *nodeNum)
 extern u32 totalBundleSize[MAX_NODES];
 extern time_t startTime;
 
-void closeNodeInfo (void)
+void closeNodeInfo(void)
 {
    headerType   *nodeHeader;
    nodeInfoType *nodeBuf;
-   u16          count, count2;
+   u16          count
+              , count2;
 
    /* verwerk bundle datum via-node in node zelf */
    for ( count = 0; count < nodeCount; count++ )
-   {  for ( count2 = 0; count2 < nodeCount; count2++ )
-      {  if ( memcmp(&(nodeInfo[count]->node), &(nodeInfo[count2]->viaNode), sizeof(nodeNumType)) == 0 )
-         {  nodeInfo[count2]->lastNewBundleDat = nodeInfo[count]->lastNewBundleDat;
+   {
+      for ( count2 = 0; count2 < nodeCount; count2++ )
+      {
+         if ( memcmp(&(nodeInfo[count]->node), &(nodeInfo[count2]->viaNode), sizeof(nodeNumType)) == 0 )
+         {
+            nodeInfo[count2]->lastNewBundleDat = nodeInfo[count]->lastNewBundleDat;
             nodeInfo[count2]->referenceLNBDat = nodeInfo[count]->referenceLNBDat;
          }
       }
@@ -138,56 +142,14 @@ void closeNodeInfo (void)
 
       chgNumRec(CFG_NODES, nodeCount);
       for (count=0; count<nodeCount; count++)
-      {  memcpy(nodeBuf, nodeInfo[count], sizeof(nodeInfoType));
+      {
+         memcpy(nodeBuf, nodeInfo[count], sizeof(nodeInfoType));
          if ( nodeBuf->options.active &&
               nodeBuf->lastNewBundleDat == nodeBuf->referenceLNBDat )
          {
-#if 0
-            if ( config.adiscSizeNode && nodeBuf->node.point == 0 &&
-                 totalBundleSize[count]/1024 > config.adiscSizeNode*100L )
-            {  message->destNode = config.akaList[0].nodeNum;
-               strcpy(message->toUserName, config.sysopName);
-               sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r--- FMail"TEARLINE"\r",
-                       nodeStr(&nodeBuf->node), nodeBuf->sysopName, config.adiscSizeNode*100L, totalBundleSize[count]/1024);
-               writeMsgLocal (message, NETMSG, 1);
-               sprintf(message->text, "The status of your system %s has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r--- FMail"TEARLINE"\r",
-                       nodeStr(&nodeBuf->node), config.adiscSizeNode*100L, totalBundleSize[count]/1024);
-               message->destNode = nodeBuf->node;
-               strcpy(message->toUserName, nodeBuf->sysopName);
-               writeMsgLocal (message, NETMSG, 1);
-               nodeBuf->options.active = 0;
-            }
-            else if ( config.adiscSizePoint && nodeBuf->node.point != 0 &&
-                      totalBundleSize[count]/1024 > config.adiscSizePoint*100L )
-            {  message->destNode = config.akaList[0].nodeNum;
-               strcpy(message->toUserName, config.sysopName);
-               sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r--- FMail"TEARLINE"\r",
-                       nodeStr(&nodeBuf->node), nodeBuf->sysopName, config.adiscSizePoint*100L, totalBundleSize[count]/1024);
-               writeMsgLocal (message, NETMSG, 1);
-               sprintf(message->text, "The status your system %s has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r--- FMail"TEARLINE"\r",
-                       nodeStr(&nodeBuf->node), config.adiscSizePoint*100L, totalBundleSize[count]/1024);
-               message->destNode = nodeBuf->node;
-               strcpy(message->toUserName, nodeBuf->sysopName);
-               writeMsgLocal (message, NETMSG, 1);
-               nodeBuf->options.active = 0;
-            }
-            else if ( config.adiscDaysNode && nodeBuf->node.point == 0 && nodeBuf->referenceLNBDat &&
-                      startTime-nodeBuf->referenceLNBDat >= config.adiscDaysNode*86400L )
-            {  sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the system did not poll for at least %u days.\r\r--- FMail"TEARLINE"\r",
-                       nodeStr(&nodeBuf->node), nodeBuf->sysopName, config.adiscDaysNode);
-               writeMsgLocal (message, NETMSG, 1);
-               nodeBuf->options.active = 0;
-            }
-            else if ( config.adiscDaysPoint && nodeBuf->node.point != 0 && nodeBuf->referenceLNBDat &&
-                      startTime-nodeBuf->referenceLNBDat >= config.adiscDaysPoint*86400L )
-            {  sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the system did not poll for at least %u days.\r\r--- FMail"TEARLINE"\r",
-                       nodeStr(&nodeBuf->node), nodeBuf->sysopName, config.adiscDaysPoint);
-               writeMsgLocal (message, NETMSG, 1);
-               nodeBuf->options.active = 0;
-            }
-#endif
-            if ( nodeBuf->passiveSize && totalBundleSize[count]/1024 > nodeBuf->passiveSize*100L )
-            {  message->destNode = config.akaList[0].nodeNum;
+            if (nodeBuf->passiveSize && totalBundleSize[count] / 1024 > nodeBuf->passiveSize * 100L)
+            {
+               message->destNode = config.akaList[0].nodeNum;
                strcpy(message->toUserName, config.sysopName);
                sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r%s"
                       , nodeStr(&nodeBuf->node), nodeBuf->sysopName, (u32)nodeBuf->passiveSize*100L, totalBundleSize[count]/1024

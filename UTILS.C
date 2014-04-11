@@ -193,6 +193,15 @@ u32 diskFree(const char *path)
 #endif
 }
 //---------------------------------------------------------------------------
+u32 fileLength(int handle)
+{
+  long fl = filelength(handle);
+  if (fl < 0)
+    return 0;
+
+  return (u32)fl;  
+}
+//---------------------------------------------------------------------------
 s16 matchAka(nodeNumType *node, char useAka)
 {
    s16      srcAka = -1;

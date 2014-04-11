@@ -63,6 +63,7 @@
 int   moveFile        (const char *oldName, const char *newName);
 s16   existDir        (const char *dir, const char *descr);
 u32   diskFree        (const char *path);
+u32   fileLength      (int handle);
 s16   matchAka        (nodeNumType *node, char useAka);
 void  touch           (const char *path, const char *filename, const char *t);
 s16   emptyText       (char *text);
