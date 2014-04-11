@@ -434,18 +434,11 @@ u16 getAreaCode (char *msgText)
   return (BADMSG);
 }
 
-
-
-//extern nodeInfoType *nodeInfo;
-//extern u16          nodeCount;
-
-
-static s16 processPkt (u16 secure, s16 noAreaFix)
+static s16 processPkt(u16 secure, s16 noAreaFix)
 {
-
-  tempStrType    pktStr,
-  tempStr;
-  char           *helpPtr;
+  tempStrType    pktStr
+               , tempStr;
+  char          *helpPtr;
   echoToNodeType tempEchoToNode;
   s16            count;
   s16            headerStat;
@@ -458,18 +451,16 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
   s16            areaFixRep;
   char           prodCodeStr[20];
 
-
-  if (secure && (*config.securePath == 0))
-  {
+  if (secure && *config.securePath == 0)
     secure = 0;
-  }
+
   secure++;
 
   do
   {
-    strcpy (pktStr, (secure==2)?config.securePath:secure?config.inPath:".\\"); /* was pktPath */
-    strcat (pktStr, "*.pkt");
-    donePkt = findfirst (pktStr, &ffblkPkt, 0);
+    strcpy(pktStr, (secure == 2) ? config.securePath : secure ? config.inPath : ".\\");
+    strcat(pktStr, "*.pkt");
+    donePkt = findfirst(pktStr, &ffblkPkt, 0);
 
     if (!donePkt) /* do not remove ! */
     {
@@ -479,15 +470,15 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
         {
           newLine();
 
-          strcpy (pktStr, (secure==2)?config.securePath:secure?config.inPath:".\\"); /* was pktPath */
-          strcat (pktStr, ffblkPkt.ff_name);
-          headerStat = openPktRd (pktStr, secure==2);
+          strcpy(pktStr, (secure == 2) ? config.securePath : secure ? config.inPath : ".\\");
+          strcat(pktStr, ffblkPkt.ff_name);
+          headerStat = openPktRd(pktStr, secure==2);
 
           helpPtr = "";
           count = 0;
-          while ( ftscprod[count].prodcode != 0xFFFF )
+          while (ftscprod[count].prodcode != 0xFFFF)
           {
-            if (ftscprod[count].prodcode == globVars.remoteProdCode )
+            if (ftscprod[count].prodcode == globVars.remoteProdCode)
             {
               helpPtr = ftscprod[count].prodname;
               break;
@@ -496,14 +487,11 @@ static s16 processPkt (u16 secure, s16 noAreaFix)
           }
           if (*helpPtr == 0)
           {
-            sprintf (prodCodeStr, "Program id %04hX", globVars.remoteProdCode);
+            sprintf(prodCodeStr, "Program id %04hX", globVars.remoteProdCode);
             helpPtr = prodCodeStr;
           }
-          sprintf (tempStr, "Processing %s from %s to %s",
-                   ffblkPkt.ff_name,
-                   nodeStr (&globVars.packetSrcNode),
-                   nodeStr (&globVars.packetDestNode));
-          logEntry (tempStr, LOG_PKTINFO, 0);
+          sprintf(tempStr, "Processing %s from %s to %s", ffblkPkt.ff_name, nodeStr(&globVars.packetSrcNode), nodeStr(&globVars.packetDestNode));
+          logEntry(tempStr, LOG_PKTINFO, 0);
 
           if (headerStat == 0)
           {

@@ -26,8 +26,8 @@
 //---------------------------------------------------------------------------
 typedef struct ftscps
 {
-  u32 prodcode;
-  u8 *prodname;
+  u16   prodcode;
+  char *prodname;
 };
 //---------------------------------------------------------------------------
 extern struct ftscps ftscprod[];

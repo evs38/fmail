@@ -1,29 +1,31 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
-#ifndef __JAMFUN_H__
-#define __JAMFUN_H__
+#ifndef jamfunH
+#define jamfunH
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #include "jam.h"
 
+//---------------------------------------------------------------------------
 
 #define _JAM_MAXSUBLEN    1024
 #define _JAM_MAXSUBLENTOT 8192
@@ -54,8 +56,9 @@ u16	jam_freelock(u32);
 
 u32	jam_writemsg(char *, internalMsgType *, u16);
 
-u32 jam_scan(u16, u32, u16, internalMsgType *);
+u32 jam_scan  (u16, u32, u16, internalMsgType *);
 u32	jam_update(u16, u32, internalMsgType *);
-u32 jam_rescan (u16, u16, nodeInfoType *, internalMsgType *);
+u32 jam_rescan(u16, u32, nodeInfoType *, internalMsgType *);
 
-#endif
+//---------------------------------------------------------------------------
+#endif  // jamfunH
