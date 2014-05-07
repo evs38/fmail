@@ -230,9 +230,9 @@ typedef struct
   unsigned updateChains : 1; /* bit  2   */
   unsigned reTear       : 1; /* bit  3   */
   unsigned              : 1; /* bit  4   */
-  unsigned              : 1; /* bit  5   */
+  unsigned removeLf     : 1; /* bit  5   */
   unsigned removeRe     : 1; /* bit  6   */
-  unsigned removeLfSr   : 1; /* bit  7   */
+  unsigned removeSr     : 1; /* bit  7   */
   unsigned scanAlways   : 1; /* bit  8   */
   unsigned scanUpdate   : 1; /* bit  9   */
   unsigned mbSharing    : 1; /* bit 10   */

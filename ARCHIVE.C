@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------------
-//  Copyright (C) 2007 Folkert J. Wijnstra
-//  Copyright (C) 2011 Wilfred van Velzen
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -20,32 +20,32 @@
 //
 // ----------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <process.h>
-#include <stdlib.h>
 #include <alloc.h>
-#include <string.h>
 #include <dir.h>
 #include <dos.h>
-#include <io.h>
-#include <fcntl.h>
-#include <time.h>
 #include <errno.h>
-#include <sys/stat.h>
+#include <fcntl.h>
+#include <io.h>
 #include <process.h>
+#include <process.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <time.h>
 
-#include "fmail.h"
-#include "config.h"
+#include "archive.h"
+
 #include "areainfo.h"
-#include "nodeinfo.h"
+#include "config.h"
 #include "crc.h"
+#include "log.h"
 #include "msgmsg.h"
 #include "msgpkt.h"
-#include "utils.h"
-#include "archive.h"
-#include "log.h"
+#include "nodeinfo.h"
 #include "output.h"
-//#include "smtp.h"
+#include "utils.h"
+
 #ifndef __FMAILX__
 #ifndef __32BIT__
 #include "spawno.h"
@@ -362,25 +362,6 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
   u16 memReq;
 #endif
-/*
-   struct dfree dtable;
-   struct stat  statBuf;
-
-   if (stat (fullFileName, &statBuf) == -1)
-      return;
-  /*
-   getdfree (*config.inPath - 'A' + 1, &dtable); /* was pktPath */
-  */
-  if ((getenv("FMAIL_NDC") == NULL)
-        && ( /*((s16)dtable.df_sclus == -1) ||*/
-          (diskFree(config.inPath) < 4 * statBuf.st_size)))
-  {
-    sprintf(tempStr, "Not enough diskspace to handle bundle %s"
-            , fullFileName);
-    logEntry(tempStr, LOG_ALWAYS, 0);
-    return;
-  }
-*/
   *arcPath = 0;
   switch (arcType = archiveType(fullFileName))
   {
@@ -647,36 +628,37 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
   unlink(fullFileName);
 }
 // ----------------------------------------------------------------------------
-s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
-            , nodeInfoType *nodeInfo)
+s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInfo)
 {
-  u16 count;
-  tempStrType archiveStr;
-  char         *archivePtr;
-  char         *fnPtr;
-  char         *extPtr;
-  s16 oldArc = -1;
-  u16 maxArc, okArc;
-  u8 archiver = 0xFF;
-  struct       ffblk ffblkArc;
-  char nodeName[32];
-  struct ffblk semaBlk;
-  tempStrType arcPath
-            , tempStr
-            , pktName
-            , semaName;
-  char *helpPtr;
-  char pathStr[64];
-  char parStr[MAX_PARSIZE];
-  char procStr1[64];
-  char procStr2[MAX_PARSIZE];
-  s16 doneArc;
-  fhandle tempHandle;
-  fhandle semaHandle;
-  s32 arcSize;
-  uchar        *exto, *extn;
+  u16           count;
+  tempStrType   archiveStr;
+  char         *archivePtr
+             , *fnPtr
+             , *extPtr;
+  s16           oldArc = -1;
+  u16           maxArc
+              , okArc;
+  u8            archiver = 0xFF;
+  struct ffblk  ffblkArc;
+  char          nodeName[32];
+  struct ffblk  semaBlk;
+  tempStrType   arcPath
+              , tempStr
+              , pktName
+              , semaName;
+  char         *helpPtr
+              , pathStr [64]
+              , parStr  [MAX_PARSIZE]
+              , procStr1[64]
+              , procStr2[MAX_PARSIZE];
+  s16           doneArc;
+  fhandle       tempHandle
+              , semaHandle;
+  s32           arcSize;
+  uchar        *exto
+             , *extn;
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
-  u16 memReq;
+  u16           memReq;
 #endif
 
   if (!stricmp(qqqName + strlen(qqqName) - 3, "$$$"))
@@ -692,6 +674,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
 
   if (nodeInfo->archiver == 0xFF && *nodeInfo->pktOutPath)
   {
+    // Write uncompressed pkt files directly to configured 'pkt outputpath'
     strcpy(pktName, nodeInfo->pktOutPath);
     if ((helpPtr = strrchr(qqqName, '\\')) == NULL)
       return 1;
@@ -699,9 +682,11 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
     strcpy(pktName + strlen(pktName) - 3, extn);
     if (moveFile(qqqName, pktName))
     {
-      strcpy(pktName, qqqName);
-      strcpy(pktName + strlen(pktName) - 3, exto);
+      // If moving didn't succeed, rename to 'exto' extension. Don't care about the result
+      helpPtr = stpcpy(pktName, qqqName);
+      strcpy(helpPtr - 3, exto);
       rename(qqqName, pktName);
+
       return 1;
     }
     return 0;
@@ -710,8 +695,8 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
   if (nodeInfo->archiver == 0xFF)
     nodeInfo->archiver = config.defaultArc;
 
-  strcpy(pktName, qqqName);
-  strcpy(pktName + strlen(pktName) - 3, extn);
+  helpPtr = stpcpy(pktName, qqqName);
+  strcpy(helpPtr - 3, extn);
   if (rename(qqqName, pktName) == -1)
     return 1;
   strcpy(qqqName + strlen(qqqName) - 3,  exto);
@@ -723,10 +708,10 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
     srcNode  = &config.akaList[matchAka(destNode, nodeInfo->useAka)].nodeNum;
   }
 
-  if (config.mailer == 0)
+  if (config.mailer == dMT_FrontDoor)
   {
-    count = sprintf(semaName, "%s%08lx.`fm", config.semaphorePath
-                    , crc32(nodeStr(destNode))) - 2;
+    count = sprintf( semaName, "%s%08lx.`fm", config.semaphorePath
+                   , crc32(nodeStr(destNode))) - 2;
     unlink(semaName);
     *(u16 *)(semaName + count) = '*';
     if (findfirst(semaName, &semaBlk, FA_RDONLY | FA_HIDDEN | FA_SYSTEM | /*FA_LABEL|*/ FA_DIREC) == 0)
@@ -735,6 +720,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
       logEntry(tempStr, LOG_ALWAYS, 0);
       rename(pktName, qqqName);
       newLine();
+
       return 1;
     }
     if (config.mailOptions.createSema)
@@ -745,7 +731,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
   }
   else
   {
-    if (config.mailer == 1)
+    if (config.mailer == dMT_InterMail)
     {
       sprintf(semaName, "%sx%07lx.fm", config.semaphorePath
               , crc32len((char *)destNode, 8) / 16);
@@ -771,7 +757,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
       }
     }
     else
-      if (config.mailer == 3 || config.mailer == 5)
+      if (config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
       {
         archivePtr = stpcpy(semaName, config.outPath);
         if (destNode->zone != config.akaList[0].nodeNum.zone)
@@ -803,7 +789,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
   }
 
   archivePtr = stpcpy(archiveStr, config.outPath);
-  if (config.mailer == 3 || config.mailer == 5)
+  if (config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
   {
     if (destNode->zone != config.akaList[0].nodeNum.zone)
     {
@@ -868,7 +854,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
     while (!doneArc)
     {
       maxArc = max(ffblkArc.ff_name[11], maxArc);
-      if ((config.mailer == 3 || config.mailer == 5)
+      if ((config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
           && ((ffblkArc.ff_fsize > 0)
               && ((config.maxBundleSize == 0)
                   || ((ffblkArc.ff_fsize >> 10) < config.maxBundleSize))))
@@ -888,7 +874,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
       if (strnicmp(fnPtr, fAttInfo[count].fileName, 11) == 0)
         maxArc = max(fAttInfo[count].fileName[11], maxArc);
 
-    if (okArc && (config.mailer == 3 || config.mailer == 5))
+    if (okArc && (config.mailer == dMT_Binkley || config.mailer == dMT_Xenia))
       extPtr[3] = okArc;
     else
     {
@@ -1055,8 +1041,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
   default:
     sprintf(tempStr, "Unknown archiving utility listed for node %s", nodeStr(destNode));
     logEntry(tempStr, LOG_ALWAYS, 0);
-    if ((config.mailer == 0 || config.mailer == 1
-         || config.mailer == 3 || config.mailer == 5)
+    if ((config.mailer == dMT_FrontDoor || config.mailer == dMT_InterMail || config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
         && config.mailOptions.createSema)
     {
       close(semaHandle);
@@ -1070,12 +1055,11 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
   if ((!*arcPath) || checkExist(arcPath, pathStr, parStr))
   {
     if (!*arcPath)
-      sprintf(tempStr,  "Archive decompression program for %s method not defined",  extPtr);
+      sprintf(tempStr, "Archive decompression program for %s method not defined", extPtr);
     else
-      sprintf(tempStr,  "Archive compression program for %s method not found",      extPtr);
+      sprintf(tempStr, "Archive compression program for %s method not found",     extPtr);
       logEntry(tempStr, LOG_ALWAYS, 0);
-    if ((config.mailer == 0 || config.mailer == 1
-         || config.mailer == 3 || config.mailer == 5)
+    if ((config.mailer == dMT_FrontDoor || config.mailer == dMT_InterMail || config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
         && config.mailOptions.createSema)
     {
       close(semaHandle);
@@ -1112,8 +1096,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
   if (execute(extPtr, pathStr, parStr, archiveStr, pktName, nodeInfo->pktOutPath, memReq))
 #endif
   {
-    if ((config.mailer == 0 || config.mailer == 1
-         || config.mailer == 3 || config.mailer == 5)
+    if ((config.mailer == dMT_FrontDoor || config.mailer == dMT_InterMail || config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
         && config.mailOptions.createSema)
     {
       close(semaHandle);
@@ -1144,8 +1127,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
     }
   }
 
-  if ((config.mailer == 0 || config.mailer == 1
-       || config.mailer == 3 || config.mailer == 5)
+  if ((config.mailer == dMT_FrontDoor || config.mailer == dMT_InterMail || config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
       && config.mailOptions.createSema)
   {
     close(semaHandle);
@@ -1171,7 +1153,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
   }
   else
   {
-    if (config.mailer != 3 && config.mailer != 5)
+    if (config.mailer != dMT_Binkley && config.mailer != dMT_Xenia)
     {
       if (fileAttach(archiveStr, srcNode, destNode, nodeInfo))
       {
@@ -1182,13 +1164,13 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode
     }
     else
     {
-        strcpy(tempStr, archiveStr);
+      strcpy(tempStr, archiveStr);
       if (destNode->point)
         archivePtr += sprintf(archivePtr, "%08hx", destNode->point);
       else
         archivePtr += sprintf(archivePtr, "%04hx%04hx", destNode->net, destNode->node);
 
-        strcpy(archivePtr, ".?lo");
+      strcpy(archivePtr, ".?lo");
       if (findfirst(archiveStr, &ffblkArc, 0) == -1)
         sprintf(archivePtr, ".%clo", (nodeInfo->outStatus == 1) ? 'h'
                 : (nodeInfo->outStatus == 2) ? 'c'
@@ -1299,8 +1281,3 @@ void retryArc(void)
   }
 }
 // ----------------------------------------------------------------------------
-
-
-
-
-

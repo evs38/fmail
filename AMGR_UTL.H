@@ -20,8 +20,8 @@
  */
 
 
-s16 nodeScroll (void);
+s16 nodeScroll(void);
 
-s16 areasList (s16 curAr, char groupSelectMask);
+s16 areasList(s16 curAr, char groupSelectMask);
 
 

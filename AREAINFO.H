@@ -1,7 +1,9 @@
+#ifndef areainfoH
+#define areainfoH
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -138,3 +140,4 @@ void deInitAreaInfo (void);
 #define ETN_READACCESS(h,i)   (((h) & ETN_SET(i)) != 0)
 #define ETN_WRITEACCESS(h,i)  ((((h) & ETN_SETRO(i)) == ETN_SET(i)) || (((h) & ETN_SETRO(i)) == ETN_SETWO(i)))
 //---------------------------------------------------------------------------
+#endif  // areainfoH

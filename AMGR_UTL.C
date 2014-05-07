@@ -20,20 +20,23 @@
  */
 
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <ctype.h>
 #include <dos.h>
-#include <string.h>
 #include <fcntl.h>
 #include <io.h>
-#include <time.h>
-#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <time.h>
+
 #include "fmail.h"
-#include "fs_util.h"
+
+#include "amgr_utl.h"
+
 #include "areainfo.h"
 #include "areamgr.h"
-#include "amgr_utl.h"
+#include "fs_util.h"
 #include "window.h"
 
 
@@ -62,19 +65,19 @@ s16 nodeScroll (void)
    char     tempStr[35];
    nodeNumType tempNode;
 
-   printString ("Page Up   ", 0, 24, YELLOW, BLACK, MONO_NORM);
-   printString ("Page Down   ", 10, 24, YELLOW, BLACK, MONO_NORM);
-   printString ("Ins ", 22, 24, YELLOW, BLACK, MONO_NORM);
-   printString ("Insert   ", 26, 24, LIGHTMAGENTA, BLACK, MONO_HIGH);
-   printString ("Del ", 35, 24, YELLOW, BLACK, MONO_NORM);
-   printString ("Delete   ", 39, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString ("Home ", 48, 24, YELLOW, BLACK, MONO_NORM);
-   printString ("First   ", 53, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString ("End ", 61, 24, YELLOW, BLACK, MONO_NORM);
-   printString ("Last   ", 65, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString (" \x18   \x19  ", 72, 24, YELLOW, BLACK, MONO_NORM);
+   printString("Page Up   "    ,  0, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("Page Down   "  , 10, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("Ins "          , 22, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("Insert   "     , 26, 24, LIGHTMAGENTA, BLACK, MONO_HIGH);
+   printString("Del "          , 35, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("Delete   "     , 39, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("Home "         , 48, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("First   "      , 53, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("End "          , 61, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("Last   "       , 65, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString(" \x18   \x19  ", 72, 24, YELLOW      , BLACK, MONO_NORM);
 
-   while ((elemCount < MAX_FORWARD) && (tempInfo.export[elemCount].nodeNum.zone != 0))
+   while ((elemCount < MAX_FORWARD) && (tempInfo.forwards[elemCount].nodeNum.zone != 0))
    {
       elemCount++;
    }
@@ -91,7 +94,7 @@ s16 nodeScroll (void)
          if (windowBase+count < elemCount)
          {
             *tempStr = ' ';
-            strcpy(tempStr+1, nodeStr(&tempInfo.export[windowBase+count].nodeNum));
+            strcpy(tempStr+1, nodeStr(&tempInfo.forwards[windowBase+count].nodeNum));
          }
          else
             *tempStr = 0;
@@ -101,12 +104,12 @@ s16 nodeScroll (void)
             printStringFill(tempStr, ' ', 25, 41, 9+count,
                             windowLook.scrollfg,
                             windowLook.scrollbg, MONO_INV);
-            printStringFill((tempInfo.export[windowBase+count].flags.locked) ? "lock":
-                            (tempInfo.export[windowBase+count].flags.readOnly) ? "r/o":
-                            (tempInfo.export[windowBase+count].flags.writeOnly) ? "w/o":"",
+            printStringFill((tempInfo.forwards[windowBase+count].flags.locked) ? "lock":
+                            (tempInfo.forwards[windowBase+count].flags.readOnly) ? "r/o":
+                            (tempInfo.forwards[windowBase+count].flags.writeOnly) ? "w/o":"",
                             ' ', 5, 66, 9+count,
-                            (tempInfo.export[windowBase+count].flags.locked) ? RED :
-                            (tempInfo.export[windowBase+count].flags.readOnly) ? YELLOW : LIGHTGREEN,
+                            (tempInfo.forwards[windowBase+count].flags.locked) ? RED :
+                            (tempInfo.forwards[windowBase+count].flags.readOnly) ? YELLOW : LIGHTGREEN,
                             windowLook.scrollbg, MONO_NORM_BLINK);
          }
          else
@@ -114,12 +117,12 @@ s16 nodeScroll (void)
             printStringFill (tempStr, ' ', 25, 41, 9+count,
                              windowLook.datafg,
                              windowLook.background, MONO_NORM);
-            printStringFill((tempInfo.export[windowBase+count].flags.locked) ? "lock":
-                            (tempInfo.export[windowBase+count].flags.readOnly) ? "r/o":
-                            (tempInfo.export[windowBase+count].flags.writeOnly) ? "w/o":"",
+            printStringFill((tempInfo.forwards[windowBase+count].flags.locked) ? "lock":
+                            (tempInfo.forwards[windowBase+count].flags.readOnly) ? "r/o":
+                            (tempInfo.forwards[windowBase+count].flags.writeOnly) ? "w/o":"",
                             ' ', 5, 66, 9+count,
-                            (tempInfo.export[windowBase+count].flags.locked) ? RED :
-                            (tempInfo.export[windowBase+count].flags.readOnly) ? YELLOW : LIGHTGREEN,
+                            (tempInfo.forwards[windowBase+count].flags.locked) ? RED :
+                            (tempInfo.forwards[windowBase+count].flags.readOnly) ? YELLOW : LIGHTGREEN,
                             windowLook.background, MONO_NORM_BLINK);
          }
       }
@@ -133,21 +136,21 @@ s16 nodeScroll (void)
       switch ( ch )
       {
          case 'l':
-         case 'L':     tempInfo.export[currentElem].flags.readOnly = 0;
-                       tempInfo.export[currentElem].flags.writeOnly = 0;
-                       tempInfo.export[currentElem].flags.locked ^= 1;
+         case 'L':     tempInfo.forwards[currentElem].flags.readOnly = 0;
+                       tempInfo.forwards[currentElem].flags.writeOnly = 0;
+                       tempInfo.forwards[currentElem].flags.locked ^= 1;
                        update = 1;
                        break;
          case 'r':
-         case 'R':     tempInfo.export[currentElem].flags.readOnly ^= 1;
-                       tempInfo.export[currentElem].flags.writeOnly = 0;
-                       tempInfo.export[currentElem].flags.locked = 0;
+         case 'R':     tempInfo.forwards[currentElem].flags.readOnly ^= 1;
+                       tempInfo.forwards[currentElem].flags.writeOnly = 0;
+                       tempInfo.forwards[currentElem].flags.locked = 0;
                        update = 1;
                        break;
          case 'w':
-         case 'W':     tempInfo.export[currentElem].flags.readOnly = 0;
-                       tempInfo.export[currentElem].flags.writeOnly ^= 1;
-                       tempInfo.export[currentElem].flags.locked = 0;
+         case 'W':     tempInfo.forwards[currentElem].flags.readOnly = 0;
+                       tempInfo.forwards[currentElem].flags.writeOnly ^= 1;
+                       tempInfo.forwards[currentElem].flags.locked = 0;
                        update = 1;
                        break;
          case _K_PGUP_ :
@@ -208,30 +211,30 @@ s16 nodeScroll (void)
                           {
                              currentElem = 0;
                              while ((currentElem < elemCount) &&
-                                    ((tempNode.zone   > tempInfo.export[currentElem].nodeNum.zone) ||
-                                     ((tempNode.zone == tempInfo.export[currentElem].nodeNum.zone) &&
-                                      (tempNode.net   > tempInfo.export[currentElem].nodeNum.net)) ||
-                                     ((tempNode.zone == tempInfo.export[currentElem].nodeNum.zone) &&
-                                      (tempNode.net  == tempInfo.export[currentElem].nodeNum.net) &&
-                                      (tempNode.node  > tempInfo.export[currentElem].nodeNum.node)) ||
-                                     ((tempNode.zone == tempInfo.export[currentElem].nodeNum.zone) &&
-                                      (tempNode.net  == tempInfo.export[currentElem].nodeNum.net) &&
-                                      (tempNode.node == tempInfo.export[currentElem].nodeNum.node) &&
-                                      (tempNode.point > tempInfo.export[currentElem].nodeNum.point))))
+                                    ((tempNode.zone   > tempInfo.forwards[currentElem].nodeNum.zone) ||
+                                     ((tempNode.zone == tempInfo.forwards[currentElem].nodeNum.zone) &&
+                                      (tempNode.net   > tempInfo.forwards[currentElem].nodeNum.net)) ||
+                                     ((tempNode.zone == tempInfo.forwards[currentElem].nodeNum.zone) &&
+                                      (tempNode.net  == tempInfo.forwards[currentElem].nodeNum.net) &&
+                                      (tempNode.node  > tempInfo.forwards[currentElem].nodeNum.node)) ||
+                                     ((tempNode.zone == tempInfo.forwards[currentElem].nodeNum.zone) &&
+                                      (tempNode.net  == tempInfo.forwards[currentElem].nodeNum.net) &&
+                                      (tempNode.node == tempInfo.forwards[currentElem].nodeNum.node) &&
+                                      (tempNode.point > tempInfo.forwards[currentElem].nodeNum.point))))
                              {
                                 currentElem++;
                              }
-                             if (memcmp (&tempNode, &tempInfo.export[currentElem].nodeNum,
+                             if (memcmp (&tempNode, &tempInfo.forwards[currentElem].nodeNum,
                                          sizeof(nodeNumType)) == 0)
                                 displayMessage ("Nodenumber is already in list");
                              else
                              {
                                 update = 1;
-                                memmove (&tempInfo.export[currentElem+1],
-                                         &tempInfo.export[currentElem],
+                                memmove (&tempInfo.forwards[currentElem+1],
+                                         &tempInfo.forwards[currentElem],
                                          (elemCount++-currentElem)*sizeof(nodeNumXType));
-                                memset(&tempInfo.export[currentElem], 0, sizeof(nodeNumXType));
-                                tempInfo.export[currentElem].nodeNum = tempNode;
+                                memset(&tempInfo.forwards[currentElem], 0, sizeof(nodeNumXType));
+                                tempInfo.forwards[currentElem].nodeNum = tempNode;
                                 if (elemCount <= MAX_NS_WINSIZE)
                                    windowBase = 0;
                                 else
@@ -248,9 +251,9 @@ s16 nodeScroll (void)
                            (askBoolean ("Delete this node ?", 'Y') == 'Y'))
                        {
                           update = 1;
-                          memcpy (&tempInfo.export[currentElem], &tempInfo.export[currentElem+1],
+                          memcpy (&tempInfo.forwards[currentElem], &tempInfo.forwards[currentElem+1],
                                   (elemCount-currentElem-1)*sizeof(nodeNumXType));
-                          memset (&tempInfo.export[--elemCount], 0, sizeof(nodeNumXType));
+                          memset (&tempInfo.forwards[--elemCount], 0, sizeof(nodeNumXType));
                           if (currentElem == elemCount)
                              currentElem--;
                           if ((elemCount-currentElem < MAX_NS_WINSIZE) &&

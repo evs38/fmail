@@ -20,26 +20,29 @@
  */
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stddef.h>
-#include <dos.h>
+#include <ctype.h>
 #include <dir.h>
-#include <string.h>
+#include <dos.h>
 #include <fcntl.h>
 #include <io.h>
-#include <time.h>
-#include <ctype.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <time.h>
+
 #include "fmail.h"
+
+#include "areamgr.h"
+
+#include "amgr_utl.h"
+#include "areainfo.h"
+#include "cfgfile.h"
 #include "fs_func.h"
 #include "fs_util.h"
-#include "areainfo.h"
-#include "areamgr.h"
-#include "amgr_utl.h"
-#include "window.h"
 #include "fs_util.h"
-#include "cfgfile.h"
+#include "window.h"
 
 typedef struct      /* OLD !!! */
 {
@@ -76,7 +79,9 @@ typedef struct      /* OLD !!! */
    uchar           attr2RA;
    uchar           aliasesQBBS;
    uchar           originLine[ORGLINE_LEN];
-   nodeNumType     export[MAX_FORWARDOLD];  } rawEchoTypeOld;
+   nodeNumType     export[MAX_FORWARDOLD];
+
+} rawEchoTypeOld;
 
 
 typedef struct
@@ -99,7 +104,7 @@ typedef struct
    u16             days;
    u16             daysRcvd;
 
-   nodeNumType     export[MAX_FORWARDOLD];
+   nodeNumType     forwards[MAX_FORWARDOLD];
 
    u16             readSecRA;
    uchar           flagsRdNotRA[4];
@@ -147,7 +152,7 @@ typedef struct
    u16             days;
    u16             daysRcvd;
 
-   nodeNumType     export[MAX_FORWARDOLD];
+   nodeNumType     forwards[MAX_FORWARDOLD];
 
    u16             readSecRA;
    uchar           flagsRdRA[4];
@@ -360,7 +365,7 @@ static void freeAreaInfo(u16 index)
 
 
 
- 
+
 s16 areaMgr (void)
 {
    u8		*tempPtr, *tempPtr2;
@@ -500,7 +505,7 @@ s16 areaMgr (void)
 	    memcpy (tempInfo.msgBasePath,areaInfoOld.msgBasePath,MB_PATH_LEN_OLD-1);
 	    memcpy (tempInfo.originLine, areaInfoOld.originLine, ORGLINE_LEN-1);
             for ( count = 0; count < MAX_FORWARDOLD; count++ )
-               tempInfo.export[count].nodeNum = areaInfoOld.export[count];
+               tempInfo.forwards[count].nodeNum = areaInfoOld.export[count];
 	    tempInfo.signature  = 'AE';
 	    tempInfo.group      = areaInfoOld.group;
 	    tempInfo.board      = areaInfoOld.board;
@@ -544,7 +549,7 @@ s16 areaMgr (void)
       getRec(CFG_ECHOAREAS, count);
       if ( areaBuf->board > MBBOARDS )
          areaBuf->board = 0;
-      if (areaBuf->board) 
+      if (areaBuf->board)
          boardCodeInfo[(areaBuf->board-1)>>3] |= (1<<((areaBuf->board-1)&7));
    }
 #endif
@@ -566,12 +571,12 @@ s16 areaMgr (void)
       do
       {  findOk = 0;
 	 count2 = 0;
-	 while ( count2 < config.maxForward - 1 && areaBuf->export[count2+1].nodeNum.zone )
-         {  if ( nodegreater(areaBuf->export[count2].nodeNum, areaBuf->export[count2+1].nodeNum) )
+	 while ( count2 < config.maxForward - 1 && areaBuf->forwards[count2+1].nodeNum.zone )
+         {  if ( nodegreater(areaBuf->forwards[count2].nodeNum, areaBuf->forwards[count2+1].nodeNum) )
 	    {  findOk = 1;
-	       tempNodeX = areaBuf->export[count2];
-	       areaBuf->export[count2] = areaBuf->export[count2+1];
-	       areaBuf->export[count2+1] = tempNodeX;
+	       tempNodeX = areaBuf->forwards[count2];
+	       areaBuf->forwards[count2] = areaBuf->forwards[count2+1];
+	       areaBuf->forwards[count2+1] = tempNodeX;
                ch = 1;
 	    }
 	    ++count2;
@@ -596,8 +601,8 @@ s16 areaMgr (void)
       /* fixes problems reported by Darr Hoag with Global functions Amgr */
       count2 = 0;
       while ( count2 < MAX_FORWARD )
-      {  if ( !areaBuf->export[count2].nodeNum.zone )
-	 {   memset(&areaBuf->export[count2], 0, (MAX_FORWARD-count2)*sizeof(nodeNumXType));
+      {  if ( !areaBuf->forwards[count2].nodeNum.zone )
+	 {   memset(&areaBuf->forwards[count2], 0, (MAX_FORWARD-count2)*sizeof(nodeNumXType));
 	     break;
 	 }
 	 ++count2;
@@ -837,7 +842,7 @@ s16 areaMgr (void)
                                  index = count;
                               break;
 	       case _K_ENTER_ :
-	       case _K_F1_ :  if (areaInfoCount == 0) 
+	       case _K_F1_ :  if (areaInfoCount == 0)
                                  break;  /* F1 */
 	 	              if (tempInfo.options.disconnected)
                               {
@@ -970,7 +975,7 @@ s16 areaMgr (void)
 				 if (groupSelectMask)
 				    tempInfo.group = (1L<<(groupSelectMask-1));
 				 else
-				    if (!tempInfo.group) 
+				    if (!tempInfo.group)
                                        tempInfo.group = 1;
 
 				 tempInfo.options.active = 1;
@@ -981,7 +986,7 @@ s16 areaMgr (void)
 				    strncpy (tempInfo.comment,
 					     badEchos[badEchoCount].badEchoName, ECHONAME_LEN-1);
 				    strupr (tempInfo.areaName);
-                                    tempInfo.export[0].nodeNum = badEchos[badEchoCount].srcNode;
+                                    tempInfo.forwards[0].nodeNum = badEchos[badEchoCount].srcNode;
 				    tempInfo.address = badEchos[badEchoCount].destAka;
 
                                     if ( tempInfo.board == 2 ) /* JAM */
@@ -1044,7 +1049,7 @@ s16 areaMgr (void)
 				 }
 
                                  count = 0;
-                                 do 
+                                 do
 				 {  count++;
                                     count2 = 0;
                                     while ( count2 < MAX_NETAKAS )
@@ -1055,8 +1060,8 @@ s16 areaMgr (void)
                                  }
                                  while ( (count <= MBBOARDS) &&
                                          (count2 < MAX_NETAKAS || (usedArea[count-1] == 1) ||
-				       	 (count == config.badBoard) || 
-                                         (count == config.dupBoard) || 
+				       	 (count == config.badBoard) ||
+                                         (count == config.dupBoard) ||
                                          (count == config.recBoard)) );
 //					 (count == config.netmailBoard[0]) || (count == config.netmailBoard[1]) ||
 //					 (count == config.netmailBoard[2]) || (count == config.netmailBoard[3]) ||
@@ -1155,7 +1160,7 @@ s16 areaMgr (void)
 				 index--;
                               groupSearch = 1;
                               break;
-                default:      if (ch >= 256 || !isgraph(ch)) 
+                default:      if (ch >= 256 || !isgraph(ch))
                                  break;
                               findOk++;
                               if (findPos < sizeof(areaNameType)-1)
@@ -1261,10 +1266,10 @@ s16 areaMgr (void)
 		  }
 		  areaBuf->_alsoSeenBy = (u16)areaBuf->alsoSeenBy;
 		  for ( count2 = 0; count2 < MAX_FORWARDOLD; count2++ )
-		  nodeNumBuf[count2] = areaBuf->export[count2].nodeNum;
+		  nodeNumBuf[count2] = areaBuf->forwards[count2].nodeNum;
 		  memmove((uchar*)areaBuf + offsetof(rawEchoType, readSecRA) + MAX_FORWARDOLD * sizeof(nodeNumType),
 			 (uchar*)areaBuf + offsetof(rawEchoType, readSecRA),
-			 offsetof(rawEchoType, export) - offsetof(rawEchoType, readSecRA));
+			 offsetof(rawEchoType, forwards) - offsetof(rawEchoType, readSecRA));
 		  memcpy(&areaBuf->readSecRA, nodeNumBuf, MAX_FORWARDOLD * sizeof(nodeNumType));
 		  write(fml102handle, areaBuf, sizeof(rawEchoType102));
 	       }

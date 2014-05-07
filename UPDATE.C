@@ -1,34 +1,36 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <string.h>
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 #include <time.h>
 
 #include "fmail.h"
+
 #include "fs_util.h"
 #include "areainfo.h"
 #include "window.h"
@@ -42,6 +44,7 @@
 #include "log.h"
 #define displayMessage(msg) logEntry(msg, LOG_ALWAYS, 0)
 
+//---------------------------------------------------------------------------
 static s16 groupToChar (s32 group)
 {
   s16 c = 'A';
@@ -472,26 +475,26 @@ void autoUpdate (void)
             lastNet = 0;
             lastNode = 0;
             count2 = 0;
-            while ((count2 < MAX_FORWARD) && (areaBuf->export[count2].nodeNum.zone != 0))
+            while ((count2 < MAX_FORWARD) && (areaBuf->forwards[count2].nodeNum.zone != 0))
             {
-              strcpy (tempStr, nodeStr (&areaBuf->export[count2].nodeNum));
+              strcpy (tempStr, nodeStr (&areaBuf->forwards[count2].nodeNum));
               helpPtr = tempStr;
 
-              if (lastZone == areaBuf->export[count2].nodeNum.zone)
+              if (lastZone == areaBuf->forwards[count2].nodeNum.zone)
               {
-                if (lastNet != areaBuf->export[count2].nodeNum.net)
+                if (lastNet != areaBuf->forwards[count2].nodeNum.net)
                 {
                   helpPtr = strchr (tempStr, ':') + 1;
                 }
                 else
                 {
-                  if (lastNode != areaBuf->export[count2].nodeNum.node)
+                  if (lastNode != areaBuf->forwards[count2].nodeNum.node)
                   {
                     helpPtr = strchr (tempStr, '/') + 1;
                   }
                   else
                   {
-                    if (areaBuf->export[count2].nodeNum.point == 0)
+                    if (areaBuf->forwards[count2].nodeNum.point == 0)
                     {
                       helpPtr = strchr (tempStr, 0);
                     }
@@ -502,9 +505,9 @@ void autoUpdate (void)
                   }
                 }
               }
-              lastZone = areaBuf->export[count2].nodeNum.zone;
-              lastNet  = areaBuf->export[count2].nodeNum.net;
-              lastNode = areaBuf->export[count2].nodeNum.node;
+              lastZone = areaBuf->forwards[count2].nodeNum.zone;
+              lastNet  = areaBuf->forwards[count2].nodeNum.net;
+              lastNode = areaBuf->forwards[count2].nodeNum.node;
 
               fprintf (textFile, " %s", helpPtr);
 

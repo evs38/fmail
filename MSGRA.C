@@ -1,61 +1,64 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 
+#include <dir.h>
+#include <dos.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dos.h>
-#include <time.h>
-#include <io.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <sys/stat.h>
-#include <dir.h>
+#include <time.h>
 
 #include "fmail.h"
-#include "config.h"
-#include "areainfo.h"
-#include "crc.h"
-#include "utils.h"
-#include "msgmsg.h"
+
 #include "msgra.h"
-#include "log.h"
-#include "output.h"
-#include "msgpkt.h"
-#include "jamfun.h"
-#include "mtask.h"
 
+#include "areainfo.h"
+#include "config.h"
+#include "crc.h"
 #include "dups.h"
+#include "jamfun.h"
+#include "log.h"
+#include "msgmsg.h"
+#include "msgpkt.h"
+#include "mtask.h"
+#include "output.h"
+#include "utils.h"
 
-u16      HDR_BUFSIZE = 104;
-u16      TXT_BUFSIZE = 200;
+u16 HDR_BUFSIZE = 104;
+u16 TXT_BUFSIZE = 200;
 
 extern time_t            startTime;
-extern cookedEchoType    *echoAreaList;
+extern cookedEchoType   *echoAreaList;
 extern echoToNodePtrType echoToNode[MAX_AREAS];
 
-extern internalMsgType *message;      /* rescan */
-extern cookedEchoType  *echoAreaList; /* rescan */
-extern u16             echoCount;     /* rescan */
+extern internalMsgType  *message;      /* rescan */
+extern cookedEchoType   *echoAreaList; /* rescan */
+extern u16               echoCount;     /* rescan */
 
 u16             crcCount;
 #ifdef GOLDBASE
@@ -783,7 +786,7 @@ s16 writeBBS (internalMsgType *message, u16 boardNum, u16 impSeenBy)
 
       if (writeText (message->text, message->normSeen, message->normPath,
                      (boardNum != config.badBoard) && (boardNum != config.dupBoard),
-                     &msgRa.StartRec, 
+                     &msgRa.StartRec,
                      &msgRa.NumRecs))
       {
          return 1;
@@ -1134,11 +1137,11 @@ void moveBadBBS(void)
 #else
    s32         minusOne = -1;
    u32         offset = 0;
-#endif                
+#endif
 
    while ( lseek(msgIdxHandle, offset++ * sizeof(msgIdxRec), SEEK_SET) != -1 &&
            _read (msgIdxHandle, &msgIndex, sizeof(msgIdxRec)) == sizeof(msgIdxRec))
-   {  
+   {
       if ( (s32)msgIndex.MsgNum == -1 || msgIndex.Board != config.badBoard )
          continue;
 
@@ -1174,7 +1177,7 @@ void moveBadBBS(void)
          break;
       if ( result < 0 )
          goto deleteMsg;
-           
+
       if ( echoAreaList[areaIndex].JAMdirPtr == NULL &&
            echoAreaList[areaIndex].board )
       {
@@ -1304,9 +1307,9 @@ void openBBSRd(void)
 
 
 #ifndef GOLDBASE
-s16 scanBBS (u16 index, internalMsgType *message, u16 rescan)
+s16 scanBBS(u16 index, internalMsgType *message, u16 rescan)
 #else
-s16 scanBBS (u32 index, internalMsgType *message, u16 rescan)
+s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
 #endif
 {
    msgHdrRec   msgRa;
@@ -1329,7 +1332,7 @@ s16 scanBBS (u32 index, internalMsgType *message, u16 rescan)
          logEntry ("Can't read MsgHdr."MBEXTN, LOG_ALWAYS, 0);
       return (0);
    }
-#if 0   
+#if 0
    if (rescan != 2)
    {
       gotoTab (1);
@@ -1337,7 +1340,7 @@ s16 scanBBS (u32 index, internalMsgType *message, u16 rescan)
 #ifdef GOLDBASE
       printLong(msgRa.MsgNum);
 #else
-      printInt(msgRa.MsgNum);                                 
+      printInt(msgRa.MsgNum);
 #endif
       printString (") ");
       updateCurrLine();
@@ -1419,8 +1422,10 @@ s16 scanBBS (u32 index, internalMsgType *message, u16 rescan)
          helpPtr += txtRa.txtLength;
       }
 
-      if (config.mbOptions.removeLfSr)
-         removeLfSr (message->text);
+      if (config.mbOptions.removeLf)
+         removeLf(message->text);
+      if (config.mbOptions.removeSr)
+         removeSr(message->text);
 
       if (getFlags(message->text) & FL_LOK)
          return -1;
@@ -1745,5 +1750,5 @@ next:
    write (msgHandle2, tempStr, strlen(tempStr));
 
    return (msgsFound);
-}    
+}
 

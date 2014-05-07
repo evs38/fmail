@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -61,12 +61,12 @@
 
 #define TABLE_SIZE 255 // max 40 handles
 
-#define DEF_TEXT_SIZE 0xF000
+#define DEF_TEXT_SIZE 0xC000
 #ifdef __32BIT__
 // 1 megabyte
 #define TEXT_SIZE     (config.maxMsgSize * 1024L)
 #else
-#define TEXT_SIZE     0xF000
+#define TEXT_SIZE     0xC000
 #endif
 #define INTMSG_SIZE   (sizeof(internalMsgType) - DEF_TEXT_SIZE + TEXT_SIZE)
 
@@ -84,17 +84,18 @@
 extern char configPath[128];
 
 typedef struct
-{ uchar       fromUserName[36];
-  uchar       toUserName[36];
-  uchar       subject[72];
-  uchar       dateStr[22];
-  uchar       okDateStr[20];
-  u16         year,
-              month,
-              day,
-              hours,
-              minutes,
-              seconds;
+{
+  uchar       fromUserName[36];
+  uchar       toUserName  [36];
+  uchar       subject     [72];
+  uchar       dateStr     [22];
+  uchar       okDateStr   [20];
+  u16         year
+            , month
+            , day
+            , hours
+            , minutes
+            , seconds;
   u16         attribute;
   u16         cost;
   nodeNumType srcNode;
@@ -104,15 +105,17 @@ typedef struct
   uchar       normPath[NORM_PATH_SIZE];
   uchar       pktInfo[PKT_INFO_SIZE];
   uchar       text[DEF_TEXT_SIZE];
+
 } internalMsgType;
 
 typedef struct
 {
   u16 net;
   u16 node;
+
 } psRecType;
 
-typedef psRecType psType[];
+typedef psRecType psType [];
 typedef uchar tempStrType[256];
 
 typedef struct
@@ -146,8 +149,7 @@ typedef struct
    u16          movedBad,
 		mbCount,
 		mbCountV,
-/*              jamCount, not used yet */
-		jamCountV,
+  	jamCountV,
 		echoCount,
 		echoCountV,
 		nmbCountV,
@@ -276,7 +278,7 @@ typedef struct
 extern s16 breakPressed;
 extern internalMsgType *message;
 
-u16 getAreaCode (char *msgText);
+u16 getAreaCode(char *msgText);
 
 #define DERR_HACKER     -1
 #define DERR_VAL        2
@@ -305,6 +307,14 @@ u16 getAreaCode (char *msgText);
 )
 
 u16 foundToUserName(u8 *toUserName);
+
+// Mailer types:
+#define dMT_FrontDoor  0
+#define dMT_InterMail  1
+#define dMT_DBridge    2
+#define dMT_Binkley    3
+#define dMT_MainDoor   4
+#define dMT_Xenia      5
 
 //---------------------------------------------------------------------------
 #endif  // fmailH

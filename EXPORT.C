@@ -1,43 +1,47 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <io.h>
-#include <fcntl.h>
-#include <string.h>
-#include <time.h>
 #include <dir.h>
+#include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include "fmail.h"
-#include "fs_util.h"
-#include "areainfo.h"
-#include "nodeinfo.h"
-#include "window.h"
-#include "fdfolder.h"
+
 #include "export.h"
+
+#include "areainfo.h"
 #include "cfgfile.h"
+#include "fdfolder.h"
+#include "fs_util.h"
+#include "nodeinfo.h"
 #include "version.h"
+#include "window.h"
 
 const char *bar = "อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ";
 
@@ -80,7 +84,7 @@ char *bitData (char data)
 static char bits[3][9];
 static u16  index;
    char temp = 1;
-   
+
    if ( ++index == 3 )
       index = 0;
    bits[index][0] = 0;
@@ -244,7 +248,7 @@ s16 listNodeEcho (void)
       {
          count2 = 0;
          while ((count2 < MAX_FORWARD) &&
-                (memcmp (&areaInfo[count1]->export[count2].nodeNum, &nodeNum,
+                (memcmp (&areaInfo[count1]->forwards[count2].nodeNum, &nodeNum,
                          sizeof(nodeNumType)) != 0))
          {
             count2++;
@@ -260,9 +264,9 @@ s16 listNodeEcho (void)
             }
 
             fprintf (textFile, (strlen(areaInfo[count1]->areaName) < ECHONAME_LEN_OLD)?"%c %-24s %-50s %c\n":"%c %s\n                           %-50s %c\n",
-                               areaInfo[count1]->export[count2].flags.readOnly ? 'R':
-                               areaInfo[count1]->export[count2].flags.writeOnly ? 'W':
-                               areaInfo[count1]->export[count2].flags.locked ? 'L': ' ',
+                               areaInfo[count1]->forwards[count2].flags.readOnly ? 'R':
+                               areaInfo[count1]->forwards[count2].flags.writeOnly ? 'W':
+                               areaInfo[count1]->forwards[count2].flags.locked ? 'L': ' ',
                                areaInfo[count1]->areaName,
                                areaInfo[count1]->comment,
                                getGroupChar(areaInfo[count1]->group));
@@ -681,7 +685,7 @@ s16 listAreaConfig (void)
 	 }
 
          exportCount = 0;
-         while (areaInfo[count1]->export[exportCount].nodeNum.zone != 0)
+         while (areaInfo[count1]->forwards[exportCount].nodeNum.zone != 0)
          {
             exportCount++;
          }
@@ -693,23 +697,23 @@ s16 listAreaConfig (void)
             for (count2 = 0; count2 < rows1; count2++)
             {
                fprintf (textFile, "\n %c %-24s",
-                                  areaInfo[count1]->export[count2].flags.readOnly ? 'R':
-                                  areaInfo[count1]->export[count2].flags.writeOnly ? 'W':
-                                  areaInfo[count1]->export[count2].flags.locked ? 'L': ' ',
-                                  nodeStr(&areaInfo[count1]->export[count2].nodeNum));
+                                  areaInfo[count1]->forwards[count2].flags.readOnly ? 'R':
+                                  areaInfo[count1]->forwards[count2].flags.writeOnly ? 'W':
+                                  areaInfo[count1]->forwards[count2].flags.locked ? 'L': ' ',
+                                  nodeStr(&areaInfo[count1]->forwards[count2].nodeNum));
 
                if (count2 < rows2)
                   fprintf (textFile, " %c %-24s",
-                                     areaInfo[count1]->export[count2+rows1].flags.readOnly ? 'R':
-                                     areaInfo[count1]->export[count2+rows1].flags.writeOnly ? 'W':
-                                     areaInfo[count1]->export[count2+rows1].flags.locked ? 'L': ' ',
-                                     nodeStr(&areaInfo[count1]->export[count2+rows1].nodeNum));
+                                     areaInfo[count1]->forwards[count2+rows1].flags.readOnly ? 'R':
+                                     areaInfo[count1]->forwards[count2+rows1].flags.writeOnly ? 'W':
+                                     areaInfo[count1]->forwards[count2+rows1].flags.locked ? 'L': ' ',
+                                     nodeStr(&areaInfo[count1]->forwards[count2+rows1].nodeNum));
                if (count2 < exportCount/3)
                   fprintf (textFile, " %c %-24s",
-                                     areaInfo[count1]->export[count2+rows1+rows2].flags.readOnly ? 'R':
-                                     areaInfo[count1]->export[count2+rows1+rows2].flags.writeOnly ? 'W':
-                                     areaInfo[count1]->export[count2+rows1+rows2].flags.locked ? 'L': ' ',
-                                     nodeStr(&areaInfo[count1]->export[count2+rows1+rows2].nodeNum));
+                                     areaInfo[count1]->forwards[count2+rows1+rows2].flags.readOnly ? 'R':
+                                     areaInfo[count1]->forwards[count2+rows1+rows2].flags.writeOnly ? 'W':
+                                     areaInfo[count1]->forwards[count2+rows1+rows2].flags.locked ? 'L': ' ',
+                                     nodeStr(&areaInfo[count1]->forwards[count2+rows1+rows2].nodeNum));
             }
             fputc ('\n', textFile);
          }
@@ -953,8 +957,9 @@ s16 listGeneralConfig (void)
    fprintf (textFile, "Msg base sharing   : %s\n\n", config.mbOptions.mbSharing ? "Yes":"No");
 
    fprintf (textFile, "Import netmail\nto SysOp           : %s\n", config.mbOptions.sysopImport ? "Yes":"No");
-   fprintf (textFile, "Remove Re:         : %s\n", config.mbOptions.removeRe ? "Yes":"No");
-   fprintf (textFile, "Strip lf/soft cr   : %s\n\n", config.mbOptions.removeLfSr ? "Yes":"No");
+   fprintf (textFile, "Remove Re:         : %s\n"  , config.mbOptions.removeRe ? "Yes":"No");
+   fprintf (textFile, "Strip soft cr      : %s\n"  , config.mbOptions.removeSr ? "Yes":"No");
+   fprintf (textFile, "Strip lf           : %s\n\n", config.mbOptions.removeLf ? "Yes":"No");
 
 #ifndef __FMAILX__
 #ifndef __32BIT__

@@ -1,3 +1,5 @@
+#ifndef gestructH
+#define gestructH
 /*
 **  gestruct.h
 **
@@ -574,3 +576,4 @@ typedef struct
 MBUTIL_RNX;
 
 /* end of file "gestruct.h" */
+#endif

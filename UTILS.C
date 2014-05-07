@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -35,13 +35,13 @@
 
 #include "fmail.h"
 
-#include "areainfo.h"
+#include "utils.h"
+
 #include "filesys.h"
 #include "fjlib.h"
 #include "log.h"
 #include "msgpkt.h"  // for openP
 #include "output.h"
-#include "utils.h"
 #include "version.h"
 
 #define CANUSE64BIT
@@ -199,7 +199,7 @@ u32 fileLength(int handle)
   if (fl < 0)
     return 0;
 
-  return (u32)fl;  
+  return (u32)fl;
 }
 //---------------------------------------------------------------------------
 s16 matchAka(nodeNumType *node, char useAka)
@@ -391,56 +391,55 @@ char *removeRe (char *string)
 
    return string;
 }
-
-
-
-void removeLfSr(char *msgText)
+//---------------------------------------------------------------------------
+void removeLf(char *msgText)
 {
-   char *oldStart,
-        *newEnd,
-        *helpPtr;
+  char *oldStart,
+       *newEnd,
+       *helpPtr;
 
-   /* Remove linefeeds (only if preceeded by a (soft) carriage return) */
-
-   oldStart = newEnd = helpPtr = msgText;
-   while ((helpPtr = strchr(helpPtr, '\n')) != NULL)
-   {
-      if ((*(helpPtr-1) == '\r') || (*(helpPtr-1) == (char)0x8d))
-      {
-         *helpPtr = 0;
-         strcpy (newEnd, oldStart);
-         oldStart = ++helpPtr;
-         newEnd   = strchr (newEnd, 0);
-      }
-      else
-      {
-         *(helpPtr++) = '\r';
-      }
-   }
-   strcpy (newEnd, oldStart);
-
-   /* Remove soft CR's */
-
-   oldStart = newEnd = helpPtr = msgText;
-   while ((helpPtr = strchr(helpPtr, 0x8d)) != NULL)
-   {
-      if (*(helpPtr+1) == '\r')
-      {
-         *helpPtr = '\r';
-      }
-      else
-      {
-         *helpPtr = 0;
-         strcpy (newEnd, oldStart);
-         oldStart = ++helpPtr;
-         newEnd   = strchr (newEnd, 0);
-      }
-   }
-   strcpy (newEnd, oldStart);
+  oldStart = newEnd = helpPtr = msgText;
+  while ((helpPtr = strchr(helpPtr, '\n')) != NULL)
+  {
+    // Remove linefeeds (only if preceeded by a (soft) carriage return)
+    if ((*(helpPtr-1) == '\r') || (*(helpPtr-1) == (char)0x8d))
+    {
+      *helpPtr = 0;
+      strcpy(newEnd, oldStart);
+      oldStart = ++helpPtr;
+      newEnd   = strchr (newEnd, 0);
+    }
+    // Otherwise replace it with cr
+    else
+      *(helpPtr++) = '\r';
+  }
+  strcpy(newEnd, oldStart);
 }
+//---------------------------------------------------------------------------
+void removeSr(char *msgText)
+{
+  char *oldStart,
+       *newEnd,
+       *helpPtr;
 
-
-
+  oldStart = newEnd = helpPtr = msgText;
+  while ((helpPtr = strchr(helpPtr, 0x8d)) != NULL)
+  {
+    // Replace soft CR's by a cr if followed by a CR
+    if (*(helpPtr+1) == '\r')
+      *helpPtr = '\r';
+    // Remove soft CR's if not followed by a CR
+    else
+    {
+      *helpPtr = 0;
+      strcpy(newEnd, oldStart);
+      oldStart = ++helpPtr;
+      newEnd   = strchr (newEnd, 0);
+    }
+  }
+  strcpy(newEnd, oldStart);
+}
+//---------------------------------------------------------------------------
 char *srchar (char *string, s16 t, s16 c)
 {
    char *helpPtr1,

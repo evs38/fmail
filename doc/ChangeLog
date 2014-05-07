@@ -1,3 +1,9 @@
+2014-05-07  1.68.2.62
+  * Split up 'Remove lf/soft cr' option in two separate options.
+  * Renamed variable named 'export' because in later C(++) versions this is a reserved name.
+  * Cosmetic code changes.
+  * Preparations for not packing outbound packages (not finished!)
+
 2014-04-08  1.68.0.50
   * Log netmail kludges in echomails (when inbound or outbound loging is turned on).
 

@@ -1,50 +1,52 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <io.h>
 #include <dir.h>
 #include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
 
 #include "fmail.h"
-#include "fjlib.h"
-#include "config.h"
+
+#include "import.h"
+
 #include "cfgfile.h"
+#include "config.h"
+#include "fjlib.h"
+#include "fs_util.h"
+#include "msgra.h"
 #include "nodeinfo.h"
 #include "window.h"
-#include "fs_util.h"
-#include "import.h"
-#include "msgra.h"
 
 #include "fdfolder.h"
-#include "gestruct.h"
 #include "fecfg146.h"
 
-
-
+//---------------------------------------------------------------------------
 static rawEchoType     *echoAreaList[MAX_AREAS];
 
 
@@ -52,6 +54,7 @@ static rawEchoType     *echoAreaList[MAX_AREAS];
 char IMSTAT[8] = {0,1,2,0,5,3,4,5};
 
 
+//---------------------------------------------------------------------------
 static void swapBits(u8 *ptr)
 {
    u8 temp;
@@ -247,7 +250,7 @@ static void updateNodes(u16 nodeCount)
 }
 
 
-		  
+		
 static u16 checkDupArea(rawEchoType *echoAreaRec, u16 *echoCount, u16 *skiparname)
 {
    u16 low, mid, high;
@@ -396,17 +399,17 @@ s16 importAreasBBS(void)
 		  node4d(&nodeRec);
 		  count = 0;
 		  while ( count < nodeCount &&
-			  greater(&nodeRec, &echoAreaRec->export[count].nodeNum) )
+			  greater(&nodeRec, &echoAreaRec->forwards[count].nodeNum) )
 		  {  count++;
 		  }
-		  if ( memcmp(&nodeRec, &echoAreaRec->export[count].nodeNum,
+		  if ( memcmp(&nodeRec, &echoAreaRec->forwards[count].nodeNum,
 			      sizeof(nodeNumType)) != 0 )
-		  {  memmove(&echoAreaRec->export[count+1],
-			     &echoAreaRec->export[count],
+		  {  memmove(&echoAreaRec->forwards[count+1],
+			     &echoAreaRec->forwards[count],
 			     (nodeCount++-count)*sizeof(nodeNumXType));
-		     echoAreaRec->export[count].nodeNum = nodeRec;
+		     echoAreaRec->forwards[count].nodeNum = nodeRec;
 		  }
-	       }  
+	       }
 	    }
 	    if ( areaLinePtr != NULL )
 	       strncpy(echoAreaRec->comment, areaLinePtr+1, COMMENT_LEN-1);
@@ -562,14 +565,14 @@ s16 importAreaFileFD(void)
             high = count;
             while ( low < high )
             {  mid = (low + high) >> 1;
-               if ( greater(&tempNode, &echoAreaRec->export[mid].nodeNum) )
+               if ( greater(&tempNode, &echoAreaRec->forwards[mid].nodeNum) )
                   low = mid+1;
                else
                   high = mid;
             }
-            memmove(&echoAreaRec->export[low+1], &echoAreaRec->export[low],
+            memmove(&echoAreaRec->forwards[low+1], &echoAreaRec->forwards[low],
                     (59-low) * sizeof(nodeNumXType));
-            echoAreaRec->export[low].nodeNum = tempNode;
+            echoAreaRec->forwards[low].nodeNum = tempNode;
             count++;
          }
          if ( !checkDupArea(echoAreaRec, &echoCount, &skiparname) )
@@ -657,7 +660,7 @@ s16 importGechoAr(void)
    fhandle     fileHandle;
    char        tempStr[256];
    char        echoNumCheck[MBBOARDS];
-   u16         count, 
+   u16         count,
 	       low, mid, high;
    u16         echoCount;
    u16         skiparname = 0, clearboard = 0;
@@ -741,14 +744,14 @@ s16 importGechoAr(void)
 	    high = count;
 	    while ( low < high )
 	    {  mid = (low + high) >> 1;
-	       if (greater(&tempNode, &echoAreaRec->export[mid].nodeNum))
+	       if (greater(&tempNode, &echoAreaRec->forwards[mid].nodeNum))
 		  low = mid+1;
 	       else
 		  high = mid;
 	    }
-	    memmove(&echoAreaRec->export[low+1], &echoAreaRec->export[low],
+	    memmove(&echoAreaRec->forwards[low+1], &echoAreaRec->forwards[low],
 		    (59-low) * sizeof(nodeNumXType));
-	    echoAreaRec->export[low].nodeNum = tempNode;
+	    echoAreaRec->forwards[low].nodeNum = tempNode;
 	    count++;
 	 }
 	 if ( !checkDupArea(echoAreaRec, &echoCount, &skiparname) )
@@ -763,7 +766,7 @@ s16 importGechoAr(void)
    updateAreas(echoCount);
    sprintf(tempStr, "%u areas processed", echoCount);
    displayMessage(tempStr);
-  
+
    return 0;
 }
 
@@ -807,7 +810,7 @@ s16 importGechoNd(void)
    index = 0;
    while ( lseek(fileHandle, gechoNdHdrRec.hdrsize+index++*gechoNdHdrRec.recsize, SEEK_SET) != -1L &&
 	   read(fileHandle, &gechoNdRec, sizeof(NODEFILE_GE)) == sizeof(NODEFILE_GE) )
-   {  
+   {
 //    if ( gechoNdRec.status == 0xFFFF )
 //       continue;
       if (nodeCount == MAX_NODES)
@@ -959,7 +962,7 @@ s16 importFEAr(void)
       if ( _read(fileHandle, &nodeFE, sizeof(Node)-1) != sizeof(Node)-1 )
 	 goto ret0msg;
       if ( _read(fileHandle, &nodeBits, (configFE.MaxAreas+7)/8) != (configFE.MaxAreas+7)/8 )
-ret0msg: 
+ret0msg:
       {  displayMessage("Read error");
 	 releaseAreas(echoCount);
 	 return 0;
@@ -968,10 +971,10 @@ ret0msg:
       {  if ( nodeBits[echoAreaList[count]->_alsoSeenBy/8] &
 	      (1 << (7 - (echoAreaList[count]->_alsoSeenBy % 8))) )
 	 {  xu2 = 0;
-	    while ( xu2 < config.maxForward && echoAreaList[count]->export[xu2].nodeNum.zone )
+	    while ( xu2 < config.maxForward && echoAreaList[count]->forwards[xu2].nodeNum.zone )
 	       ++xu2;
 	    if ( xu2 < config.maxForward )
-	       echoAreaList[count]->export[xu2].nodeNum = *(nodeNumType *)&nodeFE.addr;
+	       echoAreaList[count]->forwards[xu2].nodeNum = *(nodeNumType *)&nodeFE.addr;
 	 }
       }
    }
@@ -1009,7 +1012,7 @@ s16 importFENd(void)
    {  if ( lseek(fileHandle, (u32)sizeof(CONFIG) +
 			     (u32)configFE.offset +
 			     (u32)xu * (u32)configFE.NodeRecSize, SEEK_SET) == -1 )
-ret0msg: 
+ret0msg:
       {  displayMessage("Read error");
 	 goto ret0;
       }
@@ -1089,7 +1092,7 @@ s16 importImailAr(void)
 	  ((imailArRec.msgBaseType & 0x0f) == 0x03 ||
 	   (imailArRec.msgBaseType & 0x0f) == 0x0f) &&
 	  (imailArRec.msgBaseType & 0xf0) != 0xa0 )
-      {  if ( echoCount == MAX_AREAS ) 
+      {  if ( echoCount == MAX_AREAS )
 	 {  displayMessage("Too many areas listed in IMAIL.AR");
 	    releaseAreas(echoCount);
 	    return 0;
@@ -1128,14 +1131,14 @@ s16 importImailAr(void)
 	    high = count;
 	    while ( low < high )
 	    {  mid = (low + high) >> 1;
-	       if (greater (&tempNode, &echoAreaRec->export[mid].nodeNum))
+	       if (greater (&tempNode, &echoAreaRec->forwards[mid].nodeNum))
 		  low = mid+1;
 	       else
 		  high = mid;
 	    }
-	    memmove(&echoAreaRec->export[low+1], &echoAreaRec->export[low],
+	    memmove(&echoAreaRec->forwards[low+1], &echoAreaRec->forwards[low],
 		    (59-low) * sizeof(nodeNumXType));
-	    echoAreaRec->export[low].nodeNum = tempNode;
+	    echoAreaRec->forwards[low].nodeNum = tempNode;
 	    count++;
 	 }
 	 if ( !checkDupArea(echoAreaRec, &echoCount, &skiparname) )
@@ -1420,4 +1423,4 @@ s16 importNAInfo(void)
    displayMessage(tempStr);
    return 0;
 }
-
+//---------------------------------------------------------------------------

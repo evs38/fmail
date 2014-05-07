@@ -1,3 +1,6 @@
+#ifndef fecfcg146H
+#define fecfcg146H
+
 /********************************************************/
 /* 'C' Structures of FastEcho 1.46                      */
 /* Copyright (c) 1997 by Tobias Burchhardt              */
@@ -10,6 +13,8 @@
 /*                + <CONFIG.NodeCnt * Node>             */
 /*                + <CONFIG.AreaCnt * Area>             */
 /********************************************************/
+
+#include "gestruct.h"
 
 #define REVISION        6       /* current revision     */
 
@@ -607,3 +612,5 @@ typedef struct
  dword dupes;
 } StatArea;
 
+//---------------------------------------------------------------------------
+#endif  // fecfcg146H

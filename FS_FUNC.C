@@ -1,38 +1,44 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <io.h>
-#include <fcntl.h>
 #include <ctype.h>
-#include "fmail.h"
-#include "window.h"
-#include "fs_func.h"
-#include "areainfo.h"
-#include "amgr_utl.h"
-#include "cfgfile.h"
+#include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "fmail.h"
+
+#include "fs_func.h"
+
+#include "amgr_utl.h"
+#include "areainfo.h"
+#include "cfgfile.h"
+#include "window.h"
+
+//---------------------------------------------------------------------------
 extern areaInfoPtrArr areaInfo;
 extern u16            areaInfoCount;
 extern u16            areaInfoBoard;
@@ -48,6 +54,7 @@ static rawEchoType *areaBuf2;
 
 funcParType groupSelect;
 
+//---------------------------------------------------------------------------
 s16 displayGroups(void)
 {
    u16      c;
@@ -816,30 +823,30 @@ static s16 nodeIn(nodeNumType *nodeNum)
 
    c = 0;
    while ((c < MAX_FORWARD) &&
-          (areaBuf2->export[c].nodeNum.zone != 0) &&
-          ((nodeNum->zone   > areaBuf2->export[c].nodeNum.zone) ||
-           ((nodeNum->zone == areaBuf2->export[c].nodeNum.zone) &&
-            (nodeNum->net   > areaBuf2->export[c].nodeNum.net)) ||
-           ((nodeNum->zone == areaBuf2->export[c].nodeNum.zone) &&
-            (nodeNum->net  == areaBuf2->export[c].nodeNum.net) &&
-            (nodeNum->node  > areaBuf2->export[c].nodeNum.node)) ||
-           ((nodeNum->zone == areaBuf2->export[c].nodeNum.zone) &&
-            (nodeNum->net  == areaBuf2->export[c].nodeNum.net) &&
-            (nodeNum->node == areaBuf2->export[c].nodeNum.node) &&
-            (nodeNum->point > areaBuf2->export[c].nodeNum.point))))
+          (areaBuf2->forwards[c].nodeNum.zone != 0) &&
+          ((nodeNum->zone   > areaBuf2->forwards[c].nodeNum.zone) ||
+           ((nodeNum->zone == areaBuf2->forwards[c].nodeNum.zone) &&
+            (nodeNum->net   > areaBuf2->forwards[c].nodeNum.net)) ||
+           ((nodeNum->zone == areaBuf2->forwards[c].nodeNum.zone) &&
+            (nodeNum->net  == areaBuf2->forwards[c].nodeNum.net) &&
+            (nodeNum->node  > areaBuf2->forwards[c].nodeNum.node)) ||
+           ((nodeNum->zone == areaBuf2->forwards[c].nodeNum.zone) &&
+            (nodeNum->net  == areaBuf2->forwards[c].nodeNum.net) &&
+            (nodeNum->node == areaBuf2->forwards[c].nodeNum.node) &&
+            (nodeNum->point > areaBuf2->forwards[c].nodeNum.point))))
    {
       c++;
    }
    c2 = 0;
-   while ( c2 < MAX_FORWARD && areaBuf2->export[c2].nodeNum.zone )
+   while ( c2 < MAX_FORWARD && areaBuf2->forwards[c2].nodeNum.zone )
       c2++;
    if ( c < MAX_FORWARD && c2 < MAX_FORWARD &&
-       (memcmp (&areaBuf2->export[c].nodeNum, nodeNum, sizeof(nodeNumType)) != 0))
+       (memcmp (&areaBuf2->forwards[c].nodeNum, nodeNum, sizeof(nodeNumType)) != 0))
    {
-      memmove (&areaBuf2->export[c+1],
-               &areaBuf2->export[c],
+      memmove (&areaBuf2->forwards[c+1],
+               &areaBuf2->forwards[c],
                (MAX_FORWARD-1-c) * sizeof(nodeNumXType));
-      areaBuf2->export[c].nodeNum = *nodeNum;
+      areaBuf2->forwards[c].nodeNum = *nodeNum;
 		return (1);
    }
    return (0);
@@ -853,20 +860,20 @@ static s16 nodeOut(nodeNumType *nodeNum)
 
    c = 0;
    while ((c < MAX_FORWARD) &&
-          (areaBuf2->export[c].nodeNum.zone != 0) &&
-          (memcmp (&areaBuf2->export[c].nodeNum, nodeNum,
+          (areaBuf2->forwards[c].nodeNum.zone != 0) &&
+          (memcmp (&areaBuf2->forwards[c].nodeNum, nodeNum,
 						 sizeof(nodeNumType)) != 0))
    {
       c++;
    }
    if ((c < MAX_FORWARD) &&
-       (memcmp (&areaBuf2->export[c].nodeNum, nodeNum,
+       (memcmp (&areaBuf2->forwards[c].nodeNum, nodeNum,
                 sizeof(nodeNumType)) == 0))
    {
-      memcpy (&areaBuf2->export[c],
-              &areaBuf2->export[c+1],
+      memcpy (&areaBuf2->forwards[c],
+              &areaBuf2->forwards[c+1],
               (MAX_FORWARD-1-c) * sizeof(nodeNumXType));
-      memset (&areaBuf2->export[MAX_FORWARD-1], 0,
+      memset (&areaBuf2->forwards[MAX_FORWARD-1], 0,
               sizeof(nodeNumXType));
       return (1);
    }
@@ -1434,3 +1441,4 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
 
    return (temp || globNodeChange);
 }
+//---------------------------------------------------------------------------

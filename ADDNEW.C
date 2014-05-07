@@ -24,14 +24,14 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
-#include <io.h>    
-#include <fcntl.h>    
+#include <io.h>
+#include <fcntl.h>
 
 #include "fmail.h"
 #include "ftools.h"
-#include "cfgfile.h"   
-#include "config.h"   
-#include "output.h"   
+#include "cfgfile.h"
+#include "config.h"
+#include "output.h"
 #include "log.h"
 #include "update.h"
 
@@ -39,8 +39,8 @@
 
 static badEchoType badEchos[MAX_BAD_ECHOS];
 
-typedef  u8 *anType[MAX_AREAS];
-typedef  u8 *mpType[MAX_AREAS];
+typedef u8 *anType[MAX_AREAS];
+typedef u8 *mpType[MAX_AREAS];
 
 
 void addNew(s32 switches)
@@ -115,13 +115,13 @@ void addNew(s32 switches)
       close(tempHandle);
       while ( badEchoCount-- )
       {  memcpy(&tempInfo, &echoDefaultsRec, RAWECHO_SIZE);
-	 if ( !tempInfo.group ) 
+	 if ( !tempInfo.group )
 	    tempInfo.group = 1;
 	 tempInfo.options.active = 1;
 	 strncpy(tempInfo.areaName, badEchos[badEchoCount].badEchoName, ECHONAME_LEN-1);
 	 strncpy(tempInfo.comment, badEchos[badEchoCount].badEchoName, ECHONAME_LEN-1);
 	 strupr(tempInfo.areaName);
-	 tempInfo.export[0].nodeNum = badEchos[badEchoCount].srcNode;
+	 tempInfo.forwards[0].nodeNum = badEchos[badEchoCount].srcNode;
 	 tempInfo.address = badEchos[badEchoCount].destAka;
 	 tempInfo.boardNumRA = 0;
 	 if ( tempInfo.board == 1 ) /* Hudson */

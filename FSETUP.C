@@ -1,23 +1,25 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #ifdef __OS2__
 #define INCL_DOSPROCESS
@@ -27,35 +29,35 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 
 #endif
 
-/* os2 */
-#include <stdlib.h>
-#include <stdio.h>
-#include <dos.h>
-#include <io.h>
-#include <time.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <errno.h>
-#include <fcntl.h>
 #ifndef __32BIT__
 #include <bios.h>
 #else
 #include <conio.h>
 #endif
+#include <dos.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <time.h>
 
 #include "fmail.h"
-#include "window.h"
-#include "packmgr.h"
-#include "nodemgr.h"
+
 #include "areamgr.h"
-#include "import.h"
-#include "export.h"
-#include "update.h"
-#include "fs_func.h"
 #include "cfgfile.h"
+#include "export.h"
+#include "fs_func.h"
+#include "import.h"
 #include "mtask.h"
 #include "nodeinfo.h"
+#include "nodemgr.h"
+#include "packmgr.h"
+#include "update.h"
 #include "version.h"
+#include "window.h"
 
 extern  u16 allowConversion;
 
@@ -536,17 +538,17 @@ int cdecl main(int argc, char *argv[])
 
   mailerToggle.data    = (char*)&config.mailer;
   mailerToggle.text[0] = "FrontDoor";
-  mailerToggle.retval[0] = 0;
+  mailerToggle.retval[0] = dMT_FrontDoor;
   mailerToggle.text[1] = "InterMail";
-  mailerToggle.retval[1] = 1;
+  mailerToggle.retval[1] = dMT_InterMail;
   mailerToggle.text[2] = "D'Bridge";
-  mailerToggle.retval[2] = 2;
+  mailerToggle.retval[2] = dMT_DBridge;
   mailerToggle.text[3] = "Binkley/Portal of Power";
-  mailerToggle.retval[3] = 3;
+  mailerToggle.retval[3] = dMT_Binkley;
   mailerToggle.text[4] = "MainDoor";
-  mailerToggle.retval[4] = 4;
+  mailerToggle.retval[4] = dMT_MainDoor;
   mailerToggle.text[5] = "Xenia";
-  mailerToggle.retval[5] = 5;
+  mailerToggle.retval[5] = dMT_Xenia;
 
   logStyleToggle.data    = (char*)&config.logStyle;
   logStyleToggle.text[0] = "FrontDoor";
@@ -881,7 +883,7 @@ int cdecl main(int argc, char *argv[])
 
   if ((anImpMenu = createMenu (" Import config ")) == NULL)
     goto nomem;
- 
+
   addItem (anImpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem (anImpMenu, FUNCTION, "Import Areas.BBS", 0, importAreasBBS, 0, 0,
            "Convert Areas.BBS into FMail.Ar");
@@ -912,7 +914,7 @@ int cdecl main(int argc, char *argv[])
 
   if ((impExpMenu = createMenu (" Import/export ")) == NULL)
     goto nomem;
- 
+
   addItem (impExpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem (impExpMenu, FUNCTION, "List area config", 0, listAreaConfig, 0, 0,
            "List area configuration");
@@ -946,7 +948,7 @@ int cdecl main(int argc, char *argv[])
 
   if ((arcMenu = createMenu (" Compression programs ")) == NULL)
     goto nomem;
- 
+
   addItem (arcMenu, ENUM_INT, "Def", 0, &arcToggle, 0, 10,
            "Compression program to be used for nodes not listed in the Node Manager");
   addItem (arcMenu, TEXT, "ARC", 0, config.arc.programName, sizeof(archiverInfo)-3, 0,
@@ -1062,7 +1064,7 @@ int cdecl main(int argc, char *argv[])
 
   if ((deArcMenu = createMenu (" Decompression programs ")) == NULL)
     goto nomem;
-  
+
   addItem (deArcMenu, TEXT, "ARC", 0, config.unArc.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
   addItem (deArcMenu, __MEM__, "Mem", 52, &config.unArc.memRequired, 3, 640,
@@ -1418,42 +1420,27 @@ int cdecl main(int argc, char *argv[])
   if ((mbMenu = createMenu (" Message base ")) == NULL)
     goto nomem;
 
-  addItem (mbMenu, NEW_WINDOW, "Netmail boards", 0, netMenu, 2, -2,
-           "Netmail boards in the message base");
-  addItem (mbMenu, BOOL_INT, "Check dupe net boards ", 32, &config.mbOptions, BIT13, 0,
-           "Check if a netmail board is already used for another AKA when entering a board #");
-  addItem (mbMenu, FUNC_PAR, "Bad message board", 0, &boardSelect[MAX_AKAS], 4, 0,
-           "Where the bad messages are stored");
-  addItem (mbMenu, BOOL_INT, "Imp. netmail to SysOp ", 32, &config.mbOptions, BIT15, 0,
-           "Import netmail messages to the SysOp into the message base");
-  addItem (mbMenu, FUNC_PAR, "Dupl. message board", 0, &boardSelect[MAX_AKAS+1], 4, 0,
-           "Where the duplicate messages are stored");
-  addItem (mbMenu, BOOL_INT, "Remove 'Re:'          ", 32, &config.mbOptions, BIT6, 0,
-           "Remove 'Re:' from subject when importing messages into the message base");
-  addItem (mbMenu, FUNC_PAR, "Recovery board", 0, &boardSelect[MAX_AKAS+2], 4, 0,
-           "Where messages in undefined boards are moved to");
-  addItem (mbMenu, BOOL_INT, "Remove lf/soft cr     ", 32, &config.mbOptions, BIT7, 0,
-           "Remove linefeeds and soft cr's when exporting messages");
-  addItem (mbMenu, NUM_INT, "AutoRenumber", 0, &config.autoRenumber, 5, 32767,
-           "Highest msg number before FTools Maint will automatically renumber the msg base");
-  addItem (mbMenu, BOOL_INT, "Update text after Scan", 32, &config.mbOptions, BIT9, 0,
-           "Update the text of a scanned message in the message base with PATH and SEEN-BY");
-  addItem (mbMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem (mbMenu, BOOL_INT, "Update reply chains", 0, &config.mbOptions, BIT2, 0,
-           "Update reply chains after messages have been tossed into the message base");
-  addItem (mbMenu, BOOL_INT, "Message base sharing  ", 32, &config.mbOptions, BIT10, 0,
-           "Enable the message base locking system");
-  addItem (mbMenu, BOOL_INT, "Sort new messages", 0, &config.mbOptions, BIT0, 0,
-           "Sort the messages that have been tossed into the message base");
-  addItem (mbMenu, BOOL_INT, "Scan always           ", 32, &config.mbOptions, BIT8, 0,
-           "Do not use ECHOMAIL.BBS or NETMAIL.BBS");
-  addItem (mbMenu, BOOL_INT, "»Õ Use subject", 0, &config.mbOptions, BIT1, 0,
-           "Apart from time/date also use the subject to sort");
-  addItem (mbMenu, BOOL_INT, "Quick toss            ", 32, &config.mbOptions, BIT12, 0,
-           "Do not update message base directory entries after tossing a packet");
-  addItem (mbMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem (mbMenu, FILE_NAME|UPCASE, "Tossed Areas List", 0, config.tossedAreasList, sizeof(pathType)-3, 0,
-           "List of echomail areas in which mail has been tossed");
+  addItem(mbMenu, NEW_WINDOW      , "Netmail boards"        ,  0, netMenu                 ,     2,    -2, "Netmail boards in the message base");
+  addItem(mbMenu, BOOL_INT        , "Check dupe net boards ", 32, &config.mbOptions       , BIT13,     0, "Check if a netmail board is already used for another AKA when entering a board #");
+  addItem(mbMenu, FUNC_PAR        , "Bad message board"     ,  0, &boardSelect[MAX_AKAS]  ,     4,     0, "Where the bad messages are stored");
+  addItem(mbMenu, BOOL_INT        , "Imp. netmail to SysOp ", 32, &config.mbOptions       , BIT15,     0, "Import netmail messages to the SysOp into the message base");
+  addItem(mbMenu, FUNC_PAR        , "Dupl. message board"   ,  0, &boardSelect[MAX_AKAS+1],     4,     0, "Where the duplicate messages are stored");
+  addItem(mbMenu, BOOL_INT        , "Remove 'Re:'          ", 32, &config.mbOptions       , BIT6 ,     0, "Remove 'Re:' from subject when importing messages into the message base");
+  addItem(mbMenu, FUNC_PAR        , "Recovery board"        ,  0, &boardSelect[MAX_AKAS+2],     4,     0, "Where messages in undefined boards are moved to");
+  addItem(mbMenu, BOOL_INT        , "Remove soft cr        ", 32, &config.mbOptions       , BIT7 ,     0, "Remove soft cr's when exporting messages ("MBNAME" messagebase only)");
+  addItem(mbMenu, NUM_INT         , "AutoRenumber"          ,  0, &config.autoRenumber    ,     5, 32767, "Highest msg number before FTools Maint will automatically renumber the msg base");
+  addItem(mbMenu, BOOL_INT        , "Remove lf             ", 32, &config.mbOptions       , BIT5 ,     0, "Remove linefeeds when exporting messages ("MBNAME" messagebase only)");
+  addItem(mbMenu, DISPLAY         , NULL                    ,  0, NULL                    ,     0,     0, NULL);
+  addItem(mbMenu, BOOL_INT        , "Update text after Scan", 32, &config.mbOptions       , BIT9 ,     0, "Update the text of a scanned message in the message base with PATH and SEEN-BY");
+  addItem(mbMenu, DISPLAY         , NULL                    ,  0, NULL                    ,     0,     0, NULL);
+  addItem(mbMenu, BOOL_INT        , "Update reply chains"   ,  0, &config.mbOptions       , BIT2 ,     0, "Update reply chains after messages have been tossed into the message base");
+  addItem(mbMenu, BOOL_INT        , "Message base sharing  ", 32, &config.mbOptions       , BIT10,     0, "Enable the message base locking system");
+  addItem(mbMenu, BOOL_INT        , "Sort new messages"     ,  0, &config.mbOptions       , BIT0 ,     0, "Sort the messages that have been tossed into the message base");
+  addItem(mbMenu, BOOL_INT        , "Scan always           ", 32, &config.mbOptions       , BIT8 ,     0, "Do not use ECHOMAIL.BBS or NETMAIL.BBS");
+  addItem(mbMenu, BOOL_INT        , "»Õ Use subject"       ,  0, &config.mbOptions       , BIT1 ,     0, "Apart from time/date also use the subject to sort");
+  addItem(mbMenu, BOOL_INT        , "Quick toss            ", 32, &config.mbOptions       , BIT12,     0, "Do not update message base directory entries after tossing a packet");
+  addItem(mbMenu, DISPLAY         , NULL                    ,  0, NULL                    ,     0,     0, NULL);
+  addItem(mbMenu, FILE_NAME|UPCASE, "Tossed Areas List"     ,  0, config.tossedAreasList , sizeof(pathType)-3, 0, "List of echomail areas in which mail has been tossed");
 
   if ((groupMenu = createMenu (" Group names ")) == NULL)
     goto nomem;
