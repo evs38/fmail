@@ -19,7 +19,6 @@
  *
  */
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <io.h>
@@ -64,6 +63,7 @@ static s16 _mdays [13] =
 /* Jan */   31+28+31+30+31+30+31+31+30+31+30+31
             };
 
+//---------------------------------------------------------------------------
 time_t JAMtime(s32 t)
 {
     static struct tm  m;
@@ -95,9 +95,7 @@ time_t JAMtime(s32 t)
 
     return mktime(&m);
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 JAMremoveRe(char *buf, u32 *bufsize)
 {
    u16         size,
@@ -149,9 +147,7 @@ s16 JAMremoveRe(char *buf, u32 *bufsize)
    }
    return 0;
 }
-
-
-
+//---------------------------------------------------------------------------
 char *expJAMname(char *basename, char *ext)
 {
    static tempStrType tempStr[2];
@@ -163,12 +159,16 @@ char *expJAMname(char *basename, char *ext)
    strcpy(stpcpy(stpcpy(tempStr[count], basename), "."), ext);
    return tempStr[count];
 }
-
+//---------------------------------------------------------------------------
 
 #define TXTBUFSIZE 0x7000 /* moet 16-voud zijn i.v.m. lastread buf */
+#ifdef __WIN32__
+#define LRSIZE     0x7ff0 /* 'record' is u16, max 7ff0 */
+#define MSGIDNUM   0x7ff0 /* 'record' is u32 */
+#else
 #define LRSIZE     0x3ff0 /* 'record' is u16, max 7ff0 */
 #define MSGIDNUM   0x3ff0 /* 'record' is u32 */
-
+#endif
 
 static JAMHDRINFO  headerInfo;
 static JAMHDR      headerRec;
@@ -186,6 +186,7 @@ static u32         *replyBuf = NULL;
    SW_P - Pack message base: WERKT NIET WEGENS DOORLOPEN INDEX (0xFFFFFFFF!)
 */
 
+//---------------------------------------------------------------------------
 s16 JAMmaint(rawEchoType *areaPtr, s32 switches, uchar *name, s32 *spaceSaved)
 {
    s16           JAMerror = 0;
@@ -671,6 +672,4 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
    }
    return JAMerror;
 }
-
-
-
+//---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------
 //
-// Copyright (C) 2011  Wilfred van Velzen
+// Copyright (C) 2011 - 2013  Wilfred van Velzen
 //
 // This file is part of FMail.
 //
@@ -28,6 +28,7 @@
 #include <windows.h>
 #endif
 
+//----------------------------------------------------------------------------
 #ifdef __OS2__
 	#define PTYPE "/OS2"
 	#define P386
@@ -65,7 +66,7 @@
 #else
   #define BLSTR ""
   #define BSSTR ""
-#endif  
+#endif
 
 #if   defined(FSETUP)
   #define TOOL "FSetup"
@@ -73,7 +74,7 @@
   #define TOOL "FTools"
 #else // FMAIL
   #define TOOL "FMail"
-#endif  
+#endif
 
 #define VERSION_STR  TOOL PTYPE MBTYPE"-"VERNUM BLSTR
 #define TEARLINE_STR "--- "TOOL PTYPE"-"VERNUM BSSTR
@@ -81,12 +82,14 @@
 
 //----------------------------------------------------------------------------
 const char versionStr[] = VERSION_STR;
+
 const char *VersionStr(void)
 {
   return versionStr;
 }
 //----------------------------------------------------------------------------
 char tearStr[82] = { 0 };
+
 const char *TearlineStr(void)
 {
 #ifdef BETA
@@ -104,6 +107,7 @@ char tidStr[82] = { 0 };
 #else
 const char tidStr[] = TID_STR;
 #endif
+
 const char *TIDStr(void)
 {
 #ifdef BETA
