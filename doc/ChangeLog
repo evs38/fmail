@@ -1,3 +1,7 @@
+2014-05-08  1.68.2.63
+  * The 'Remove lf/soft cr' options are now also working when scanning jam area's.
+  * Log the number of removed lf and cr's per message.
+
 2014-05-07  1.68.2.62
   * Split up 'Remove lf/soft cr' option in two separate options.
   * Renamed variable named 'export' because in later C(++) versions this is a reserved name.
@@ -5,14 +9,14 @@
   * Preparations for not packing outbound packages (not finished!)
 
 2014-04-08  1.68.0.50
-  * Log netmail kludges in echomails (when inbound or outbound loging is turned on).
+  * Log net mail kludges in echo mails (when inbound or outbound logging is turned on).
 
 2014-03-21  1.67.1.47
   * Fixed some high ASCII usage.
   * Print seconds in header of toss summary.
 
 2013-12-30  1.67.0.45
-  * Disk free space calculation uses 64 bit integers. The standard 32 bit integers aren't big enough to hold todays big disk sizes.
+  * Disk free space calculation uses 64 bit integers. The standard 32 bit integers aren't big enough to hold today's big disk sizes.
     This also fixes the bug where the 'Sent to node' report wasn't always written to the log when tossing.
   * Print free disk space to log file when calculated.
   * Write dates in log files in iso format (YYYY-MM-DD).
@@ -33,13 +37,13 @@
 
 2013-06-07  1.66.0.27-beta/1.64.1.27-beta
   * ftools.c:
-    -aka option can now be used while posting to an echomail area.
+    -aka option can now be used while posting to an echo mail area.
   * ftscprod.c:
     Added code for jNode (2012-09-21)
 
 2011-11-20  1.64.0.27-beta
   * Replaced preprocessor macro's for version and TID and PID strings with functions.
-  * Added extra option for the tearline: "Default + TID"
+  * Added extra option for the tear line: "Default + TID"
 
 2011-11-18  1.64.0.24-beta
   * Completely removed key checking code. FMail (with or without a key file) should behave as a registered version.
@@ -53,30 +57,30 @@
   * Changed BETA version strings
 
 2011-10-09  1.64.0.18-beta
-  * Replaced some more high ascii.
+  * Replaced some more high ASCII.
 
 2011-09-11  1.64.0.17-beta
   * Added an icon to FMailW32.exe
   * Bug fix: Writing a .msg file longer than 64K now works correctly.
-  * Bug fix: A readonly compressed package, would make FMail go into an endless loop.
+  * Bug fix: A read-only compressed package, would make FMail go into an endless loop.
 
 2011-09-11  1.64.0.15-beta
   * Made FToolsW32.exe compile with C++ Builder 6
 
 2011-09-05  1.64.0.14-beta
   * Don't print message number when scanning jam or hudson message area.
-  * Replaced some more high ascii.
+  * Replaced some more high ASCII.
 
 2011-09-05  1.64.0.10-beta
   * Use \r when the "direct screen io" version of FMail jumped to the first column on the screen. This should speed things up in case of a rescan of the messagebase.
-  * Changed some high ascii output to standard ascii chars.
+  * Changed some high ASCII output to standard ASCII chars.
 
 2011-09-04  1.64-beta
   * Archive extension created wrong
 
 2011-09-03  1.64
-  * Used code beautifier uncrustify on ARCHIVE.C, had to do some hand editting afterwards.
-  * Made it work with BCB6 Some upper/lower case filename conversions Some cosmetics to the source
+  * Used code beautifier uncrustify on ARCHIVE.C, had to do some hand editing afterwards.
+  * Made it work with BCB6 Some upper/lower case file name conversions Some cosmetics to the source
   * Output just using standard library calls (printf, putchar)
 
 2010-04-06
@@ -96,7 +100,7 @@
   * sendsmtp.c:
   * update.c:
   * uplink.c:
-    Lowercased some strings, to posibly improve linux compatibility.
+    Lower cased some strings, to possibly improve Linux compatibility.
     Cosmetic source changes.
 
 2009-07-20

@@ -73,6 +73,7 @@ s32   getSwitch     (int *argc, char *argv[], s32 mask);
 u32   uniqueID      (void);
 void  waitID        (void);
 char *removeRe      (char *string);
+void  removeLfSr    (char *msgText);
 void  removeLf      (char *msgText);
 void  removeSr      (char *msgText);
 char *srchar        (char *string, s16 t, s16 c);

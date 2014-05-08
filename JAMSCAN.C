@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -25,15 +25,17 @@
 #include <string.h>
 
 #include "fmail.h"
-#include "areainfo.h"
+
 #include "jam.h"
 #include "jamfun.h"
+
+#include "areainfo.h"
+#include "config.h"
+#include "msgmsg.h"
+#include "msgpkt.h"
+#include "mtask.h"
 #include "output.h"
 #include "utils.h"
-#include "config.h"
-#include "msgpkt.h"
-#include "msgmsg.h"
-#include "mtask.h"
 
 
 extern cookedEchoType    *echoAreaList;
@@ -43,62 +45,66 @@ extern char jam_subfields[_JAM_MAXSUBLENTOT];
 //---------------------------------------------------------------------------
 u32 jam_scan(u16 echoIndex, u32 jam_msgnum, u16 scanOne, internalMsgType *message)
 {
-   u32        jam_code;
-   JAMHDRINFO *jam_hdrinforec;
-   JAMHDR     jam_msghdrrec;
-   JAMIDXREC  jam_idxrec;
-// char       jam_subfields[_JAM_MAXSUBLENTOT];
-// u32	      scanOne;
-   tempStrType tempStr;
+  u32         jam_code;
+  JAMHDRINFO *jam_hdrinforec;
+  JAMHDR      jam_msghdrrec;
+  JAMIDXREC   jam_idxrec;
+  tempStrType tempStr;
 
-// scanOne = jam_msgnum;
-   if ( !(jam_code = jam_open(echoAreaList[echoIndex].JAMdirPtr, &jam_hdrinforec)) )
-      return 0;
+  if (!(jam_code = jam_open(echoAreaList[echoIndex].JAMdirPtr, &jam_hdrinforec)))
+    return 0;
 
-   if ( !jam_msgnum )
-      jam_msgnum = jam_hdrinforec->BaseMsgNum;
-   else if ( jam_msgnum < jam_hdrinforec->BaseMsgNum )
-   {  jam_close(jam_code);
-      return 0;
-   }
+  if (!jam_msgnum)
+    jam_msgnum = jam_hdrinforec->BaseMsgNum;
+  else
+    if (jam_msgnum < jam_hdrinforec->BaseMsgNum)
+    {
+      jam_close(jam_code);
 
-   if ( !jam_getidx(jam_code, &jam_idxrec, jam_msgnum+1-jam_hdrinforec->BaseMsgNum) )
-   {  jam_close(jam_code);
       return 0;
-   }
-   do
-   {  if ( jam_idxrec.HdrOffset == MAXU32 )
-         goto next;
-#if 0
-      sprintf(tempStr, "(%lu) ", jam_msgnum);
-      gotoTab(0);
-      printString(tempStr);
-#endif
+    }
+
+  if (!jam_getidx(jam_code, &jam_idxrec, jam_msgnum + 1 - jam_hdrinforec->BaseMsgNum))
+  {
+    jam_close(jam_code);
+
+    return 0;
+  }
+  do
+  {
+    if (jam_idxrec.HdrOffset != MAXU32)
+    {
       memset(message, 0, INTMSG_SIZE);
       jam_gethdr(jam_code, jam_idxrec.HdrOffset, &jam_msghdrrec, jam_subfields, message);
-      if ( ((jam_msghdrrec.Attribute & (MSG_LOCAL|MSG_TYPEECHO)) == (MSG_LOCAL|MSG_TYPEECHO)) &&
-            ((jam_msghdrrec.Attribute & (MSG_DELETED|MSG_SENT)) == 0) )
+      if (  ((jam_msghdrrec.Attribute & (MSG_LOCAL | MSG_TYPEECHO)) == (MSG_LOCAL | MSG_TYPEECHO))
+         && ((jam_msghdrrec.Attribute & (MSG_DELETED | MSG_SENT)) == 0)
+         )
       {
-	 jam_gettxt(jam_code, jam_msghdrrec.TxtOffset, jam_msghdrrec.TxtLen, message->text);
-	 jam_getsubfields(jam_code, jam_subfields, jam_msghdrrec.SubfieldLen, message);
-         if ( (getFlags(message->text) & FL_LOK) )
-            goto next;
-         jam_close(jam_code);
-	 return jam_msgnum;
+        jam_gettxt(jam_code, jam_msghdrrec.TxtOffset, jam_msghdrrec.TxtLen, message->text);
+        jam_getsubfields(jam_code, jam_subfields, jam_msghdrrec.SubfieldLen, message);
+        if (!(getFlags(message->text) & FL_LOK))
+        {
+          jam_close(jam_code);
+          removeLfSr(message->text);
+
+          return jam_msgnum;
+        }
       }
-next: if ( scanOne )
-      {	 jam_close(jam_code);
-	 gotoTab(0);
-	 return 0;
-      }
-      ++jam_msgnum;
-   }
-   while ( jam_getnextidx(jam_code, &jam_idxrec) );
-   jam_close(jam_code);
-#if 0
-   gotoTab(0);
-#endif
-   return 0;
+    }
+    if (scanOne)
+    {
+      jam_close(jam_code);
+      gotoTab(0);
+
+      return 0;
+    }
+    ++jam_msgnum;
+  }
+  while (jam_getnextidx(jam_code, &jam_idxrec));
+
+  jam_close(jam_code);
+
+  return 0;
 }
 //---------------------------------------------------------------------------
 u32 jam_update(u16 echoIndex, u32 jam_msgnum, internalMsgType *message)
@@ -187,6 +193,7 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
            )
         {
           jam_gettxt(jam_code, jam_msghdrrec.TxtOffset, jam_msghdrrec.TxtLen, message->text);
+          removeLfSr(message->text);
           jam_getsubfields(jam_code, jam_subfields, jam_msghdrrec.SubfieldLen, message);
           insertLine(message->text, tempstr);
           message->srcNode  = config.akaList[echoAreaList[echoIndex].address].nodeNum;

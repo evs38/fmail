@@ -37,6 +37,7 @@
 
 #include "utils.h"
 
+#include "areainfo.h"
 #include "filesys.h"
 #include "fjlib.h"
 #include "log.h"
@@ -392,15 +393,25 @@ char *removeRe (char *string)
    return string;
 }
 //---------------------------------------------------------------------------
+void removeLfSr(char *msgText)
+{
+  if (config.mbOptions.removeLf)
+    removeLf(message->text);
+  if (config.mbOptions.removeSr)
+    removeSr(message->text);
+}
+//---------------------------------------------------------------------------
 void removeLf(char *msgText)
 {
   char *oldStart,
        *newEnd,
        *helpPtr;
+  int   n = 0;
 
   oldStart = newEnd = helpPtr = msgText;
   while ((helpPtr = strchr(helpPtr, '\n')) != NULL)
   {
+    n++;
     // Remove linefeeds (only if preceeded by a (soft) carriage return)
     if ((*(helpPtr-1) == '\r') || (*(helpPtr-1) == (char)0x8d))
     {
@@ -414,6 +425,12 @@ void removeLf(char *msgText)
       *(helpPtr++) = '\r';
   }
   strcpy(newEnd, oldStart);
+  if (n > 0)
+  {
+    tempStrType tempStr;
+    sprintf(tempStr, "Removed/replaced %d line feed characters", n);
+    logEntry(tempStr, LOG_DEBUG, 0);
+  }
 }
 //---------------------------------------------------------------------------
 void removeSr(char *msgText)
@@ -421,10 +438,12 @@ void removeSr(char *msgText)
   char *oldStart,
        *newEnd,
        *helpPtr;
+  int   n = 0;
 
   oldStart = newEnd = helpPtr = msgText;
   while ((helpPtr = strchr(helpPtr, 0x8d)) != NULL)
   {
+    n++;
     // Replace soft CR's by a cr if followed by a CR
     if (*(helpPtr+1) == '\r')
       *helpPtr = '\r';
@@ -438,6 +457,12 @@ void removeSr(char *msgText)
     }
   }
   strcpy(newEnd, oldStart);
+  if (n > 0)
+  {
+    tempStrType tempStr;
+    sprintf(tempStr, "Removed/replaced %d soft carriage return characters", n);
+    logEntry(tempStr, LOG_DEBUG, 0);
+  }
 }
 //---------------------------------------------------------------------------
 char *srchar (char *string, s16 t, s16 c)

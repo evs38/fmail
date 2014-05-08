@@ -1422,10 +1422,7 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
          helpPtr += txtRa.txtLength;
       }
 
-      if (config.mbOptions.removeLf)
-         removeLf(message->text);
-      if (config.mbOptions.removeSr)
-         removeSr(message->text);
+      removeLfSr(message->text);
 
       if (getFlags(message->text) & FL_LOK)
          return -1;

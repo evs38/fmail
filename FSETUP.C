@@ -1427,9 +1427,9 @@ int cdecl main(int argc, char *argv[])
   addItem(mbMenu, FUNC_PAR        , "Dupl. message board"   ,  0, &boardSelect[MAX_AKAS+1],     4,     0, "Where the duplicate messages are stored");
   addItem(mbMenu, BOOL_INT        , "Remove 'Re:'          ", 32, &config.mbOptions       , BIT6 ,     0, "Remove 'Re:' from subject when importing messages into the message base");
   addItem(mbMenu, FUNC_PAR        , "Recovery board"        ,  0, &boardSelect[MAX_AKAS+2],     4,     0, "Where messages in undefined boards are moved to");
-  addItem(mbMenu, BOOL_INT        , "Remove soft cr        ", 32, &config.mbOptions       , BIT7 ,     0, "Remove soft cr's when exporting messages ("MBNAME" messagebase only)");
+  addItem(mbMenu, BOOL_INT        , "Remove soft cr        ", 32, &config.mbOptions       , BIT7 ,     0, "Remove soft cr's when exporting messages");
   addItem(mbMenu, NUM_INT         , "AutoRenumber"          ,  0, &config.autoRenumber    ,     5, 32767, "Highest msg number before FTools Maint will automatically renumber the msg base");
-  addItem(mbMenu, BOOL_INT        , "Remove lf             ", 32, &config.mbOptions       , BIT5 ,     0, "Remove linefeeds when exporting messages ("MBNAME" messagebase only)");
+  addItem(mbMenu, BOOL_INT        , "Remove lf             ", 32, &config.mbOptions       , BIT5 ,     0, "Remove linefeeds when exporting messages");
   addItem(mbMenu, DISPLAY         , NULL                    ,  0, NULL                    ,     0,     0, NULL);
   addItem(mbMenu, BOOL_INT        , "Update text after Scan", 32, &config.mbOptions       , BIT9 ,     0, "Update the text of a scanned message in the message base with PATH and SEEN-BY");
   addItem(mbMenu, DISPLAY         , NULL                    ,  0, NULL                    ,     0,     0, NULL);

@@ -1662,14 +1662,14 @@ int cdecl main(int argc, char *argv[])
     if (count < echoCount)
     {
       printString ("Scanning JAM message bases for outgoing messages...\n");
-      if ((!config.mbOptions.scanAlways) && (!(switches & SW_S)))
+      if (!config.mbOptions.scanAlways && !(switches & SW_S))
       {
-        strcpy (tempStr, config.bbsPath);
-        strcat (tempStr, "echomail.jam");
+        strcpy(tempStr, config.bbsPath);
+        strcat(tempStr, "echomail.jam");
         ++no_msg;
         if ((tempHandle = openP(tempStr, O_RDONLY|O_TEXT|O_DENYNONE,S_IREAD|S_IWRITE)) != -1)
         {
-          memset (tempStr, 0, sizeof(tempStrType));
+          memset(tempStr, 0, sizeof(tempStrType));
           if ((count = read(tempHandle, tempStr, sizeof(tempStrType)-1)) != -1)
           {
             tempStr[count] = 0;
@@ -1686,10 +1686,9 @@ int cdecl main(int argc, char *argv[])
                 {
                   count++;
                 }
-                if (count != echoCount &&
-                    !echoAreaList[count].options._reserved)
+                if (count != echoCount && !echoAreaList[count].options._reserved)
                 {
-                  if ( (msgNum = jam_scan(count, msgNum, 1, message)) == 0 )
+                  if ((msgNum = jam_scan(count, msgNum, 1, message)) == 0)
                   {
                     infoBad++;
                     echoAreaList[count].options._reserved = 1;
@@ -1755,28 +1754,28 @@ int cdecl main(int argc, char *argv[])
             msgNum = 0;
             while ( !diskError && (msgNum = jam_scan(count, ++msgNum, 0, message)) != 0 )
             {
-              if ( !(diskErrorT = handleScan (message, 0, count)) )
+              if ( !(diskErrorT = handleScan(message, 0, count)) )
               {
                 removeLine(message->text);
                 jam_update(count, msgNum, message);
                 scanCount++;
               }
-              if ( diskErrorT )
+              if (diskErrorT)
                 diskError = DERR_PRSCN;
             }
           }
         }
       }
-      if ((!diskError) && (!breakPressed))
+      if (!diskError && !breakPressed)
       {
-        strcpy (tempStr, config.bbsPath);
-        strcat (tempStr, "echomail.jam");
-        unlink (tempStr);
+        strcpy(tempStr, config.bbsPath);
+        strcat(tempStr, "echomail.jam");
+        unlink(tempStr);
       }
       globVars.jamCountV = scanCount;
       gotoTab (0);
       if (scanCount == 0)
-        printString ("No new outgoing messages\n\n");
+        printString("No new outgoing messages\n\n");
       else
       {
         printFill();
@@ -1805,24 +1804,23 @@ skipJAM:
           if ((tempHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
           {
 #ifndef GOLDBASE
-            while ((_read (tempHandle, &index, 2) == 2) &&
+            while ((_read(tempHandle, &index, 2) == 2)
 #else
-            while ((_read (tempHandle, &index, 4) == 4) &&
+            while ((_read(tempHandle, &index, 4) == 4)
 #endif
-                   (!diskError) && (!breakPressed))
+                  && !diskError && !breakPressed)
             {
-              if ((boardNum = scanBBS (index, message, 0)) != 0)
+              if ((boardNum = scanBBS(index, message, 0)) != 0)
               {
                 if (boardNum != -1)
                 {
-                  if (((count == 0) && (isNetmailBoard(boardNum))) ||
-                      ((count == 1) && (!isNetmailBoard(boardNum))))
-                  {
+                  if (  (count == 0 &&  isNetmailBoard(boardNum))
+                     || (count == 1 && !isNetmailBoard(boardNum))
+                     )
                     infoBad++;
-                  }
                   else
                   {
-                    if ( handleScan (message, boardNum, 0) )
+                    if (handleScan(message, boardNum, 0))
                       diskError = DERR_PRSCN;
                     scanCount++;
                   }
