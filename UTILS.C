@@ -73,42 +73,41 @@ extern char *version;
 //---------------------------------------------------------------------------
 int moveFile(const char *oldName, const char *newName)
 {
-   fhandle h1, h2;
-   char    *buf;
-   size_t  count, size;
-   struct ftime ftm;
+  fhandle      h1
+            , h2;
+  char        *buf;
+  size_t       count
+            , size;
+  struct ftime ftm;
 
-   if (rename(oldName, newName))
-   {
-      if ( errno != ENOTSAM ||
-	   (h1 = openP(oldName, O_RDONLY|O_BINARY|O_DENYALL, 0)) == -1 )
-      {
-         return -1;
-      }
-      if ( (h2 = openP(newName, O_WRONLY|O_BINARY|O_CREAT|O_TRUNC|O_DENYALL, S_IREAD|S_IWRITE)) == -1 )
-      {
-         close(h1);
-	       return -1;
-      }
-      size = min(32767, (size_t)filelength(h1));
-      if ( (buf = malloc(size)) == NULL )
-      {
-        close(h1);
-        close(h2);
-	      return -1;
-      }
-      while ( (count = read(h1, buf, size)) > 0 )
-      {
-        write(h2, buf, count);
-      }
-      getftime(h1, &ftm);
-      setftime(h2, &ftm);
+  if (rename(oldName, newName))
+  {
+    if (errno != ENOTSAM || (h1 = openP(oldName, O_RDONLY|O_BINARY|O_DENYALL, 0)) == -1)
+      return -1;
+
+    if ((h2 = openP(newName, O_WRONLY|O_BINARY|O_CREAT|O_TRUNC|O_DENYALL, S_IREAD|S_IWRITE)) == -1)
+    {
+      close(h1);
+      return -1;
+    }
+    size = min(32767, (size_t)filelength(h1));
+    if ((buf = malloc(size)) == NULL)
+    {
       close(h1);
       close(h2);
-      free(buf);
-      unlink(oldName);
-   }
-   return 0;
+      return -1;
+    }
+    while ((count = read(h1, buf, size)) > 0)
+      write(h2, buf, count);
+
+    getftime(h1, &ftm);
+    setftime(h2, &ftm);
+    close(h1);
+    close(h2);
+    free(buf);
+    unlink(oldName);
+  }
+  return 0;
 }
 //---------------------------------------------------------------------------
 s16 existDir(const char *dir, const char *descr)
@@ -205,35 +204,33 @@ u32 fileLength(int handle)
 //---------------------------------------------------------------------------
 s16 matchAka(nodeNumType *node, char useAka)
 {
-   s16      srcAka = -1;
-   u16      valid = 6;
-   u16      count;
+  s16      srcAka = -1;
+  u16      valid = 6;
+  u16      count;
 
-   if ( useAka && useAka <= MAX_AKAS && config.akaList[useAka-1].nodeNum.zone )
-      return(useAka-1);
+  if ( useAka && useAka <= MAX_AKAS && config.akaList[useAka-1].nodeNum.zone )
+    return(useAka-1);
 
-   while ((valid > 0) && (srcAka == -1))
-   {
-      count = 0;
-      while ((count < MAX_AKAS) && (srcAka == -1))
-      {
-         if ((config.akaList[count].nodeNum.zone != 0) &&
-             (memcmp (node, &config.akaList[count].nodeNum, valid) == 0))
-         {
-            srcAka = count;
-         }
-         count++;
-      }
-      valid -= 2;
-   }
-   if (srcAka == -1)
-   {
-      return (0);
-   }
-   return (srcAka);
+  while ((valid > 0) && (srcAka == -1))
+  {
+    count = 0;
+    while ((count < MAX_AKAS) && (srcAka == -1))
+    {
+      if ((config.akaList[count].nodeNum.zone != 0) &&
+         (memcmp (node, &config.akaList[count].nodeNum, valid) == 0))
+        srcAka = count;
+
+      count++;
+    }
+    valid -= 2;
+  }
+  if (srcAka == -1)
+    return (0);
+
+  return (srcAka);
 }
 //---------------------------------------------------------------------------
-void touch (const char *path, const char *filename, const char *t)
+void touch(const char *path, const char *filename, const char *t)
 {
   tempStrType tempStr;
   fhandle     tempHandle;
@@ -245,63 +242,57 @@ void touch (const char *path, const char *filename, const char *t)
   close(tempHandle);
 }
 //---------------------------------------------------------------------------
-s16 emptyText (char *text)
+s16 emptyText(char *text)
 {
-   s16  code;
+  s16  code;
 
-   code = (*text == '\r') || (*text == '\n') ||
-          (*text == 1)    || (*text == 0);
+  code = (*text == '\r') || (*text == '\n') || (*text == 1) || (*text == 0);
 
-   while ((code) && (*text))
-   {
-      if ((*text == '\r') || (*text == '\n'))
-      {
-         text++;
-         code = (*text == '\r') || (*text == '\n') ||
-                (*text == 1)    || (*text == 0);
-      }
-      else
-         text++;
-   }
-   return (code);
+  while (code && *text)
+  {
+    if (*text == '\r' || *text == '\n')
+    {
+      text++;
+      code = (*text == '\r') || (*text == '\n') || (*text == 1) || (*text == 0);
+    }
+    else
+      text++;
+  }
+  return code;
 }
-
-
-
-void delete (char *path, char *wildCard)
+//---------------------------------------------------------------------------
+void delete(char *path, char *wildCard)
 {
-   s16          doneFile;
-   struct ffblk ffblkFile;
-   tempStrType  tempStr;
-   char         *helpPtr;
+  s16          doneFile;
+  struct ffblk ffblkFile;
+  tempStrType  tempStr;
+  char         *helpPtr;
 
-   strcpy (tempStr, path);
-   helpPtr = strchr (tempStr, 0);
-   strcpy (helpPtr, wildCard);
-   doneFile = findfirst (tempStr, &ffblkFile, 0);
+  strcpy (tempStr, path);
+  helpPtr = strchr (tempStr, 0);
+  strcpy (helpPtr, wildCard);
+  doneFile = findfirst (tempStr, &ffblkFile, 0);
 
-   while (!doneFile)
-   {
-      strcpy (helpPtr, ffblkFile.ff_name);
-      unlink (tempStr);
-      doneFile = findnext (&ffblkFile);
-   }
+  while (!doneFile)
+  {
+    strcpy (helpPtr, ffblkFile.ff_name);
+    unlink (tempStr);
+    doneFile = findnext (&ffblkFile);
+  }
 }
-
-
-
-s32 getSwitch (int *argc, char *argv[], s32 mask)
+//---------------------------------------------------------------------------
+s32 getSwitch(int *argc, char *argv[], s32 mask)
 {
-   s32         tempMask;
-   s16         error = 0;
-   s32         result = 0;
-   int         count = *argc;
-   tempStrType tempStr;
+  s32         tempMask;
+  s16         error = 0;
+  s32         result = 0;
+  int         count = *argc;
+  tempStrType tempStr;
 
-   while ( count && --count >= 1 )
-   {
-   if ( argv[count][0] == '/' )
-   {
+  while ( count && --count >= 1 )
+  {
+    if ( argv[count][0] == '/' )
+    {
       if ( count != --(*argc) )
       {
          printString("Switches should be last on command line\n");
@@ -328,17 +319,14 @@ s32 getSwitch (int *argc, char *argv[], s32 mask)
             error++;
          }
       }
-   }
-   }
-   if (error)
-   {
-      logEntry ("Bad parameters", LOG_ALWAYS, 4);
-   }
-   return (result);
+    }
+  }
+  if (error)
+    logEntry ("Bad parameters", LOG_ALWAYS, 4);
+
+  return result;
 }
-
-
-
+//---------------------------------------------------------------------------
 static u32 lastID = 0;
 
 u32 uniqueID(void)
@@ -354,9 +342,7 @@ u32 uniqueID(void)
 
   return lastID;
 }
-
-
-
+//---------------------------------------------------------------------------
 void waitID(void)
 {
   time_t newTime;
@@ -367,38 +353,35 @@ void waitID(void)
   }
   while (((u32)newTime << 4) <= lastID);
 }
-
-
-
-char *removeRe (char *string)
+//---------------------------------------------------------------------------
+char *removeRe(char *string)
 {
-   s16 update;
+  s16 update;
 
-   do
-   {
-      update = 0;
-      if ((!strnicmp (string, "RE:", 3)) ||
-          (!strnicmp (string, "(R)", 3)))
-      {
-         string += 3;
-         update++;
-      }
-      while (*string == ' ')
-      {
-         string++;
-         update++;
-      }
-   } while (update);
+  do
+  {
+    update = 0;
+    if (!strnicmp(string, "RE:", 3) || !strnicmp (string, "(R)", 3))
+    {
+      string += 3;
+      update++;
+    }
+    while (*string == ' ')
+    {
+      string++;
+      update++;
+    }
+  } while (update);
 
-   return string;
+  return string;
 }
 //---------------------------------------------------------------------------
 void removeLfSr(char *msgText)
 {
   if (config.mbOptions.removeLf)
-    removeLf(message->text);
+    removeLf(msgText);
   if (config.mbOptions.removeSr)
-    removeSr(message->text);
+    removeSr(msgText);
 }
 //---------------------------------------------------------------------------
 void removeLf(char *msgText)
@@ -406,12 +389,15 @@ void removeLf(char *msgText)
   char *oldStart,
        *newEnd,
        *helpPtr;
+#ifdef _DEBUG
   int   n = 0;
-
+#endif
   oldStart = newEnd = helpPtr = msgText;
   while ((helpPtr = strchr(helpPtr, '\n')) != NULL)
   {
+#ifdef _DEBUG
     n++;
+#endif
     // Remove linefeeds (only if preceeded by a (soft) carriage return)
     if ((*(helpPtr-1) == '\r') || (*(helpPtr-1) == (char)0x8d))
     {
@@ -425,12 +411,14 @@ void removeLf(char *msgText)
       *(helpPtr++) = '\r';
   }
   strcpy(newEnd, oldStart);
+#ifdef _DEBUG
   if (n > 0)
   {
     tempStrType tempStr;
     sprintf(tempStr, "Removed/replaced %d line feed characters", n);
     logEntry(tempStr, LOG_DEBUG, 0);
   }
+#endif
 }
 //---------------------------------------------------------------------------
 void removeSr(char *msgText)
@@ -438,12 +426,16 @@ void removeSr(char *msgText)
   char *oldStart,
        *newEnd,
        *helpPtr;
+#ifdef _DEBUG
   int   n = 0;
+#endif
 
   oldStart = newEnd = helpPtr = msgText;
   while ((helpPtr = strchr(helpPtr, 0x8d)) != NULL)
   {
+#ifdef _DEBUG
     n++;
+#endif
     // Replace soft CR's by a cr if followed by a CR
     if (*(helpPtr+1) == '\r')
       *helpPtr = '\r';
@@ -457,15 +449,17 @@ void removeSr(char *msgText)
     }
   }
   strcpy(newEnd, oldStart);
+#ifdef _DEBUG
   if (n > 0)
   {
     tempStrType tempStr;
     sprintf(tempStr, "Removed/replaced %d soft carriage return characters", n);
     logEntry(tempStr, LOG_DEBUG, 0);
   }
+#endif
 }
 //---------------------------------------------------------------------------
-char *srchar (char *string, s16 t, s16 c)
+char *srchar(char *string, s16 t, s16 c)
 {
    char *helpPtr1,
 	*helpPtr2;
@@ -479,42 +473,38 @@ char *srchar (char *string, s16 t, s16 c)
    *helpPtr1 = temp;
    return (helpPtr2);
 }
-
-
-
-u16      nodeStrIndex = 0;
+//---------------------------------------------------------------------------
+u16  nodeStrIndex = 0;
 char nodeNameStr[2][24];
 
-char *nodeStr (nodeNumType *nodeNum)
+char *nodeStr(nodeNumType *nodeNum)
 {
-   char *tempPtr;
+  char *tempPtr;
 
-   tempPtr = nodeNameStr[nodeStrIndex = !nodeStrIndex];
-   if (nodeNum->zone != 0)
-   {  tempPtr += sprintf (tempPtr, "%u:", nodeNum->zone);
-   }
-   tempPtr += sprintf (tempPtr, "%u/%u", nodeNum->net, nodeNum->node);
+  tempPtr = nodeNameStr[nodeStrIndex = !nodeStrIndex];
+  if (nodeNum->zone != 0)
+    tempPtr += sprintf (tempPtr, "%u:", nodeNum->zone);
 
-   if (nodeNum->point != 0)
-      sprintf (tempPtr, ".%u", nodeNum->point);
+  tempPtr += sprintf (tempPtr, "%u/%u", nodeNum->net, nodeNum->node);
 
-   return (nodeNameStr[nodeStrIndex]);
+  if (nodeNum->point != 0)
+    sprintf (tempPtr, ".%u", nodeNum->point);
+
+  return nodeNameStr[nodeStrIndex];
 }
-
-
-
-char *nodeStrZ (nodeNumType *nodeNum)
+//---------------------------------------------------------------------------
+char *nodeStrZ(nodeNumType *nodeNum)
 {
-   char *tempPtr;
+  char *tempPtr;
 
-   tempPtr = nodeNameStr[nodeStrIndex = !nodeStrIndex];
-   if (nodeNum->zone != 0)
-   {  tempPtr += sprintf (tempPtr, "%u:", nodeNum->zone);
-   }
-   sprintf (tempPtr, "%u/%u.%u", nodeNum->net,
-                                 nodeNum->node, nodeNum->point);
+  tempPtr = nodeNameStr[nodeStrIndex = !nodeStrIndex];
+  if (nodeNum->zone != 0)
+    tempPtr += sprintf(tempPtr, "%u:", nodeNum->zone);
 
-   return (nodeNameStr[nodeStrIndex]);
+  sprintf(tempPtr, "%u/%u.%u", nodeNum->net,
+                               nodeNum->node, nodeNum->point);
+
+  return nodeNameStr[nodeStrIndex];
 }
 //---------------------------------------------------------------------------
 char *findCLStr(char *s1, const char *s2)
@@ -553,29 +543,25 @@ s16 scanDate (unsigned char *dtPtr,
 	      u16 *year,  u16 *month, u16 *day,
 	      u16 *hours, u16 *minutes)
 {
-   char timeStr[6];
-   char dateStr[9];
+  char timeStr[6];
+  char dateStr[9];
 
-   if ((dtPtr[0] > 5) || (dtPtr[6] > 8))
-   {
-      return (-1);
-   }
+  if (dtPtr[0] > 5 || dtPtr[6] > 8)
+    return -1;
 
-   strncpy (timeStr, dtPtr+1, 5);
-   timeStr[dtPtr[0]] = 0;
-   strncpy (dateStr, dtPtr+7, 8);
-   dateStr[dtPtr[6]] = 0;
+  strncpy(timeStr, dtPtr+1, 5);
+  timeStr[dtPtr[0]] = 0;
+  strncpy(dateStr, dtPtr+7, 8);
+  dateStr[dtPtr[6]] = 0;
 
-   if ((sscanf (timeStr, "%hu%*c%hu", hours, minutes) != 2) ||
-       (sscanf (dateStr, "%hu%*c%hu%*c%hu", month, day, year) != 3))
-   {
-      return (-1);
-   }
-   return (0);
+  if (  sscanf(timeStr, "%hu%*c%hu", hours, minutes) != 2
+     || sscanf(dateStr, "%hu%*c%hu%*c%hu", month, day, year) != 3
+     )
+    return -1;
+
+  return 0;
 }
-
-
-
+//---------------------------------------------------------------------------
 s32 checkDate (u16 year,  u16 month,   u16 day,
 	       u16 hours, u16 minutes, u16 seconds)
 {

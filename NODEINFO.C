@@ -147,7 +147,7 @@ void closeNodeInfo(void)
          if ( nodeBuf->options.active &&
               nodeBuf->lastNewBundleDat == nodeBuf->referenceLNBDat )
          {
-            if (nodeBuf->passiveSize && totalBundleSize[count] / 1024 > nodeBuf->passiveSize * 100L)
+            if (nodeBuf->passiveSize && totalBundleSize[count] / 1024ul > nodeBuf->passiveSize * 100ul)
             {
                message->destNode = config.akaList[0].nodeNum;
                strcpy(message->toUserName, config.sysopName);

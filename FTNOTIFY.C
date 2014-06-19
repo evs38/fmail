@@ -31,7 +31,9 @@
 #include <io.h>
 #include <fcntl.h>
 #include <ctype.h>
+
 #include "fmail.h"
+
 #include "areainfo.h"
 #include "output.h"
 #include "ftools.h"
@@ -380,13 +382,13 @@ s16 notify(int argc, char *argv[])
                {
                   count = 0;
                   while ((count < MAX_FORWARD) && nodeBuf->node.zone &&
-                         memcmp(&nodeBuf->node, &areaBuf->export[count].nodeNum, 8))
+                         memcmp(&nodeBuf->node, &areaBuf->forwards[count].nodeNum, 8))
 		  {
 			  count++;
 		  }
                   if ( count < MAX_FORWARD &&
                        nodeBuf->node.zone &&
-                       !areaBuf->export[count].flags.locked )
+                       !areaBuf->forwards[count].flags.locked )
                   {
                      if (!(bufCount--))
 		     {
@@ -419,8 +421,8 @@ s16 notify(int argc, char *argv[])
                      helpPtr += sprintf (helpPtr, "%-50s %-24s%s\r",
 						  areaBuf->areaName,
                                                   nodeStr(&config.akaList[areaBuf->address].nodeNum),
-                                                  areaBuf->export[count].flags.readOnly ? "R/O" :
-                                                  areaBuf->export[count].flags.writeOnly ? "W/O":"R/W");
+                                                  areaBuf->forwards[count].flags.readOnly ? "R/O" :
+                                                  areaBuf->forwards[count].flags.writeOnly ? "W/O":"R/W");
 		  }
 	       }
 	    }
@@ -462,12 +464,12 @@ s16 notify(int argc, char *argv[])
                {
                   count = 0;
                   while ((count < MAX_FORWARD) &&
-                         memcmp(&nodeBuf->node, &areaBuf->export[count].nodeNum, 8))
+                         memcmp(&nodeBuf->node, &areaBuf->forwards[count].nodeNum, 8))
                   {
                      count++;
                   }
-                  if ( ((areaBuf->group & nodeBuf->groups) && (count >= MAX_FORWARD || !areaBuf->export[count].flags.locked)) ||
-                       (count < MAX_FORWARD && !areaBuf->export[count].flags.locked) )
+                  if ( ((areaBuf->group & nodeBuf->groups) && (count >= MAX_FORWARD || !areaBuf->forwards[count].flags.locked)) ||
+                       (count < MAX_FORWARD && !areaBuf->forwards[count].flags.locked) )
                   {
                      if (!(bufCount--))
                      {
@@ -498,8 +500,8 @@ s16 notify(int argc, char *argv[])
                         }
                      }
                      helpPtr += sprintf (helpPtr, (strlen(areaBuf->areaName) < ECHONAME_LEN_OLD)?"%c %-24s  %s\r":"%c %s\r                            %s\r",
-                                                  (count < MAX_FORWARD) ? (areaBuf->export[count].flags.readOnly ? 'R':
-                                                                           areaBuf->export[count].flags.writeOnly ? 'W' : '*' ):
+                                                  (count < MAX_FORWARD) ? (areaBuf->forwards[count].flags.readOnly ? 'R':
+                                                                           areaBuf->forwards[count].flags.writeOnly ? 'W' : '*' ):
                                                   ' ',
                                                   areaBuf->areaName,
                                                   areaBuf->comment);

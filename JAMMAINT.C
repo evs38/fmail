@@ -68,8 +68,8 @@ static s16 _mdays [13] =
 
 time_t JAMtime(s32 t)
 {
-    static struct tm  m;
-    s16               LeapDay;
+    static struct tm m;
+    s16              LeapDay;
 
     m.tm_sec  = (s16) (t % 60); t /= 60;
     m.tm_min  = (s16) (t % 60); t /= 60;
@@ -102,7 +102,7 @@ time_t JAMtime(s32 t)
 
 s16 JAMremoveRe(char *buf, u32 *bufsize)
 {
-   u16         size,
+   u32         size,
                slen,
                totalsize = 0;
    tempStrType tempStr;
@@ -113,33 +113,36 @@ s16 JAMremoveRe(char *buf, u32 *bufsize)
 
    while ( ((JAMBINSUBFIELD *)buf)->LoID != JAMSFLD_SUBJECT )
    {
-      size = (u16)sizeof(JAMBINSUBFIELD)+(u16)((JAMBINSUBFIELD *)buf)->DatLen;
+      size = sizeof(JAMBINSUBFIELD) + ((JAMBINSUBFIELD *)buf)->DatLen;
       buf += size;
       totalsize += size;
       if (totalsize >= *bufsize)
          return 0;
    }
-   size =(u16)((JAMBINSUBFIELD *)buf)->DatLen;
+   size = ((JAMBINSUBFIELD *)buf)->DatLen;
    buf += sizeof(JAMBINSUBFIELD);
-   totalsize += (u16)sizeof(JAMBINSUBFIELD);
+   totalsize += sizeof(JAMBINSUBFIELD);
    memset(tempStr, 0, sizeof(tempStrType));
    memcpy(tempStr, buf, min(size,100));
    helpPtr = tempStr;
-   while ( !strnicmp (helpPtr, "RE:", 3) ||
-           !strnicmp (helpPtr, "(R)", 3) ||
-           !strnicmp (helpPtr, "RE^", 3) )
-   {  helpPtr += 3;
+   while (  !strnicmp(helpPtr, "RE:", 3)
+         || !strnicmp(helpPtr, "(R)", 3)
+         || !strnicmp(helpPtr, "RE^", 3)
+         )
+   {
+      helpPtr += 3;
       if ( *(helpPtr-1) == '^' )
-      {  while ( *helpPtr && *helpPtr != ':' )
+         while ( *helpPtr && *helpPtr != ':' )
             ++helpPtr;
-      }
+
       while ( *helpPtr == ' ' )
          helpPtr++;
    }
-   slen = (u16)strlen(helpPtr);
+   slen = strlen(helpPtr);
    if ( slen < size )
-   {  size -= slen;
-      memmove(buf, buf+size, ((u16)*bufsize)-totalsize-size);
+   {
+      size -= slen;
+      memmove(buf, buf+size, (*bufsize) - totalsize - size);
       *bufsize -= size;
       buf -= sizeof(JAMBINSUBFIELD);
 #ifdef __32BIT__
@@ -333,7 +336,7 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
 
    read(JHRhandle, &headerInfo, sizeof(JAMHDRINFO));
 
-   if ( areaPtr->msgs && headerInfo.ActiveMsgs > areaPtr->msgs )
+   if ( areaPtr->msgs && headerInfo.ActiveMsgs > (u32)areaPtr->msgs )
       delCount = headerInfo.ActiveMsgs - areaPtr->msgs;
    else
       delCount = 0;
@@ -349,16 +352,20 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
 
    keepSysOpMsgNum = 0xFFFFFFFFL;
    if ( areaPtr->options.sysopRead && JLRhandle != -1 )
-   {  keepSysOpCRC = crc32jam(strlwr(strcpy(tempStr, name)));
-      while ( keepSysOpMsgNum == 0xFFFFFFFFL && !eof(JLRhandle) &&
-              ((temp = read(JLRhandle, buf, TXTBUFSIZE)) != -1) )
-      {  temp >>= 4;
-         for ( count = 0; count < temp; count++ )
-         {  if ( ((JAMLREAD *)buf)[count].UserCRC == keepSysOpCRC )
-            {  keepSysOpMsgNum = ((JAMLREAD *)buf)[count].HighReadMsg-oldBaseMsgNum+1;
-               break;
-            }
-	 }
+   {
+      keepSysOpCRC = crc32jam(name);
+      while (keepSysOpMsgNum == 0xFFFFFFFFL && !eof(JLRhandle)
+            && ((temp = read(JLRhandle, buf, TXTBUFSIZE)) != -1) )
+      {
+        temp >>= 4;
+        for (count = 0; count < temp; count++)
+        {
+          if (((JAMLREAD *)buf)[count].UserCRC == keepSysOpCRC)
+          {
+            keepSysOpMsgNum = ((JAMLREAD *)buf)[count].HighReadMsg - oldBaseMsgNum + 1;
+            break;
+          }
+        }
       }
    }
 

@@ -116,7 +116,7 @@ typedef struct
 } psRecType;
 
 typedef psRecType psType [];
-typedef uchar tempStrType[256];
+typedef uchar tempStrType[260];    // Gelijk aan MAXPATH (wordt ook voor paden gebruikt)
 
 typedef struct
 {

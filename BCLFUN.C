@@ -78,13 +78,14 @@ udef openBCL(uplinkReqType *uplinkReq)
 
 
 udef readBCL(u8 **tag, u8 **descr)
-{  static u8  buf[256];
+{
+   static u8  buf[256];
 
    if ( eof(bclHandle) )
       return 0;
    if ( read(bclHandle, &bcl, sizeof(bcl_type)) != sizeof(bcl_type) )
       return 0;
-   if ( read(bclHandle, buf, bcl.EntryLength-sizeof(bcl_type)) != bcl.EntryLength-sizeof(bcl_type) )
+   if ( read(bclHandle, buf, bcl.EntryLength - sizeof(bcl_type)) != (int)(bcl.EntryLength - sizeof(bcl_type)) )
       return 0;
    *tag = buf;
    *descr = strchr(buf, 0) + 1;
@@ -93,19 +94,23 @@ udef readBCL(u8 **tag, u8 **descr)
 
 
 udef closeBCL(void)
-{  return close(bclHandle);
+{
+  return close(bclHandle);
 }
 
 
 udef autoBCL(void)
 {
-   u16          index;
+   u16 index;
 
-   for ( index = 0; index < nodeCount; index++ )
+   for (index = 0; index < nodeCount; index++)
    {
       returnTimeSlice(0);
-      if ( nodeInfo[index]->autoBCL && startTime - nodeInfo[index]->lastSentBCL > nodeInfo[index]->autoBCL * 86400L )
-      {  send_bcl(&config.akaList[matchAka(&nodeInfo[index]->node, 0)].nodeNum, &(nodeInfo[index]->node), nodeInfo[index]);
+      if (nodeInfo[index]->autoBCL
+         && startTime - (time_t)nodeInfo[index]->lastSentBCL > nodeInfo[index]->autoBCL * 86400L
+         )
+      {
+         send_bcl(&config.akaList[matchAka(&nodeInfo[index]->node, 0)].nodeNum, &(nodeInfo[index]->node), nodeInfo[index]);
          nodeInfo[index]->lastSentBCL = startTime;
       }
    }

@@ -1,32 +1,33 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #include <ctype.h>
 #include <string.h>
 
 #include "fmail.h"
+
 #include "crc.h"
 
-
+//---------------------------------------------------------------------------
 const s32 crc32tab[256] =
 {
    0x00000000L, 0x77073096L, 0xee0e612cL, 0x990951baL,
@@ -94,222 +95,86 @@ const s32 crc32tab[256] =
    0xb3667a2eL, 0xc4614ab8L, 0x5d681b02L, 0x2a6f2b94L,
    0xb40bbe37L, 0xc30c8ea1L, 0x5a05df1bL, 0x2d02ef8dL
 };
-
+//---------------------------------------------------------------------------
 u32 crc32(char *string)
 {
-  u32 crc = 0xffffffffL;
+  u32 crc = 0xFFFFFFFFUL;
 
   while (*string)
     crc = crc32tab[((u8)crc) ^ ((u8)toupper(*(string++)))] ^ (crc >> 8);
 
   return crc;
 }
-
+//---------------------------------------------------------------------------
 u32 crc32old(char *string)
 {
-  s32 crc = 0xffffffffL;
+  s32 crc = 0xFFFFFFFFL;
 
   while (*string)
     crc = crc32tab[((u8)crc) ^ ((u8)toupper(*(string++)))] ^ (crc >> 8);
 
   return crc;
 }
-
+//---------------------------------------------------------------------------
 u32 crc32len(char *string, s16 len)
 {
-  u32 crc = 0xffffffffL;
+  u32 crc = 0xFFFFFFFFUL;
 
   while (len--)
     crc = crc32tab[((u8)crc) ^ ((u8)toupper(*(string++)))] ^ (crc >> 8);
 
   return crc;
 }
-
+//---------------------------------------------------------------------------
 #if 0
 /* was used by original JAM code */
-u32 crc32lennc (char *string, s16 len)
+u32 crc32lennc(char *string, s16 len)
 {
-   u32 crc = 0xffffffffL;
+  u32 crc = 0xFFFFFFFFUL;
 
-   while (len--)
-   {
-      crc = crc32tab [((char)crc)^*(string++)] ^ (crc >> 8);
-   }
-   return (crc);
+  while (len--)
+    crc = crc32tab[((u8)crc) ^ ((u8)*(string++))] ^ (crc >> 8);
+
+  return (crc);
 }
 #endif
-
-
-u32 crc32alpha (char *string)
+//---------------------------------------------------------------------------
+u32 crc32alpha(char *string)
 {
-   u32 crc = 0xffffffffL;
+  u32 crc = 0xFFFFFFFFUL;
 
-   while (*string)
-   {
-      if ((*string != ' ') && !isdigit(*string))
-      {
-         crc = crc32tab [((char)crc)^((char)toupper(*string))] ^ (crc >> 8);
-      }
-      string++;
-   }
-   if (crc == 0xffffffffL)
-   {
-      return (crc32(string));
-   }
-   return (crc);
+  while (*string)
+  {
+    if ((*string != ' ') && !isdigit(*string))
+      crc = crc32tab[((u8)crc) ^ ((u8)toupper(*string))] ^ (crc >> 8);
+
+    string++;
+  }
+  if (crc == 0xFFFFFFFFUL)
+    return crc32(string);
+
+  return crc;
 }
-
-
-
-u32 crc32t (char *string, char terminator)
+//---------------------------------------------------------------------------
+u32 crc32t(char *string, char terminator)
 {
-   u32 crc = 0xffffffffL;
+  u32 crc = 0xFFFFFFFFUL;
 
-   while ((*string != terminator) && (*string != 0) && (*string != '\r'))
-   {
-      crc = crc32tab [((char)crc)^((char)toupper(*(string++)))]
-	    ^ (crc >> 8);
-   }
-   return (crc);
+  while ((*string != terminator) && (*string != 0) && (*string != '\r'))
+    crc = crc32tab[((u8)crc) ^ ((u8)toupper(*(string++)))] ^ (crc >> 8);
+
+  return crc;
 }
-
-
-
-/* converts to lowercase */
-u32 crc32jam (char *string)
+//---------------------------------------------------------------------------
+// converts to lowercase
+//
+u32 crc32jam(char *string)
 {
-   u32 crc = 0xffffffffL;
+  u32 crc = 0xFFFFFFFFUL;
 
-   while (*string)
-   {
-      crc = crc32tab [((char)crc)^((char)tolower(*(string++)))] ^ (crc >> 8);
-   }
-   return (crc);
+  while (*string)
+    crc = crc32tab[((u8)crc) ^ ((u8)tolower(*(string++)))] ^ (crc >> 8);
+
+  return (crc);
 }
-
-
-#ifdef FMTEST
-
-#pragma message ("TESTCODE MOET UIT!")
-
-#undef malloc(a)
-#undef calloc(a,b)
-#undef realloc(a,b)
-#undef free(a)
-
-#include <alloc.h>
-#include "log.h"
-#include "window.h"
-
-
-
-#define MAX_ALLOC 4096
-int  t_off = 0;
-void *allocp[MAX_ALLOC];
-int  nalloc = 0;
-
-void *t_calloc(size_t nitems, size_t size)
-{
-   void *p2;
-
-   p2 = calloc(nitems, size);
-   if ( t_off )
-      return p2;
-   if ( nalloc >= MAX_ALLOC )
-      return NULL;
-   allocp[nalloc++] = p2;
-   return p2;
-}
-
-void *t_malloc(size_t size)
-{
-   void *p2;
-
-   p2 = malloc(size);
-   if ( t_off )
-      return p2;
-   if ( nalloc >= MAX_ALLOC )
-      return NULL;
-   allocp[nalloc++] = p2;
-   return p2;
-}
-
-void *t_realloc(void *p, size_t size)
-{
-   int num = 0;
-   void *p2;
-
-   p2 = realloc(p, size);
-   if ( t_off )
-      return p2;
-   if ( !nalloc )
-   {  
-#ifdef FSETUP
-      displayMessage("REALLOC fout (0)!");
-#else
-      logEntry("REALLOC fout (0)!", LOG_ALWAYS, 0);
-#endif
-      t_off = 1;
-      return NULL;
-   }
-   while ( num < nalloc )
-   {  if ( allocp[num] == p )
-	 break;
-      ++num;
-   }
-   if ( num == nalloc )
-   {  
-#ifdef FSETUP
-      displayMessage("REALLOC fout!");
-#else
-      logEntry("REALLOC fout!", LOG_ALWAYS, 0);
-#endif
-      t_off = 1;
-      return NULL;
-   }
-   memmove(&allocp[num], &allocp[num+1], (nalloc-num-1)*sizeof(void*));
-   --nalloc;
-   if ( p2 != NULL )
-      allocp[nalloc++] = p2;
-   return p2;
-}
-
-void t_free(void *p)
-{
-   int num = 0;
-
-   if ( !t_off )
-   {
-      if ( !nalloc )
-      {  
-#ifdef FSETUP
-	 displayMessage("FREE fout (0)!");
-#else
-	 logEntry("FREE fout (0)!", LOG_ALWAYS, 0);
-#endif
-	 t_off = 1;
-	 return;
-      }
-      while ( num < nalloc )
-      {	 if ( allocp[num] == p )
-	    break;
-	 ++num;
-      }
-      if ( num == nalloc )
-      {  
-#ifdef FSETUP
-	 displayMessage("FREE fout!");
-#else
-	 logEntry("FREE fout!", LOG_ALWAYS, 0);
-#endif
-	 t_off = 1;
-	 return;
-      }
-      memmove(&allocp[num], &allocp[num+1], (nalloc-num-1)*sizeof(void*));
-      --nalloc;
-   }
-   free(p);
-}
-
-#endif
-
+//---------------------------------------------------------------------------

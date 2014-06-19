@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------
 //  Copyright (C) 2007 Folkert J. Wijnstra
-//  Copyright (C) 2008 - 2013 Wilfred van Velzen
+//  Copyright (C) 2008 - 2014 Wilfred van Velzen
 //
 //  This file is part of FMail.
 //
@@ -307,7 +307,7 @@ int cdecl main(int argc, char *argv[])
   tempStrType tempStr, tempStr2, tempStr3;
   u16 count
   , c
-  , d
+  , ddd
   , temp
   , bufCount
   , newBufCount;
@@ -972,11 +972,11 @@ int cdecl main(int argc, char *argv[])
             linkArraySubjectCrcLow[msgCount]  = (u16)(msgHdrBuf[count].subjCrc & 0x0000ffff);
           }
 
-          if ((d = msgHdrBuf[count].Board) <= MBBOARDS) // for linking
+          if ((ddd = msgHdrBuf[count].Board) <= MBBOARDS) // for linking
           {
             linkArrayMsgNum[msgCount]    = msgHdrBuf[count].MsgNum;
-            linkArrayPrevReply[msgCount] = areaSubjChain[d];
-            areaSubjChain[d]             = msgCount;
+            linkArrayPrevReply[msgCount] = areaSubjChain[ddd];
+            areaSubjChain[ddd]           = msgCount;
           }
         }
 
@@ -990,9 +990,9 @@ int cdecl main(int argc, char *argv[])
           keepHdr[keepIdx] |= keepBit;
           newHdrSize++;
 
-          d = msgHdrBuf[count].StartRec;
-          mask = setBitTab[d & 7];
-          d >>= 3;
+          ddd = msgHdrBuf[count].StartRec;
+          mask = setBitTab[ddd & 7];
+          ddd >>= 3;
 
           if ((switches & SW_T))
             lseek(msgTxtHandle, msgHdrBuf[count].StartRec * (u32)sizeof(msgTxtRec), SEEK_SET);
@@ -1011,7 +1011,7 @@ int cdecl main(int argc, char *argv[])
                 break;
               }
             }
-            if (keepTxt[d].used & mask)
+            if (keepTxt[ddd].used & mask)
             {
               if (keepHdr[keepIdx] & keepBit)
               {
@@ -1022,14 +1022,14 @@ int cdecl main(int argc, char *argv[])
             }
             else
             {
-              keepTxt[d].used |= mask;
+              keepTxt[ddd].used |= mask;
               newTxtSize++;
             }
 
             if ((mask <<= 1) == 0)
             {
               mask = 1;
-              d++;
+              ddd++;
             }
           }
         }
@@ -1115,18 +1115,20 @@ int cdecl main(int argc, char *argv[])
       c = areaSubjChain[count];
       while (c != 0xffff)
       {
-        d = linkArrayPrevReply[c];
+        ddd = linkArrayPrevReply[c];
         codeHigh = linkArraySubjectCrcHigh[c];
         codeLow  = linkArraySubjectCrcLow[c];
-        while ((d != 0xffff) && ((codeLow != linkArraySubjectCrcLow[d])
-                                 || (codeHigh != linkArraySubjectCrcHigh[d])))
-          d = linkArrayPrevReply[d];
+        while ((ddd != 0xffff) && (  (codeLow  != linkArraySubjectCrcLow[ddd])
+                                  || (codeHigh != linkArraySubjectCrcHigh[ddd])
+                                  )
+              )
+          ddd = linkArrayPrevReply[ddd];
         e = c;
         c = linkArrayPrevReply[c];
-        if (d != 0xffff)
+        if (ddd != 0xffff)
         {
-          linkArrayPrevReply[e] = linkArrayMsgNum[d];
-          linkArrayNextReply[d] = linkArrayMsgNum[e];
+          linkArrayPrevReply[e] = linkArrayMsgNum[ddd];
+          linkArrayNextReply[ddd] = linkArrayMsgNum[e];
         }
         else
           linkArrayPrevReply[e] = 0;
@@ -1294,10 +1296,10 @@ int cdecl main(int argc, char *argv[])
 
           if (switches & SW_P)
           {
-            d = msgHdrBuf[newBufCount].StartRec;
-            mask = bitMaskTab[d & 7];
-            d >>= 3;
-            msgHdrBuf[newBufCount].StartRec = keepTxt[d].usedCount + bitCountTab[keepTxt[d].used & mask];
+            ddd = msgHdrBuf[newBufCount].StartRec;
+            mask = bitMaskTab[ddd & 7];
+            ddd >>= 3;
+            msgHdrBuf[newBufCount].StartRec = keepTxt[ddd].usedCount + bitCountTab[keepTxt[ddd].used & mask];
           }
           newBufCount++;
         }
@@ -1359,8 +1361,8 @@ int cdecl main(int argc, char *argv[])
         newLine();
 #endif
         percentCount = 0;
-        if ((d = (u16)(filelength(lastReadHandle) / 100)) == 0)
-          d = 1;
+        if ((ddd = (u16)(filelength(lastReadHandle) / 100)) == 0)
+          ddd = 1;
         while ((bufCount = _read(lastReadHandle, lruBuf, LRU_BUFSIZE)) > 0)
         {
 #ifndef STDO
@@ -1402,8 +1404,8 @@ int cdecl main(int argc, char *argv[])
           }
           else
           {
-            if ((d = (u16)(filelength(usersBBSHandle) / 1016)) == 0)
-              d = 1;
+            if ((ddd = (u16)(filelength(usersBBSHandle) / 1016)) == 0)
+              ddd = 1;
 
             while (((lseek(usersBBSHandle, 452 + (1016 * (s32)c++), SEEK_SET) != -1)
                     && (_read(usersBBSHandle, &temp4, 4)) == 4))
@@ -1431,8 +1433,8 @@ int cdecl main(int argc, char *argv[])
           }
           else
           {
-            if ((d = (u16)(filelength(usersBBSHandle) / 158)) == 0)
-              d = 1;
+            if ((ddd = (u16)(filelength(usersBBSHandle) / 158)) == 0)
+              ddd = 1;
 
             while (((lseek(usersBBSHandle, 130 + (158 * (s32)c++), SEEK_SET) != -1)
                     && (_read(usersBBSHandle, &temp, 2)) == 2))
@@ -2112,7 +2114,7 @@ nextarea:
                     }
                     doneSearch = findnext(&ffblkMsg);
                   }
-                  d = 0;
+                  ddd = 0;
                   for (count = 0; count < bufCount; count++)
                     if (count + 1 != msgRenumBuf[count])
                     {
@@ -2124,10 +2126,10 @@ nextarea:
                         sprintf(tempStr, "- Renumbering messages: %u "dARROW" %u", msgRenumBuf[count], count + 1);
                         printString(tempStr);
                         updateCurrLine();
-                        d++;
+                        ddd++;
                       }
                     }
-                  if (d)
+                  if (ddd)
                     newLine();
 
                   strcpy(helpPtr2, "lastread");
@@ -2138,10 +2140,10 @@ nextarea:
                       returnTimeSlice(0);
                       for (count = 0; count < (newBufCount >> 1); count++)
                       {
-                        d = 0;
-                        while ((d < bufCount) && (msgRenumBuf[d] < lastReadRec[count]))
-                          d++;
-                        lastReadRec[count] = d + 1;
+                        ddd = 0;
+                        while ((ddd < bufCount) && (msgRenumBuf[ddd] < lastReadRec[count]))
+                          ddd++;
+                        lastReadRec[count] = ddd + 1;
                       }
                       lseek(lastReadHandle, -(signed)newBufCount, SEEK_CUR);
                       write(lastReadHandle, &lastReadRec, newBufCount);
@@ -2198,6 +2200,7 @@ nextarea:
         Usage();
   waitID();
   showCursor();
+
   return 0;
 }
 //----------------------------------------------------------------------------
@@ -2215,8 +2218,10 @@ fhandle fsopenP(const char *pathname, int access, u16 mode)
 void myexit(void)
 {
 #pragma exit myexit
-#ifdef _DEBUG
+#ifdef _DEBUG0
+  printString("\nPress any key to continue... ");
   getch();
+  newLine();
 #endif
 }
 //----------------------------------------------------------------------------

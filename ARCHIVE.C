@@ -73,7 +73,7 @@ extern const char   *months;
 static s16 checkExist(char *entry, char *prog, char *par)
 {
   tempStrType tempStr;
-  char        *helpPtr;
+  char       *helpPtr;
 
   if (((helpPtr = strtok(entry, " ")) == NULL)
       || ((access(helpPtr, 4) != 0)
@@ -87,7 +87,9 @@ static s16 checkExist(char *entry, char *prog, char *par)
   strcpy(prog, helpPtr);
   if ((helpPtr = strtok(NULL, "")) == NULL)
     helpPtr = "";
+
   strcpy(par, helpPtr);
+
   return 0;
 }
 // ----------------------------------------------------------------------------
@@ -99,48 +101,49 @@ static u8 archiveType(char *fullFileName)
 
   if ((arcHandle = openP(fullFileName, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
     return 0xFE;
+
   byteCount = _read(arcHandle, data, 29);
   close(arcHandle);
 
   if (byteCount < 2)
     return 0xFE;
 
-  if (memcmp(data, "Rar!\x1a\x07", 7) == 0) /* 7h byte is zero ! */
-    return 9;   /* RAR */
+  if (memcmp(data, "Rar!\x1a\x07", 7) == 0)  // 7h byte is zero !
+    return 9;   // RAR
 
-  if (memcmp(data + 14, "\x1aJar\x1b", 6) == 0) /* 19th byte is zero ! */
-    return 10;   /* JAR */
+  if (memcmp(data + 14, "\x1aJar\x1b", 6) == 0)  // 19th byte is zero !
+    return 10;   // JAR
 
   if ((data [0] == 'U') && (data [1] == 'C')
       && (data [2] == '2') && (data [3] == 26) && (byteCount >= 4))
-    return 8;     /* UC2 */
+    return 8;     // UC2
 
   if ((data [0] == 80) && (data [1] == 75)
-      && (data [2] == 3) && (data [3] == 4) && (byteCount >= 4)) /* 3, 4: GUS */
-    return 1;     /* ZIP */
+      && (data [2] == 3) && (data [3] == 4) && (byteCount >= 4))  // 3, 4: GUS
+    return 1;     // ZIP
 
   if ((data [0] == 'H') && (data [1] == 'L')
       && (data [2] == 'S') && (data [3] == 'Q') && (byteCount >= 4))
-    return 6;     /* SQZ */
+    return 6;     // SQZ
 
   if ((data [20] == 0xdc) && (data [21] == 0xa7)
       && (data [22] == 0xc4) && (data [23] == 0xfd) && (byteCount >= 25))
-    return 4;     /* ZOO */
+    return 4;     // ZOO
 
   if ((data [2] == '-') && (data [3] == 'l')
       && /* (data [4] == 'h') && #zie GUS# */
       (data [6] == '-') && (byteCount >= 7))
-    return 2;   /* LZH */
+    return 2;   // LZH
 
   if ((data [0] == 0x60) && (data [1] == 0xEA))
-    return 5;     /* ARJ */
+    return 5;     // ARJ
 
   if ((data [0] == 26) && (data [1] >= 10)
       && (data [1] < 20) && (byteCount == 29))
-    return 3;     /* PAK */
+    return 3;     // PAK
 
   if ((data [0] == 26) && (data [1] < 10) && (byteCount == 29))
-    return 0;     /* ARC */ /* Should check second, third etc. file also */
+    return 0;     // ARC, Should check second, third etc. file also
 
   return 0xFF;
 }
@@ -152,13 +155,11 @@ static s16 _Cdecl spawnlo(const char *overlay_path, const char *prog_name, ...)
 }
 #endif
 // ----------------------------------------------------------------------------
+static s16 execute(char *arcType, char *program, char *parameters, char *archiveName, char *pktName, char *privPath
 #if !defined __FMAILX__ && !defined __32BIT__
-static s16 execute(char *arcType, char *program, char *parameters
-                   , char *archiveName, char *pktName, char *privPath, u16 memReq)
-#else
-static s16 execute(char *arcType, char *program, char *parameters
-                   , char *archiveName, char *pktName, char *privPath)
+                  , u16 memReq
 #endif
+                  )
 {
   s16 dosExitCode = -1;
   uchar tempStr[MAX_PARSIZE];
@@ -226,7 +227,7 @@ static s16 execute(char *arcType, char *program, char *parameters
   sprintf(tempStr, "Executing %s %s", program, parameters);
   logEntry(tempStr, LOG_EXEC | LOG_NOSCRN, 0);
 
-	printString("----------------------------external-program-start-----------------------------\n");
+	printString("<-- External Program Start    -->\n");
 	showCursor();
 
 #if !defined __FMAILX__ && !defined __32BIT__
@@ -304,31 +305,31 @@ static s16 execute(char *arcType, char *program, char *parameters
   }
 #endif
 	noCursor();
-	printString("---------------------------external-program-finished---------------------------\n");
+	printString("<-- External Program Finished -->\n");
   if (dosExitCode == -1)
   {
     sprintf(tempStr, "Cannot execute %s utility: ", arcType);
     switch (errno)
     {
-    case E2BIG:
-      strcat(tempStr, "Arg list too big");
-      break;
+      case E2BIG:
+        strcat(tempStr, "Arg list too big");
+        break;
 
-    case EINVAL:
-      strcat(tempStr, "Invalid argument");
-      break;
+      case EINVAL:
+        strcat(tempStr, "Invalid argument");
+        break;
 
-    case ENOENT:
-      strcat(tempStr, "Path or file name not found");
-      break;
+      case ENOENT:
+        strcat(tempStr, "Path or file name not found");
+        break;
 
-    case ENOEXEC:
-      strcat(tempStr, "Exec format error");
-      break;
+      case ENOEXEC:
+        strcat(tempStr, "Exec format error");
+        break;
 
-    case ENOMEM:
-      strcat(tempStr, "Not enough memory");
-      break;
+      case ENOMEM:
+        strcat(tempStr, "Not enough memory");
+        break;
     }
     logEntry(tempStr, LOG_ALWAYS, 0);
     return 1;
@@ -342,8 +343,6 @@ static s16 execute(char *arcType, char *program, char *parameters
   }
   return 0;
 }
-//#endif
-
 // ----------------------------------------------------------------------------
 void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 {
@@ -367,9 +366,9 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
   {
   case  0:      /* ARC */
 #ifdef __32BIT__
-    strcpy( arcPath,  config.unArc32.programName);
+    strcpy(arcPath, config.unArc32.programName);
 #else
-    strcpy( arcPath,  config.unArc.programName);
+    strcpy(arcPath, config.unArc.programName);
 #endif
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unArc.memRequired;
@@ -379,9 +378,9 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 
   case  1:      /* ZIP */
 #ifdef __32BIT__
-    strcpy( arcPath,  config.unZip32.programName);
+    strcpy(arcPath, config.unZip32.programName);
 #else
-    strcpy( arcPath,  config.unZip.programName);
+    strcpy(arcPath, config.unZip.programName);
 #endif
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unZip.memRequired;
@@ -391,9 +390,9 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 
   case  2:      /* LZH */
 #ifdef __32BIT__
-    strcpy( arcPath,  config.unLzh32.programName);
+    strcpy(arcPath, config.unLzh32.programName);
 #else
-    strcpy( arcPath,  config.unLzh.programName);
+    strcpy(arcPath, config.unLzh.programName);
 #endif
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unLzh.memRequired;
@@ -403,9 +402,9 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 
   case  3:      /* PAK */
 #ifdef __32BIT__
-    strcpy( arcPath,  config.unPak32.programName);
+    strcpy(arcPath, config.unPak32.programName);
 #else
-    strcpy( arcPath,  config.unPak.programName);
+    strcpy(arcPath, config.unPak.programName);
 #endif
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unPak.memRequired;
@@ -415,9 +414,9 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 
   case  4:      /* ZOO */
 #ifdef __32BIT__
-    strcpy( arcPath,  config.unZoo32.programName);
+    strcpy(arcPath, config.unZoo32.programName);
 #else
-    strcpy( arcPath,  config.unZoo.programName);
+    strcpy(arcPath, config.unZoo.programName);
 #endif
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unZoo.memRequired;
@@ -427,9 +426,9 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 
   case  5:      /* ARJ */
 #ifdef __32BIT__
-    strcpy( arcPath,  config.unArj32.programName);
+    strcpy(arcPath, config.unArj32.programName);
 #else
-    strcpy( arcPath,  config.unArj.programName);
+    strcpy(arcPath, config.unArj.programName);
 #endif
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unArj.memRequired;
@@ -439,9 +438,9 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 
   case  6:      /* SQZ */
 #ifdef __32BIT__
-    strcpy( arcPath,  config.unSqz32.programName);
+    strcpy(arcPath, config.unSqz32.programName);
 #else
-    strcpy( arcPath,  config.unSqz.programName);
+    strcpy(arcPath, config.unSqz.programName);
 #endif
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unSqz.memRequired;
@@ -451,9 +450,9 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 
   case  8:      /* UC2 */
 #ifdef __32BIT__
-    strcpy( arcPath,  config.unUc232.programName);
+    strcpy(arcPath, config.unUc232.programName);
 #else
-    strcpy( arcPath,  config.unUc2.programName);
+    strcpy(arcPath, config.unUc2.programName);
 #endif
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unUc2.memRequired;
@@ -463,9 +462,9 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 
   case  9:      /* RAR */
 #ifdef __32BIT__
-    strcpy( arcPath,  config.unRar32.programName);
+    strcpy(arcPath, config.unRar32.programName);
 #else
-    strcpy( arcPath,  config.unRar.programName);
+    strcpy(arcPath, config.unRar.programName);
 #endif
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unRar.memRequired;
@@ -475,9 +474,9 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 
   case 10:      /* JAR */
 #ifdef __32BIT__
-    strcpy( arcPath,  config.unJar32.programName);
+    strcpy(arcPath, config.unJar32.programName);
 #else
-    strcpy( arcPath,  config.unJar.programName);
+    strcpy(arcPath, config.unJar.programName);
 #endif
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unJar.memRequired;
@@ -526,13 +525,13 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
           , ((ffblkArc->ff_fdate >> 9) & 0x7f) + 1980
           , (ffblkArc->ff_ftime >> 11) & 0x1f
           , (ffblkArc->ff_ftime >> 5) & 0x3f
-       /* , (ffblkArc->ff_ftime & 0x1f) << 1 */
+       // , (ffblkArc->ff_ftime & 0x1f) << 1
           );
   logEntry(tempStr, LOG_INBOUND, 0);
 
   strcpy(unpackPathStr, config.inPath);  /* pktPath */
 
-  /* preprocessor */
+  // preprocessor
 #ifdef __32BIT__
   if (*config.preUnarc32.programName)
   {
@@ -561,7 +560,7 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
     chdir(unpackPathStr);
     *unpackPathStr = 0;
   }
-  if (arcType == 8)  /* UC2 */
+  if (arcType == 8)  // UC2
   {
     memmove(unpackPathStr + 1, unpackPathStr, strlen(unpackPathStr) + 1);
     *unpackPathStr = '#';
@@ -572,7 +571,7 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
   if (execute(extPtr, pathStr, parStr, fullFileName, unpackPathStr, NULL, memReq))
 #endif
   {
-     if (arcType == 4)  /* ZOO */
+     if (arcType == 4)  // ZOO
      {
        setdisk(*dirStr - 'A');
        chdir(dirStr);
@@ -583,17 +582,17 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
      newLine();
      return;
   }
-  if (arcType == 4)  /* ZOO */
+  if (arcType == 4)  // ZOO
   {
     if (strlen(unpackPathStr) > 3)
       strcat(unpackPathStr, "\\");
     setdisk(*dirStr - 'A');
     chdir(dirStr);
   }
-  if (arcType == 8) /* UC2 */
+  if (arcType == 8) // UC2
     strcpy(unpackPathStr, unpackPathStr + 1);
 
-  /* postprocessor */
+  // postprocessor
 #ifdef __32BIT__
   if (*config.postUnarc32.programName)
   {
@@ -653,12 +652,17 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
               , procStr2[MAX_PARSIZE];
   s16           doneArc;
   fhandle       tempHandle
-              , semaHandle;
+              , semaHandle = -1;
   s32           arcSize;
   uchar        *exto
              , *extn;
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
   u16           memReq;
+#endif
+
+#ifdef _DEBUG
+  sprintf(tempStr, "[packArc Debug] file %s  %s -> %s", qqqName, nodeStr(srcNode), nodeStr(destNode));
+  logEntry(tempStr, LOG_DEBUG, 0);
 #endif
 
   if (!stricmp(qqqName + strlen(qqqName) - 3, "$$$"))
@@ -678,6 +682,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     strcpy(pktName, nodeInfo->pktOutPath);
     if ((helpPtr = strrchr(qqqName, '\\')) == NULL)
       return 1;
+
     strcat(pktName, helpPtr + 1);
     strcpy(pktName + strlen(pktName) - 3, extn);
     if (moveFile(qqqName, pktName))
@@ -692,15 +697,15 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     return 0;
   }
 
-  if (nodeInfo->archiver == 0xFF)
-    nodeInfo->archiver = config.defaultArc;
-
+  // Rename pkt file to correct extension
   helpPtr = stpcpy(pktName, qqqName);
   strcpy(helpPtr - 3, extn);
-  if (rename(qqqName, pktName) == -1)
+  if (rename(qqqName, pktName) != 0)
     return 1;
+
   strcpy(qqqName + strlen(qqqName) - 3,  exto);
 
+  // If via, change src, dst and nodeInfo accordingly
   if (nodeInfo->viaNode.zone)
   {
     destNode = &nodeInfo->viaNode;
@@ -708,10 +713,10 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     srcNode  = &config.akaList[matchAka(destNode, nodeInfo->useAka)].nodeNum;
   }
 
+  // Check/create semaphore's for different mailers
   if (config.mailer == dMT_FrontDoor)
   {
-    count = sprintf( semaName, "%s%08lx.`fm", config.semaphorePath
-                   , crc32(nodeStr(destNode))) - 2;
+    count = sprintf(semaName, "%s%08lx.`fm", config.semaphorePath, crc32(nodeStr(destNode))) - 2;
     unlink(semaName);
     *(u16 *)(semaName + count) = '*';
     if (findfirst(semaName, &semaBlk, FA_RDONLY | FA_HIDDEN | FA_SYSTEM | /*FA_LABEL|*/ FA_DIREC) == 0)
@@ -733,18 +738,15 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   {
     if (config.mailer == dMT_InterMail)
     {
-      sprintf(semaName, "%sx%07lx.fm", config.semaphorePath
-              , crc32len((char *)destNode, 8) / 16);
+      sprintf(semaName, "%sx%07lx.fm", config.semaphorePath, crc32len((char *)destNode, 8) / 16);
       helpPtr = strrchr(semaName, '.');
       *helpPtr = *(helpPtr - 1);
       *(helpPtr - 1) = '.';
       unlink(semaName);
       *(u16 *)(helpPtr + 1) = '*';
-      if (findfirst(semaName, &semaBlk, FA_RDONLY | FA_HIDDEN
-                    | FA_SYSTEM | /*FA_LABEL|*/ FA_DIREC) == 0)
+      if (findfirst(semaName, &semaBlk, FA_RDONLY | FA_HIDDEN | FA_SYSTEM | /*FA_LABEL|*/ FA_DIREC) == 0)
       {
-        sprintf(tempStr, "Node %s is on line: cannot compress mail"
-                , nodeStr(destNode));
+        sprintf(tempStr, "Node %s is on line: cannot compress mail", nodeStr(destNode));
         logEntry(tempStr, LOG_ALWAYS, 0);
         rename(pktName, qqqName);
         newLine();
@@ -784,293 +786,319 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
           return 1;
         }
         if (config.mailOptions.createSema)
-          semaHandle = openP(semaName, O_RDWR | O_CREAT | O_TRUNC | O_DENYALL, S_IREAD | S_IWRITE);              /* Originally _creat */
+          semaHandle = openP(semaName, O_RDWR | O_CREAT | O_TRUNC | O_DENYALL, S_IREAD | S_IWRITE);  // Originally _creat
       }
   }
 
+  // Make output path
   archivePtr = stpcpy(archiveStr, config.outPath);
   if (config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
   {
     if (destNode->zone != config.akaList[0].nodeNum.zone)
     {
+      // Set specific BINK paths extensions for out of zone destinations
       archivePtr += sprintf(archivePtr - 1, ".%03hx", destNode->zone);
       mkdir(archiveStr);
       strcpy(archivePtr - 1, "\\");
     }
     if (destNode->point)
     {
+      // Set specific BINK paths extensions for point destinations
       archivePtr += sprintf(archivePtr, "%04hx%04hx.pnt", destNode->net, destNode->node);
       mkdir(archiveStr);
       strcpy(archivePtr++, "\\");
     }
   }
 
-  count = 0;
-  do
+  // When the .pkt needs to be packed with an archiver
+  if (nodeInfo->archiver != 0xFF)
   {
-    while ((count < fAttCount)
-           && ((memcmp(&fAttInfo[count].origNode, srcNode, sizeof(nodeNumType)) != 0)
-               || (memcmp(&fAttInfo[count].destNode, destNode, sizeof(nodeNumType)) != 0)))
-      count++;
+#ifdef _DEBUG0
+    for (count = 0; count < fAttCount; count++)
+    {
+      sprintf(tempStr, "[packArc Debug] %d %s", count, fAttInfo[count].fileName);
+      logEntry(tempStr, LOG_DEBUG, 0);
+    }
+#endif
+
+    // Check if there already is an archive created in this session, destined for the same node
+    count = 0;
+    do
+    {
+      while (count < fAttCount
+            && (  memcmp(&fAttInfo[count].origNode, srcNode , sizeof(nodeNumType)) != 0
+               || memcmp(&fAttInfo[count].destNode, destNode, sizeof(nodeNumType)) != 0
+               )
+            )
+        count++;
+
+      if (count < fAttCount)
+      {
+        strcpy(archivePtr, fAttInfo[count].fileName);
+        if ((archiver = archiveType(archiveStr)) == 0xFE || archiver == 0xFF)
+          count++;
+      }
+    } while (count < fAttCount && (archiver == 0xFE || archiver == 0xFF));
 
     if (count < fAttCount)
-    {
-      strcpy(archivePtr, fAttInfo[count].fileName);
-      if ((archiver = archiveType(archiveStr)) == 0xFE || archiver == 0xFF)
-        count++;
-    }
-  } while ((count < fAttCount) && ((archiver == 0xFE) || (archiver == 0xFF)));
-
-  if (count < fAttCount)
-    oldArc = count;
-  else
-  {
-    archiver = nodeInfo->archiver;
-
-    if ((!config.mailOptions.neverARC060)
-        && (((destNode->zone == config.akaList[0].nodeNum.zone)
-             || config.mailOptions.ARCmail060
-             || !(nodeInfo->capability & PKT_TYPE_2PLUS))
-            && (srcNode->point == 0)
-            && (destNode->point == 0)))
-      extPtr = archivePtr + sprintf(archivePtr, "%04hX%04hX"                    // Keep archive name uppercase, because an external archiver might change it to uppercase
-                                    , (*srcNode).net - (*destNode).net
-                                    , (*srcNode).node - (*destNode).node);
+      oldArc = count;
     else
     {
-      sprintf(nodeName, "%hu:%hu/%hu.%hu", destNode->zone
-              , config.akaList[0].nodeNum.point + destNode->net
-              , destNode->node - config.akaList[0].nodeNum.net
-              , config.akaList[0].nodeNum.node  + destNode->point);
-      extPtr = archivePtr + sprintf(archivePtr, "%08lX", crc32(nodeName));      // idem
-    }
+      archiver = nodeInfo->archiver;
 
-    sprintf(extPtr, ".%.2s?", "SUMOTUWETHFRSA" + (timeBlock.tm_wday << 1));   // idem
-
-    maxArc = '0' - 1;
-    okArc = 0;
-    doneArc = findfirst(archiveStr, &ffblkArc, 0);
-
-    while (!doneArc)
-    {
-      maxArc = max(ffblkArc.ff_name[11], maxArc);
-      if ((config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
-          && ((ffblkArc.ff_fsize > 0)
-              && ((config.maxBundleSize == 0)
-                  || ((ffblkArc.ff_fsize >> 10) < config.maxBundleSize))))
-        okArc = max(ffblkArc.ff_name[11], okArc);
-      if ((ffblkArc.ff_fsize == 0)
-          && ((!config.mailOptions.extNames) && (ffblkArc.ff_name[11] == '9'))
-          || (config.mailOptions.extNames && (ffblkArc.ff_name[11] == 'Z')))
-      {
-        extPtr[3] = ffblkArc.ff_name[11];
-        unlink(archiveStr);
-      }
-      doneArc = findnext(&ffblkArc);
-    }
-
-    fnPtr = archivePtr;
-    for (count = 0; count < fAttCount; count++)
-      if (strnicmp(fnPtr, fAttInfo[count].fileName, 11) == 0)
-        maxArc = max(fAttInfo[count].fileName[11], maxArc);
-
-    if (okArc && (config.mailer == dMT_Binkley || config.mailer == dMT_Xenia))
-      extPtr[3] = okArc;
-    else
-    {
-      if (config.mailOptions.extNames)
-        switch (maxArc)
-        {
-          case '9':
-            extPtr[3] = 'A';
-            break;
-
-          case 'S':
-            extPtr[3] = 'U';
-            break;
-
-          case 'Z':
-            extPtr[3] = maxArc;
-            break;
-
-          default:
-            extPtr[3] = maxArc + 1;
-            break;
-        }
+      // Create archive name
+      if ((!config.mailOptions.neverARC060)
+          && (((destNode->zone == config.akaList[0].nodeNum.zone)
+               || config.mailOptions.ARCmail060
+               || !(nodeInfo->capability & PKT_TYPE_2PLUS))
+              && (srcNode->point == 0)
+              && (destNode->point == 0)))
+        extPtr = archivePtr + sprintf(archivePtr, "%04hX%04hX"                // Keep archive name uppercase, because an external archiver might change it to uppercase
+                                     , (*srcNode).net  - (*destNode).net
+                                     , (*srcNode).node - (*destNode).node);
       else
-        extPtr[3] = min('9', maxArc + 1);
-      if (maxArc + 1 == '0')
-        nodeInfo->lastNewBundleDat = nodeInfo->referenceLNBDat = startTime;
+      {
+        sprintf(nodeName, "%hu:%hu/%hu.%hu", destNode->zone
+               , config.akaList[0].nodeNum.point + destNode->net
+               , destNode->node - config.akaList[0].nodeNum.net
+               , config.akaList[0].nodeNum.node  + destNode->point);
+        extPtr = archivePtr + sprintf(archivePtr, "%08lX", crc32(nodeName));  // idem
+      }
+
+      sprintf(extPtr, ".%.2s?", "SUMOTUWETHFRSA" + (timeBlock.tm_wday << 1)); // idem
+
+      // Search for existing archive files
+      maxArc = '0' - 1;
+      okArc = 0;
+      doneArc = findfirst(archiveStr, &ffblkArc, 0);
+
+      while (!doneArc)
+      {
+        maxArc = max(ffblkArc.ff_name[11], maxArc);
+        if ((config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
+            && ((ffblkArc.ff_fsize > 0)
+                && ((config.maxBundleSize == 0)
+                    || ((ffblkArc.ff_fsize >> 10) < config.maxBundleSize))))
+          okArc = max(ffblkArc.ff_name[11], okArc);
+        if ((ffblkArc.ff_fsize == 0)
+            && ((!config.mailOptions.extNames) && (ffblkArc.ff_name[11] == '9'))
+            || (config.mailOptions.extNames && (ffblkArc.ff_name[11] == 'Z')))
+        {
+          extPtr[3] = ffblkArc.ff_name[11];
+          unlink(archiveStr);
+        }
+        doneArc = findnext(&ffblkArc);
+      }
+
+      fnPtr = archivePtr;
+      for (count = 0; count < fAttCount; count++)
+        if (strnicmp(fnPtr, fAttInfo[count].fileName, 11) == 0)
+          maxArc = max(fAttInfo[count].fileName[11], maxArc);
+
+      if (okArc && (config.mailer == dMT_Binkley || config.mailer == dMT_Xenia))
+        extPtr[3] = okArc;
+      else
+      {
+        if (config.mailOptions.extNames)
+          switch (maxArc)
+          {
+            case '9':
+              extPtr[3] = 'A';
+              break;
+
+            case 'S':
+              extPtr[3] = 'U';
+              break;
+
+            case 'Z':
+              extPtr[3] = maxArc;
+              break;
+
+            default:
+              extPtr[3] = maxArc + 1;
+              break;
+          }
+        else
+          extPtr[3] = min('9', maxArc + 1);
+        if (maxArc + 1 == '0')
+          nodeInfo->lastNewBundleDat = nodeInfo->referenceLNBDat = startTime;
+      }
     }
-  }
 
-  switch (archiver)
-  {
-  case  0:      /* ARC */
-#ifdef __32BIT__
-    strcpy( arcPath,  config.arc32.programName);
-#else
-    strcpy( arcPath,  config.arc.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.arc.memRequired;
-#endif
-    extPtr = "arc";
-    break;
-
-  case  1:      /* ZIP */
-#ifdef __32BIT__
-    strcpy( arcPath,  config.zip32.programName);
-#else
-    strcpy( arcPath,  config.zip.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.zip.memRequired;
-#endif
-    extPtr = "zip";
-    break;
-
-  case  2:      /* LZH */
-#ifdef __32BIT__
-    strcpy( arcPath,  config.lzh32.programName);
-#else
-    strcpy( arcPath,  config.lzh.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.lzh.memRequired;
-#endif
-    extPtr = "lzh";
-    break;
-
-  case  3:      /* PAK */
-#ifdef __32BIT__
-    strcpy( arcPath,  config.pak32.programName);
-#else
-    strcpy( arcPath,  config.pak.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.pak.memRequired;
-#endif
-    extPtr = "pak";
-    break;
-
-  case  4:      /* ZOO */
-#ifdef __32BIT__
-    strcpy( arcPath,  config.zoo32.programName);
-#else
-    strcpy( arcPath,  config.zoo.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.zoo.memRequired;
-#endif
-    extPtr = "zoo";
-    break;
-
-  case  5:      /* ARJ */
-#ifdef __32BIT__
-    strcpy( arcPath,  config.arj32.programName);
-#else
-    strcpy( arcPath,  config.arj.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.arj.memRequired;
-#endif
-    extPtr = "arj";
-    break;
-
-  case  6:      /* SQZ */
-#ifdef __32BIT__
-    strcpy( arcPath,  config.sqz32.programName);
-#else
-    strcpy( arcPath,  config.sqz.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.sqz.memRequired;
-#endif
-    extPtr = "sqz";
-    break;
-
-  case  7:      /* User */
-#ifdef __32BIT__
-    strcpy( arcPath,  config.customArc32.programName);
-#else
-    strcpy( arcPath,  config.customArc.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.customArc.memRequired;
-#endif
-    extPtr = "Custom";
-    break;
-
-  case  8:      /* UC2 */
-#ifdef __32BIT__
-    strcpy( arcPath,  config.uc232.programName);
-#else
-    strcpy( arcPath,  config.uc2.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.uc2.memRequired;
-#endif
-    extPtr = "uc2";
-    break;
-
-  case  9:      /* RAR */
-#ifdef __32BIT__
-    strcpy( arcPath,  config.rar32.programName);
-#else
-    strcpy( arcPath,  config.rar.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.rar.memRequired;
-#endif
-    extPtr = "rar";
-    break;
-
-  case 10:      /* JAR */
-#ifdef __32BIT__
-    strcpy( arcPath,  config.jar32.programName);
-#else
-    strcpy( arcPath,  config.jar.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.jar.memRequired;
-#endif
-    extPtr = "jar";
-    break;
-
-  default:
-    sprintf(tempStr, "Unknown archiving utility listed for node %s", nodeStr(destNode));
-    logEntry(tempStr, LOG_ALWAYS, 0);
-    if ((config.mailer == dMT_FrontDoor || config.mailer == dMT_InterMail || config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
-        && config.mailOptions.createSema)
+    switch (archiver)
     {
-      close(semaHandle);
-      unlink(semaName);
-    }
-    rename(pktName, qqqName);
-    newLine();
-    return 1;
-  }
+      case  0:      // ARC
+#ifdef __32BIT__
+        strcpy(arcPath, config.arc32.programName);
+#else
+        strcpy(arcPath, config.arc.programName);
+#endif
+#if (!defined(__FMAILX__) && !defined(__32BIT__))
+        memReq = config.arc.memRequired;
+#endif
+        extPtr = "arc";
+        break;
 
-  if ((!*arcPath) || checkExist(arcPath, pathStr, parStr))
-  {
-    if (!*arcPath)
-      sprintf(tempStr, "Archive decompression program for %s method not defined", extPtr);
-    else
-      sprintf(tempStr, "Archive compression program for %s method not found",     extPtr);
+      case  1:      // ZIP
+#ifdef __32BIT__
+        strcpy(arcPath, config.zip32.programName);
+#else
+        strcpy(arcPath, config.zip.programName);
+#endif
+#if (!defined(__FMAILX__) && !defined(__32BIT__))
+        memReq = config.zip.memRequired;
+#endif
+        extPtr = "zip";
+        break;
+
+      case  2:      // LZH
+#ifdef __32BIT__
+        strcpy(arcPath, config.lzh32.programName);
+#else
+        strcpy(arcPath, config.lzh.programName);
+#endif
+#if (!defined(__FMAILX__) && !defined(__32BIT__))
+        memReq = config.lzh.memRequired;
+#endif
+        extPtr = "lzh";
+        break;
+
+      case  3:      // PAK
+#ifdef __32BIT__
+        strcpy(arcPath, config.pak32.programName);
+#else
+        strcpy(arcPath, config.pak.programName);
+#endif
+#if (!defined(__FMAILX__) && !defined(__32BIT__))
+        memReq = config.pak.memRequired;
+#endif
+        extPtr = "pak";
+        break;
+
+      case  4:      // ZOO
+#ifdef __32BIT__
+        strcpy(arcPath, config.zoo32.programName);
+#else
+        strcpy(arcPath, config.zoo.programName);
+#endif
+#if (!defined(__FMAILX__) && !defined(__32BIT__))
+        memReq = config.zoo.memRequired;
+#endif
+        extPtr = "zoo";
+        break;
+
+      case  5:      // ARJ
+#ifdef __32BIT__
+        strcpy(arcPath, config.arj32.programName);
+#else
+        strcpy(arcPath, config.arj.programName);
+#endif
+#if (!defined(__FMAILX__) && !defined(__32BIT__))
+        memReq = config.arj.memRequired;
+#endif
+        extPtr = "arj";
+        break;
+
+      case  6:      // SQZ
+#ifdef __32BIT__
+        strcpy(arcPath, config.sqz32.programName);
+#else
+        strcpy(arcPath, config.sqz.programName);
+#endif
+#if (!defined(__FMAILX__) && !defined(__32BIT__))
+        memReq = config.sqz.memRequired;
+#endif
+        extPtr = "sqz";
+        break;
+
+      case  7:      // User
+#ifdef __32BIT__
+        strcpy(arcPath, config.customArc32.programName);
+#else
+        strcpy(arcPath, config.customArc.programName);
+#endif
+#if (!defined(__FMAILX__) && !defined(__32BIT__))
+        memReq = config.customArc.memRequired;
+#endif
+        extPtr = "Custom";
+        break;
+
+      case  8:      // UC2
+#ifdef __32BIT__
+        strcpy(arcPath, config.uc232.programName);
+#else
+        strcpy(arcPath, config.uc2.programName);
+#endif
+#if (!defined(__FMAILX__) && !defined(__32BIT__))
+        memReq = config.uc2.memRequired;
+#endif
+        extPtr = "uc2";
+        break;
+
+      case  9:      // RAR
+#ifdef __32BIT__
+        strcpy(arcPath, config.rar32.programName);
+#else
+        strcpy(arcPath, config.rar.programName);
+#endif
+#if (!defined(__FMAILX__) && !defined(__32BIT__))
+        memReq = config.rar.memRequired;
+#endif
+        extPtr = "rar";
+        break;
+
+      case 10:      // JAR
+#ifdef __32BIT__
+        strcpy(arcPath, config.jar32.programName);
+#else
+        strcpy(arcPath, config.jar.programName);
+#endif
+#if (!defined(__FMAILX__) && !defined(__32BIT__))
+        memReq = config.jar.memRequired;
+#endif
+        extPtr = "jar";
+        break;
+
+      default:
+        sprintf(tempStr, "Unknown archiving utility listed for node %s", nodeStr(destNode));
+        logEntry(tempStr, LOG_ALWAYS, 0);
+        if (semaHandle >= 0)
+        {
+          close(semaHandle);
+          unlink(semaName);
+        }
+        rename(pktName, qqqName);
+        newLine();
+        return 1;
+    }
+
+    if (!*arcPath || checkExist(arcPath, pathStr, parStr))
+    {
+      if (!*arcPath)
+        sprintf(tempStr, "Archive decompression program for %s method not defined", extPtr);
+      else
+        sprintf(tempStr, "Archive compression program for %s method not found",     extPtr);
+
       logEntry(tempStr, LOG_ALWAYS, 0);
-    if ((config.mailer == dMT_FrontDoor || config.mailer == dMT_InterMail || config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
-        && config.mailOptions.createSema)
-    {
-      close(semaHandle);
-      unlink(semaName);
+      if (semaHandle >= 0)
+      {
+        close(semaHandle);
+        unlink(semaName);
+      }
+      rename(pktName, qqqName);
+      newLine();
+      return 1;
     }
-    rename(pktName, qqqName);
-    newLine();
-    return 1;
+  }
+  else  // No archiver used
+  {
+    if ((helpPtr = strrchr(pktName, '\\')) == NULL)
+      return 1;
+
+    strcpy(archivePtr, helpPtr + 1);
   }
 
-  /* preprocessor */
+  // preprocessor
 #ifdef __32BIT__
   if (*config.preArc32.programName)
   {
@@ -1083,21 +1111,31 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     if (!checkExist(tempStr, procStr1, procStr2))
     {
 #if (defined __FMAILX__ || defined __32BIT__)
-      execute("Pre-Pack", procStr1, procStr2, archiveStr, pktName,  nodeInfo->pktOutPath);
+      execute("Pre-Pack", procStr1, procStr2, archiveStr, pktName, nodeInfo->pktOutPath);
 #else
-      execute("Pre-Pack", procStr1, procStr2, archiveStr, pktName,  nodeInfo->pktOutPath, config.preArc.memRequired);
+      execute("Pre-Pack", procStr1, procStr2, archiveStr, pktName, nodeInfo->pktOutPath, config.preArc.memRequired);
 #endif
     }
   }
 
-#if (defined __FMAILX__ || defined __32BIT__)
-  if (execute(extPtr, pathStr, parStr, archiveStr, pktName, nodeInfo->pktOutPath))
-#else
-  if (execute(extPtr, pathStr, parStr, archiveStr, pktName, nodeInfo->pktOutPath, memReq))
-#endif
+  okArc = 1;
+  if (nodeInfo->archiver != 0xFF)
   {
-    if ((config.mailer == dMT_FrontDoor || config.mailer == dMT_InterMail || config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
-        && config.mailOptions.createSema)
+#if (defined __FMAILX__ || defined __32BIT__)
+    if (execute(extPtr, pathStr, parStr, archiveStr, pktName, nodeInfo->pktOutPath))
+#else
+    if (execute(extPtr, pathStr, parStr, archiveStr, pktName, nodeInfo->pktOutPath, memReq))
+#endif
+      okArc = 0;
+  }
+  else
+  {
+    if (strcmp(archiveStr, pktName) != 0 && moveFile(pktName, archiveStr))
+      okArc = 0;
+  }
+  if (!okArc)
+  {
+    if (semaHandle >= 0)
     {
       close(semaHandle);
       unlink(semaName);
@@ -1107,7 +1145,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     return 1;
   }
 
-  /* postprocessor */
+  // postprocessor
 #ifdef __32BIT__
   if (*config.postArc32.programName)
   {
@@ -1127,36 +1165,35 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     }
   }
 
-  if ((config.mailer == dMT_FrontDoor || config.mailer == dMT_InterMail || config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
-      && config.mailOptions.createSema)
+  if (nodeInfo->archiver != 0xFF)
   {
-    close(semaHandle);
-    unlink(semaName);
+    arcSize = 0;
+    if ((tempHandle = openP(archiveStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+    {
+      if ((arcSize = filelength(tempHandle)) == -1)
+        arcSize = 0;
+      close(tempHandle);
+    }
   }
-
-  arcSize = 0;
-  if ((tempHandle = openP(archiveStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+  if (oldArc >= 0)  // oldArc == -1 if nodeInfo->archiver == 0xFF
   {
-    if ((arcSize = filelength(tempHandle)) == -1)
-      arcSize = 0;
-    close(tempHandle);
-  }
-  if (oldArc >= 0)
-  {
-    if ((config.maxBundleSize != 0)
-        && ((arcSize >> 10) >= config.maxBundleSize))
-      memcpy(&fAttInfo[oldArc], &fAttInfo[oldArc + 1]
-             , sizeof(fAttInfoType) * ((--fAttCount) - oldArc));
-    sprintf(tempStr, "Mail bundle already going from %s to %s"
-            , nodeStr(srcNode), nodeStr(destNode));
+    if (config.maxBundleSize != 0 && (arcSize >> 10) >= config.maxBundleSize)
+      memcpy(&fAttInfo[oldArc], &fAttInfo[oldArc + 1], sizeof(fAttInfoType) * (--fAttCount - oldArc));
+    sprintf(tempStr, "Mail bundle already going from %s to %s", nodeStr(srcNode), nodeStr(destNode));
     logEntry(tempStr, LOG_OUTBOUND, 0);
   }
   else
   {
     if (config.mailer != dMT_Binkley && config.mailer != dMT_Xenia)
     {
+      // fileAttach always does a kill/sent so there is no need to make an exception for attaching .pkt files
       if (fileAttach(archiveStr, srcNode, destNode, nodeInfo))
       {
+        if (semaHandle >= 0)
+        {
+          close(semaHandle);
+          unlink(semaName);
+        }
         rename(pktName, qqqName);
         newLine();
         return 1;
@@ -1180,54 +1217,66 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 
       if ((tempHandle = openP(archiveStr, O_RDWR | O_CREAT | O_APPEND | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
       {
+        if (semaHandle >= 0)
+        {
+          close(semaHandle);
+          unlink(semaName);
+        }
         rename(pktName, qqqName);
         newLine();
         return 1;
       }
 #ifdef __WINDOWS32__
-      strcpy( archiveStr, tempStr);
+      strcpy(archiveStr, tempStr);
 #else
-      strcpy( archiveStr, strupr(tempStr));             // for 4DOS
+      strcpy(archiveStr, strupr(tempStr));             // for 4DOS
 #endif
       memset(arcPath, 0x20, sizeof(tempStrType) - 2);
       arcPath[sizeof(tempStrType) - 2] = 0;
       do
       {
-        memcpy(arcPath, arcPath + sizeof(tempStrType) / 2 - 1, sizeof(tempStrType) / 2 - 1);
+        memcpy(arcPath , arcPath + sizeof(tempStrType) / 2 - 1, sizeof(tempStrType) / 2 - 1);
         read(tempHandle, arcPath + sizeof(tempStrType) / 2 - 1, sizeof(tempStrType) / 2 - 1);
       }
-      while (((helpPtr = strstr(arcPath, archiveStr)) == NULL)
-             && (!eof(tempHandle)));
+      while ((helpPtr = strstr(arcPath, archiveStr)) == NULL && !eof(tempHandle));
 
       if (helpPtr == NULL)
       {
         lseek(tempHandle, 0, SEEK_END);
-        sprintf(tempStr, "#%s\r\n", archiveStr);
+        sprintf(tempStr, "%c%s\r\n", nodeInfo->archiver != 0xFF ? '#' : '^', archiveStr);  // Truncate or Delete the file after transmission depends on archived or not
         write(tempHandle, tempStr, strlen(tempStr));
-        sprintf(tempStr, "Sending new mail from %s to %s"
-                , nodeStr(srcNode), nodeStr(destNode));
+        sprintf(tempStr, "Sending new mail from %s to %s", nodeStr(srcNode), nodeStr(destNode));
       }
       else
-        sprintf(tempStr, "Mail bundle already going from %s to %s"
-                , nodeStr(srcNode), nodeStr(destNode));
+        sprintf(tempStr, "Mail bundle already going from %s to %s", nodeStr(srcNode), nodeStr(destNode));
       close(tempHandle);
       logEntry(tempStr, LOG_OUTBOUND, 0);
     }
 
-    if ((fAttCount < MAX_ATTACH)
-        && ((config.maxBundleSize == 0)
-            || ((arcSize >> 10) < config.maxBundleSize)))
+    if (  nodeInfo->archiver != 0xFF
+       && fAttCount < MAX_ATTACH
+       && (config.maxBundleSize == 0 || (arcSize >> 10) < config.maxBundleSize)
+       )
     {
       fAttInfo[fAttCount].origNode = *srcNode;
       fAttInfo[fAttCount].destNode = *destNode;
-      strcpy(fAttInfo[fAttCount++].fileName
-             , archiveStr + strlen(config.outPath));
+      strcpy(fAttInfo[fAttCount++].fileName, archiveStr + strlen(config.outPath));
     }
   }
-  unlink(pktName);
+  if (nodeInfo->archiver != 0xFF)
+    unlink(pktName);
+
+  // Close and Delete semaphore file
+  if (semaHandle >= 0)
+  {
+    close(semaHandle);
+    unlink(semaName);
+  }
   return 0;
 }
-// ----------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+// Retrying to compress outgoing mailpacket(s), with .qqq extension
+//
 void retryArc(void)
 {
   tempStrType tempStr;
@@ -1248,7 +1297,7 @@ void retryArc(void)
   {
     logEntry("Retrying to compress outgoing mailpacket(s)", LOG_OUTBOUND, 0);
 
-    while ((!donePkt) & (!breakPressed))
+    while (!donePkt && !breakPressed)
     {
       if (!(ffblkPkt.ff_attrib & FA_SPEC))
       {

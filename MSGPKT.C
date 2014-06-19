@@ -379,7 +379,7 @@ static s16 bgets(char *s, size_t n) // !MSGSIZE
    size_t m;
    char *helpPtr;
 
-   while ((helpPtr = memccpy(s + sLen, pktRdBuf + startBuf, 0, m = min(n - sLen, endBuf - startBuf))) == NULL)
+   while ((helpPtr = memccpy(s + sLen, pktRdBuf + startBuf, 0, m = min(n - sLen, (size_t)endBuf - (size_t)startBuf))) == NULL)
    {
       sLen += m;
       if (sLen == n)
@@ -388,19 +388,16 @@ static s16 bgets(char *s, size_t n) // !MSGSIZE
             s[n-1] = 0;
          else
             *s = 0;
-	 return (EOF);
+	       return EOF;
       }
       startBuf = 0;
       oldStart = 0;
       endBuf   = _read (pktHandle, pktRdBuf, PKT_BUFSIZE);
       if (endBuf == 0)
       {
-   /*--- put extra zero at end of PKT file */
-	 pktRdBuf[0] = 0;
+         /*--- put extra zero at end of PKT file */
+	       pktRdBuf[0] = 0;
          ++endBuf;
-/* was:  *s = 0;
-	 return (EOF);
-*/
       }
    }
 #ifdef __32BIT__
@@ -408,7 +405,7 @@ static s16 bgets(char *s, size_t n) // !MSGSIZE
 #else
    startBuf += (u16)helpPtr - (u16)s - (u16)sLen;
 #endif
-   return (0);
+   return 0;
 }
 //---------------------------------------------------------------------------
 s16 bgetdate (char *dateStr,

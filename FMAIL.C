@@ -2186,7 +2186,7 @@ skipHudson:
 void myexit(void)
 {
 #pragma exit myexit
-#ifdef _DEBUG
+#ifdef _DEBUG0
   printString("\nPress any key to continue... ");
   getch();
   newLine();
