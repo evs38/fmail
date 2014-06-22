@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,28 +21,28 @@
 //
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <dos.h>
-#include <io.h>
-#include <string.h>
-#include <time.h>
 #include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <time.h>
 
-#include "fmail.h"
+#include "ftlog.h"
 
 #include "areainfo.h"
 #include "dups.h"
-#include "ftlog.h"
 #include "msgpkt.h"
 #include "output.h"
 #include "version.h"
 
+//---------------------------------------------------------------------------
 extern configType config;
 
-time_t   startTime;
-u16      logUsed = 0;
+time_t startTime;
+u16    logUsed = 0;
 
 const char *months     = "JanFebMarAprMayJunJulAugSepOctNovDec";
 const char *dayName[7] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
@@ -72,8 +72,7 @@ struct  COUNTRY
    struct country countryInfo;
 #endif
 
-
-
+//---------------------------------------------------------------------------
 char *expandName(char *fileName)
 {
    static tempStrType tempStr[2];
@@ -83,9 +82,7 @@ char *expandName(char *fileName)
    strcat (tempStr[tempIndex], fileName);
    return (tempStr[tempIndex]);
 }
-
-
-
+//---------------------------------------------------------------------------
 void writeLogLine (fhandle logHandle, char *s)
 {
 	time_t      timer;
@@ -131,9 +128,7 @@ void writeLogLine (fhandle logHandle, char *s)
    }
    write (logHandle, tempStr, strlen(tempStr));
 }
-
-
-
+//---------------------------------------------------------------------------
 void initLog(char *s, s32 switches)
 {
    fhandle     logHandle;
@@ -205,7 +200,7 @@ void initLog(char *s, s32 switches)
          }
          if (config.logStyle == 3)
          {
-	    write (logHandle, "\n", 1);
+      	    write (logHandle, "\n", 1);
          }
          writeLogLine (logHandle, tempStr2);
       }
@@ -213,9 +208,7 @@ void initLog(char *s, s32 switches)
    }
    logUsed++;
 }
-
-
-
+//---------------------------------------------------------------------------
 void logEntry(char *s, u16 entryType, u16 errorLevel)
 {
    fhandle     logHandle;
@@ -250,27 +243,25 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
       close (logHandle);
       printString (tempStr);
       showCursor ();
-      unlink (expandName("MSGHDR.$$$"));
-      unlink (expandName("MSGIDX.$$$"));
-      unlink (expandName("MSGTOIDX.$$$"));
-      unlink (expandName("MSGTXT.$$$"));
-      unlink (expandName("MSGINFO.$$$"));
+      unlink(expandName("MSGHDR.$$$"));
+      unlink(expandName("MSGIDX.$$$"));
+      unlink(expandName("MSGTOIDX.$$$"));
+      unlink(expandName("MSGTXT.$$$"));
+      unlink(expandName("MSGINFO.$$$"));
       exit (errorLevel);
    }
-   close (logHandle);
+   close(logHandle);
 }
-
-
-
+//---------------------------------------------------------------------------
 void logActive (void)
 {
-   time_t endTime;
-   char   timeStr[32];
+  time_t endTime;
+  char   timeStr[32];
 
-   newLine ();
-   time(&endTime);
-   endTime -= startTime;
-   sprintf(timeStr, "Active: %2u:%02u", (u16)(endTime/60),
-                                        (u16)(endTime%60));
-   logEntry (timeStr, LOG_STATS, 0);
+  newLine();
+  time(&endTime);
+  endTime -= startTime;
+  sprintf(timeStr, "Active: %2u:%02u", (u16)(endTime / 60), (u16)(endTime % 60));
+  logEntry(timeStr, LOG_STATS, 0);
 }
+//---------------------------------------------------------------------------

@@ -813,14 +813,6 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   // When the .pkt needs to be packed with an archiver
   if (nodeInfo->archiver != 0xFF)
   {
-#ifdef _DEBUG0
-    for (count = 0; count < fAttCount; count++)
-    {
-      sprintf(tempStr, "[packArc Debug] %d %s", count, fAttInfo[count].fileName);
-      logEntry(tempStr, LOG_DEBUG, 0);
-    }
-#endif
-
     // Check if there already is an archive created in this session, destined for the same node
     count = 0;
     do
@@ -1304,10 +1296,10 @@ void retryArc(void)
         strcpy(tempStr, config.outPath);
         strcat(tempStr, ffblkPkt.ff_name);
 
-        if (((pktHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
-            && (_read(pktHandle, &msgPktHdr, sizeof(pktHdrType))
-                == sizeof(pktHdrType))
-            && (close(pktHandle) != -1))
+        if ( (pktHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1
+           && _read(pktHandle, &msgPktHdr, sizeof(pktHdrType)) == sizeof(pktHdrType)
+           && close(pktHandle) != -1
+           )
         {
           srcNode.zone   = msgPktHdr.origZone;
           srcNode.net    = msgPktHdr.origNet;

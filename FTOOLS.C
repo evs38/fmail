@@ -1,6 +1,8 @@
-//----------------------------------------------------------------------------
-//  Copyright (C) 2007 Folkert J. Wijnstra
-//  Copyright (C) 2008 - 2014 Wilfred van Velzen
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//
 //
 //  This file is part of FMail.
 //
@@ -16,7 +18,8 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//----------------------------------------------------------------------------
+//
+//---------------------------------------------------------------------------
 
 #include "fmail.h"
 
@@ -675,7 +678,6 @@ int cdecl main(int argc, char *argv[])
         logEntry(tempStr, LOG_ALWAYS, 0);
         spaceSavedJAM = 0;
         JAMmaint(areaPtr, switches, config.sysopName, &spaceSavedJAM);
-        waitID();
         showCursor();
         return 0;
       }
@@ -1658,7 +1660,6 @@ nextarea:
                     "    /A   Sort ALL messages\n"
                     "         WARNING: It is NOT possible to sort all messages\n"
                     "         and still have correct lastread pointers!\n");
-        waitID();
         showCursor();
         return 0;
       }
@@ -2198,7 +2199,7 @@ nextarea:
       }
       else
         Usage();
-  waitID();
+
   showCursor();
 
   return 0;

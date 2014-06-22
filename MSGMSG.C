@@ -343,16 +343,17 @@ void initMsg (s16 noAreaFix)
                             break;
                           }
                       }
-                      close (tempHandle);
+                      close(tempHandle);
                     }
-                    fnsplit (msgMsg.subject, drive, dir, name, ext);
-                    if ((isdigit(ext[3]) ||
-                         (isalpha(ext[3]) && config.mailOptions.extNames)) &&
-                        ((config.maxBundleSize == 0) ||
-                         ((arcSize>>10) < config.maxBundleSize) ||
+                    fnsplit(msgMsg.subject, drive, dir, name, ext);
+                    if ((isdigit(ext[3]) || (isalpha(ext[3]) && config.mailOptions.extNames))
+                       && (  config.maxBundleSize == 0
+                          || (arcSize >> 10) < config.maxBundleSize
 // necessary for prevention of truncation of mailbundles: (config.mailer == 2)
-                         (config.mailer == 2) ||
-                         (toupper(ext[3]) == (config.mailOptions.extNames ? 'Z' : '9'))))
+                          || config.mailer == 2
+                          || toupper(ext[3]) == (config.mailOptions.extNames ? 'Z' : '9')
+                          )
+                       )
                     {
                       strcpy (fileNameStr, drive);
                       strcat (fileNameStr, dir);
@@ -577,8 +578,9 @@ s16 readMsg (internalMsgType *message, s32 msgNum)
     return (-1);
   }
 
-  if ( (filelength(msgMsgHandle) > sizeof(msgMsgType) + TEXT_SIZE) ||
-       (_read (msgMsgHandle, &msgMsg, sizeof(msgMsgType)) != sizeof(msgMsgType)) )
+  if (  (filelength(msgMsgHandle) > (long)(sizeof(msgMsgType) + TEXT_SIZE))
+     || _read(msgMsgHandle, &msgMsg, sizeof(msgMsgType)) != sizeof(msgMsgType)
+     )
   {
     close(msgMsgHandle);
     return (-1);
@@ -690,23 +692,25 @@ s16 readMsg (internalMsgType *message, s32 msgNum)
 
 #define MAX_FNPTR 8
 
-s32 writeMsg (internalMsgType *message, s16 msgType, s16 valid)
+s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 {
   /* valid = 0 : write .FML file
      valid = 1 : write .MSG file
      valid = 2 : write READ-ONLY .MSG file
   */
-  fhandle     msgHandle;
-  size_t      len;
-  tempStrType tempStr, tempFName;
+  fhandle      msgHandle;
+  int          len;
+  tempStrType  tempStr
+             , tempFName;
   char        *helpPtr;
-  s32         highMsgNum;
-  u16         count;
-  msgMsgType  msgMsg;
-  s16         doneMsg;
+  s32          highMsgNum;
+  u16          count;
+  msgMsgType   msgMsg;
+  s16          doneMsg;
   struct ffblk ffblkMsg;
   char        *fnPtr[MAX_FNPTR];
-  u16         xu, fnPtrCnt = 0;
+  u16          xu
+             , fnPtrCnt = 0;
 
   memset (&msgMsg, 0, sizeof(msgMsgType));
 
@@ -825,8 +829,9 @@ s32 writeMsg (internalMsgType *message, s16 msgType, s16 valid)
 
     len = strlen(message->text) + 1;
 
-    if (  (_write(msgHandle, &msgMsg, sizeof(msgMsgType)) != sizeof(msgMsgType))
-       || (_write(msgHandle, message->text, len) != len))
+    if (  _write(msgHandle, &msgMsg, sizeof(msgMsgType)) != (int)sizeof(msgMsgType)
+       || _write(msgHandle, message->text, len) != len
+       )
     {
       close(msgHandle);
       printString ("Can't write to output file.\n");

@@ -25,7 +25,7 @@
 #include "fmail.h"
 
 void unpackArc(char *fullFileName, struct ffblk *ffblkArc);
-s16 packArc   (char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInfo);
+s16  packArc  (char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInfo);
 void retryArc (void);
 
 // ----------------------------------------------------------------------------

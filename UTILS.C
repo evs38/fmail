@@ -33,8 +33,6 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#include "fmail.h"
-
 #include "utils.h"
 
 #include "areainfo.h"
@@ -327,31 +325,29 @@ s32 getSwitch(int *argc, char *argv[], s32 mask)
   return result;
 }
 //---------------------------------------------------------------------------
-static u32 lastID = 0;
+u32 lastID = 0;
 
 u32 uniqueID(void)
 {
   if (lastID == 0)
   {
     lastID = (u32)startTime << 4;
-    if (config.lastUniqueID > lastID && config.lastUniqueID < lastID + 0x01000000L)
-      lastID = config.lastUniqueID;
+    if (  (lastID <= config.lastUniqueID && (config.lastUniqueID - lastID) < 0x80000000UL)
+       || (lastID >  config.lastUniqueID && (lastID - config.lastUniqueID) > 0x80000000UL)
+       )
+      lastID = config.lastUniqueID + 1;
+#ifdef _DEBUG
+    {
+      tempStrType tempStr;
+      sprintf(tempStr, "UID: Saved:%08X New:%08X", config.lastUniqueID, lastID);
+      logEntry(tempStr, LOG_DEBUG, 0);
+    }
+#endif
   }
   else
     lastID++;
 
-  return lastID;
-}
-//---------------------------------------------------------------------------
-void waitID(void)
-{
-  time_t newTime;
-
-  do
-  {
-    time(&newTime);
-  }
-  while (((u32)newTime << 4) <= lastID);
+  return config.lastUniqueID = lastID;
 }
 //---------------------------------------------------------------------------
 char *removeRe(char *string)

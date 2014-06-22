@@ -1,24 +1,25 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -52,8 +53,8 @@ extern unsigned _cdecl _psp;
 #endif
 #endif
 
-#include "fmail.h"
 #include "config.h"
+
 #include "areainfo.h"
 #include "log.h"
 #include "output.h"
@@ -379,8 +380,7 @@ void initFMail (char *s, s32 switches)
    newLine();
    newLine();  // todo : misschien remove?
 }
-
-
+//---------------------------------------------------------------------------
 void deinitFMail(void)
 {
   fhandle     configHandle;
@@ -389,15 +389,17 @@ void deinitFMail(void)
 
   strcpy(stpcpy(tempStr, configPath), "FMail.CFG");
 
-  if ( (configHandle = openP(tempStr, O_WRONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1 ||
-       lseek(configHandle, offsetof(configType, uplinkReq), SEEK_SET) == -1L ||
-       write(configHandle, &config.uplinkReq, sizeof(uplinkReqType)*MAX_UPLREQ) < sizeof(uplinkReqType)*MAX_UPLREQ ||
-       lseek(configHandle, offsetof(configType, lastUniqueID), SEEK_SET) == -1L ||
-       write(configHandle, &config.lastUniqueID, sizeof(config.lastUniqueID)) < sizeof(config.lastUniqueID) ||
-       close(configHandle) == -1 )
+  if ( (configHandle = openP(tempStr, O_WRONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1
+     || lseek(configHandle, offsetof(configType, uplinkReq), SEEK_SET) == -1L
+     || write(configHandle, &config.uplinkReq, sizeof(uplinkReqType)*MAX_UPLREQ) < sizeof(uplinkReqType)*MAX_UPLREQ
+     || lseek(configHandle, offsetof(configType, lastUniqueID), SEEK_SET) == -1L
+     || write(configHandle, &config.lastUniqueID, sizeof(config.lastUniqueID)) < sizeof(config.lastUniqueID)
+     || close(configHandle) == -1
+     )
   {
     close(configHandle);
     logEntry("Can't write FMail.CFG", LOG_ALWAYS, 0);
     showCursor();
   }
 }
+//---------------------------------------------------------------------------
