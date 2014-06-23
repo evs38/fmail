@@ -15,8 +15,9 @@ FMAIL_HELP /R=50   Connect area FMAIL_HELP and rescan at most 50 messages
 %+ALL              Connect all available areas
 %-ALL              Disconnect all areas
 
+%FROM Z:N/N.P      Perform remote maintenance for node with given nodenumber
 %COMPRESSION ZIP   Change the compression method used for your mail to ZIP
-                   (or ARC/ZIP/LZH/PAK/ZOO/ARJ)
+                   (or NON/ARC/ZIP/LZH/PAK/ZOO/ARJ/SQZ/CUS/UC2/RAR/JAR)
 %PASSWORD ABCDEF   Change your AreaMgr password to ABCDEF (password should
                    be at least 5 characters and at most 16 characters long)
 %PKTPWD QRSTUV     Change your packet password to QRSTUV (password may be

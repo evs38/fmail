@@ -31,10 +31,9 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#include "fmail.h"
+#include "areafix.h"
 
 #include "archive.h"
-#include "areafix.h"
 #include "areainfo.h"
 #include "bclfun.h"
 #include "cfgfile.h"
@@ -63,9 +62,8 @@
 
 #define MAX_BADAREA 128
 
-static const char *arcName[11] = {"arc", "zip", "lzh", "pak", "zoo", "arj", "sqz", "cus", "uc2", "rar", "jar"};
-#define ARCCOUNT 10
-
+static const char *arcName[12] = { "none", "arc", "zip", "lzh", "pak", "zoo", "arj", "sqz", "cus", "uc2", "rar", "jar" };
+#define ARCCOUNT 12
 
 extern u16             echoCount;
 extern cookedEchoType  *echoAreaList;
@@ -98,8 +96,7 @@ extern configType config;
 
 extern char *version;
 
-
-
+//---------------------------------------------------------------------------
 char getGroupCode (s32 groupCode)
 {
   char count = 0;
@@ -110,8 +107,7 @@ char getGroupCode (s32 groupCode)
   }
   return (count);
 }
-
-
+//---------------------------------------------------------------------------
 static char descrStr[ECHONAME_LEN];
 
 static s16 checkForward (char *areaName, nodeInfoType *nodeInfoPtr)
@@ -234,8 +230,7 @@ static s16 checkForward (char *areaName, nodeInfoType *nodeInfoPtr)
   }
   return(found);
 }
-
-
+//---------------------------------------------------------------------------
 s16 toAreaFix (char *toName)
 {
   char *helpPtr = toName;
@@ -248,9 +243,7 @@ s16 toAreaFix (char *toName)
           (strnicmp (helpPtr, "ECHOMGR",  7) == 0) ||
           (strnicmp (helpPtr, "FMAIL",    5) == 0));
 }
-
-
-
+//---------------------------------------------------------------------------
 static char *getAreaNamePtr (char *echoName)
 {
   u16         count;
@@ -299,16 +292,16 @@ static char *getAreaNamePtr (char *echoName)
   }
   return ("[unknown area]");
 }
-
-
-/* send message that doesn't contain any kludges in the text body yet */
-
-static void sendMsg (internalMsgType *message, char *replyStr,
-                     nodeInfoType *nodeInfoPtr,  s32 *msgNum1,
-                     nodeInfoType *nodeInfoPtr2, s32 *msgNum2)
+//---------------------------------------------------------------------------
+// send message that doesn't contain any kludges in the text body yet
+//
+static void sendMsg( internalMsgType *message, char *replyStr
+                   , nodeInfoType *nodeInfoPtr,  s32 *msgNum1
+                   , nodeInfoType *nodeInfoPtr2, s32 *msgNum2
+                   )
 {
   tempStrType tempStr;
-  char        *helpPtr;
+  char       *helpPtr;
   u16         count;
   nodeNumType tempNode;
   struct time timeRec;
@@ -434,9 +427,7 @@ static void sendMsg (internalMsgType *message, char *replyStr,
     }
   }
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 areaFix(internalMsgType *message)
 {
   nodeInfoType    *nodeInfoPtr;
@@ -522,57 +513,49 @@ s16 areaFix(internalMsgType *message)
   }
 
   remMaintPtr = NULL;
-  memset (replyStr, 0, sizeof(tempStrType));
+  memset(replyStr, 0, sizeof(tempStrType));
 
-  if ((helpPtr = findCLStr (message->text, "\x1MSGID: ")) != NULL)
+  if ((helpPtr = findCLStr(message->text, "\x1MSGID: ")) != NULL)
   {
-    memcpy (replyStr, helpPtr+8, sizeof(tempStrType)-1);
-    if ((helpPtr = strchr (replyStr, 0x0d)) != NULL)
-    {
+    memcpy (replyStr, helpPtr + 8, sizeof(tempStrType)-1);
+    if ((helpPtr = strchr(replyStr, 0x0d)) != NULL)
       *helpPtr = 0;
-    }
   }
 
-  nodeInfoPtr = getNodeInfo (&message->srcNode);
+  nodeInfoPtr = getNodeInfo(&message->srcNode);
 
-  strcpy (message->fromUserName, "FMail AreaMgr");
+  strcpy(message->fromUserName, "FMail AreaMgr");
 
-  tempNode           = message->srcNode;
-  message->srcNode   = message->destNode;
-  message->destNode  = nodeInfoPtr->node;
+  tempNode          = message->srcNode;
+  message->srcNode  = message->destNode;
+  message->destNode = nodeInfoPtr->node;
 
   if (nodeInfoPtr->node.zone == 0)
   {
     message->destNode = tempNode;
-    sprintf (tempStr, "Unauthorized AreaMgr request from node %s",
-             nodeStr(&tempNode));
-    mgrLogEntry (tempStr);
+    sprintf(tempStr, "Unauthorized AreaMgr request from node %s", nodeStr(&tempNode));
+    mgrLogEntry(tempStr);
 
-    sprintf (message->text, "%s is not authorized to make AreaMgr requests.\r"
-             "Please contact %s.\r\r",
-             nodeStr(&tempNode), config.sysopName);
+    sprintf(message->text, "%s is not authorized to make AreaMgr requests.\r"
+            "Please contact %s.\r\r", nodeStr(&tempNode), config.sysopName);
     helpPtr = strchr(message->text, 0);
-    strcpy (message->subject, "AreaMgr error report");
+    strcpy(message->subject, "AreaMgr error report");
   }
   else
   {
     message->cost = 0;
 
-    helpPtr = strtok (message->subject, " ");
+    helpPtr = strtok(message->subject, " ");
 
-    if ((helpPtr == NULL) ||
-        (strlen(nodeInfoPtr->password) == 0) ||
-        (stricmp (helpPtr, nodeInfoPtr->password) != 0))
+    if (  helpPtr == NULL
+       || strlen(nodeInfoPtr->password) == 0
+       || stricmp(helpPtr, nodeInfoPtr->password) != 0 )
     {
-      sprintf (tempStr, "Bad AreaMgr request from %s",
-               nodeStr(&nodeInfoPtr->node));
-      mgrLogEntry (tempStr);
+      sprintf(tempStr, "Bad AreaMgr request from %s", nodeStr(&nodeInfoPtr->node));
+      mgrLogEntry(tempStr);
 
-      helpPtr = message->text +
-                sprintf (message->text,
-                         "Your AreaMgr request contained a wrong password: '%s'\r",
-                         message->subject);
-      strcpy (message->subject, "AreaMgr error report");
+      helpPtr = message->text + sprintf(message->text, "Your AreaMgr request contained a wrong password: '%s'\r", message->subject);
+      strcpy(message->subject, "AreaMgr error report");
     }
     else
     {
@@ -581,69 +564,58 @@ s16 areaFix(internalMsgType *message)
       if ((helpPtr = findCLStr(++helpPtr, "%FROM ")) != NULL)
       {
         memset (&tempNode, 0, sizeof(nodeNumType));
-        if ((temp = sscanf (helpPtr+6, "%hu:%hu/%hu.%hu",
-                            &tempNode.zone, &tempNode.net,
-                            &tempNode.node, &tempNode.point)) < 3)
+        if ((temp = sscanf(helpPtr+6, "%hu:%hu/%hu.%hu", &tempNode.zone, &tempNode.net, &tempNode.node, &tempNode.point)) < 3)
         {
-          strcpy (message->text, "Bad FROM node used");
-          mgrLogEntry (message->text);
-          strcat (message->text, "\r");
-          strcpy (message->subject, "AreaMgr error report");
+          strcpy(message->text, "Bad FROM node used");
+          mgrLogEntry(message->text);
+          strcat(message->text, "\r");
+          strcpy(message->subject, "AreaMgr error report");
           goto Send;
         }
         remMaintPtr = nodeInfoPtr;
         nodeInfoPtr = getNodeInfo(&tempNode);
         if (!remMaintPtr->options.remMaint)
         {
-          sprintf (message->text, "Illegal attempt to perform remote maintenance by %s",
-                   nodeStr(&remMaintPtr->node));
-          mgrLogEntry (message->text);
-          strcat (message->text, "\r");
-          strcpy (message->subject, "AreaMgr error report");
+          sprintf(message->text, "Illegal attempt to perform remote maintenance by %s", nodeStr(&remMaintPtr->node));
+          mgrLogEntry(message->text);
+          strcat(message->text, "\r");
+          strcpy(message->subject, "AreaMgr error report");
           nodeInfoPtr = NULL;
           goto Send;
         }
-        sprintf (tempStr, "Accepted AreaMgr request from %s",
-                 nodeStr(&remMaintPtr->node));
+        sprintf(tempStr, "Accepted AreaMgr request from %s", nodeStr(&remMaintPtr->node));
         mgrLogEntry(tempStr);
         newLine();
         if (nodeInfoPtr->node.zone == 0)
         {
-          sprintf (message->text, "Invalid AreaMgr request: %s is not listed in Node Manager",
-                   nodeStr(&tempNode));
-          mgrLogEntry (message->text);
-          strcat (message->text, "\r");
-          strcpy (message->subject, "AreaMgr error report");
+          sprintf(message->text, "Invalid AreaMgr request: %s is not listed in Node Manager", nodeStr(&tempNode));
+          mgrLogEntry(message->text);
+          strcat(message->text, "\r");
+          strcpy(message->subject, "AreaMgr error report");
           nodeInfoPtr = NULL;
           goto Send;
         }
-        sprintf (tempStr, "- doing remote maintenance for %s",
-                 nodeStr(&nodeInfoPtr->node));
-        mgrLogEntry (tempStr);
+        sprintf(tempStr, "- doing remote maintenance for %s", nodeStr(&nodeInfoPtr->node));
+        mgrLogEntry(tempStr);
       }
       else
       {
-        sprintf (tempStr, "Accepted AreaMgr request from %s",
-                 nodeStr(&nodeInfoPtr->node));
-        mgrLogEntry (tempStr);
+        sprintf(tempStr, "Accepted AreaMgr request from %s", nodeStr(&nodeInfoPtr->node));
+        mgrLogEntry(tempStr);
         newLine();
       }
 
       archiver = nodeInfoPtr->archiver;
 
-      if (((helpPtr = strtok (NULL, " ")) != NULL) &&
-          ((*helpPtr == '-') || (*helpPtr == '/')))
+      if ((helpPtr = strtok(NULL, " ")) != NULL && (*helpPtr == '-' || *helpPtr == '/'))
       {
         helpPtr++;
         count = 0;
-        while ((count < ARCCOUNT) && (stricmp(arcName[count], helpPtr) != 0))
-        {
+        while (count < ARCCOUNT && strnicmp(arcName[count], helpPtr, 3) != 0)  // Only first 3 chars are significant
           count++;
-        }
+
         if (count < ARCCOUNT)
-        {
-          archiver = count;
-        }
+          archiver = count - 1;
         else
         {
           if (*(helpPtr+1) == 0)
@@ -666,11 +638,11 @@ s16 areaFix(internalMsgType *message)
         }
       }
 
-      memset (areaFixList, 0, sizeof(areaFixListType));
-      for ( count = 0; count < MAX_AREAFIX; ++count )
+      memset(areaFixList, 0, sizeof(areaFixListType));
+      for (count = 0; count < MAX_AREAFIX; ++count)
         (*areaFixList)[count].maxRescan = -1;
 
-      helpPtr = strtok (message->text, "\x0a\x0d\x8d");
+      helpPtr = strtok(message->text, "\x0a\x0d\x8d");
 
       allType = 0;
       while ((helpPtr != NULL) && (strncmp (helpPtr, "---", 3) != 0)
@@ -686,23 +658,20 @@ s16 areaFix(internalMsgType *message)
           if (*helpPtr == '%') /* % command handling */
           {
             helpPtr++;
-            if ( config.mgrOptions.allowCompr &&
-                 (!strnicmp(helpPtr, "COMPRESS ", 9) ||
-                  !strnicmp(helpPtr, "COMPRESSION ", 12)) )
+            if (  config.mgrOptions.allowCompr
+               && (!strnicmp(helpPtr, "COMPRESS ", 9) || !strnicmp(helpPtr, "COMPRESSION ", 12))
+               )
             {
               if ( *(helpPtr+8) == 'I' )
                 helpPtr += 3;
               helpPtr += 9;
 
               count = 0;
-              while ((count < ARCCOUNT) && (strnicmp(arcName[count], helpPtr, 3) != 0))
-              {
+              while (count < ARCCOUNT && strnicmp(arcName[count], helpPtr, 3) != 0)  // Only care about first 3 chars of archiver name
                 count++;
-              }
-              if ((count < ARCCOUNT) && !isalnum(*(helpPtr+3)))
-              {
-                archiver = count;
-              }
+
+              if (count < ARCCOUNT)
+                archiver = count - 1;
             }
             else if (config.mgrOptions.allowPassword &&
                      (!strnicmp(helpPtr, "PWD ", 4) ||
@@ -879,18 +848,12 @@ s16 areaFix(internalMsgType *message)
                            ((areaFixCount++) - count) * sizeof(areaFixType));
                   (*areaFixList)[count].areaName = helpPtr2;
                 }
-                (*areaFixList)[count].uplink    = -1;
+                (*areaFixList)[count].uplink = -1;
 
                 if ( updateArea )
-                {
-                  (*areaFixList)[count].remove    = 8;
-//                         (*areaFixList)[count].maxRescan = -1;
-                }
+                  (*areaFixList)[count].remove = 8;
                 else
-                {
-                  (*areaFixList)[count].remove    = removeArea;
-//                         (*areaFixList)[count].maxRescan = 0;
-                }
+                  (*areaFixList)[count].remove = removeArea;
 
                 if ( !removeArea )
                 {
@@ -912,9 +875,6 @@ s16 areaFix(internalMsgType *message)
                     ++helpPtr;
                     if ( *helpPtr == '=' || *helpPtr == ':' )
                       (*areaFixList)[count].maxRescan = atoi(++helpPtr);
-//                            else
-//                               (*areaFixList)[count].maxRescan = config.defRescanSize ?
-//                                                                 config.defRescanSize : -1;
                   }
                 }
               }
@@ -924,8 +884,7 @@ s16 areaFix(internalMsgType *message)
         helpPtr = strtok (NULL, "\x0a\x0d\x8d");
       }
 
-//       availCount = 0;
-      strcpy (message->subject, "FMail AreaMgr status report");
+      strcpy(message->subject, "FMail AreaMgr status report");
 
       helpPtr = message->text+
                 sprintf (message->text, "FMail AreaMgr status report for %s on %s\r",
@@ -997,11 +956,9 @@ s16 areaFix(internalMsgType *message)
         areaBuf->originLine[ORGLINE_LEN-1] = 0;
 
         count = 0;
-        while ((count < areaFixCount) &&
-               (strcmp(areaBuf->areaName,(*areaFixList)[count].areaName) != 0))
-        {
+        while (count < areaFixCount && strcmp(areaBuf->areaName, (*areaFixList)[count].areaName) != 0)
           count++;
-        }
+
         if (count < areaFixCount && (*areaFixList)[count].remove != 8 )
         {
           if ((areaBuf->options.active) &&
@@ -1091,9 +1048,7 @@ s16 areaFix(internalMsgType *message)
               areaBuf->options.allowAreafix ? 6 : 7;
           }
         }
-        if ((areaBuf->options.active) &&
-            (!areaBuf->options.local) /* &&
-	        (!areaBuf->options.disconnected)*/)
+        if (areaBuf->options.active && !areaBuf->options.local)
         {
           c = 0;
           while ((c < MAX_FORWARD) &&
@@ -1117,67 +1072,54 @@ s16 areaFix(internalMsgType *message)
       }
 
       if (areaFixCount != 0)
-      {
-        helpPtr += sprintf (helpPtr,
-                            "\rResult of requested mutations:\r");
-      }
+        helpPtr += sprintf (helpPtr, "\rResult of requested mutations:\r");
 
       for (count = 0; count < areaFixCount; count++)
       {
         if (bufCount-- <= 0)
         {
-          sprintf (helpPtr, "\r*** Listing is continued in the next message ***\r");
-          sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
-          sprintf (message->subject, "FMail AreaMgr confirmation report for %s (continued)", nodeStr(&nodeInfoPtr->node));
+          sprintf(helpPtr, "\r*** Listing is continued in the next message ***\r");
+          sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+          sprintf(message->subject, "FMail AreaMgr confirmation report for %s (continued)", nodeStr(&nodeInfoPtr->node));
           helpPtr = message->text + sprintf (message->text, "*** Following list is a continuation of the previous message ***\r");
           *(helpPtr++) = '\r';
           bufCount = MAX_DISPLAY;
         }
         helpPtr2 = helpPtr;
-        sprintf (helpPtr, "- %.40s .......................................",
-                 (*areaFixList)[count].areaName);
+        sprintf(helpPtr, "- %.40s .......................................", (*areaFixList)[count].areaName);
 
         switch ((*areaFixList)[count].remove)
         {
-          case 2 : //if ( rescanAll )
-            //{
-            //   (*areaFixList)[count].maxRescan = rescanAll;
-            //}
-            helpPtr += sprintf (helpPtr+43, " added")+43;
+          case 2 :
+            helpPtr += sprintf(helpPtr + 43, " added") + 43;
             break;
           case 3 :
-            helpPtr += sprintf (helpPtr+43, " already active")+43;
+            helpPtr += sprintf(helpPtr + 43, " already active") + 43;
             break;
           case 4 :
-            helpPtr += sprintf (helpPtr+43, " removed")+43;
+            helpPtr += sprintf(helpPtr + 43, " removed") + 43;
             break;
           case 5 :
-            helpPtr += sprintf (helpPtr+43, " not active")+43;
+            helpPtr += sprintf(helpPtr + 43, " not active") + 43;
             break;
           case 1 :
           case 6 :
-            helpPtr += sprintf (helpPtr+43, " not found")+43;
+            helpPtr += sprintf(helpPtr + 43, " not found") + 43;
             break;
           case 7 :
-            helpPtr += sprintf (helpPtr+43, " not allowed")+43;
+            helpPtr += sprintf(helpPtr + 43, " not allowed") + 43;
             break;
           case 8 :
-            helpPtr += sprintf (helpPtr+43, " rescan requested")+43;
+            helpPtr += sprintf(helpPtr + 43, " rescan requested") + 43;
             break;
           case 9 :
-            helpPtr += sprintf (helpPtr+43, " rescan not allowed")+43;
+            helpPtr += sprintf(helpPtr + 43, " rescan not allowed") + 43;
             break;
           default:
-            if (((*areaFixList)[count].uplink =
-                   checkForward((*areaFixList)[count].areaName,
-                                nodeInfoPtr)) != -1)
-            {
-              helpPtr += sprintf (helpPtr+43, " requested")+43;
-            }
+            if (((*areaFixList)[count].uplink = checkForward((*areaFixList)[count].areaName, nodeInfoPtr)) != -1)
+              helpPtr += sprintf(helpPtr + 43, " requested") + 43;
             else
-            {
-              helpPtr += sprintf (helpPtr+43, " not available from uplink")+43;
-            }
+              helpPtr += sprintf(helpPtr + 43, " not available from uplink") + 43;
             break;
         }
         mgrLogEntry (helpPtr2);
@@ -1186,10 +1128,9 @@ s16 areaFix(internalMsgType *message)
       if (areaFixCount) newLine();
 
       if (activeAreasCount)
-        helpPtr += sprintf (helpPtr, "\rYou are connected to %u area%s.\r",
-                            activeAreasCount, activeAreasCount!=1?"s":"");
+        helpPtr += sprintf(helpPtr, "\rYou are connected to %u area%s.\r", activeAreasCount, activeAreasCount != 1 ? "s" : "");
       else
-        helpPtr += sprintf (helpPtr, "\rYou are not connected to any areas.\r");
+        helpPtr += sprintf(helpPtr, "\rYou are not connected to any areas.\r");
 
       if (activePassive)
       {
@@ -1204,27 +1145,27 @@ s16 areaFix(internalMsgType *message)
       }
 
 #ifdef __32BIT__
-      if (((archiver == 0) && (*config.arc32.programName == 0)) ||
-          ((archiver == 1) && (*config.zip32.programName == 0)) ||
-          ((archiver == 2) && (*config.lzh32.programName == 0)) ||
-          ((archiver == 3) && (*config.pak32.programName == 0)) ||
-          ((archiver == 4) && (*config.zoo32.programName == 0)) ||
-          ((archiver == 5) && (*config.arj32.programName == 0)) ||
-          ((archiver == 6) && (*config.sqz32.programName == 0)) ||
-          ((archiver == 8) && (*config.uc232.programName == 0)) ||
-          ((archiver == 9) && (*config.rar32.programName == 0)) ||
-          ((archiver == 10) && (*config.jar32.programName == 0)))
+      if ((archiver ==  0 && *config.arc32.programName == 0) ||
+          (archiver ==  1 && *config.zip32.programName == 0) ||
+          (archiver ==  2 && *config.lzh32.programName == 0) ||
+          (archiver ==  3 && *config.pak32.programName == 0) ||
+          (archiver ==  4 && *config.zoo32.programName == 0) ||
+          (archiver ==  5 && *config.arj32.programName == 0) ||
+          (archiver ==  6 && *config.sqz32.programName == 0) ||
+          (archiver ==  8 && *config.uc232.programName == 0) ||
+          (archiver ==  9 && *config.rar32.programName == 0) ||
+          (archiver == 10 && *config.jar32.programName == 0))
 #else
-      if (((archiver == 0) && (*config.arc.programName == 0)) ||
-          ((archiver == 1) && (*config.zip.programName == 0)) ||
-          ((archiver == 2) && (*config.lzh.programName == 0)) ||
-          ((archiver == 3) && (*config.pak.programName == 0)) ||
-          ((archiver == 4) && (*config.zoo.programName == 0)) ||
-          ((archiver == 5) && (*config.arj.programName == 0)) ||
-          ((archiver == 6) && (*config.sqz.programName == 0)) ||
-          ((archiver == 8) && (*config.uc2.programName == 0)) ||
-          ((archiver == 9) && (*config.rar.programName == 0)) ||
-          ((archiver == 10) && (*config.jar.programName == 0)))
+      if ((archiver ==  0 && *config.arc.programName == 0) ||
+          (archiver ==  1 && *config.zip.programName == 0) ||
+          (archiver ==  2 && *config.lzh.programName == 0) ||
+          (archiver ==  3 && *config.pak.programName == 0) ||
+          (archiver ==  4 && *config.zoo.programName == 0) ||
+          (archiver ==  5 && *config.arj.programName == 0) ||
+          (archiver ==  6 && *config.sqz.programName == 0) ||
+          (archiver ==  8 && *config.uc2.programName == 0) ||
+          (archiver ==  9 && *config.rar.programName == 0) ||
+          (archiver == 10 && *config.jar.programName == 0))
 #endif
       {
         archiver = 0xFF;
@@ -1244,9 +1185,8 @@ s16 areaFix(internalMsgType *message)
       {
         *(helpPtr++) = '\r';
         helpPtr2 = helpPtr;
-        helpPtr += sprintf (helpPtr, "Node status : %s%s",
-                            nodeInfoPtr->options.active ? "ACTIVE":"PASSIVE",
-                            activePassive?" (new setting)":"");
+        helpPtr += sprintf( helpPtr, "Node status : %s%s", nodeInfoPtr->options.active ? "ACTIVE" : "PASSIVE"
+                          , activePassive ? " (new setting)" : "" );
         mgrLogEntry (helpPtr2);
       }
 
@@ -1254,14 +1194,14 @@ s16 areaFix(internalMsgType *message)
       {
         *(helpPtr++) = '\r';
         helpPtr2 = helpPtr;
-        helpPtr += sprintf (helpPtr, "Notify      : %s%s",
-                            nodeInfoPtr->options.notify?"ON":"OFF",
-                            notifyChange?" (new setting)":"");
+        helpPtr += sprintf( helpPtr, "Notify      : %s%s", nodeInfoPtr->options.notify ? "ON" : "OFF"
+                          , notifyChange ? " (new setting)" : "" );
         mgrLogEntry (helpPtr2);
       }
       switch (nodeInfoPtr->archiver)
 #ifdef __32BIT__
-    {   case 0:
+      {
+        case 0:
           strcpy(tempStr, config.arc32.programName);
           break;
         case 1:
@@ -1295,7 +1235,8 @@ s16 areaFix(internalMsgType *message)
           strcpy(tempStr, config.jar32.programName);
           break;
 #else
-    {   case 0:
+      {
+        case 0:
           strcpy(tempStr, config.arc.programName);
           break;
         case 1:
@@ -1329,7 +1270,7 @@ s16 areaFix(internalMsgType *message)
           strcpy(tempStr, config.jar.programName);
           break;
 #endif
-        case 255:
+        case 0xFF:
           strcpy(tempStr, "None");
           break;
         default:
@@ -1346,11 +1287,9 @@ s16 areaFix(internalMsgType *message)
         strcpy(tempStr, helpPtr2);
       *(helpPtr++) = '\r';
       helpPtr2 = helpPtr;
-      helpPtr += sprintf (helpPtr, "Compression : %s%s", tempStr,
-                          (archiver == 0xFF)?" (requested program unknown or not available)":
-                          (archiver == 1)?" (new setting)":"");
+      helpPtr += sprintf(helpPtr, "Compression : %s%s", tempStr, archiver == 1 ? " (new setting)" : "");
       mgrLogEntry (helpPtr2);
-      helpPtr += sprintf (helpPtr, "\r- available :");
+      helpPtr += sprintf (helpPtr, "\r- available : NONE");
 #ifdef __32BIT__
       if (*config.arc32.programName != 0)
         helpPtr += sprintf (helpPtr, " ARC");
@@ -1400,13 +1339,9 @@ s16 areaFix(internalMsgType *message)
       {
         helpPtr2 = helpPtr;
         if (passwordChange == 1)
-        {
           helpPtr += sprintf (helpPtr, "AreaMgr pwd : new password ignored (should be at least 5 characters long)");
-        }
         else
-        {
           helpPtr += sprintf (helpPtr, "AreaMgr pwd : new password accepted");
-        }
         mgrLogEntry (helpPtr2);
         *((helpPtr)++) = '\r';
       }
@@ -1444,7 +1379,7 @@ Send:
   }
   sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
 
-  /* Send uplink requests */
+  // Send uplink requests
 
   for (count = 0; count < MAX_UPLREQ; count++)
   {
@@ -1599,12 +1534,12 @@ Send:
 
   if (rescanRequest)
   {
-    sprintf (tempStr, "%s%lu.msg", config.netPath, msgNum1);
+    sprintf(tempStr, "%s%lu.msg", config.netPath, msgNum1);
     msgHandle1 = openP(tempStr, O_WRONLY|O_BINARY|O_APPEND|O_DENYNONE, 0);
-    sprintf (tempStr, "%s%lu.msg", config.netPath, msgNum2);
+    sprintf(tempStr, "%s%lu.msg", config.netPath, msgNum2);
     msgHandle2 = openP(tempStr, O_WRONLY|O_BINARY|O_APPEND|O_DENYNONE, 0);
 
-    strcpy (stpcpy (tempStr, config.bbsPath), "areamgr.$$$");
+    strcpy(stpcpy (tempStr, config.bbsPath), "areamgr.$$$");
     if (nodeInfoPtr->options.allowRescan)
     {
       if ((helpHandle = openP(tempStr, O_RDWR|O_BINARY|O_CREAT|O_TRUNC|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
@@ -1618,7 +1553,7 @@ Send:
           {
             if ((areaFixRec.remove == 2 || areaFixRec.remove == 8) && (areaFixRec.maxRescan))
             {
-              rescan (nodeInfoPtr, areaFixRec.areaName,
+              rescan(nodeInfoPtr, areaFixRec.areaName,
                       areaFixRec.maxRescan != -1 ? areaFixRec.maxRescan :
                       (rescanAll ? rescanAll :
                        config.defMaxRescan ? config.defMaxRescan : 0x7FFF),
@@ -1626,42 +1561,41 @@ Send:
             }
           }
         }
-        close (helpHandle);
+        close(helpHandle);
       }
-      unlink (tempStr);
+      unlink(tempStr);
     }
     else
     {
-      unlink (tempStr);
-      sprintf (tempStr, "Node %s is not allowed to rescan the message base.",
-               nodeStr(&nodeInfoPtr->node));
-      mgrLogEntry (tempStr);
-      strcat (tempStr, "\r");
-      write (msgHandle1, tempStr, strlen(tempStr));
-      write (msgHandle2, tempStr, strlen(tempStr));
+      unlink(tempStr);
+      sprintf(tempStr, "Node %s is not allowed to rescan the message base.", nodeStr(&nodeInfoPtr->node));
+      mgrLogEntry(tempStr);
+      strcat(tempStr, "\r");
+      write(msgHandle1, tempStr, strlen(tempStr));
+      write(msgHandle2, tempStr, strlen(tempStr));
     }
-    close (msgHandle1);
-    close (msgHandle2);
+    close(msgHandle1);
+    close(msgHandle2);
   }
 
-  strcpy (message->fromUserName, "FMail AreaMgr");
+  strcpy(message->fromUserName, "FMail AreaMgr");
 
   if (replyHelp)
   {
-    strcpy (tempStr, configPath);
-    strcat (tempStr, "areamgr.hlp");
+    strcpy(tempStr, configPath);
+    strcat(tempStr, "areamgr.hlp");
 
     if ((helpHandle = openP(tempStr, O_RDONLY|O_BINARY, 0)) != -1)
     {
-      bytesRead = read (helpHandle, message->text, 32767);
+      bytesRead = read(helpHandle, message->text, 32767);
       close (helpHandle);
       if ( bytesRead > 0 )
         *(message->text+bytesRead) = 0;
       else
         *message->text = 0;
 
-      strcpy (message->subject, "FMail AreaMgr information");
-      sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+      strcpy(message->subject, "FMail AreaMgr information");
+      sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
     }
   }
 
@@ -1672,11 +1606,10 @@ Send:
     bufCount = MAX_DISPLAY;
     availCount = 0;
     oldGroupCode = -1;
-    strcpy (message->subject, "Available areas");
-    helpPtr = message->text + sprintf (message->text, "Available areas for %s:\r", nodeStr(&nodeInfoPtr->node));
+    strcpy(message->subject, "Available areas");
+    helpPtr = message->text + sprintf(message->text, "Available areas for %s:\r", nodeStr(&nodeInfoPtr->node));
 
-    for (count=0; (count<areaHeader->totalRecords) &&
-         ((*areaSortList)[count].index != -1); count++)
+    for (count = 0; count<areaHeader->totalRecords && (*areaSortList)[count].index != -1; count++)
     {
       getRec(CFG_ECHOAREAS,(*areaSortList)[count].index);
 
@@ -1685,29 +1618,22 @@ Send:
       areaBuf->originLine[ORGLINE_LEN-1] = 0;
 
       c = 0;
-      while ((c < MAX_FORWARD) &&
-             (memcmp (&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node,
-                      sizeof(nodeNumType)) != 0))
-      {
+      while (c < MAX_FORWARD && memcmp (&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node, sizeof(nodeNumType)) != 0)
         c++;
-      }
 
       if ((areaBuf->options.active) &&
           (!areaBuf->options.local) &&
-          /*           (areaBuf->options.allowAreafix || (c < MAX_FORWARD)) && */
-          /*           (!areaBuf->options.disconnected) && */
           ((areaBuf->group & nodeInfoPtr->groups) || (c < MAX_FORWARD)))
       {
         if ((strlen(areaBuf->areaName) >= ECHONAME_LEN_OLD) && *areaBuf->comment)
-        {
           bufCount--;
-        }
+
         if (bufCount-- <= 0)
         {
-          sprintf (helpPtr, "\r*** Listing is continued in the next message ***\r");
-          sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
-          sprintf (message->subject, "Available areas (continued)");
-          helpPtr = message->text + sprintf (message->text, "*** Following list is a continuation of the previous message ***\r");
+          sprintf(helpPtr, "\r*** Listing is continued in the next message ***\r");
+          sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+          sprintf(message->subject, "Available areas (continued)");
+          helpPtr = message->text + sprintf(message->text, "*** Following list is a continuation of the previous message ***\r");
           *(helpPtr++) = '\r';
           bufCount = MAX_DISPLAY;
           oldGroupCode = -1;
@@ -1716,28 +1642,19 @@ Send:
         {
           oldGroupCode = getGroupCode(areaBuf->group);
           if (*config.groupDescr[oldGroupCode])
-          {
-            helpPtr += sprintf (helpPtr, "\r%s\r\r",
-                                config.groupDescr[oldGroupCode]);
-          }
+            helpPtr += sprintf(helpPtr, "\r%s\r\r", config.groupDescr[oldGroupCode]);
           else
-          {
-            helpPtr += sprintf (helpPtr, "\rGroup %c\r\r", 'A'+oldGroupCode);
-          }
+            helpPtr += sprintf(helpPtr, "\rGroup %c\r\r", 'A' + oldGroupCode);
         }
 
-        if ( c < MAX_FORWARD && !areaBuf->forwards[c].flags.locked )
+        if (c < MAX_FORWARD && !areaBuf->forwards[c].flags.locked)
         {
-//               if ( areaBuf->forwards[c].flags.locked )
-//               {  c = '-';
-//                  semaFlag |= BIT2;
-//               }
-          if ( areaBuf->forwards[c].flags.readOnly )
+          if (areaBuf->forwards[c].flags.readOnly)
           {
             c = 'R';
             semaFlag |= BIT3;
           }
-          if ( areaBuf->forwards[c].flags.writeOnly )
+          if (areaBuf->forwards[c].flags.writeOnly)
           {
             c = 'W';
             semaFlag |= BIT4;
@@ -1764,74 +1681,68 @@ Send:
           }
         }
 
-        helpPtr += sprintf (helpPtr, ((strlen(areaBuf->areaName) >= ECHONAME_LEN_OLD)
-                                      && *areaBuf->comment) ?
-                            "%c %s\r                            %s\r"
-                            :"%c %-24s  %s\r", c,
-                            areaBuf->areaName,
-                            areaBuf->comment);
+        helpPtr += sprintf(helpPtr, ((strlen(areaBuf->areaName) >= ECHONAME_LEN_OLD) && *areaBuf->comment)
+                          ? "%c %s\r                            %s\r" : "%c %-24s  %s\r"
+                          , c, areaBuf->areaName, areaBuf->comment );
         availCount++;
       }
     }
     if (availCount == 0)
-    {
-      strcpy (helpPtr, "\r=== There are no areas available to you ===\r");
-    }
+      strcpy(helpPtr, "\r=== There are no areas available to you ===\r");
     else
-    {
-      sprintf (helpPtr, "\r%s%s%s%s%s"
-               "You are connected to %u of %u available area%s.\r",
-               semaFlag&BIT0 ? "* indicates that you are connected to this area.\r":"",
-               semaFlag&BIT1 ? "+ indicates that you are connected, but cannot disconnect this area yourself.\r":"",
-               semaFlag&BIT2 ? "- indicates that you are not connected and cannot connect this area yourself.\r":"",
-               semaFlag&BIT3 ? "R indicates that you are read-only connected and cannot disconnect this area yourself.\r":"",
-               semaFlag&BIT4 ? "W indicates that you are write-only connected and cannot connect this area yourself.\r":"",
-               activeAreasCount, availCount,
-               availCount!=1?"s":"");
-    }
-    sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+      sprintf( helpPtr, "\r%s%s%s%s%sYou are connected to %u of %u available area%s.\r"
+             , semaFlag&BIT0 ? "* indicates that you are connected to this area.\r" : ""
+             , semaFlag&BIT1 ? "+ indicates that you are connected, but cannot disconnect this area yourself.\r" : ""
+             , semaFlag&BIT2 ? "- indicates that you are not connected and cannot connect this area yourself.\r" : ""
+             , semaFlag&BIT3 ? "R indicates that you are read-only connected and cannot disconnect this area yourself.\r" : ""
+             , semaFlag&BIT4 ? "W indicates that you are write-only connected and cannot connect this area yourself.\r" : ""
+             , activeAreasCount, availCount
+             , availCount != 1 ? "s" : ""
+             );
 
-    /* --- Available from Uplink --- */
-    if ( config.mgrOptions.sendUplArList )
+    sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+
+    // --- Available from Uplink ---
+    if (config.mgrOptions.sendUplArList)
     {
       availCount = 0;
       bufCount = MAX_DISPLAY;
-      strcpy (message->subject, "Areas available from uplinks");
-      helpPtr = message->text + sprintf (message->text, "Available areas from uplinks for %s:\r\r", nodeStr(&nodeInfoPtr->node));
-      for ( count = 0; count < MAX_UPLREQ; count++ )
+      strcpy(message->subject, "Areas available from uplinks");
+      helpPtr = message->text + sprintf(message->text, "Available areas from uplinks for %s:\r\r", nodeStr(&nodeInfoPtr->node));
+      for (count = 0; count < MAX_UPLREQ; count++)
       {
-        if ( nodeInfoPtr->groups & config.uplinkReq[count].groups )
+        if (nodeInfoPtr->groups & config.uplinkReq[count].groups)
         {
-          if ( !openBCL(&config.uplinkReq[count]) )
+          if (!openBCL(&config.uplinkReq[count]))
             continue;
-          while ( readBCL(&tag, &descr) )
+
+          while (readBCL(&tag, &descr))
           {
-            if ( bufCount-- <= 0 )
+            if (bufCount-- <= 0)
             {
-              sprintf (helpPtr, "\r*** Listing is continued in the next message ***\r\r");
-              sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
-              sprintf (message->subject, "Available areas from uplinks (continued)");
-              helpPtr = message->text + sprintf (message->text, "*** Following list is a continuation of the previous message ***\r");
+              sprintf(helpPtr, "\r*** Listing is continued in the next message ***\r\r");
+              sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+              sprintf(message->subject, "Available areas from uplinks (continued)");
+              helpPtr = message->text + sprintf(message->text, "*** Following list is a continuation of the previous message ***\r");
               *(helpPtr++) = '\r';
               bufCount = MAX_DISPLAY;
             }
             count2 = 0;
-            while ( count2 < echoCount && strcmp(tag, echoAreaList[count2].areaName) )
+            while (count2 < echoCount && strcmp(tag, echoAreaList[count2].areaName))
               ++count2;
-            if ( count2 == echoCount )
+            if (count2 == echoCount)
             {
-              helpPtr += sprintf (helpPtr, ((strlen(tag) >= ECHONAME_LEN_OLD) && *descr) ?
-                                  "  %s\r                            %s\r"
-                                  :"  %-24s  %s\r",
-                                  tag, descr);
+              helpPtr += sprintf( helpPtr, ((strlen(tag) >= ECHONAME_LEN_OLD) && *descr)
+                                ? "  %s\r                            %s\r" : "  %-24s  %s\r"
+                                , tag, descr);
               availCount++;
             }
           }
           closeBCL();
         }
       }
-      if ( availCount )
-        sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+      if (availCount)
+        sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
     }
   }
 
@@ -1839,67 +1750,60 @@ Send:
   {
     bufCount = MAX_DISPLAY;
     availCount = 0;
-    sprintf (message->subject, "Active areas for %s", nodeStr(&nodeInfoPtr->node));
-    helpPtr = message->text + sprintf (message->text, "You are active for the following areas:\r\r");
+    sprintf(message->subject, "Active areas for %s", nodeStr(&nodeInfoPtr->node));
+    helpPtr = message->text + sprintf(message->text, "You are active for the following areas:\r\r");
 
-    for (count=0; count<areaHeader->totalRecords; count++)
+    for (count = 0; count < areaHeader->totalRecords; count++)
     {
       getRec(CFG_ECHOAREAS,count);
       areaBuf->areaName[ECHONAME_LEN-1] = 0;
       areaBuf->comment[COMMENT_LEN-1] = 0;
       areaBuf->originLine[ORGLINE_LEN-1] = 0;
 
-      if ((areaBuf->options.active) &&
-          (!areaBuf->options.local) /*&&
-             (!areaBuf->options.disconnected))*/)
+      if (areaBuf->options.active && !areaBuf->options.local)
       {
         c = 0;
-        while ((c < MAX_FORWARD) &&
-               (memcmp (&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node,
-                        sizeof(nodeNumType)) != 0))
-        {
+        while (c < MAX_FORWARD && memcmp (&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node, sizeof(nodeNumType)) != 0)
           c++;
-        }
-        if ( c < MAX_FORWARD && !areaBuf->forwards[c].flags.locked )
+
+        if (c < MAX_FORWARD && !areaBuf->forwards[c].flags.locked)
         {
-          if ((strlen(areaBuf->areaName) >= ECHONAME_LEN_OLD) && *areaBuf->comment)
-          {
+          if (strlen(areaBuf->areaName) >= ECHONAME_LEN_OLD && *areaBuf->comment)
             bufCount--;
-          }
+
           if (bufCount-- <= 0)
           {
-            sprintf (helpPtr, "\r*** Listing is continued in the next message ***\r");
-            sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
-            sprintf (message->subject, "Active areas for %s (continued)", nodeStr(&nodeInfoPtr->node));
+            sprintf(helpPtr, "\r*** Listing is continued in the next message ***\r");
+            sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+            sprintf(message->subject, "Active areas for %s (continued)", nodeStr(&nodeInfoPtr->node));
             helpPtr = message->text + sprintf (message->text, "*** Following list is a continuation of the previous message ***\r");
             *(helpPtr++) = '\r';
             bufCount = MAX_DISPLAY;
           }
-          helpPtr += sprintf (helpPtr, ((strlen(areaBuf->areaName) >= ECHONAME_LEN_OLD) && *areaBuf->comment)
-                              ?"%s\r                          %s\r"
-                              :"%-24s  %s\r",
-                              areaBuf->areaName, areaBuf->comment);
+          helpPtr += sprintf( helpPtr, ((strlen(areaBuf->areaName) >= ECHONAME_LEN_OLD) && *areaBuf->comment)
+                            ? "%s\r                          %s\r" : "%-24s  %s\r"
+                            , areaBuf->areaName, areaBuf->comment );
           if ( areaBuf->forwards[c].flags.readOnly )
-            helpPtr += sprintf (helpPtr, "                          The area is ReadOnly\r");
+            helpPtr += sprintf(helpPtr, "                          The area is ReadOnly\r");
           if ( areaBuf->forwards[c].flags.writeOnly )
-            helpPtr += sprintf (helpPtr, "                          The area is WriteOnly\r");
+            helpPtr += sprintf(helpPtr, "                          The area is WriteOnly\r");
+
           availCount++;
         }
       }
     }
     if (!availCount)
-    {
-      strcpy (helpPtr, "\r--- You are not active for any areas ---\r");
-    }
-    sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+      strcpy(helpPtr, "\r--- You are not active for any areas ---\r");
+
+    sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
   }
 
   if (replyUnlinked)
   {
     bufCount = MAX_DISPLAY;
     availCount = 0;
-    sprintf (message->subject, "Unlinked areas for %s", nodeStr(&nodeInfoPtr->node));
-    helpPtr = message->text + sprintf (message->text, "You are not active for the following areas:\r\r");
+    sprintf(message->subject, "Unlinked areas for %s", nodeStr(&nodeInfoPtr->node));
+    helpPtr = message->text + sprintf(message->text, "You are not active for the following areas:\r\r");
 
     for (count=0; count<areaHeader->totalRecords; count++)
     {
@@ -1911,36 +1815,29 @@ Send:
       if ((areaBuf->options.active) &&
           (!areaBuf->options.local) &&
           (areaBuf->options.allowAreafix) &&
-          /*             (!areaBuf->options.disconnected) && */
           (areaBuf->group & nodeInfoPtr->groups))
       {
         c = 0;
-        while ((c < MAX_FORWARD) &&
-               (memcmp (&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node,
-                        sizeof(nodeNumType)) != 0))
-        {
+        while (c < MAX_FORWARD && memcmp(&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node, sizeof(nodeNumType)) != 0)
           c++;
-        }
 
         if (c == MAX_FORWARD)
         {
           if ((strlen(areaBuf->areaName) >= ECHONAME_LEN_OLD) && *areaBuf->comment)
-          {
             bufCount--;
-          }
+
           if (bufCount-- <= 0)
           {
-            sprintf (helpPtr, "\r*** Listing is continued in the next message ***\r");
-            sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
-            sprintf (message->subject, "Unlinked areas for %s (continued)", nodeStr(&nodeInfoPtr->node));
+            sprintf(helpPtr, "\r*** Listing is continued in the next message ***\r");
+            sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+            sprintf(message->subject, "Unlinked areas for %s (continued)", nodeStr(&nodeInfoPtr->node));
             helpPtr = message->text + sprintf (message->text, "*** Following list is a continuation of the previous message ***\r");
             *(helpPtr++) = '\r';
             bufCount = MAX_DISPLAY;
           }
-          helpPtr += sprintf (helpPtr, ((strlen(areaBuf->areaName) >= ECHONAME_LEN_OLD) && *areaBuf->comment)
-                              ?"%s\r                          %s\r"
-                              :"%-24s  %s\r",
-                              areaBuf->areaName, areaBuf->comment);
+          helpPtr += sprintf( helpPtr, ((strlen(areaBuf->areaName) >= ECHONAME_LEN_OLD) && *areaBuf->comment)
+                            ? "%s\r                          %s\r" : "%-24s  %s\r"
+                            , areaBuf->areaName, areaBuf->comment );
           availCount++;
         }
       }
@@ -1964,4 +1861,4 @@ Send:
 #endif
   return 0;
 }
-
+//---------------------------------------------------------------------------
