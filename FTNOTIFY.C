@@ -242,7 +242,7 @@ s16 notify(int argc, char *argv[])
 
    if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
    {
-      logEntry ("Can't open file FMail.Ar", LOG_ALWAYS, 1);
+      logEntry ("Can't open file "dARFNAME, LOG_ALWAYS, 1);
    }
 
    for (areaCount = 0; areaCount<areaHeader->totalRecords; areaCount++)
@@ -266,7 +266,7 @@ s16 notify(int argc, char *argv[])
    }
 
    if (!openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf))
-          logEntry ("Can't open file FMail.Nod", LOG_ALWAYS, 1);
+          logEntry ("Can't open file "dNODFNAME, LOG_ALWAYS, 1);
 
    if (switches & SW_N)
    {

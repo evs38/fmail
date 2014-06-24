@@ -235,14 +235,13 @@ int cdecl main(int argc, char *argv[])
   }
 
   memset(&config, 0, sizeof(configType));
-  strcpy(configFileName, configPath);
-  strcat(configFileName, "fmail.cfg");
+  strcpy(stpcpy(configFileName, configPath), dCFGFNAME);
 
   if (((configHandle = open(configFileName, O_BINARY|O_RDWR|O_DENYNONE)) == -1) ||
-      ((count = _read (configHandle, &config, sizeof (configType))) == 0) ||
-      (close (configHandle) == -1))
+      ((count = _read(configHandle, &config, sizeof (configType))) == 0) ||
+      (close(configHandle) == -1))
   {
-    memset (&config, 0, sizeof(configType));
+    memset(&config, 0, sizeof(configType));
 
     time (&config.creationDate);
     config.creationDate ^= 0xe534a17bL;
@@ -492,8 +491,7 @@ int cdecl main(int argc, char *argv[])
   }
   else
   {
-    strcpy (tempStr, configPath);
-    strcat (tempStr, "fmail.ard");
+    strcpy(stpcpy(tempStr, configPath), dARDFNAME);
     unlink (tempStr);
   }
 
@@ -796,7 +794,7 @@ int cdecl main(int argc, char *argv[])
       (config.versionMinor < 92) ||
       (config.versionMinor > CONFIG_MINOR))
   {
-    displayMessage ("FMAIL.CFG was not created by FSetup version 0.90/0.92/0.94/0.96");
+    displayMessage (dCFGFNAME" was not created by FSetup version 0.90/0.92/0.94/0.96");
     fillRectangle (' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
     deInit (5);
     return (0);
@@ -886,31 +884,31 @@ int cdecl main(int argc, char *argv[])
 
   addItem (anImpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem (anImpMenu, FUNCTION, "Import Areas.BBS", 0, importAreasBBS, 0, 0,
-           "Convert Areas.BBS into FMail.Ar");
+           "Convert Areas.BBS into "dARFNAME);
   addItem (anImpMenu, FUNCTION, "Import RA info", 0, importRAInfo, 0, 0,
            "Import RA area (security) info into an existing FMail areas file");
   addItem (anImpMenu, FUNCTION, "Import Folder.FD", 0, importFolderFD, 0, 0,
-           "Convert FrontDoor's Folder.FD into FMail.Ar");
+           "Convert FrontDoor's Folder.FD into "dARFNAME);
   addItem (anImpMenu, FUNCTION, "Import Backbone.NA", 0, importNAInfo, 0, 0,
-           "Import descriptions from Backbone.NA into FMail.AR");
+           "Import descriptions from Backbone.NA into "dARFNAME);
   addItem (anImpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem (anImpMenu, FUNCTION, "Import AreaFile.FD", 0, importAreaFileFD, 0, 0,
-           "Convert TosScan's AreaFile.FD into FMail.Ar");
+           "Convert TosScan's AreaFile.FD into "dARFNAME);
   addItem (anImpMenu, FUNCTION, "Import NodeFile.FD", 0, importNodeFileFD, 0, 0,
-           "Convert TosScan's NodeFile.FD into FMail.Nod");
+           "Convert TosScan's NodeFile.FD into "dNODFNAME);
   addItem (anImpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem (anImpMenu, FUNCTION, "Import AREAFILE.GE", 0, importGechoAr, 0, 0,
-           "Convert GECHO's AREAFILE.GE into FMail.Ar (GECHO 1.00 and up)");
+           "Convert GECHO's AREAFILE.GE into "dARFNAME" (GECHO 1.00 and up)");
   addItem (anImpMenu, FUNCTION, "Import NODEFILE.GE", 0, importGechoNd, 0, 0,
-           "Convert GECHO's NODEFILE.GE into FMail.Nod (GECHO 1.00 and up)");
+           "Convert GECHO's NODEFILE.GE into "dNODFNAME" (GECHO 1.00 and up)");
   addItem (anImpMenu, FUNCTION, "Import FE areas", 0, importFEAr, 0, 0,
-           "Convert FastEcho's areas into FMail.Ar (FastEcho 1.46 and up)");
+           "Convert FastEcho's areas into "dARFNAME" (FastEcho 1.46 and up)");
   addItem (anImpMenu, FUNCTION, "Import FE nodes", 0, importFENd, 0, 0,
-           "Convert FastEcho's nodes into FMail.Nod (FastEcho 1.46 and up)");
+           "Convert FastEcho's nodes into "dNODFNAME" (FastEcho 1.46 and up)");
   addItem (anImpMenu, FUNCTION, "Import IMAIL.Ar", 0, importImailAr, 0, 0,
-           "Convert IMAIL's IMAIL.AR into FMail.Ar (IMAIL 1.40 and up)");
+           "Convert IMAIL's IMAIL.AR into "dARFNAME" (IMAIL 1.40 and up)");
   addItem (anImpMenu, FUNCTION, "Import IMAIL.Nd", 0, importImailNd, 0, 0,
-           "Convert IMAIL's IMAIL.Nd into FMail.Nod (IMAIL 1.40 and up)");
+           "Convert IMAIL's IMAIL.Nd into "dNODFNAME" (IMAIL 1.40 and up)");
 
   if ((impExpMenu = createMenu (" Import/export ")) == NULL)
     goto nomem;
@@ -1808,13 +1806,13 @@ nomem:
         (_write (configHandle, &config, sizeof (configType)) != sizeof (configType)) ||
         (close (configHandle) == -1))
     {
-      displayMessage ("Can't write to FMail.Cfg");
+      displayMessage ("Can't write to "dCFGFNAME);
     }
     if ( *config.autoFMail102Path )
     {
       if ( !stricmp(config.autoFMail102Path, configPath) )
         displayMessage("AutoExport for FMail 1.02 format should be set to another directory");
-      else if ( (configHandle = open(strcat(strcpy(tempStr, config.autoFMail102Path), "fmail.cfg"), O_WRONLY|O_BINARY|O_CREAT|O_TRUNC, S_IREAD|S_IWRITE)) != -1 )
+      else if ( (configHandle = open(strcat(strcpy(tempStr, config.autoFMail102Path), dCFGFNAME), O_WRONLY|O_BINARY|O_CREAT|O_TRUNC, S_IREAD|S_IWRITE)) != -1 )
       {
         memcpy(config._optionsAKA,        config.optionsAKA,        2*MAX_NA_OLD);
         memcpy(config._groupsQBBS,        config.groupsQBBS,          MAX_NA_OLD);
@@ -1854,7 +1852,7 @@ nomem:
     }
     if (!openConfig(CFG_AREADEF, &adefHeader, (void*)&adefBuf))
     {
-      displayMessage ("Can't write to FMail.ARD");
+      displayMessage ("Can't write to "dARDFNAME);
     }
     else
     {

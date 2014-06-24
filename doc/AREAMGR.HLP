@@ -16,8 +16,10 @@ FMAIL_HELP /R=50   Connect area FMAIL_HELP and rescan at most 50 messages
 %-ALL              Disconnect all areas
 
 %FROM Z:N/N.P      Perform remote maintenance for node with given nodenumber
+%COMPRES ZIP       or
 %COMPRESSION ZIP   Change the compression method used for your mail to ZIP
-                   (or NON/ARC/ZIP/LZH/PAK/ZOO/ARJ/SQZ/CUS/UC2/RAR/JAR)
+                   (or NON[E]/ARC/ZIP/LZH/PAK/ZOO/ARJ/SQZ/CUS/UC2/RAR/JAR)
+%PWD ABCDEF        or
 %PASSWORD ABCDEF   Change your AreaMgr password to ABCDEF (password should
                    be at least 5 characters and at most 16 characters long)
 %PKTPWD QRSTUV     Change your packet password to QRSTUV (password may be
@@ -35,20 +37,23 @@ FMAIL_HELP /R=50   Connect area FMAIL_HELP and rescan at most 50 messages
 %RESCAN            Request a rescan of all new areas
 %RESCAN=50         Request a rescan of at most 50 messages per area for
                    all new areas
-
+%PAUSE             or
 %PASSIVE           Temporarily disable all areas. This means that you won't
                    receive any echo mail anymore unless it is addressed to
                    you personally (only if the sysop on this node has
                    entered your name correctly in the Node Manager). You
                    will still be allowed to send echo mail to this system
                    in areas to which you are connected.
+%RESUME            or
 %ACTIVE            Make your node active again.
 
 %AUTOBCL 7         Request to receive a BCL file from FMail every 7 days.
                    Use 0 if you don't want to receive BCL files anymore.
                    See FMAIL.DOC for more information about this feature
 
-[---]              Everything below the tear line is ignored
+%NOTE              or
+...                or
+---                Everything after and below these lines is ignored
 
 You can also use the -H, -L, -Q and -U switches on the subject line.
 

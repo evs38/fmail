@@ -662,13 +662,10 @@ s16 nodeMgr (void)
    }
    else
    {
-      strcpy (nodeInfoPath, configPath);
-      strcat (nodeInfoPath, "FMAIL.NOD");
+      strcpy(stpcpy(nodeInfoPath, configPath), dNODFNAME);
 
       if ((nodeInfoHandle = open(nodeInfoPath, O_BINARY|O_RDWR)) == -1)
-      {
          nodeInfoCount = 0;
-      }
       else
       {
          lseek (nodeInfoHandle, 0, SEEK_SET);
@@ -1149,7 +1146,7 @@ s16 nodeMgr (void)
          {  if ( !stricmp(config.autoFMail102Path, configPath) )
                displayMessage("AutoExport for FMail 1.02 format should be set to another directory");
             else
-            if ( (fml102handle = open(strcat(strcpy(tempStr, config.autoFMail102Path), "FMAIL.NOD"), O_WRONLY|O_BINARY|O_CREAT|O_TRUNC, S_IREAD|S_IWRITE)) != -1 )
+            if ( (fml102handle = open(strcat(strcpy(tempStr, config.autoFMail102Path), dNODFNAME), O_WRONLY|O_BINARY|O_CREAT|O_TRUNC, S_IREAD|S_IWRITE)) != -1 )
             {  fml102 = 1;
                nodeHeader2 = *nodeHeader;
                strcpy(strchr(nodeHeader2.versionString, '\x1a'), "/conv\x1a");

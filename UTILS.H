@@ -108,6 +108,7 @@ u16    getKludge     (char *txt, char *kludge, char *subfield, u16 bufsize);
 void   getKludgeNode (char *txt, char *kludge, nodeNumType *nodeNum);
 u16    firstFile     (u8 *string, u8 **filename);
 u16    nextFile      (u8 **filename);
+char  *stristr       (const char *str1, const char *str2);
 
 //---------------------------------------------------------------------------
 #endif  // utilH

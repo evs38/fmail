@@ -1,40 +1,43 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 
 #include "fmail.h"
-#include "msgmsg.h"
+
 #include "nodeinfo.h"
+
 #include "areainfo.h"
+#include "cfgfile.h"
 #include "config.h"
 #include "log.h"
+#include "msgmsg.h"
 #include "utils.h"
-#include "cfgfile.h"
 #include "version.h"
 
 
@@ -56,7 +59,7 @@ void initNodeInfo (void)
    nodeInfoType *nodeBuf;
 
    if ( !openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf) )
-      logEntry ("Bad or missing FMAIL.NOD", LOG_ALWAYS, 2);
+      logEntry ("Bad or missing "dNODFNAME, LOG_ALWAYS, 2);
 
    nodeCount = min(MAX_NODES,(u16)(nodeHeader->totalRecords));
 

@@ -142,6 +142,8 @@ typedef struct
 
 // ********** FMAIL.CFG **********
 
+#define dCFGFNAME     "fmail.cfg"
+
 #define MAX_AKAS      32
 #define MAX_AKAS_F    64
 #define MAX_AKAS_OLD  16
@@ -503,6 +505,9 @@ typedef struct
 
 // ********** FMAIL.AR **********
 
+#define dARFNAME   "fmail.ar"
+#define dARDFNAME  "fmail.ard"
+
 #if defined(__FMAILX__) || defined(__32BIT__)
 #define MAX_AREAS   8000
 #else
@@ -589,6 +594,8 @@ typedef struct
 
 
 // ********** FMAIL.NOD **********
+
+#define dNODFNAME  "fmail.nod"
 
 #if defined __32BIT__ || defined __FMAILX__
 #define MAX_NODES        1024

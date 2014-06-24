@@ -23,6 +23,7 @@
 //
 //---------------------------------------------------------------------------
 
+#include "fmail.h"
 
 #if defined(__FMAILX__) || defined(__32BIT__)
 #define MAX_OUTPKT      1024

@@ -83,7 +83,7 @@ char *expandName(char *fileName)
    return (tempStr[tempIndex]);
 }
 //---------------------------------------------------------------------------
-void writeLogLine (fhandle logHandle, char *s)
+void writeLogLine(fhandle logHandle, char *s)
 {
 	time_t      timer;
 	struct tm   timeBlockL;

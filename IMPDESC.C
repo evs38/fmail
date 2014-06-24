@@ -1,42 +1,43 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <io.h>
-#include <fcntl.h>
-#include <string.h>
-#include <time.h>
 #include <dir.h>
+#include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <time.h>
+
 #include "fmail.h"
+
 #include "cfgfile.h"
-#include "output.h"
 #include "ftlog.h"
 #include "impdesc.h"
+#include "output.h"
 
-
-
-
+//---------------------------------------------------------------------------
 char *findCLiStr (char *s1, char *s2);
 
 s16 importNAInfo(char *fileName)
@@ -67,7 +68,7 @@ s16 importNAInfo(char *fileName)
    {
       close(NAHandle);
       free(buf);
-      logEntry("Can't open FMAIL.AR", LOG_ALWAYS, 2);
+      logEntry("Can't open "dARFNAME, LOG_ALWAYS, 2);
    }
 
    printString("Importing descriptions...\n\n");

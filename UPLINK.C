@@ -20,13 +20,6 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------
-
-#include "uplink.h"
-
-#include "config.h"
-#include "version.h"
-#include "window.h"
-
 #include <dir.h>
 #include <dos.h>
 #include <fcntl.h>
@@ -37,6 +30,13 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+
+#include "uplink.h"
+
+#include "config.h"
+#include "utils.h"
+#include "version.h"
+#include "window.h"
 
 #define NETMSG   -1
 #define PERMSG   -2
@@ -76,21 +76,12 @@ typedef struct
   u16         attribute;
   u16         nextReply;
 } msgMsgType;
-
+//---------------------------------------------------------------------------
 
 static internalMsgType *message;
 
 //---------------------------------------------------------------------------
-static char *insertLine (char *pos, char *line)
-{
-  u16 s;
-  memmove (pos+(s=strlen(line)), pos, strlen(pos)+1);
-  memcpy (pos, line, s);
-
-  return pos + s;
-}
-//---------------------------------------------------------------------------
-static s32 writeMsg (internalMsgType *message, s16 msgType, s16 valid)
+static s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 {
   /* valid = 0 : write .FML file
      valid = 1 : write .MSG file
@@ -240,9 +231,8 @@ static s32 writeMsgLocal (internalMsgType *message, s16 msgType, s16 valid)
 
   /* MSGID kludge */
 
-  sprintf (tempStr, "\1MSGID: %s %08lx\r",
-           nodeStr (&message->srcNode), uniqueID());
-  insertLine (message->text, tempStr);
+  sprintf(tempStr, "\1MSGID: %s %08lx\r", nodeStr(&message->srcNode), uniqueID());
+  insertLine(message->text, tempStr);
 
   /* FMPT kludge */
 

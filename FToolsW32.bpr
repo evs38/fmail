@@ -12,8 +12,8 @@
       OBJ.6\FToolsW32\IMPDESC.obj OBJ.6\FToolsW32\JAMFUN.obj 
       OBJ.6\FToolsW32\JAMMAINT.obj OBJ.6\FToolsW32\MTASK.obj 
       OBJ.6\FToolsW32\OUTPUT.obj OBJ.6\FToolsW32\SMTP.obj 
-      OBJ.6\FToolsW32\STRISTR.obj OBJ.6\FToolsW32\totalsec.obj 
-      OBJ.6\FToolsW32\UPDATE.obj OBJ.6\FToolsW32\UTILS.obj 
+      OBJ.6\FToolsW32\totalsec.obj OBJ.6\FToolsW32\UPDATE.obj 
+      OBJ.6\FToolsW32\UTILS.obj OBJ.6\FToolsW32\UTILS2.obj 
       OBJ.6\FToolsW32\Version.obj"/>
     <RESFILES value="FToolsW32.res"/>
     <DEFFILE value=""/>
@@ -70,10 +70,10 @@
       <FILE FILENAME="MTASK.C" FORMNAME="" UNITNAME="MTASK" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="OUTPUT.C" FORMNAME="" UNITNAME="OUTPUT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="SMTP.C" FORMNAME="" UNITNAME="SMTP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="STRISTR.C" FORMNAME="" UNITNAME="STRISTR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="totalsec.c" FORMNAME="" UNITNAME="totalsec" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UPDATE.C" FORMNAME="" UNITNAME="UPDATE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UTILS.C" FORMNAME="" UNITNAME="UTILS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UTILS2.C" FORMNAME="" UNITNAME="UTILS2" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Version.c" FORMNAME="" UNITNAME="Version" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
@@ -85,10 +85,10 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=68
-Release=3
-Build=48
-Debug=0
-PreRelease=0
+Release=9
+Build=52
+Debug=1
+PreRelease=1
 Special=0
 Private=0
 DLL=0
@@ -98,13 +98,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FTools Windows 32 bit version
-FileVersion=1.68.3.48
+FileVersion=1.68.9.52
 InternalName=FTools
 LegalCopyright=Copyright (c) 1991 - 2013 FMail developers
 LegalTrademarks=
 OriginalFilename=FToolsW32.exe
 ProductName=FMail
-ProductVersion=1.67
+ProductVersion=1.68
 
 [Excluded Packages]
 C:\Program Files\Borland\CBuilder6\Bin\dclstd60.bpl=Borland Standard Components

@@ -41,6 +41,7 @@
 #include "fs_util.h"
 #include "msgra.h"
 #include "nodeinfo.h"
+#include "utils.h"
 #include "window.h"
 
 #include "fdfolder.h"
@@ -132,14 +133,13 @@ static int askFMArExist(u16 *echoCount)
 
    *echoCount = 0;
    ch = 'O';
-   strcpy(tempStr, configPath);
-   strcat(tempStr, "FMAIL.AR");
+   strcpy(stpcpy(tempStr, configPath), dARFNAME);
    if ( findfirst(tempStr, &testBlk, 0) == 0 )
-   {  if ( (ch = askChar("FMAIL.AR already exists. [A]dd, [O]verwrite, [C]ancel ?", "ACO")) == 'C' || !ch )
+   {  if ( (ch = askChar(dARFNAME" already exists. [A]dd, [O]verwrite, [C]ancel ?", "ACO")) == 'C' || !ch )
 	 return 0;
       if ( ch == 'A' )
       {  if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
-	 {  displayMessage("Can't open file FMAIL.AR for input");
+	 {  displayMessage("Can't open file "dARFNAME" for input");
 	    return 0;
 	 }
 	 count = areaHeader->totalRecords;
@@ -167,7 +167,7 @@ static void updateAreas(u16 echoCount)
    rawEchoType  *areaBuf;
 
    if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
-   {  displayMessage("Can't open file FMAIL.AR for output");
+   {  displayMessage("Can't open file "dARFNAME" for output");
       releaseAreas(echoCount);
       return;
    }
@@ -201,14 +201,13 @@ static int askFMNodExist(u16 *nodeCount)
 
    *nodeCount = 0;
    ch = 'O';
-   strcpy(tempStr, configPath);
-   strcat(tempStr, "FMAIL.NOD");
+   strcpy(stpcpy(tempStr, configPath), dNODFNAME);
    if ( findfirst(tempStr, &testBlk, 0) == 0 )
-   {  if ( (ch = askChar("FMAIL.NOD already exists. [A]dd, [O]verwrite, [C]ancel ?", "ACO")) == 'C' || !ch )
+   {  if ( (ch = askChar(dNODFNAME" already exists. [A]dd, [O]verwrite, [C]ancel ?", "ACO")) == 'C' || !ch )
 	 return 0;
       if ( ch == 'A' )
       {  if ( !openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf) )
-	 {  displayMessage("Can't open file FMAIL.NOD for input");
+	 {  displayMessage("Can't open file "dNODFNAME" for input");
 	    return 0;
 	 }
 	 count = nodeHeader->totalRecords;
@@ -236,7 +235,7 @@ static void updateNodes(u16 nodeCount)
    nodeInfoType *nodeBuf;
 
    if ( !openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf) )
-   {  displayMessage("Can't open file FMail.Nod for output");
+   {  displayMessage("Can't open file "dNODFNAME" for output");
       releaseNodes(nodeCount);
       return;
    }
@@ -250,7 +249,7 @@ static void updateNodes(u16 nodeCount)
 }
 
 
-		
+
 static u16 checkDupArea(rawEchoType *echoAreaRec, u16 *echoCount, u16 *skiparname)
 {
    u16 low, mid, high;
@@ -785,8 +784,8 @@ s16 importGechoNd(void)
 
    if ( !askFMNodExist(&nodeCount) )
       return 0;
-   strcpy(tempStr, configPath);
-   strcat(tempStr, "FMAIL.NOD");
+
+   strcpy(stpcpy(tempStr, configPath), dNODFNAME);
    if ( (fileHandle = open(getSourceFileName(" Source file "),
 			   O_BINARY|O_RDWR)) == -1 )
    {  displayMessage("Can't find the requested file.");
@@ -1243,7 +1242,7 @@ s16 importRAInfo(void)
    }
    if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
    {  close(RAHandle);
-      displayMessage("Can't open file FMAIL.AR");
+      displayMessage("Can't open file "dARFNAME);
       return 0;
    }
    if ( config.bbsProgram == BBS_RA1X )
@@ -1349,25 +1348,7 @@ s16 importRAInfo(void)
    displayMessage(tempStr);
    return 0;
 }
-
-
-
-char *findCLiStr(char *s1, char *s2)
-{
-   char *helpPtr;
-
-   if ( strnicmp(s1, s2, strlen(s2)) == 0 )
-      return s1;
-   helpPtr = s1;
-   while ( (helpPtr = stristr(helpPtr+1, s2)) != NULL )
-   {  if ( *(helpPtr-1) == '\r' || *(helpPtr-1) == '\n' )
-	 return helpPtr;
-   }
-   return NULL;
-}
-
-
-
+//---------------------------------------------------------------------------
 s16 importNAInfo(void)
 {
    fhandle        NAHandle;
@@ -1396,7 +1377,7 @@ s16 importNAInfo(void)
    if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
    {  close(NAHandle);
       free(buf);
-      displayMessage("Can't open file FMAIL.AR");
+      displayMessage("Can't open file "dARFNAME);
       return 0;
    }
    working();

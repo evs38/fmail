@@ -1042,30 +1042,7 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
 */
    return (ch);
 }
-
-
-
-char nodeNameStr[24];
-
-char *nodeStr (nodeNumType *nodeNum)
-{
-   char *tempPtr;
-
-   tempPtr = nodeNameStr;
-
-   if (nodeNum->zone != 0)
-      tempPtr += sprintf (tempPtr, "%u:", nodeNum->zone);
-
-   tempPtr += sprintf (tempPtr, "%u/%u", nodeNum->net, nodeNum->node);
-
-   if (nodeNum->point != 0)
-      sprintf (tempPtr, ".%u", nodeNum->point);
-
-   return (nodeNameStr);
-}
-
-
-
+//---------------------------------------------------------------------------
 void displayData (menuType *menu, u16 sx, u16 sy, s16 mark)
 {
    u16      count,

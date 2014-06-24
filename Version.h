@@ -1,3 +1,5 @@
+#ifndef versionH
+#define versionH
 //----------------------------------------------------------------------------
 //
 // Copyright (C) 2011 - 2014  Wilfred van Velzen
@@ -18,8 +20,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------
-#ifndef versionH
-#define versionH
 
 #define VERNUM       "1.68"
 #define SERIAL_MAJOR  1
@@ -34,5 +34,6 @@ const char *VersionString(void);
 
 #define PIDStr() TIDStr()
 
+//----------------------------------------------------------------------------
 #endif  // versionH
 

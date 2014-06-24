@@ -32,8 +32,6 @@
 #include "cfgfile.h"
 
 #include "internal.h" // not necessary for 3rd party programs
-//#include "o_deny.h"
-
 
 // set to non-zero value if automatic conversion is desired
 u16  allowConversion = 0;
@@ -53,25 +51,26 @@ typedef struct
    const u16      init;
    u16            status;
    headerType     header;
+
 } configFileInfoType;
 
 
 static configFileInfoType fileData[MAX_CFG_FILES] =
 {
     /* CFG_GENERAL */
-    {       "FMAIL.CFG", 0, sizeof(configType), -1, NULL,
+    {       dCFGFNAME, 0, sizeof(configType), -1, NULL,
             "FMail Configuration File rev. 1.1\x1a",
             0x0110, DATATYPE_CF, 'CF', 0 },
     /* CFG_NODES */
-    {       "FMAIL.NOD", 0, sizeof(nodeInfoType), -1, NULL,
+    {       dNODFNAME, 0, sizeof(nodeInfoType), -1, NULL,
             "FMail Node File rev. 1.1\x1a",
             0x0110, DATATYPE_NO, 'NO', 0 },
     /* CFG_ECHOAREAS */
-    {       "FMAIL.AR", 0, RAWECHO_SIZE, -1, NULL,
+    {       dARFNAME, 0, RAWECHO_SIZE, -1, NULL,
             "FMail Area File rev. 1.1\x1a",
             0x0110, DATATYPE_AE, 'AE', 0 },
     /* CFG_AREADEF */
-    {       "FMAIL.ARD", 0, RAWECHO_SIZE, -1, NULL,
+    {       dARDFNAME, 0, RAWECHO_SIZE, -1, NULL,
             "FMail Area File rev. 1.1\x1a",
             0x0110, DATATYPE_AD, 'AD', 0 }
 };
@@ -94,7 +93,8 @@ s16 openConfig(u16 fileType, headerType **header, void **buf)
    u16      converted = 0;
    u16      oldAreasFile;
 
-   if (fileType >= MAX_CFG_FILES) return 0;
+   if (fileType >= MAX_CFG_FILES)
+      return 0;
 
    fileData[fileType].recordSize = fileData[fileType].bufferSize;
    if ( fileType == CFG_ECHOAREAS || fileType == CFG_AREADEF )
@@ -209,13 +209,12 @@ error:   close(cfiArr[fileType].handle);
          close(cfiArr[fileType].handle);
          unlink(areaInfoPath);
          rename(tempPath, areaInfoPath);
-     cfiArr[fileType].handle = -1;
-     *header = NULL;
+         cfiArr[fileType].handle = -1;
+         *header = NULL;
          *buf = NULL;
          goto restart;
       }
    }
-// #pragma message ("AANPASSEN") // !!!!!!!!!!!!!!!!!!!!!!
 #ifndef __32BIT__
    if ( fileType == 1 && cfiArr[fileType].header.totalRecords > 340 )
       goto error;
@@ -279,33 +278,33 @@ s16 insRec(u16 fileType, s16 index)
    {  if (lseek(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
         cfiArr[fileType].header.recordSize*(s32)count, SEEK_SET) == -1)
       {  free(tempBuf);
-     return 0;
+         return 0;
       }
       if (read(cfiArr[fileType].handle, tempBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
       {  free(tempBuf);
-     return 0;
+         return 0;
       }
       if (write(cfiArr[fileType].handle, tempBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
       {  free(tempBuf);
-     return 0;
+         return 0;
       }
    }
    free(tempBuf);
    if (lseek(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
              cfiArr[fileType].header.recordSize*(s32)index, SEEK_SET) == -1)
-   {  return 0;
-   }
+     return 0;
+
    if (write(cfiArr[fileType].handle, cfiArr[fileType].recBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
-   {  return 0;
-   }
+     return 0;
+
    cfiArr[fileType].header.totalRecords++;
    if (lseek(cfiArr[fileType].handle, 0, SEEK_SET) == -1)
-   {  return 0;
-   }
+     return 0;
+
    time(&cfiArr[fileType].header.lastModified);
    if (write(cfiArr[fileType].handle, &cfiArr[fileType].header, cfiArr[fileType].header.headerSize) != cfiArr[fileType].header.headerSize)
-   {  return 0;
-   }
+     return 0;
+
    cfiArr[fileType].status = 1;
    return 1;
 }

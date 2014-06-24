@@ -31,6 +31,7 @@
 #include "fmail.h"
 
 #include "areainfo.h"
+
 #include "cfgfile.h"
 #include "crc.h"
 #include "log.h"
@@ -140,7 +141,7 @@ void initAreaInfo(void)
    forwNodeCount = 0;
 
    if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
-      logEntry ("Bad or missing FMAIL.AR", LOG_ALWAYS, 1);
+      logEntry ("Bad or missing "dARFNAME, LOG_ALWAYS, 1);
 
    if ( (echoAreaList = malloc(sizeof(cookedEchoType)*areaHeader->totalRecords+1)) == NULL )
    {
@@ -153,8 +154,7 @@ void initAreaInfo(void)
       getRec(CFG_ECHOAREAS, echoCount);
       if (*areaBuf->areaName == 0)
       {
-	 logEntry ("One or more area tags are not defined. Please run FSetup.",
-		   LOG_ALWAYS, 4);
+	       logEntry ("One or more area tags are not defined. Please run FSetup.", LOG_ALWAYS, 4);
       }
       areaBuf->areaName[ECHONAME_LEN-1] = 0;
       areaBuf->comment[COMMENT_LEN-1] = 0;
@@ -166,8 +166,8 @@ void initAreaInfo(void)
 
       if (echoCount == MAX_AREAS)
       {
-	 sprintf (tempStr, "More than %u areas listed in FMail.Ar", MAX_AREAS);
-         logEntry (tempStr, LOG_ALWAYS, 4);
+	       sprintf(tempStr, "More than %u areas listed in "dARFNAME, MAX_AREAS);
+         logEntry(tempStr, LOG_ALWAYS, 4);
       }
 
       if (config.akaList[areaBuf->address].nodeNum.zone == 0)
@@ -428,7 +428,7 @@ void deInitAreaInfo(void)
       free (helpPtr);
    }
    if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
-      logEntry ("Bad or missing FMAIL.AR", LOG_ALWAYS, 1);
+      logEntry ("Bad or missing "dARFNAME, LOG_ALWAYS, 1);
    for (count = 0; count < areaHeader->totalRecords; count++)
    {
       getRec(CFG_ECHOAREAS, count);

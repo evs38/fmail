@@ -25,11 +25,14 @@
 
 #include "fmstruct.h"
 
+#include <time.h>
+
+//---------------------------------------------------------------------------
 extern time_t startTime;
 
 char *expandName(char *fileName);
 void  initLog   (char *s, s32 switches);
 void  logEntry  (char *s, u16 entryType, u16 errorLevel);
 void  logActive (void);
-
+//---------------------------------------------------------------------------
 #endif  // ftlogH

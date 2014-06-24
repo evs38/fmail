@@ -43,7 +43,9 @@
 #include "output.h"
 #include "version.h"
 
+#if ((__BORLANDC__ >= 0x0500) && defined(__32BIT__))
 #define CANUSE64BIT
+#endif
 
 #ifdef CANUSE64BIT
 #include <stdint.h>
@@ -51,7 +53,6 @@
 #define UINT32_MAX (4294967295UL)
 #endif
 
-extern time_t startTime;
 extern configType config;
 psType *seenByArray;
 psType *pathArray;
@@ -325,31 +326,6 @@ s32 getSwitch(int *argc, char *argv[], s32 mask)
   return result;
 }
 //---------------------------------------------------------------------------
-u32 lastID = 0;
-
-u32 uniqueID(void)
-{
-  if (lastID == 0)
-  {
-    lastID = (u32)startTime << 4;
-    if (  (lastID <= config.lastUniqueID && (config.lastUniqueID - lastID) < 0x80000000UL)
-       || (lastID >  config.lastUniqueID && (lastID - config.lastUniqueID) > 0x80000000UL)
-       )
-      lastID = config.lastUniqueID + 1;
-#ifdef _DEBUG
-    {
-      tempStrType tempStr;
-      sprintf(tempStr, "UID: Saved:%08X New:%08X", config.lastUniqueID, lastID);
-      logEntry(tempStr, LOG_DEBUG, 0);
-    }
-#endif
-  }
-  else
-    lastID++;
-
-  return config.lastUniqueID = lastID;
-}
-//---------------------------------------------------------------------------
 char *removeRe(char *string)
 {
   s16 update;
@@ -470,25 +446,9 @@ char *srchar(char *string, s16 t, s16 c)
    return (helpPtr2);
 }
 //---------------------------------------------------------------------------
-u16  nodeStrIndex = 0;
-char nodeNameStr[2][24];
+extern u16  nodeStrIndex;
+extern char nodeNameStr[2][24];
 
-char *nodeStr(nodeNumType *nodeNum)
-{
-  char *tempPtr;
-
-  tempPtr = nodeNameStr[nodeStrIndex = !nodeStrIndex];
-  if (nodeNum->zone != 0)
-    tempPtr += sprintf (tempPtr, "%u:", nodeNum->zone);
-
-  tempPtr += sprintf (tempPtr, "%u/%u", nodeNum->net, nodeNum->node);
-
-  if (nodeNum->point != 0)
-    sprintf (tempPtr, ".%u", nodeNum->point);
-
-  return nodeNameStr[nodeStrIndex];
-}
-//---------------------------------------------------------------------------
 char *nodeStrZ(nodeNumType *nodeNum)
 {
   char *tempPtr;
@@ -513,23 +473,7 @@ char *findCLStr(char *s1, const char *s2)
   helpPtr = s1;
 
   while ((helpPtr = strstr(helpPtr + 1, s2)) != NULL)
-    if ((*(helpPtr - 1) == '\r') || (*(helpPtr - 1) == '\n'))
-      return helpPtr;
-
-  return NULL;
-}
-//---------------------------------------------------------------------------
-char *findCLiStr(char *s1, const char *s2)
-{
-  char *helpPtr;
-
-  if (strnicmp(s1, s2, strlen(s2)) == 0)
-    return s1;
-
-  helpPtr = s1;
-
-  while ((helpPtr = stristr(helpPtr+1, s2)) != NULL)
-    if ((*(helpPtr-1) == '\r') || (*(helpPtr-1) == '\n'))
+    if (*(helpPtr - 1) == '\r' || *(helpPtr - 1) == '\n')
       return helpPtr;
 
   return NULL;
@@ -610,16 +554,6 @@ void removeLine(char *s)
   }
 }
 //---------------------------------------------------------------------------
-char *insertLine(char *pos, const char *line)
-{
-  u16 s = strlen(line);
-
-  memmove(pos + s, pos, strlen(pos) + 1);
-  memcpy(pos, line, s);
-
-  return pos + s;
-}
-//---------------------------------------------------------------------------
 char *insertLineN (char *pos, char *line, u16 num)
 {
    char *helpPtr;
@@ -637,9 +571,33 @@ char *insertLineN (char *pos, char *line, u16 num)
    }
    return insertLine(pos, line);
 }
+//---------------------------------------------------------------------------
+extern time_t startTime;
+u32 lastID = 0;
 
+u32 uniqueID(void)
+{
+  if (lastID == 0)
+  {
+    lastID = (u32)startTime << 4;
+    if (  (lastID <= config.lastUniqueID && (config.lastUniqueID - lastID) < 0x80000000UL)
+       || (lastID >  config.lastUniqueID && (lastID - config.lastUniqueID) > 0x80000000UL)
+       )
+      lastID = config.lastUniqueID + 1;
+#ifdef _DEBUG
+    {
+      tempStrType tempStr;
+      sprintf(tempStr, "UID: Saved:%08X New:%08X", config.lastUniqueID, lastID);
+      logEntry(tempStr, LOG_DEBUG, 0);
+    }
+#endif
+  }
+  else
+    lastID++;
 
-
+  return config.lastUniqueID = lastID;
+}
+//---------------------------------------------------------------------------
 static void readPathSeenBy (u16 type, char *msgText, psType *psArray,
                             u16 *arrayCount)
 {

@@ -508,7 +508,7 @@ s16 areaFix(internalMsgType *message)
     free(areaFixList);
     free(badAreaList);
 #endif
-    mgrLogEntry ("AreaMgr: Can't open file FMail.Ar for input");
+    mgrLogEntry("AreaMgr: Can't open file "dARFNAME" for input");
     return -1;
   }
 
@@ -537,7 +537,7 @@ s16 areaFix(internalMsgType *message)
     mgrLogEntry(tempStr);
 
     sprintf(message->text, "%s is not authorized to make AreaMgr requests.\r"
-            "Please contact %s.\r\r", nodeStr(&tempNode), config.sysopName);
+                           "Please contact %s.\r\r", nodeStr(&tempNode), config.sysopName);
     helpPtr = strchr(message->text, 0);
     strcpy(message->subject, "AreaMgr error report");
   }
@@ -645,17 +645,20 @@ s16 areaFix(internalMsgType *message)
       helpPtr = strtok(message->text, "\x0a\x0d\x8d");
 
       allType = 0;
-      while ((helpPtr != NULL) && (strncmp (helpPtr, "---", 3) != 0)
-             && (strncmp (helpPtr, "...", 3) != 0)
-             && (strnicmp (helpPtr, "%NOTE", 5) != 0))
+      while (  helpPtr != NULL
+            && strncmp (helpPtr, "---"  , 3) != 0
+            && strncmp (helpPtr, "..."  , 3) != 0
+            && strnicmp(helpPtr, "%NOTE", 5) != 0
+            )
       {
-        while (*helpPtr == ' ') helpPtr++; /* Skip spaces */
+        while (*helpPtr == ' ')
+          helpPtr++;  // Skip spaces
 
         if ((*helpPtr != 0)   && (*helpPtr != 1) &&
             (*helpPtr != ';') && (*helpPtr != '>'))
-          /* Skip kludge lines and comment lines */
+          // Skip kludge lines and comment lines
         {
-          if (*helpPtr == '%') /* % command handling */
+          if (*helpPtr == '%')  // % command handling
           {
             helpPtr++;
             if (  config.mgrOptions.allowCompr
@@ -677,26 +680,24 @@ s16 areaFix(internalMsgType *message)
                      (!strnicmp(helpPtr, "PWD ", 4) ||
                       !strnicmp(helpPtr, "PASSWORD ", 9)) )
             {
-              if ( *(helpPtr+3) == 'S' )
+              if ( *(helpPtr + 3) == 'S' )
                 helpPtr += 5;
 
               strncpy (tempStr, helpPtr+4, 16);
               count = 0;
-              while ((count < 16) && isalnum(tempStr[count])) count++;
+              while (count < 16 && isalnum(tempStr[count]))
+                count++;
               tempStr[count] = 0;
               strupr(tempStr);
               if (strlen(tempStr) <= 4)
-              {
                 passwordChange = 1;
-              }
               else
               {
-                strcpy (nodeInfoPtr->password, tempStr);
+                strcpy(nodeInfoPtr->password, tempStr);
                 passwordChange = 2;
               }
             }
-            else if (config.mgrOptions.allowPktPwd &&
-                     strnicmp(helpPtr, "PKTPWD ", 7) == 0)
+            else if (config.mgrOptions.allowPktPwd && strnicmp(helpPtr, "PKTPWD ", 7) == 0)
             {
               strncpy (tempStr, helpPtr+7, 8);
               count = 0;
@@ -782,12 +783,15 @@ s16 areaFix(internalMsgType *message)
                      (((strnicmp(helpPtr, "ALL", 3) == 0) && !isalnum(*(helpPtr+3))) ||
                       ((strnicmp(helpPtr, "+ALL", 4) == 0) && !isalnum(*(helpPtr+4)))))
             {
-              if (*helpPtr == '+') helpPtr++;
+              if (*helpPtr == '+')
+                helpPtr++;
               helpPtr += 3;
-              while (*helpPtr == ' ') helpPtr++;
+              while (*helpPtr == ' ')
+                helpPtr++;
               if ( (komma = (*helpPtr == ',')) != 0 )
                 helpPtr++;
-              while (*helpPtr == ' ') helpPtr++;
+              while (*helpPtr == ' ')
+                helpPtr++;
 
               if ( strnicmp (helpPtr, "/R", 2) == 0 ||
                    (komma && toupper(*helpPtr) == 'R') )
@@ -881,7 +885,7 @@ s16 areaFix(internalMsgType *message)
             }
           }
         }
-        helpPtr = strtok (NULL, "\x0a\x0d\x8d");
+        helpPtr = strtok(NULL, "\x0a\x0d\x8d");
       }
 
       strcpy(message->subject, "FMail AreaMgr status report");

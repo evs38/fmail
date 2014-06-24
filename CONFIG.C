@@ -211,25 +211,24 @@ s16 isNetmailBoard (u16 board)
 
 
 
-void initFMail (char *s, s32 switches)
+void initFMail(char *s, s32 switches)
 {
-   s16     ch;
-   fhandle configHandle;
-   time_t  time1, time2, time2a;
+  s16         ch;
+  fhandle     configHandle;
+  time_t      time1, time2, time2a;
 	tempStrType tempStr, tempStr2;
-   char	  *helpPtr;
+  char	     *helpPtr;
 
-   strcpy (tempStr, configPath);
-   strcat (tempStr, "FMail.CFG");
+  strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
-   if (((configHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE,S_IREAD|S_IWRITE)) == -1) ||
-       (_read (configHandle, &config, sizeof(configType)) < sizeof(configType))  ||
-       (close(configHandle) == -1))
+  if (((configHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE,S_IREAD|S_IWRITE)) == -1) ||
+      (_read(configHandle, &config, sizeof(configType)) < sizeof(configType))  ||
+      (close(configHandle) == -1))
 	{
-      printString ("Can't read FMail.CFG\n");
-      showCursor ();
-      exit (4);
-   }
+    printString("Can't read "dCFGFNAME"\n");
+    showCursor();
+    exit(4);
+  }
 #if !defined __STDIO__ && !defined __32BIT__
    if (config.genOptions.checkBreak)
    {
@@ -239,7 +238,7 @@ void initFMail (char *s, s32 switches)
    if ((config.versionMajor != CONFIG_MAJOR) ||
        (config.versionMinor != CONFIG_MINOR))
    {
-      printString ("ERROR: FMail.CFG is not created by FSetup ");
+      printString ("ERROR: "dCFGFNAME" is not created by FSetup ");
       printInt (CONFIG_MAJOR);
       printChar ('.');
       printInt (CONFIG_MINOR);
@@ -387,7 +386,7 @@ void deinitFMail(void)
   tempStrType tempStr;
   u16         counter;
 
-  strcpy(stpcpy(tempStr, configPath), "FMail.CFG");
+  strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
   if ( (configHandle = openP(tempStr, O_WRONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1
      || lseek(configHandle, offsetof(configType, uplinkReq), SEEK_SET) == -1L
@@ -398,7 +397,7 @@ void deinitFMail(void)
      )
   {
     close(configHandle);
-    logEntry("Can't write FMail.CFG", LOG_ALWAYS, 0);
+    logEntry("Can't write "dCFGFNAME, LOG_ALWAYS, 0);
     showCursor();
   }
 }

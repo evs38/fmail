@@ -1,24 +1,25 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #include <ctype.h>
 #include <dir.h>
@@ -477,9 +478,9 @@ s16 areaMgr (void)
    if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
    {
       helpPtr = stpcpy (areaInfoPath, configPath);
-      strcpy(helpPtr, "FMAIL.ARD");
+      strcpy(helpPtr, dARDFNAME);
       unlink(areaInfoPath);
-      strcpy(helpPtr, "FMAIL.AR");
+      strcpy(helpPtr, dARFNAME);
       helpPtr = stpcpy(tempStr, areaInfoPath);
       strcpy(helpPtr, "FMAIL.$$$");
       rename(tempStr, areaInfoPath);
@@ -1239,7 +1240,7 @@ s16 areaMgr (void)
          {  if ( !stricmp(config.autoFMail102Path, configPath) )
                displayMessage("AutoExport for FMail 1.02 format should be set to another directory");
 	    else
-	    if ( (fml102handle = open(strcat(strcpy(tempStr, config.autoFMail102Path), "FMAIL.AR"), O_WRONLY|O_BINARY|O_CREAT|O_TRUNC, S_IREAD|S_IWRITE)) != -1 )
+	    if ( (fml102handle = open(strcpy(stpcpy(tempStr, config.autoFMail102Path), dARFNAME), O_WRONLY|O_BINARY|O_CREAT|O_TRUNC, S_IREAD|S_IWRITE)) != -1 )
 	    {
 	       areaHeader2 = *areaHeader;
 	       strcpy(strchr(areaHeader2.versionString, '\x1a'), "/conv\x1a");

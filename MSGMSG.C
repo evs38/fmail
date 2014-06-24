@@ -351,7 +351,7 @@ void initMsg (s16 noAreaFix)
                           || (arcSize >> 10) < config.maxBundleSize
 // necessary for prevention of truncation of mailbundles: (config.mailer == 2)
                           || config.mailer == 2
-                          || toupper(ext[3]) == (config.mailOptions.extNames ? 'Z' : '9')
+                          || toupper(ext[3]) == (int)(config.mailOptions.extNames ? 'Z' : '9')
                           )
                        )
                     {

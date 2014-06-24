@@ -86,7 +86,7 @@ extern unsigned cdecl _stklen = 16384;
 #endif
 
 #ifdef __WIN32__
-char *smtpID;
+const char *smtpID;
 #endif
 
 extern s32 startTime;
@@ -128,6 +128,8 @@ fhandle msgInfoHandle;
 
 char configPath[128];
 configType config;
+
+u32 lastSavedUniqID = 0;
 
 u16 recovered  = 0;
 u16 alrDeleted = 0;
@@ -414,12 +416,12 @@ int cdecl main(int argc, char *argv[])
   initOutput();
   cls();
 
- #ifndef STDO
+#ifndef STDO
   setAttr(YELLOW, RED, MONO_NORM);
-  printString ("ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n");
-  printString ("³                                                                             ³\n");
-  printString ("³                                                                             ³\n");
-  printString ("ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ");
+  printString("ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n");
+  printString("³                                                                             ³\n");
+  printString("³                                                                             ³\n");
+  printString("ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ");
 
   setAttr(YELLOW, RED, MONO_HIGH);
   gotoPos(3, 1);
@@ -440,7 +442,7 @@ int cdecl main(int argc, char *argv[])
   // Array for linking
   memset(areaSubjChain, 0xff, sizeof(areaSubjChain));
 
-  if (((helpPtr = getenv("FMAIL")) == NULL) || (*helpPtr == 0))
+  if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0)
   {
     strcpy(configPath, argv[0]);
     *(strrchr(configPath, '\\') + 1) = 0;
@@ -452,17 +454,18 @@ int cdecl main(int argc, char *argv[])
       strcat(configPath, "\\");
   }
 
-  strcpy(tempStr, configPath);
-  strcat(tempStr, "fmail.cfg");
+  strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
-  if (((configHandle = open(tempStr, O_RDONLY | O_BINARY | O_DENYWRITE)) == -1)
-      || (_read(configHandle, &config, sizeof(configType)) < sizeof(configType))
-      || (close(configHandle) == -1))
+  if (  (configHandle = open(tempStr, O_RDONLY | O_BINARY | O_DENYWRITE)) == -1
+     || _read(configHandle, &config, sizeof(configType)) < sizeof(configType)
+     || close(configHandle) == -1
+     )
   {
-    printString("Can't read FMail.CFG\n");
+    printString("Can't read "dCFGFNAME"\n");
     showCursor();
     exit(1);
   }
+  lastSavedUniqID = config.lastUniqueID;
   if (config.maxForward < 64)
     config.maxForward = 64;
   if (config.maxMsgSize < 45)
@@ -483,9 +486,10 @@ int cdecl main(int argc, char *argv[])
   if ((helpPtr = strrchr(tempStr2, '\\')) != NULL)
     *helpPtr = 0;
 
-  if  ((!access(tempStr2, 0))
-       && ((semaHandle = open(tempStr, O_WRONLY | O_DENYWRITE | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1)
-       && (errno != ENOFILE))
+  if  (  !access(tempStr2, 0)
+      && (semaHandle = open(tempStr, O_WRONLY | O_DENYWRITE | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1
+      && errno != ENOFILE
+      )
   {
     printString("Waiting for another copy of FMail, FTools or FSetup to finish...\n");
 
@@ -582,7 +586,7 @@ int cdecl main(int argc, char *argv[])
 #endif
 
   if (readAreaInfo())
-    logEntry("Can't read file FMAIL.AR", LOG_ALWAYS, 1);
+    logEntry("Can't read file "dARFNAME, LOG_ALWAYS, 1);
 
   for (count = MAX_NETAKAS - 1; count != 0xffff; count--)
     if (config.netmailBoard[count])
@@ -681,7 +685,7 @@ int cdecl main(int argc, char *argv[])
         showCursor();
         return 0;
       }
-      sprintf(tempStr, "Deleting all messages in "MBNAME " board %u", oldBoard);
+      sprintf(tempStr, "Deleting all messages in "MBNAME" board %u", oldBoard);
       logEntry(tempStr, LOG_ALWAYS, 0);
     }
     else
@@ -1368,7 +1372,7 @@ int cdecl main(int argc, char *argv[])
         while ((bufCount = _read(lastReadHandle, lruBuf, LRU_BUFSIZE)) > 0)
         {
 #ifndef STDO
-          sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / d));
+          sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / ddd));
           gotoTab(39);
           printString(tempStr);
           updateCurrLine();
@@ -2205,6 +2209,33 @@ nextarea:
   return 0;
 }
 //----------------------------------------------------------------------------
+void myexit(void)
+{
+#pragma exit myexit
+
+  if (lastSavedUniqID != 0 && lastSavedUniqID != config.lastUniqueID)
+  {
+    // UniqID changed, save it
+    fhandle     configHandle;
+    tempStrType tempStr;
+
+    strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
+
+    if ( (configHandle = open(tempStr, O_WRONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1
+       || lseek(configHandle, offsetof(configType, lastUniqueID), SEEK_SET) == -1L
+       || write(configHandle, &config.lastUniqueID, sizeof(config.lastUniqueID)) < sizeof(config.lastUniqueID)
+       || close(configHandle) == -1
+       )
+      printString("\nCan't write "dCFGFNAME"\n");
+  }
+
+#ifdef _DEBUG0
+  printString("\nPress any key to continue... ");
+  getch();
+  newLine();
+#endif
+}
+//----------------------------------------------------------------------------
 #undef open
 fhandle openP(const char *pathname, int access, u16 mode)
 {
@@ -2214,16 +2245,6 @@ fhandle openP(const char *pathname, int access, u16 mode)
 fhandle fsopenP(const char *pathname, int access, u16 mode)
 {
   return open(pathname, access, mode);
-}
-//----------------------------------------------------------------------------
-void myexit(void)
-{
-#pragma exit myexit
-#ifdef _DEBUG0
-  printString("\nPress any key to continue... ");
-  getch();
-  newLine();
-#endif
 }
 //----------------------------------------------------------------------------
 
