@@ -1,43 +1,46 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <dos.h>
-#include <io.h>
-#include <fcntl.h>
 #include <ctype.h>
 #include <dir.h>
+#include <dos.h>
+#include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 
 #include "fmail.h"
+
+#include "pack.h"
+
 #include "areainfo.h"
-#include "nodeinfo.h"
+#include "log.h"
 #include "msgmsg.h"
 #include "msgpkt.h"
-#include "utils.h"
-#include "log.h"
-#include "pack.h"
+#include "nodeinfo.h"
 #include "output.h"
+#include "utils.h"
 
 
 #define MAXNETREC    1024
@@ -341,35 +344,29 @@ s16 pack(s16 argc, char *argv[], s32 switches)
 
   if (((netList = malloc(sizeof(netListType))) == NULL) ||
       ((pack = malloc(sizeof(packType))) == NULL))
-  {
-    logEntry ("Not enough memory to pack netmail messages", LOG_ALWAYS, 2);
-  }
+    logEntry("Not enough memory to pack netmail messages", LOG_ALWAYS, 2);
 
-  memset (netList, 0, sizeof(netListType));
-  memset (pack, 0, sizeof(packType));
+  memset(netList, 0, sizeof(netListType));
+  memset(pack, 0, sizeof(packType));
 
-  strcpy (tempStr, configPath);
-  strcat (tempStr, "fmail.pck");
+  strcpy(stpcpy(tempStr, configPath), dPCKFNAME);
 
   if ((fileHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
   {
-    if ((_read (fileHandle, pack, sizeof(packType)) != sizeof(packType)) ||
-        (close (fileHandle) == -1))
-    {
-      logEntry ("Can't read FMail.PCK", LOG_ALWAYS, 1);
-    }
+    if ((_read(fileHandle, pack, sizeof(packType)) != sizeof(packType)) ||
+        (close(fileHandle) == -1))
+      logEntry("Can't read "dPCKFNAME, LOG_ALWAYS, 1);
   }
 
-  printString ("Packing messages...\n\n");
+  printString("Packing messages...\n\n");
 
   netIndex = 0;
 
-  strcpy (tempStr, config.netPath);
-  strcat (tempStr, "*.msg");
+  strcpy(stpcpy(tempStr, config.netPath), "*.msg");
 
-  doneMsg = findfirst (tempStr, &ffblkMsg, 0);
+  doneMsg = findfirst(tempStr, &ffblkMsg, 0);
 
-  while ( !doneMsg )
+  while (!doneMsg)
   {
     msgNum = strtoul(ffblkMsg.ff_name, &helpPtr, 10);
 

@@ -678,9 +678,8 @@ s16 areaMgr (void)
 
    if (badEchoCount)
    {
-      strcpy (tempStr, configPath);
-      strcat (tempStr, "FMail.BDE");
-      unlink (tempStr);
+      strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
+      unlink(tempStr);
    }
 
 // do

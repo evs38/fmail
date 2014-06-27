@@ -1,34 +1,36 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
-
-#include <stdlib.h>
-#include <dos.h>
-#include <io.h>
 #include <conio.h>
-#include <fcntl.h>
 #include <ctype.h>
-#include <sys/stat.h>
+#include <dos.h>
+#include <fcntl.h>
+#include <io.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+
 #include "fmail.h"
+
 #include "window.h"
 
 
@@ -90,45 +92,39 @@ s16 packMgr (void)
    packType *pack;
 
    if ((pack = malloc(sizeof(packType))) == NULL)
-   {
       return 0;
-   }
 
-   memset (pack, 0, sizeof(packType));
+   memset(pack, 0, sizeof(packType));
 
-   strcpy (tempStr, configPath);
-   strcat (tempStr, "FMail.PCK");
+   strcpy(stpcpy(tempStr, configPath), dPCKFNAME);
 
    if ((packHandle = open(tempStr, O_RDONLY|O_BINARY)) != -1)
    {
-      if ((_read (packHandle, pack, sizeof(packType)) < (sizeof(packType)>>1)) ||
-          (close (packHandle) == -1))
-      {
-         displayMessage ("Can't read FMail.PCK");
-      }
+      if ((_read(packHandle, pack, sizeof(packType)) < (sizeof(packType)>>1)) ||
+          (close(packHandle) == -1))
+         displayMessage("Can't read "dPCKFNAME);
    }
 
-   printString ("Page Up  ", 0, 24, YELLOW, BLACK, MONO_HIGH);
-   printString ("Page Down  ", 9, 24, YELLOW, BLACK, MONO_HIGH);
-   printString ("Ins ", 20, 24, YELLOW, BLACK, MONO_HIGH);
-   printString ("Insert  ", 24, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString ("Del ", 32, 24, YELLOW, BLACK, MONO_HIGH);
-   printString ("Delete  ", 36, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString ("Enter ", 44, 24, YELLOW, BLACK, MONO_HIGH);
-   printString ("Edit  ", 50, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString ("Home ", 56, 24, YELLOW, BLACK, MONO_HIGH);
-   printString ("First  ", 61, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString ("End ", 68, 24, YELLOW, BLACK, MONO_HIGH);
-   printString ("Last  ", 72, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString ("\x18\x19", 78, 24, YELLOW, BLACK, MONO_HIGH);
+   printString("Page Up  ", 0, 24, YELLOW, BLACK, MONO_HIGH);
+   printString("Page Down  ", 9, 24, YELLOW, BLACK, MONO_HIGH);
+   printString("Ins ", 20, 24, YELLOW, BLACK, MONO_HIGH);
+   printString("Insert  ", 24, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("Del ", 32, 24, YELLOW, BLACK, MONO_HIGH);
+   printString("Delete  ", 36, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("Enter ", 44, 24, YELLOW, BLACK, MONO_HIGH);
+   printString("Edit  ", 50, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("Home ", 56, 24, YELLOW, BLACK, MONO_HIGH);
+   printString("First  ", 61, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("End ", 68, 24, YELLOW, BLACK, MONO_HIGH);
+   printString("Last  ", 72, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("\x18\x19", 78, 24, YELLOW, BLACK, MONO_HIGH);
 
-   while ((elemCount < MAX_PACK) && (*(*pack)[elemCount] != 0))
-   {
+   while (elemCount < MAX_PACK && *(*pack)[elemCount] != 0)
       elemCount++;
-   }
 
-   if (displayWindow (" Pack Manager ", 5, 5, 71, 6+MAX_PS_WINSIZE) != 0)
-   {  free(pack);
+   if (displayWindow(" Pack Manager ", 5, 5, 71, 6+MAX_PS_WINSIZE) != 0)
+   {
+      free(pack);
       return 0;
    }
 
@@ -271,19 +267,16 @@ s16 packMgr (void)
 
    if (ch == 'Y')
    {
-      strcpy (tempStr, configPath);
-      strcat (tempStr, "FMail.PCK");
+      strcpy(stpcpy(tempStr, configPath), dPCKFNAME);
 
       if (((packHandle = open(tempStr, O_WRONLY|O_CREAT|O_BINARY|O_DENYALL,
                                        S_IREAD|S_IWRITE)) == -1) ||
-          (_write (packHandle, pack, sizeof(packType)) != sizeof(packType)) ||
-          (close (packHandle) == -1))
-      {
-         displayMessage ("Can't write to FMail.PCK");
-      }
+          (_write(packHandle, pack, sizeof(packType)) != sizeof(packType)) ||
+          (close(packHandle) == -1))
+         displayMessage("Can't write to "dPCKFNAME);
    }
-   removeWindow ();
+   removeWindow();
    free(pack);
    return (0);
 }
-
+//---------------------------------------------------------------------------

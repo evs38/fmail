@@ -1274,12 +1274,11 @@ int cdecl main(int argc, char *argv[])
 
     openDup();
 
-    strcpy (tempStr, configPath);
-    strcat (tempStr, "fmail.bde");
+    strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
     ++no_msg;
     if ((tempHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
     {
-      badEchoCount = (read (tempHandle, badEchos,
+      badEchoCount = (read(tempHandle, badEchos,
                             MAX_BAD_ECHOS*sizeof(badEchoType)+1) /
                       sizeof(badEchoType));
       close(tempHandle);
@@ -1287,7 +1286,7 @@ int cdecl main(int argc, char *argv[])
 
     if (switches & SW_B)
     {
-      printString ("Tossing messages from bad message board...\n\n");
+      printString("Tossing messages from bad message board...\n\n");
       openBBSWr(1); // was: openBBSRd();
       moveBadBBS();
       closeBBSWr(1);
@@ -1370,8 +1369,7 @@ int cdecl main(int argc, char *argv[])
 
     if (badEchoCount)
     {
-      strcpy (tempStr, configPath);
-      strcat (tempStr, "fmail.bde");
+      strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
       if ((tempHandle = openP(tempStr, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY|O_DENYNONE,
                               S_IREAD|S_IWRITE)) != -1)
       {

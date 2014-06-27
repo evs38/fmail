@@ -1816,8 +1816,7 @@ nextarea:
 
     return notify(argc, argv);
   else
-    if ((argc >= 2)
-        && ((stricmp(argv[1], "P") == 0) || (stricmp(argv[1], "POST") == 0)))
+    if (argc >= 2 && (stricmp(argv[1], "P") == 0 || stricmp(argv[1], "POST") == 0))
     {
       if (argc < 4 || (argv[2][0] == '?' || argv[2][1] == '?'))
       {
@@ -1847,8 +1846,8 @@ nextarea:
 
       memset(message, 0, INTMSG_SIZE);
 
-      strcpy( message->toUserName,    "All");
-      strcpy( message->fromUserName,  config.sysopName);
+      strcpy(message->toUserName,   "All");
+      strcpy(message->fromUserName, config.sysopName);
 
       postBoard = 0;
       srcAka = 0;
@@ -1907,7 +1906,7 @@ nextarea:
       }
 
       if ((switches & (SW_F | SW_R)) && !*message->subject)
-                  logEntry("-Subj <file name> is required for file attaches and file requests", LOG_ALWAYS, 1);
+        logEntry("-Subj <file name> is required for file attaches and file requests", LOG_ALWAYS, 1);
 
       if (switches & SW_F)
       {
@@ -1923,6 +1922,7 @@ nextarea:
           logEntry("Can't locate text file", LOG_ALWAYS, 1);
         read(lastReadHandle, message->text, TEXT_SIZE - 4096);
         close(lastReadHandle);
+        removeLf(message->text);
         if (!*message->subject)
           strcpy(message->subject, argv[2]);
       }
@@ -1965,12 +1965,12 @@ nextarea:
           getdate(&dateRec);
           gettime(&timeRec);
 
-          message->hours     = timeRec.ti_hour;
-          message->minutes   = timeRec.ti_min;
-          message->seconds   = timeRec.ti_sec;
-          message->day       = dateRec.da_day;
-          message->month     = dateRec.da_mon;
-          message->year      = dateRec.da_year;
+          message->hours   = timeRec.ti_hour;
+          message->minutes = timeRec.ti_min;
+          message->seconds = timeRec.ti_sec;
+          message->day     = dateRec.da_day;
+          message->month   = dateRec.da_mon;
+          message->year    = dateRec.da_year;
 
           message->attribute = ((switches & SW_C) ? CRASH : 0)
                                | ((switches & SW_P) ? PRIVATE : 0) | LOCAL;

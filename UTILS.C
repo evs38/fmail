@@ -43,7 +43,7 @@
 #include "output.h"
 #include "version.h"
 
-#if ((__BORLANDC__ >= 0x0500) && defined(__32BIT__))
+#if __BORLANDC__ >= 0x0500 && defined(__32BIT__)
 #define CANUSE64BIT
 #endif
 
@@ -326,6 +326,74 @@ s32 getSwitch(int *argc, char *argv[], s32 mask)
   return result;
 }
 //---------------------------------------------------------------------------
+//
+// SI     = Saved ID
+// NI     = New ID    (Calculated from start time)
+// MAXINT = 0xFFFFFFFF (2 ^ 32 - 1)
+//
+//
+// NI > SI :
+//
+//    0              SI NI             MAXINT
+// 1: +--------------+--+--------------+       =>  NI = NI
+//
+// and  NI - SI > MAXINT / 2 :
+//
+//    0  SI                         NI MAXINT
+// 2: +--+--------------------------+--+       =>  NI = SI + 1
+//
+//
+//
+// NI <= SI :
+//
+//    0              NI SI             MAXINT
+// 3: +--------------+--+--------------+       =>  NI = SI + 1
+//
+// and  SI - NI > MAXINT / 2 :
+//
+//    0  NI                         SI MAXINT
+// 4: +--+--------------------------+--+       =>  NI = NI
+//
+//
+//
+// 1: Normal situation: new ID is a little bit bigger than the stored ID.
+//
+// 2: The stored ID is a lot smaller than the new ID: The stored ID probably
+//    overflowed past the MAXINT value in the previous session.
+//
+// 3: The new ID is a little bit smaller than the stored ID or eqaul to: This
+//    session is run very shortly after the previous one possibly within the
+//    same second, and or the previous session used a lot of ID's.
+//
+// 4: The new ID is a log smaller than the stored ID: The new ID probably
+//    overflowed past the MAXINT value.
+//
+extern time_t startTime;
+u32 lastID = 0;
+
+u32 uniqueID(void)
+{
+  if (lastID == 0)
+  {
+    lastID = (u32)startTime << 4;
+    if (  (lastID >  config.lastUniqueID && (lastID - config.lastUniqueID) > 0x80000000UL)
+       || (lastID <= config.lastUniqueID && (config.lastUniqueID - lastID) < 0x80000000UL)
+       )
+      lastID = config.lastUniqueID + 1;
+#ifdef _DEBUG
+    {
+      tempStrType tempStr;
+      sprintf(tempStr, "UID: Saved:%08X New:%08X", config.lastUniqueID, lastID);
+      logEntry(tempStr, LOG_DEBUG, 0);
+    }
+#endif
+  }
+  else
+    lastID++;
+
+  return config.lastUniqueID = lastID;
+}
+//---------------------------------------------------------------------------
 char *removeRe(char *string)
 {
   s16 update;
@@ -358,9 +426,11 @@ void removeLfSr(char *msgText)
 //---------------------------------------------------------------------------
 void removeLf(char *msgText)
 {
-  char *oldStart,
-       *newEnd,
-       *helpPtr;
+  char *oldStart
+     , *newEnd
+     , *helpPtr
+     , *wPtr = NULL
+     ;
 #ifdef _DEBUG
   int   n = 0;
 #endif
@@ -371,18 +441,24 @@ void removeLf(char *msgText)
     n++;
 #endif
     // Remove linefeeds (only if preceeded by a (soft) carriage return)
-    if ((*(helpPtr-1) == '\r') || (*(helpPtr-1) == (char)0x8d))
+    if ((wPtr != helpPtr - 1 && *(helpPtr - 1) == '\r') || *(helpPtr - 1) == (char)0x8d)
     {
       *helpPtr = 0;
-      strcpy(newEnd, oldStart);
+      if (newEnd != oldStart)
+        newEnd = stpcpy(newEnd, oldStart);
+      else
+        newEnd = helpPtr;
       oldStart = ++helpPtr;
-      newEnd   = strchr (newEnd, 0);
     }
     // Otherwise replace it with cr
     else
-      *(helpPtr++) = '\r';
+    {
+      wPtr = helpPtr;
+      *helpPtr++ = '\r';
+    }
   }
-  strcpy(newEnd, oldStart);
+  if (newEnd != oldStart)
+    strcpy(newEnd, oldStart);
 #ifdef _DEBUG
   if (n > 0)
   {
@@ -570,32 +646,6 @@ char *insertLineN (char *pos, char *line, u16 num)
       }
    }
    return insertLine(pos, line);
-}
-//---------------------------------------------------------------------------
-extern time_t startTime;
-u32 lastID = 0;
-
-u32 uniqueID(void)
-{
-  if (lastID == 0)
-  {
-    lastID = (u32)startTime << 4;
-    if (  (lastID <= config.lastUniqueID && (config.lastUniqueID - lastID) < 0x80000000UL)
-       || (lastID >  config.lastUniqueID && (lastID - config.lastUniqueID) > 0x80000000UL)
-       )
-      lastID = config.lastUniqueID + 1;
-#ifdef _DEBUG
-    {
-      tempStrType tempStr;
-      sprintf(tempStr, "UID: Saved:%08X New:%08X", config.lastUniqueID, lastID);
-      logEntry(tempStr, LOG_DEBUG, 0);
-    }
-#endif
-  }
-  else
-    lastID++;
-
-  return config.lastUniqueID = lastID;
 }
 //---------------------------------------------------------------------------
 static void readPathSeenBy (u16 type, char *msgText, psType *psArray,
@@ -1299,9 +1349,9 @@ uchar *makeName (uchar *path, uchar *name)
    if (count < echoCount)
    {
       if ( len >= 8 )
-	 --helpPtr;
+	       --helpPtr;
       if ( len >= 7 )
-	 --helpPtr;
+	       --helpPtr;
 
       if ( *helpPtr == '\\' || *(helpPtr+1) == '\\' )
          return "";
@@ -1348,7 +1398,8 @@ uchar *makeFullPath(uchar *deflt, uchar *override, uchar *name)
 
 
 u8 *normalize_nd(u8 *name)
-{  static u16         index;
+{
+  static u16         index;
    static tempStrType tempStr[2];
    u8     *helpPtr;
 
@@ -1370,7 +1421,8 @@ u8 *normalize_nd(u8 *name)
 
 
 u16 getKludge(char *txt, char *kludge, char *subfield, u16 bufsize)
-{  char *helpPtr1, *helpPtr2, *helpPtr3;
+{
+  char *helpPtr1, *helpPtr2, *helpPtr3;
 
    if ( !bufsize )
       return 0;
@@ -1399,53 +1451,56 @@ void getKludgeNode(char *txt, char *kludge, nodeNumType *nodeNum)
           memset(nodeNum, 0, sizeof(nodeNumType));
     }
 }
-
-
+//---------------------------------------------------------------------------
 static tempStrType searchString;
 static u8          *searchPos;
 
 u16 nextFile(u8 **filename)
 {
-   u8 *ep;
+  u8 *ep;
 
-   if ( searchPos == NULL )
-      return 0;
-   do
-   {  if ( *searchPos == 0 )
-         return 0;
-   } while ( *searchPos == ' ' );
-   if ( *searchPos == '\"' )
-   {  ++searchPos;
-      if ( (ep = strchr(searchPos, '\"')) == NULL )
-      {  *filename = searchPos;
-	 searchPos = NULL;
-	 return 1;
-      }
-      *ep = 0;
+  if (searchPos == NULL)
+    return 0;
+  do
+  {
+    if (*searchPos == 0)
+       return 0;
+  } while (*searchPos == ' ');
+  if (*searchPos == '\"')
+  {
+    ++searchPos;
+    if ((ep = strchr(searchPos, '\"')) == NULL)
+    {
       *filename = searchPos;
-      searchPos = ep + 1;
-      return 1;
-   }
-   if ( (ep = strchr(searchPos, ' ')) == NULL )
-   {  *filename = searchPos;
       searchPos = NULL;
       return 1;
-   }
-   *ep = 0;
-   *filename = searchPos;
-   searchPos = ep + 1;
-   return 1;
+    }
+    *ep = 0;
+    *filename = searchPos;
+    searchPos = ep + 1;
+    return 1;
+  }
+  if ((ep = strchr(searchPos, ' ')) == NULL)
+  {
+    *filename = searchPos;
+    searchPos = NULL;
+    return 1;
+  }
+  *ep = 0;
+  *filename = searchPos;
+  searchPos = ep + 1;
+  return 1;
 }
-
+//---------------------------------------------------------------------------
 u16 firstFile(u8 *string, u8 **filename)
 {
-   if ( string == NULL )
-   {  searchPos = NULL;
-      return 0;
-   }
-   strncpy(searchString, string, sizeof(searchString)-1);
-   searchPos = searchString;
-   return nextFile(filename);
+  if (string == NULL)
+  {
+    searchPos = NULL;
+    return 0;
+  }
+  strncpy(searchString, string, sizeof(searchString)-1);
+  searchPos = searchString;
+  return nextFile(filename);
 }
-
-
+//---------------------------------------------------------------------------

@@ -679,6 +679,8 @@ typedef struct
 
 // ********** FMAIL.PCK **********
 
+#define dPCKFNAME  "fmail.pck"
+
 #define PACK_STR_SIZE 64
 #define MAX_PACK      128
 
@@ -688,6 +690,8 @@ typedef packEntryType packType[MAX_PACK];
 
 
 // ********** FMAIL.BDE **********
+
+#define dBDEFNAME  "fmail.bde"
 
 #define MAX_BAD_ECHOS 50
 

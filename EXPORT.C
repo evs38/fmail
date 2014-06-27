@@ -505,10 +505,10 @@ s16 listPackConfig (void)
       displayMessage ("Can't open output file");
       return (0);
    }
-   strcpy (stpcpy (tempStr, configPath), "FMAIL.PCK");
+   strcpy(stpcpy(tempStr, configPath), dPCKFNAME);
    if ((packHandle = open(tempStr, O_RDONLY|O_BINARY|O_DENYNONE)) == -1)
    {
-      displayMessage ("Can't open FMAIL.PCK");
+      displayMessage ("Can't open "dPCKFNAME);
       return (0);
    }
    fprintf (textFile, "\n%s  -  Pack Manager  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);

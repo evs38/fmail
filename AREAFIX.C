@@ -320,7 +320,7 @@ static void sendMsg( internalMsgType *message, char *replyStr
   message->seconds   = timeRec.ti_sec;
 
   sprintf(tempStr, "\1PID: %s\r", PIDStr());
-  insertLine (message->text, tempStr);
+  insertLine(message->text, tempStr);
 
   *msgNum1 = 0;
   *msgNum2 = 0;
@@ -329,8 +329,7 @@ static void sendMsg( internalMsgType *message, char *replyStr
 
   for (count = 0; count < 2; count++)
   {
-    if (((count == 0) && (nodeInfoPtr  != NULL)) ||
-        ((count == 1) && (nodeInfoPtr2 != NULL)))
+    if ((count == 0 && nodeInfoPtr  != NULL) || (count == 1 && nodeInfoPtr2 != NULL))
     {
       if (count)
       {
@@ -338,27 +337,21 @@ static void sendMsg( internalMsgType *message, char *replyStr
         strcpy (message->text, helpPtr);
       }
       if (nodeInfoPtr->node.zone)
-      {
         message->destNode = nodeInfoPtr->node;
-      }
 
-      strcpy (message->toUserName,
-              *nodeInfoPtr->sysopName ? nodeInfoPtr->sysopName : "SysOp");
+      strcpy(message->toUserName, *nodeInfoPtr->sysopName ? nodeInfoPtr->sysopName : "SysOp");
 
       helpPtr = message->text;
 
-      if ((!(nodeInfoPtr->capability & PKT_TYPE_2PLUS)) &&
-          (isLocalPoint(&message->destNode)))
+      if (!(nodeInfoPtr->capability & PKT_TYPE_2PLUS) && isLocalPoint(&message->destNode))
       {
-        node2d (&message->srcNode);
-        node2d (&message->destNode);
+        node2d(&message->srcNode);
+        node2d(&message->destNode);
       }
 
       message->attribute = LOCAL | PRIVATE;
       if (!config.mgrOptions.keepReceipt)
-      {
         message->attribute |= KILLSENT;
-      }
 
       /* INTL kludge */
 
@@ -379,7 +372,7 @@ static void sendMsg( internalMsgType *message, char *replyStr
 
       if (message->srcNode.point != 0)
       {
-        sprintf (tempStr, "\1FMPT %u\r", message->srcNode.point);
+        sprintf(tempStr, "\1FMPT %u\r", message->srcNode.point);
         helpPtr = insertLine (helpPtr, tempStr);
       }
 
@@ -406,9 +399,8 @@ static void sendMsg( internalMsgType *message, char *replyStr
 
       /* MSGID kludge */
 
-      sprintf (tempStr, "\1MSGID: %s %08lx\r",
-               nodeStr (&message->srcNode), uniqueID());
-      helpPtr = insertLine (helpPtr, tempStr);
+      sprintf(tempStr, "\1MSGID: %s %08lx\r", nodeStr(&message->srcNode), uniqueID());
+      helpPtr = insertLine(helpPtr, tempStr);
 
       /* REPLY kludge */
 
@@ -419,9 +411,9 @@ static void sendMsg( internalMsgType *message, char *replyStr
       }
 
       if (count)
-        *msgNum2 = writeMsg (message, NETMSG, 1);
+        *msgNum2 = writeMsg(message, NETMSG, 1);
       else
-        *msgNum1 = writeMsg (message, NETMSG, 1);
+        *msgNum1 = writeMsg(message, NETMSG, 1);
 
       message->srcNode = tempNode;
     }
@@ -1586,18 +1578,17 @@ Send:
 
   if (replyHelp)
   {
-    strcpy(tempStr, configPath);
-    strcat(tempStr, "areamgr.hlp");
+    strcpy(stpcpy(tempStr, configPath), "areamgr.hlp");
 
-    if ((helpHandle = openP(tempStr, O_RDONLY|O_BINARY, 0)) != -1)
+    if ((helpHandle = openP(tempStr, O_RDONLY | O_BINARY, 0)) != -1)
     {
-      bytesRead = read(helpHandle, message->text, 32767);
+      bytesRead = read(helpHandle, message->text, DEF_TEXT_SIZE - 0x1000);  // Er moeten nog wat kludges aan kunnen worden toegevoegd
       close (helpHandle);
-      if ( bytesRead > 0 )
-        *(message->text+bytesRead) = 0;
+      if (bytesRead > 0)
+        *(message->text + bytesRead) = 0;
       else
         *message->text = 0;
-
+      removeLf(message->text);  // Voor het geval het een linux line terminated file is
       strcpy(message->subject, "FMail AreaMgr information");
       sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
     }

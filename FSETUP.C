@@ -809,11 +809,10 @@ int cdecl main(int argc, char *argv[])
   defaultEnumRA =  (echoDefaultsRec.attrRA & BIT3) ?
                    ((echoDefaultsRec.attrRA & BIT5) ? 1 : 2) : 0;
 
-  strcpy (tempStr, configPath);
-  strcat (tempStr, "fmail.bde");
+  strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
   if ((tempHandle = open(tempStr, O_BINARY|O_RDONLY|O_DENYNONE)) != -1)
   {
-    badEchoCount = (read (tempHandle, badEchos,
+    badEchoCount = (read(tempHandle, badEchos,
                           MAX_BAD_ECHOS*sizeof(badEchoType))+1)/sizeof(badEchoType);
     close (tempHandle);
     if (badEchoCount)

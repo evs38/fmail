@@ -109,8 +109,7 @@ void addNew(s32 switches)
       }
       ++areaInfoCount;
    }
-   strcpy(tempStr, configPath);
-   strcat(tempStr, "FMail.BDE");
+   strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
    if ( (tempHandle = open(tempStr, O_BINARY|O_RDONLY|O_DENYNONE)) != -1 )
    {  badEchoCount = (read(tempHandle, badEchos,
 			   MAX_BAD_ECHOS*sizeof(badEchoType))+1)/sizeof(badEchoType);
@@ -230,13 +229,12 @@ freemem:
    sprintf(tempStr, "Areas added: %u, areas already present: %u",
 		     areasAdded, areasExist);
    logEntry(tempStr, LOG_ALWAYS, 0);
-   strcpy(tempStr, configPath);
-   strcat(tempStr, "FMail.BDE");
+   strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
    unlink(tempStr);
 freemem2:
    free(mbPaths);
    free(areaNames);
-   if ( (switches & SW_A) )
+   if (switches & SW_A)
       autoUpdate();
 }
-
+//---------------------------------------------------------------------------
