@@ -1511,15 +1511,13 @@ void removeWindow (void)
       }
    }
 }
-
-
-
-menuType *createMenu (char *title)
+//---------------------------------------------------------------------------
+menuType *createMenu(char *title)
 {
    menuType *menu;
 
    if ((menu = malloc(sizeof(menuType))) == NULL)
-      return (NULL);
+      return NULL;
 
    menu->title      = title;
    menu->xWidth     = 2;
@@ -1528,20 +1526,18 @@ menuType *createMenu (char *title)
    menu->zDataSize  = 0;
    menu->entryCount = 0;
 
-   return (menu);
+   return menu;
 }
-
-
-
-s16 addItem (menuType *menu, u16 entryType, char *prompt, u16 offset,
-             void *data, u16 par1, u16 par2, char *comment)
+//---------------------------------------------------------------------------
+s16 addItem( menuType *menu, u16 entryType, char *prompt, u16 offset
+           , void *data, u16 par1, u16 par2, char *comment)
 {
    u16 promptSize = 0;
    u16 dataSize   = 0;
    u16 count;
 
    if (menu->entryCount == MAX_ENTRIES)
-      return (-1);
+      return -1;
 
    if (prompt == NULL)
       menu->menuEntry[menu->entryCount].key = 0;
@@ -1561,7 +1557,7 @@ s16 addItem (menuType *menu, u16 entryType, char *prompt, u16 offset,
    menu->menuEntry[menu->entryCount].data      = data;
    menu->menuEntry[menu->entryCount].selected  = 0;
    menu->menuEntry[menu->entryCount].par1      = par1;
-        menu->menuEntry[menu->entryCount].par2      = par2;
+   menu->menuEntry[menu->entryCount].par2      = par2;
    menu->menuEntry[menu->entryCount].comment   = comment;
 
    switch (entryType & MASK)
@@ -1570,71 +1566,66 @@ s16 addItem (menuType *menu, u16 entryType, char *prompt, u16 offset,
       case TEXT      :
       case WORD      :
       case EMAIL     :
-                case ALPHA     :
-                case ALPHA_AST :
-                case PACK      :
-                case PATH      :
-                case MB_NAME   :
-                case SFILE_NAME:
-                case FILE_NAME :
-                case NUM_INT   :
-                case NUM_P_INT : dataSize = par1;
-                                 break;
-                case DATE      : dataSize = 11;
-                                 break;
-                case NUM_LONG  : dataSize = 10;
-                                 break;
-                case FUNC_PAR  : dataSize = par1;
-                                 break;
-                case BOOL_INT  : dataSize = 3;
-                                 break;
-                case ENUM_INT  : for (count = 0; count < par2; count ++)
-                                 if (strlen ((*(toggleType*)data).text[count]) > dataSize)
-                                    dataSize = strlen ((*(toggleType*)data).text[count]);
-                                 menu->menuEntry[menu->entryCount].par1 = dataSize;
-                                 break;
-                case BIT_TOGGLE: dataSize = 9;
-                                 break;
-                case NODE      : if (par1 == FAKE)
-                                 {
-                                    dataSize = 29;
-                                    menu->menuEntry[menu->entryCount].par2 = 30;
-                                 }
-                                 else
-                                 {
-                                    dataSize = 23;
-                                    menu->menuEntry[menu->entryCount].par2 = 24;
-                                 }
-                                 break;
+      case ALPHA     :
+      case ALPHA_AST :
+      case PACK      :
+      case PATH      :
+      case MB_NAME   :
+      case SFILE_NAME:
+      case FILE_NAME :
+      case NUM_INT   :
+      case NUM_P_INT : dataSize = par1;
+                       break;
+      case DATE      : dataSize = 11;
+                       break;
+      case NUM_LONG  : dataSize = 10;
+                       break;
+      case FUNC_PAR  : dataSize = par1;
+                       break;
+      case BOOL_INT  : dataSize = 3;
+                       break;
+      case ENUM_INT  : for (count = 0; count < par2; count++)
+                       if (strlen((*(toggleType*)data).text[count]) > dataSize)
+                          dataSize = strlen((*(toggleType*)data).text[count]);
+                       menu->menuEntry[menu->entryCount].par1 = dataSize;
+                       break;
+      case BIT_TOGGLE: dataSize = 9;
+                       break;
+      case NODE      : if (par1 == FAKE)
+                       {
+                          dataSize = 29;
+                          menu->menuEntry[menu->entryCount].par2 = 30;
+                       }
+                       else
+                       {
+                          dataSize = 23;
+                          menu->menuEntry[menu->entryCount].par2 = 24;
+                       }
+                       break;
    }
 
    if (offset)
    {
-      menu->xWidth = max (menu->xWidth,
-                          promptSize + dataSize + offset + (dataSize?6:4));
+      menu->xWidth = max(menu->xWidth, promptSize + dataSize + offset + (dataSize?6:4));
    }
    else
    {
       if (dataSize)
-      {
          dataSize += 2;
-                }
+
       menu->zDataSize = max (menu->zDataSize, dataSize);
       menu->pdEdge    = max (menu->pdEdge, promptSize+4);
       menu->xWidth    = max (menu->xWidth, menu->pdEdge+menu->zDataSize);
 
       if ((entryType & MASK) != EXTRA_TEXT)
-      {
          menu->yWidth++;
-      }
+
    }
    menu->entryCount++;
-   return (0);
+   return 0;
 }
-
-
-
-s16 displayMenu (menuType *menu, u16 sx, u16 sy)
+//---------------------------------------------------------------------------
+s16 displayMenu(menuType *menu, u16 sx, u16 sy)
 {
    testInit ();
 
@@ -1642,15 +1633,12 @@ s16 displayMenu (menuType *menu, u16 sx, u16 sy)
       return 1;
    if (sy+menu->yWidth >= 25)
       sy = 24 - menu->yWidth;
-   if (displayWindow (menu->title, sx, sy,
-                      sx+menu->xWidth-1, sy+menu->yWidth-1) != 0)
-      return (1);
-   displayData (menu, sx, sy, 1);
-   return (0);
+   if (displayWindow(menu->title, sx, sy, sx + menu->xWidth - 1, sy + menu->yWidth - 1) != 0)
+      return 1;
+   displayData(menu, sx, sy, 1);
+   return 0;
 }
-
-
-
+//---------------------------------------------------------------------------
 static nodeNumType convertNodeStr (char *ns, u16 aka)
 {
    nodeNumType tempNode;

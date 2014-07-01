@@ -513,26 +513,28 @@ int cdecl main(int argc, char *argv[])
 #endif
   }
   arcToggle.data = (char*)&config.defaultArc;
-  arcToggle.text[0] = "ARC";
-  arcToggle.retval[0] = 0;
-  arcToggle.text[1] = "ZIP";
-  arcToggle.retval[1] = 1;
-  arcToggle.text[2] = "LZH";
-  arcToggle.retval[2] = 2;
-  arcToggle.text[3] = "PAK";
-  arcToggle.retval[3] = 3;
-  arcToggle.text[4] = "ZOO";
-  arcToggle.retval[4] = 4;
-  arcToggle.text[5] = "ARJ";
-  arcToggle.retval[5] = 5;
-  arcToggle.text[6] = "SQZ";
-  arcToggle.retval[6] = 6;
-  arcToggle.text[7] = "UC2";
-  arcToggle.retval[7] = 8;
-  arcToggle.text[8] = "RAR";
-  arcToggle.retval[8] = 9;
-  arcToggle.text[9] = "JAR";
-  arcToggle.retval[9] = 10;
+  arcToggle.text  [ 0] = "None";
+  arcToggle.retval[ 0] = 0xFF;
+  arcToggle.text  [ 1] = "ARC";
+  arcToggle.retval[ 1] = 0;
+  arcToggle.text  [ 2] = "ZIP";
+  arcToggle.retval[ 2] = 1;
+  arcToggle.text  [ 3] = "LZH";
+  arcToggle.retval[ 3] = 2;
+  arcToggle.text  [ 4] = "PAK";
+  arcToggle.retval[ 4] = 3;
+  arcToggle.text  [ 5] = "ZOO";
+  arcToggle.retval[ 5] = 4;
+  arcToggle.text  [ 6] = "ARJ";
+  arcToggle.retval[ 6] = 5;
+  arcToggle.text  [ 7] = "SQZ";
+  arcToggle.retval[ 7] = 6;
+  arcToggle.text  [ 8] = "UC2";
+  arcToggle.retval[ 8] = 8;
+  arcToggle.text  [ 9] = "RAR";
+  arcToggle.retval[ 9] = 9;
+  arcToggle.text  [10] = "JAR";
+  arcToggle.retval[10] = 10;
 
   mailerToggle.data    = (char*)&config.mailer;
   mailerToggle.text[0] = "FrontDoor";
@@ -946,7 +948,7 @@ int cdecl main(int argc, char *argv[])
   if ((arcMenu = createMenu (" Compression programs ")) == NULL)
     goto nomem;
 
-  addItem (arcMenu, ENUM_INT, "Def", 0, &arcToggle, 0, 10,
+  addItem (arcMenu, ENUM_INT, "Def", 0, &arcToggle, 0, 11,
            "Compression program to be used for nodes not listed in the Node Manager");
   addItem (arcMenu, TEXT, "ARC", 0, config.arc.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
@@ -1004,7 +1006,7 @@ int cdecl main(int argc, char *argv[])
   if ((arc32Menu = createMenu (" Compression programs/32 ")) == NULL)
     goto nomem;
 
-  addItem (arc32Menu, ENUM_INT, "Def", 0, &arcToggle, 0, 10,
+  addItem (arc32Menu, ENUM_INT, "Def", 0, &arcToggle, 0, 11,
            "Compression program to be used for nodes not listed in the Node Manager");
   addItem (arc32Menu, TEXT, "ARC", 0, config.arc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
