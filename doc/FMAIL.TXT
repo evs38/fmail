@@ -2,16 +2,7 @@
 
 
 
-
-
-
-
-
-
-
-
-
-                            FMail 1.67
+                            FMail 1.68
 
 
 
@@ -21,26 +12,10 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           Copyright (C) 1991 - 1999  Folkert J. Wijnstra
           Copyright (C) 2013 - 2014  Wilfred van Velzen
+
+
 
 
                         All rights reserved
@@ -48,138 +23,72 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
                          TABLE OF CONTENTS
 
+1   Introduction
+    1.1  License and disclaimer
+    1.2  Files
+    1.3  System requirements
+    1.4  Various notes
 
+2   Getting started
+    2.1  Converting config files of other echomail processors
 
-1   Introduction  . . . . . . . . . . . . . . . . . . . . . .     3
-    1.1  License and disclaimer . . . . . . . . . . . . . . .     3
-    1.2  Registration   . . . . . . . . . . . . . . . . . . .     4
-    1.3  Files  . . . . . . . . . . . . . . . . . . . . . . .     5
-    1.4  System requirements  . . . . . . . . . . . . . . . .     5
-    1.5  Various notes  . . . . . . . . . . . . . . . . . . .     7
+3   FSetup
+    3.1  FSetup keys
+    3.2  Main menu
+    3.3  Miscellaneous
+         3.3.1  General options
+         3.3.2  Message base
+         3.3.3  Mail options
+         3.3.4  Mgr options
+         3.3.5  Personal mail
+         3.3.6  Addresses 1/2
+         3.3.7  Group names
+         3.3.8  AreaMgr defaults
+    3.4  System info
+         3.4.1  Miscellaneous
+         3.4.2  Directories
+         3.4.3  Log files
+         3.4.5  Swapping
+         3.4.6  Compression
+         3.4.7  Decompression
+    3.5  Import/export
+    3.6  Uplink Manager
+    3.7  Pack Manager
+    3.8  Node Manager
+    3.9  Area Manager
 
-2   Getting started . . . . . . . . . . . . . . . . . . . . .     8
-    2.1  Converting config files of other echomail processors     8
+4   FMail
+    4.1  Scan
+    4.2  Toss
+    4.3  Import
+    4.4  Pack
+         4.4.1  Examples
 
-3   FSetup  . . . . . . . . . . . . . . . . . . . . . . . . .     9
-    3.1  FSetup keys  . . . . . . . . . . . . . . . . . . . .     9
-    3.2  Main menu  . . . . . . . . . . . . . . . . . . . . .    10
-    3.3  Miscellaneous  . . . . . . . . . . . . . . . . . . .    11
-         3.3.1  General options . . . . . . . . . . . . . . .    11
-         3.3.2  Message base  . . . . . . . . . . . . . . . .    12
-         3.3.3  Mail options  . . . . . . . . . . . . . . . .    15
-         3.3.4  Mgr options . . . . . . . . . . . . . . . . .    17
-         3.3.5  Personal mail . . . . . . . . . . . . . . . .    18
-         3.3.6  Addresses 1/2 . . . . . . . . . . . . . . . .    18
-         3.3.7  Group names . . . . . . . . . . . . . . . . .    19
-         3.3.8  AreaMgr defaults  . . . . . . . . . . . . . .    19
-    3.4  System info  . . . . . . . . . . . . . . . . . . . .    20
-         3.4.1  Miscellaneous . . . . . . . . . . . . . . . .    20
-         3.4.2  Directories . . . . . . . . . . . . . . . . .    21
-         3.4.3  Log files . . . . . . . . . . . . . . . . . .    23
-         3.4.5  Swapping  . . . . . . . . . . . . . . . . . .    24
-         3.4.6  Compression . . . . . . . . . . . . . . . . .    24
-         3.4.7  Decompression . . . . . . . . . . . . . . . .    25
-    3.5  Import/export  . . . . . . . . . . . . . . . . . . .    25
-    3.6  Uplink Manager . . . . . . . . . . . . . . . . . . .    26
-    3.7  Pack Manager . . . . . . . . . . . . . . . . . . . .    28
-    3.8  Node Manager . . . . . . . . . . . . . . . . . . . .    29
-    3.9  Area Manager . . . . . . . . . . . . . . . . . . . .    33
+5   AreaMgr
 
-4   FMail . . . . . . . . . . . . . . . . . . . . . . . . . .    37
-    4.1  Scan . . . . . . . . . . . . . . . . . . . . . . . .    37
-    4.2  Toss . . . . . . . . . . . . . . . . . . . . . . . .    37
-    4.3  Import . . . . . . . . . . . . . . . . . . . . . . .    37
-    4.4  Pack . . . . . . . . . . . . . . . . . . . . . . . .    38
-         4.4.1  Examples  . . . . . . . . . . . . . . . . . .    38
+6   FTools
 
-5   AreaMgr . . . . . . . . . . . . . . . . . . . . . . . . .    39
+    6.1  Maint
+    6.2  Delete
+    6.3  Undelete
 
-6   FTools  . . . . . . . . . . . . . . . . . . . . . . . . .    42
-      . . . . . . . . . . . . . . . . . . . . . . . . . . . .    42
-    6.1  Maint  . . . . . . . . . . . . . . . . . . . . . . .    42
-    6.2  Delete . . . . . . . . . . . . . . . . . . . . . . .    43
-    6.3  Undelete . . . . . . . . . . . . . . . . . . . . . .    43
-      . . . . . . . . . . . . . . . . . . . . . . . . . . . .    43
-    6.4  Post . . . . . . . . . . . . . . . . . . . . . . . .    43
-      . . . . . . . . . . . . . . . . . . . . . . . . . . . .    44
-    6.5  Export . . . . . . . . . . . . . . . . . . . . . . .    44
-    6.7  Sort . . . . . . . . . . . . . . . . . . . . . . . .    45
-      . . . . . . . . . . . . . . . . . . . . . . . . . . . .    45
-    6.8  Stat . . . . . . . . . . . . . . . . . . . . . . . .    45
-    6.9  Notify . . . . . . . . . . . . . . . . . . . . . . .    45
+    6.4  Post
 
-    7    Credits  . . . . . . . . . . . . . . . . . . . . . .    46
+    6.5  Export
+    6.7  Sort
 
-APPENDIX A  -   Error messages  . . . . . . . . . . . . . . .    47
+    6.8  Stat
+    6.9  Notify
 
-APPENDIX B  -   Technical notes . . . . . . . . . . . . . . .    50
+7   Credits
 
-INDEX . . . . . . . . . . . . . . . . . . . . . . . . . . . .    52
+8   Support and Contact information
 
+APPENDIX A  -   Error messages
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+APPENDIX B  -   Technical notes
 
 
 
@@ -245,68 +154,9 @@ Your use of the program constitutes your agreement to this license
 and disclaimer and your release of the author from any form of
 liability or litigation.
 
-1.2   Registration
-
-This release of FMail may be used free of charge for individual
-hobby use. It is not allowed to use an unregistered version of
-FMail within a commercial environment (ie. business, governmental
-organization, school, foundation, or any other form of juridical
-person) longer than an evaluation period of four weeks.
-
-Registering FMail enables a number of special features (eg. the
-tearline options). To register FMail, fill out the registration
-form and send it to one of the registration sites, preferably by
-netmail. See FMAILREG.ZIP for more information.
-
-If you want to send me netmail, use crash mail to node 2:283/619
-or use normal netmail routing. If you have access to the Internet,
-you can also send mail to wijnstra@telekabel.nl. The latest
-version of FMail can be found on the Internet FMail Support page
-http://arnhem.telekabel.nl/~wijnstra/. Should this page not be
-available, it is possible that the URL has changed. Please use a
-search engine to find the new location or try
-http://www.fmail.nl.eu.org).
-
-More information about the availability of the FMAIL_HELP fidonet
-echo can be obtained from the registration and support sites or
-me.
-
-Folkert Wijnstra.
-Wageningen, The Netherlands.
-
-FidoNet:    2:283/619
-E-mail:     wijnstra@telekabel.nl
-            wijnstra@fmail.nl.eu.org
-Data:       ++31-317-418615 (V34, V32b, CM, MO)
-Fax:        ++31-317-414760
-WWW:        http://arnhem.telekabel.nl/~wijnstra/ or
-            http://www.fmail.nl.eu.org
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1.3   Files
+1.2   Files
 
 FMail, FSetup and FTools create and use a number of files. Except
 for the last three files, FMail will create and look for these
@@ -363,7 +213,7 @@ FMAIL.BDE      File created  by FMAIL.EXE when new areas are tossed
                next time FMail Toss is started.
 
 
-1.4       System requirements
+1.3       System requirements
 
 To use FMail you  need an IBM PC, AT, 386, 486  or Pentium or fully
 compatible computer  with a mono or  color display and  a harddisk.
@@ -382,54 +232,7 @@ Finally you  need one or more  of these compression  programs: ARC,
 PKZIP, LHA, PAK, ZOO, ARJ, SQZ, UC2, RAR, JAR.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1.5       Various notes
+1.4       Various notes
 
 FMail  supports up to  32 AKAs.  Enter your  AKAs in FSetup  in the
 same order  as in FrontDoor's FDSetup  and GoldED's setup,  i.e. if
@@ -461,31 +264,6 @@ address if that is required by the receiving system.
 
 IMPORTANT: As a  consequence, all node numbers entered  in the node
 manager or the area manager should be 4D addresses!!!
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -531,22 +309,6 @@ IMPORTANT:
 1.        Always check the imported configuration files.
 2.        The archiver  program to  be used  will not  be converted
           correctly in the node manager.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -601,17 +363,6 @@ When editing a group selection window:
 -         Toggle an entry                      The listed character
 
 
-
-
-
-
-
-
-
-
-
-
-
 3.2       Main menu
 
 The main menu of FSetup contains seven options:
@@ -660,19 +411,6 @@ Area Manager
           echomail areas that are processed by FMail.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 3.3       Miscellaneous
 
 The "Miscellaneous" menu contains nine options, which will be
@@ -688,9 +426,7 @@ Sysop Name
 
           Your name. It is used for determining whether or not
           netmail should be imported into the message base netmail
-          board and if mail is addressed to you. Your registration
-          keys (if you are a registered user) are also dependent
-          on the name you enter here.
+          board and if mail is addressed to you.
 
 Mailer
 
@@ -714,7 +450,7 @@ BBS program
           AutoExport function, and you need not specify it if you
           don't plan on using AutoExport.
 
-Tearline (registered users only)
+Tearline
 
           You can define which type of tearline you would like
           FMail to use for messages from your system. The options
@@ -723,12 +459,12 @@ Tearline (registered users only)
           to be empty or absent, you can tell FMail to use a
           Tosser ID (TID) ^A kludge instead.
 
-Custom (registered users only)
+Custom
 
           If you select 'Custom' as the tearline type, FMail will
           use the tearline you enter here.
 
-ReTear (registered users only)
+ReTear
 
           If FMail should replace an existing tearline. Normally
           FMail only retears the message in the outbound packets
@@ -792,10 +528,6 @@ AutoRenumber
           soon as the highest message number in the message base
           has reached the AutoRenumber limit.
 
-
-
-
-
 Check dupe net boards
 
           FMail normally allows you to use the same message base
@@ -815,7 +547,8 @@ Remove 'Re:'
           when replying to a message. FMail will remove the "Re:"
           from subject lines if you turn this option on.
 
-Remove lf/soft cr
+Remove soft cr
+Remove lf
 
           Linefeeds and soft carriage returns are unnecessary in
           echomail messages. In order to save some diskspace, you
@@ -885,39 +618,6 @@ Tossed Areas List
           tossed to the specified file.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 3.3.3     Mail options
 
 This option shows you a menu that lets you control certain aspects
@@ -975,9 +675,6 @@ Use EMS (standard DOS version only)
           Try to use EMS memory to store the signatures of
           messages in. This saves about 64 kb of conventional
           memory.
-
-
-
 
 Dups recs (x1024) (32-bit mode only, start FSetupX with "/32")
 
@@ -1154,7 +851,7 @@ New mail warning
           each time personal netmail or echomail messages have
           been tossed.
 
-Users (registered users only)
+Users
 
           Enter up to eight names of users whose mail should be
           copied to the Personal mail board too.
@@ -1190,38 +887,6 @@ new areas. Of course, these values may be changed in the Area
 Manager, should it be necessary. For more information about the
 offered options, you are referred to the chapter about the Area
 Manager.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 3.4       System info
@@ -1407,8 +1072,6 @@ Local PKTs (optional)
           you place in the Local PKTs directory. It is very easy
           to create duplicates this way!
 
-
-
 Sent mail (optional)
 Received mail (optional)
 
@@ -1534,7 +1197,7 @@ in a directory that is included in the path. Default settings for
 
 each program are automatically created by FSetup when it is run
 for the first time. There are separate windows for settings that
-are use by the 16-bit versions of FMail and the 32-bit versions of
+are used by the 16-bit versions of FMail and the 32-bit versions of
 FMail.
 
 It is important to add the proper command line switches for the
@@ -1556,8 +1219,11 @@ because as soon as you use one of these arguments, FMail won't
 automatically append archive and file info anymore! %p is normally
 left out, because not many archivers require this.
 
-The archiving utility listed behind "Default" is used for nodes
-not listed in the Node Manager.
+The archiving utility listed behind "Default" is used for nodes not
+listed in the Node Manager. And it is used as the archiver for a newly
+created node in the Node Manager. You can also configure the Default
+to 'None', which means that mail for nodes not listed in the Node
+Manager won't be compressed but send as plain .pkt file.
 
 DOS versions only: For each of the compression programs you can
 enter the minimum amount of memory that is required to run the
@@ -1712,11 +1378,6 @@ Origin address
           the request message.
 
 
-
-
-
-
-
 3.7       Pack Manager
 
 The syntax to be used for Pack Manager entries:
@@ -1768,14 +1429,6 @@ orphan status and sends them to node 2:282/301. Messages for
 2:283/216 and 2:283/203 are packed and sent to node 2:283/203. All
 remaining messages for zones 1, 2, 3, 4, 5 and 6 will be sent to
 2:282/1.
-
-
-
-
-
-
-
-
 
 
 3.8       Node Manager
@@ -1833,7 +1486,9 @@ Compression
           archiving program that will be used to compress mail for
           this system. A system is able to change this setting
           using an AreaMgr request message, if %COMPRESSION is
-          allowed in the AreaMgr options.
+          allowed in the AreaMgr options. You can also configure
+          this to 'None', in which case mail for this node is send
+          in uncompressed plain .pkt files.
 
 Capability
 
@@ -1914,7 +1569,7 @@ Route point
           To: name). If so, the message will be automatically
           forwarded.
 
-Rem.maint (registered users only)
+Rem.maint
 
           Allow this system to perform remote maintenance. A
           system that is allowed to perform remote maintenance
@@ -1997,32 +1652,6 @@ means of the INS and DEL keys. When you are ready, press ESC. You
 will then be prompted for a node string with wildcards. If you
 want to change all nodes in zone 2, enter here 2:*. Use of ? is
 also allowed.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 3.9       Area Manager
@@ -2246,33 +1875,7 @@ should be changed.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 4         FMail
-
 
 
 The actual FMail program has four main commands. They are "Scan",
@@ -2320,16 +1923,12 @@ switch will not be sent to your downlinks as this may cause
 duplicate messages to be sent into the net.
 
 
-
 4.3       Import
 
 Imports netmail messages destined for your system into the message
 base. A netmail board should be defined in FSetup. Whether or not
 messages to the Sysop should be imported can also be defined in
 FSetup. The /A switch tells FMail to ingnore AreaMgr requests.
-
-
-
 
 
 4.4       Pack
@@ -2371,7 +1970,6 @@ FMail Pack 2:282/1.1 /C
                status will also be packed.
 
 
-
 4.5       MGR
 
 FMail Mgr only scans the netmail directory and processes AreaMgr
@@ -2380,24 +1978,7 @@ requests found in that directory.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 5         AreaMgr
-
 
 
 AreaMgr is a built-in function of FMail that allows other systems
@@ -2419,91 +2000,76 @@ disconnect from an area, just put a minus '-' before the area tag.
 
 The format of an AreaLink request:
 
-   By: <your name>
-   To: AreaMgr (<node number of dest node>)
-   Re: <AreaMgr password>
-   St: Pvt
-   ---------------------------------------------------------
-               FMAIL_HELP          Connect area FMAIL_HELP
-               FMAIL_HELP /R       Connect area FMAIL_HELP and
-                                   rescan all messages in the
-                                   message base
-               FMAIL_HELP /R=50    Connect area FMAIL_HELP and
-                                   rescan at most 50 messages
-               =FMAIL_HELP /R=50   Rescan the connected area
-                                   FMAIL_HELP without having to
-                                   disconnect it first
+  By: <your name>
+  To: AreaMgr (<node number of dest node>)
+  Re: <AreaMgr password>
+  St: Pvt
+  ---------------------------------------------------------------------------
+  FMAIL_HELP         Connect area FMAIL_HELP
+  FMAIL_HELP /R      Connect area FMAIL_HELP and rescan all messages
+                     in the message base
+  FMAIL_HELP /R=50   Connect area FMAIL_HELP and rescan at most 50 messages
+  =FMAIL_HELP /R=50  Rescan the connected area FMAIL_HELP without having
+                     to disconnect it first
 
-               -FMAIL_HELP         Disconnect area FMAIL_HELP
+  -FMAIL_HELP        Disconnect area FMAIL_HELP
 
-               %+ALL               Connect all available areas
-               %-ALL               Disconnect all areas
+  %+ALL              Connect all available areas
+  %-ALL              Disconnect all areas
 
-               %COMPRESSION ZIP    Change the compression method
-                                   used for your mail to ZIP (or
-                                   ARC/ZIP/LZH/PAK/ZOO/ARJ/SQZ)
-               %PASSWORD ABCDEF    Change your AreaMgr password to
-                                   ABCDEF (password should be at
-                                   least 5 characters and at most
-                                   16 characters long)
-               %PKTPWD QRSTUV      Change your packet password to
-                                   QRSTUV (password may be at most
-                                   8 characters long)
+  %FROM Z:N/N.P      Perform remote maintenance for another system with given
+                     nodenumber. The node or point doing remote maintenance
+                     should use his/her own password. The replies generated
+                     by FMail will be sent to both the system doing remote
+                     maintenance and the system for which the maintenance is
+                     being done.
 
-               %NOTIFY ON          Turn NOTIFY messages on
-               %NOTIFY OFF         Turn NOTIFY messages off
+  %COMPRES ZIP       or
+  %COMPRESSION ZIP   Change the compression method used for your mail to ZIP
+                     (or NON[E]/ARC/ZIP/LZH/PAK/ZOO/ARJ/SQZ/CUS/UC2/RAR/JAR)
+  %PWD ABCDEF        or
+  %PASSWORD ABCDEF   Change your AreaMgr password to ABCDEF (password should
+                     be at least 5 characters and at most 16 characters long)
+  %PKTPWD QRSTUV     Change your packet password to QRSTUV (password may be
+                     at most 8 characters long)
+  %NOTIFY ON         Turn NOTIFY messages on
+  %NOTIFY OFF        Turn NOTIFY messages off
 
-               %HELP               Request this message
-               %LIST               Request a list of areas
-                                   available to you
+  %HELP              Request this message
+  %LIST              Request a list of areas available to you
+  %BLIST             Request a list of areas available to you in
+                     binary format (*.BCL file)
+  %QUERY             Request a list of areas for which you are active
+  %UNLINKED          Request a list of areas to which you are not connected
 
-               %QUERY              Request a list of areas for
-                                   which you are active
-               %UNLINKED           Request a list of areas to
-                                   which you are not connected
+  %RESCAN            Request a rescan of all new areas
+  %RESCAN=50         Request a rescan of at most 50 messages per area for
+                     all new areas
+  %PAUSE             or
+  %PASSIVE           Temporarily disable all areas. This means that you won't
+                     receive any echo mail anymore unless it is addressed to
+                     you personally (only if the sysop on this node has
+                     entered your name correctly in the Node Manager). You
+                     will still be allowed to send echo mail to this system
+                     in areas to which you are connected.
+  %RESUME            or
+  %ACTIVE            Make your node active again.
 
-               %FROM               Perform remote maintenance for
-                                   another system. The node or
-                                   point doing remote maintenance
-                                   should use his/her own
-                                   password. The replies generated
-                                   by FMail will be sent to both
-                                   the system doing remote
-                                   maintenance and the system for
-                                   which the maintenance is being
-                                   done.
+  %AUTOBCL 7         Request to receive a BCL file from FMail every 7 days.
+                     Use 0 if you don't want to receive BCL files anymore.
+                     See FMAIL.DOC for more information about this feature
 
-               %RESCAN             Request a rescan of all new
-                                   areas
-               %RESCAN=50          Request a rescan of at most 50
-                                   messages per area for all new
-                                   areas
+  %NOTE              or
+  ...                or
+  ---                Everything after and below these lines is ignored
 
-               %PASSIVE            Temporarily disable all areas.
-                                   This means that you won't
-                                   receive any echo mail unless it
-                                   is addressed to you personally
-                                   (only if the sysop on this
-                                   system has entered your name
-                                   correctly in the Node Manager).
-                                   You will still be allowed to
-                                   send echo mail to this system
-                                   in areas to which you are
-                                   connected.
-               %ACTIVE             Make your system active again.
+You can also use the -H, -L, -Q and -U switches in the subject line, as
+alternatives to the commands: %HELP, %LIST, %QUERY and %UNLINKED.
 
-               %AUTOBCL 7          Request to receive a BCL file
-                                   from FMail every 7 days. Use 0
-                                   if you don't want to receive
-                                   BCL files anymore. See page 27
-                                   for more information about this
-                                   feature
+And you can specify the compression method in the subject line with
+-ARC. Where 'ARC' is one of the supported compression modes listed
+above with the %COMPRESSION command.
 
-               [---]               Everything below the tear line
-                                   is ignored
-
-You can also use the -H, -L, -Q and -U switches on the subject
-line.
 When FMail processes an AreaMgr request message, it will generate
 a reply, containing the result of the request. This reply will
 look like this:
@@ -2527,7 +2093,7 @@ look like this:
                Node status : ACTIVE
                Notify      : ON
                Compression : PKZip.Exe -ex
-               - available : ARC ZIP LZH PAK ARJ SQZ
+               - available : NONE ARC ZIP LZH PAK ARJ SQZ
 
                Use %HELP in a message to FMail for more
                information.
@@ -2539,48 +2105,7 @@ as where the FMAIL.EXE is located.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 6         FTools
-
 
 
 FTools is the message base maintenance program that comes with
@@ -2601,7 +2126,6 @@ Hudson board number. For the netmail board of the main AKA use
 netmail directory use #NETDIR. For the Bad messages board, the
 Recovery board and the Duplicate messages board, you can use #BAD,
 #REC and #DUP.
-
 
 
 6.1       Maint
@@ -2815,13 +2339,14 @@ IMPORTANT: don't renumber the netmail directory while FrontDoor is
 active.
 
 
-
 6.11      Addnew
 
 Automatically add new areas detected during FMail Toss to the
 FMAIL.AR. FMail will use the default settings defined in the
 AreaMgr defaults section of FSetup. A name for JAM areas is
 generated automatically.
+
+
 
 
 7         Credits
@@ -2876,17 +2401,19 @@ understanding.
 
 
 
-8         Registration sites
 
+8         Support and Contact information
 
-For information about the nearest registration site please see the
-FMAILREG.ZIP file contained in the FMail distribution archive.
+The best way to get support is writing an echomail message in the
+FMAIL_HELP FidoNet area.
+
+If you want to contact the current author directly, write a FidoNet
+net- or crash-mail to Wilfred van Velzen at Nodenumber: 2:280/464
 
 
 
 
 APPENDIX A     -    Error messages
-
 
 
 Below some of FMail's error messages are listed with a brief
@@ -3029,47 +2556,7 @@ Warning: Node xxx is not defined in the Node Manager
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 APPENDIX B     -    Technical notes
-
 
 
 *         The FTSC assigned product code for FMail is 0x81 (129
@@ -3139,178 +2626,4 @@ APPENDIX B     -    Technical notes
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-INDEX
-
-
-Address . . . . . . . .   7, 18, 19, 24, 27, 29, 30, 34, 35, 37, 44
-Area Manager  . .  7, 10, 19, 20, 22, 26, 27, 29, 32-34, 36, 37, 42
-AreaFix . . . . . . . . . . . . . . . . . .   3, 27, 31, 34, 39, 41
-AreaMgr . . . . . . . . . .  3, 7, 17, 19, 23, 28-31, 33, 37-41, 45
-AutoExport  . . . . . . . . . . . . . . . . . . . . . .  11, 12, 26
-BBS . . . . . . .   6, 8, 11-14, 21, 25, 26, 34, 35, 37, 43, 45, 48
-BCL . . . . . . . . . . . . . . . . . . . . . . . . . .  27, 31, 40
-Binary Conference Listing . . . . . . . . . . . . . . . . .  17, 50
-Board number  . . . . . . . . . . . . . . . . . . .  12, 33, 42, 43
-Buffer size . . . . . . . . . . . . . . . . . . . . . . . . . .  21
-Capability  . . . . . . . . . . . . . . . . . .   8, 29, 30, 49, 50
-Color set . . . . . . . . . . . . . . . . . . . . . . . . . . .  21
-Compression . . . . . . . . .  6, 7, 10, 17, 24, 25, 29, 39, 41, 49
-Control-break . . . . . . . . . . . . . . . . . . . . . . .  20, 51
-Decompression . . . . . . . . . . . . . . . . . . . . .   7, 24, 25
-Defaults  . . . . . . . . . . . . . . . . . . . . . . .   5, 19, 45
-Delete  . . . . . . . . . . . . . . . . . . .  9, 12, 17, 42-44, 48
-Directories . . . . . . . . . . . . . . . . . . . .   7, 10, 21, 23
-Duplicate messages  . . . . . . . . . . . .   5, 12, 15, 26, 37, 42
-e-mail  . . . . . . . . . . . . . . . . . . . . . . . .   4, 24, 30
-Empty netmail . . . . . . . . . . . . . . . . . . . . . . . . .  16
-EMS . . . . . . . . . . . . . . . . . . . . . . . . . .   3, 15, 24
-Error messages  . . . . . . . . . . . . . . . . . . . . . . . .  47
-Export  . . . . . . . . . . .  8, 10, 14, 18, 21, 25, 33-37, 44, 47
-Export addresses  . . . . . . . . . . . . . . . . . . . . . . .  47
-File handles  . . . . . . . . . . . . . . . . . . . . . . .  20, 48
-FMAIL.LOC . . . . . . . . . . . . . . . . . . . . . . . . . . .   5
-FML . . . . . . . . . . . . . . . . . . . . . .   5, 21, 22, 47, 48
-Group names . . . . . . . . . . . . . . . . . . . . . . . . . .  19
-Groups  . . . . . . . . . . . . . . . . . . . .   9, 19, 27, 29, 36
-Handles . . . . . . . . . . . . . . . . . . . . . . . .  15, 20, 48
-Hudson message base . . . . . . . . . . . .  12, 21, 42, 45, 48, 50
-Import  . . . . . . . . . . . . . .   8, 10, 13, 17, 25, 26, 33, 37
-Internet  . . . . . . . . . . . . . . . . . . . . . . . . .   4, 24
-JAM message base  . . . . . . . . . . . . . . . . . . . .  3, 6, 33
-Kludge  . . . . . . . . . . . . . . . . . . . . . . . . . .  11, 31
-Log . . . . . . . . . . . . . . . . . . . . . . . . . . . .  23, 45
-Mailer  . . . . . . . . . . . . . . . . . . . . .  6, 8, 11, 22, 30
-Maintenance . . . . . . . . . . . . . . . .  12, 31, 34, 40, 42, 45
-Message base sharing  . . . . . . . . . .  3, 5, 13, 21, 42, 47, 50
-Monochrome  . . . . . . . . . . . . . . . . . . . . . . . .   8, 21
-MSG*.FML  . . . . . . . . . . . . . . . . . . . . . . . . .   5, 47
-MSGID . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  15
-Node Manager
-            7, 8, 10, 19, 22, 24, 25, 29, 31-33, 39, 40, 45, 48, 49
-Notify  . . . . . . . . . . . . . . . . . . . .  17, 30, 39, 41, 45
-Origin line . . . . . . . . . . . . . . . . . . . . . . . .  35, 36
-Pack  . . . . . . . . . . . . . .  3, 5, 10, 28, 30, 37, 38, 42, 47
-Pack Manager  . . . . . . . . . . . . . . . . .   3, 10, 28, 30, 38
-Password  . . . . . . . . . . . . .  17, 22, 27, 31, 32, 39, 40, 48
-PATH  . . . . . . . . . .  7, 13, 16, 18, 21, 23-26, 30, 33, 35, 50
-Personal mail . . . . . . . . . . . . . . . . . . . . .   3, 18, 45
-PKT . . . . . . . . . . . . . . . .   5, 15, 16, 22, 24, 29, 30, 48
-Post  . . . . . . . . . . . . . . . . . . . . . . . . . . .  43, 44
-Private . . . . . . . . . . . . . . . . . . . . . . . .  17, 35, 44
-QQQ . . . . . . . . . . . . . . . . . . . . . . . . . . . .   5, 22
-Registration  . . . . . . . . . . . . . . . . . . . . .   4, 11, 46
-Remote maintenance  . . . . . . . . . . . . . . . . . . . .  31, 40
-Reply chains  . . . . . . . . . . . . . . . . . . . . .  13, 21, 42
-
-Rescan  . . . . . . . . . . . . . . . . . . . . . .   3, 30, 39, 40
-Security  . . . . . . . . . . . . . . .  12, 22, 26, 32, 34, 35, 48
-SEEN-BY . . . . . . . . . . . . . . . . . . . .   13, 31, 34-36, 50
-SMTP  . . . . . . . . . . . . . . . . . . . . . . . . . . .  24, 30
-Sort  . . . . . . . . . . . . . . . . . . . . . . . . . . .  13, 45
-Statistics  . . . . . . . . . . . . . . . . . . . . . . . . . .  45
-Status  . . . . . . . . . .  17, 28, 30, 32, 38, 40, 41, 44, 45, 49
-Swapping  . . . . . . . . . . . . . . . . . . . . . . .  10, 24, 25
-Tearline  . . . . . . . . . . . . . . . . . . . . . . .   4, 11, 13
-Technical notes . . . . . . . . . . . . . . . . . . . . . . . .  50
-Tiny SEEN-BYs . . . . . . . . . . . . . . . . . . . . . . . . .  31
-Undelete  . . . . . . . . . . . . . . . . . . . . . . . . . . .  43
-Uplink Manager  . . . . . . . . . . . . . . . . . .  10, 26, 27, 30
-Via Node  . . . . . . . . . . . . . . . . . . . . . . .  28, 29, 47
-XMS . . . . . . . . . . . . . . . . . . . . . . . . . . . .   3, 24
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+###  End of file  FMAIL.TXT  version: 2014-07-02  ###

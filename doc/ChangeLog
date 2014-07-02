@@ -1,15 +1,49 @@
-2014-05-08  1.68.2.63
-  * The 'Remove lf/soft cr' options are now also working when scanning jam area's.
+2014-07-02  1.68.10.91
+  * Release!
+  * Updated the documentation
+
+2014-07-01  1.68.9.89-Beta
+  * FSetupX: Can configure 'None' as default compressor
+
+2014-06-27  1.68.9.89-Beta
+  * Updated areamgr.hlp (and converted the file name to lowercase)
+  * Utils.c: Documented the uniqueID function
+  * Fixed the removeLf function: consecutive LF's are correctly converted to
+    CR's, not just one.
+  * The line endings in the file send by the 'FTools post' function are
+    converted to fidonet message line endings. (LF to CR)
+  * Idem for the areamgr.hlp file send by AreaFix as response to %help.
+  * A number of config files are now opened/created using lowercase file names.
+
+2014-06-23  1.68.9.86-Beta
+  * FTools uses the fixed uniqueID function.
+  * Made FSetupX compile.
+
+2014-06-23  1.68.8.83-Beta
+  * Can use 'None' as %compression mode in messages to AreaFix.
+
+2014-06-22  1.68.6.80-Beta
+  * Fix uniqueID generation for .pkt file names and msgid's.
+
+2014-06-19  1.68.5.75-Beta
+  * When no archiver is configured send .pkt files plain uncompressed
+  * Whole lot of other mostely cosmetic code changes
+
+2014-05-08  1.68.2.63-Beta
+  * The 'Remove lf/soft cr' options are now also working when scanning
+    jam area's.
   * Log the number of removed lf and cr's per message.
 
-2014-05-07  1.68.2.62
+2014-05-07  1.68.2.62-Beta
   * Split up 'Remove lf/soft cr' option in two separate options.
-  * Renamed variable named 'export' because in later C(++) versions this is a reserved name.
+  * Renamed variable named 'export' because in later C(++) versions this is a
+    reserved name.
   * Cosmetic code changes.
   * Preparations for not packing outbound packages (not finished!)
 
-2014-04-08  1.68.0.50
-  * Log net mail kludges in echo mails (when inbound or outbound logging is turned on).
+2014-04-08  1.68.0.50-Beta
+  * Log net mail kludges in echo mails
+    (when inbound or outbound logging is turned on).
 
 2014-03-21  1.67.1.47
   * Fixed some high ASCII usage.

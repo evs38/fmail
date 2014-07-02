@@ -1,0 +1,17 @@
+I have released a new version of FMail (1.68).
+
+Only the Win32 version has been created. You can download it from sourceforge
+here:
+
+http://sourceforge.net/projects/fmail/files/FMail/1.68/FMailW32-1.68.10.91.gpl.
+zip/download
+
+http://tinyurl.com/n97gnx4
+http://preview.tinyurl.com/n97gnx4
+
+The most important change since the last release is: FMail can now put plain
+uncompressed .pkt files in it's outbound destinations, if you select 'None' as
+compressor for nodes.
+
+But there are a lot more changes and fixes. For the full list see the Changelog
+file inside the zip release file.

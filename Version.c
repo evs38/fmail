@@ -59,9 +59,9 @@
 #define MBNAME "Hudson"
 #endif
 
-#if 1
+#if 0
   #define BETA
-#endif   
+#endif
 
 #ifdef BETA
   #define BLSTR "-Beta"

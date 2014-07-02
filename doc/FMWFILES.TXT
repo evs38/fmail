@@ -1,6 +1,6 @@
 The FMail/Win32 echomail utility package consists of the following files:
 
-AREAMGR.HLP         An example help file that can be sent automatically to
+areamgr.hlp         An example help file that can be sent automatically to
                     downlinks by FMail upon their request.
 
 FILE_ID.DIZ         Description of the FMail package.
@@ -18,7 +18,7 @@ FSetupX.exe         Used to create and update the system data files and to
 
 FToolsW32.exe       Message base maintenance utility.
 
-RTM.EXE             Run-time manager for the 16 bit DPMI executables (FSETUPX).
+RTM.EXE             Run-time manager for the 16 bit DPMI executables (FSetupX).
 
 doc\ChangeLog       List of changes since the 1.60-GPL release
 doc\COPYING         GNU GENERAL PUBLIC LICENSE Version 3

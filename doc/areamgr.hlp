@@ -16,7 +16,13 @@ In the body of the message to AreaMgr (with area FMAIL_HELP as an example) :
   %+ALL              Connect all available areas
   %-ALL              Disconnect all areas
 
-  %FROM Z:N/N.P      Perform remote maintenance for node with given nodenumber
+  %FROM Z:N/N.P      Perform remote maintenance for another system with given
+                     nodenumber. The node or point doing remote maintenance
+                     should use his/her own password. The replies generated
+                     by FMail will be sent to both the system doing remote
+                     maintenance and the system for which the maintenance is
+                     being done.
+
   %COMPRES ZIP       or
   %COMPRESSION ZIP   Change the compression method used for your mail to ZIP
                      (or NON[E]/ARC/ZIP/LZH/PAK/ZOO/ARJ/SQZ/CUS/UC2/RAR/JAR)
