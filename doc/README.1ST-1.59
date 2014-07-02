@@ -1,0 +1,76 @@
+
+FMAIL 1.59c/beta
+================
+In this version the following problems have been fixed:
+- Problem with the Addnew function
+- Problem with the date routines in FTools that caused some messages to be
+  deleted too early.
+- and a few minor problems...
+
+This version 1.59c is a public beta version. This means that you have to be
+extra careful if you want to use this program. The doc files have NOT been
+updated yet! This will be done when the normal version is released. At that
+time, also a new beta will be released. In that beta version, it will be
+possible to assign JAM bases to the netmail, bad, dup and recovery boards.
+
+
+NEW KEY SYSTEM
+==============
+In January 1999, a new key system has been introduced. FMail 1.59 only
+accepts the new key file. IMPORTANT: if you register FMail from now on,
+you should receive one key file and no longer two numeric keys. You should
+put the key file in the directory where the FMail config files are
+located.
+
+There is a free automatic update procedure for original keys. Please see
+the FMail pages on the Internet for more information about the key conversion:
+http://www.fmail.nl.eu.org. If you don't have access to the Internet, please
+send me both original keys and the SysOp name by netmail. Allow about a week
+for processing. Then poll my system again for the key file.
+
+
+ABOUT Y2K
+=========
+As far as I know, there are no significant problems concerning the year 2000
+problem in FMail. However, I cannot guarantee that there will be no problems
+at all. There also may be problems that are caused by the compiler and the
+libraries that come with it. If problems should occurs, please let me know
+as soon as possible. I will then try to fix it as fast as I can.
+
+
+IF YOU ARE USING A VERSION OF FMAIL EARLIER THAN 1.46
+=====================================================
+Please make a backup of both data files AND program files first before
+installing this new version! The layout of the config files has changed,
+so if you want to go back to a version before 1.42g after installing 1.59,
+you should restore the original config files as well.
+
+
+MIXING DPMI 16/32 VERSIONS
+==========================
+The FMail DPMI package contains both 16 bit and 32 bit versions. Running
+those versions at the same time may cause problems. So don't try to start
+FSetup (16 bit) and FMailX32 or FToolsX32 at the same time.
+
+
+WHICH FMAIL TO USE
+==================
+Standard DOS version:   If you run a 8086 or 80286 computer or if you have
+                        a 80386 computer or higher and you don't carry too
+                        many echomail areas.
+DPMI version:           If you use a 80386 computer or higher and carry
+                        more areas than the standard version can handle.
+                        The DPMI version comes in two flavours: 16 bit DPMI
+                        and 32 bit DPMI. The 32 bit version can handle more
+                        areas and has better dupe detection facilities.
+                        Sometimes this version causes problems. In that case
+                        you could try using the 16 bit version.
+Windows/32 version      If you run FMail under Windows/95 or NT.
+OS/2 version:           if you run FMail under OS/2.
+
+
+GOLDBASE
+========
+The GoldBase version of FMail uses the QUICK environment variable to locate
+the NETMAIL.DAT and ECHOMAIL.DAT files.
+

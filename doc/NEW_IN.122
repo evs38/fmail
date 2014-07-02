@@ -1,0 +1,119 @@
+
+
+
+          UPGRADE INFORMATION:
+          ====================
+
+          If you currently are using FMail version 1.02, do the following:
+          -    Backup you config files and your executables. 
+          -    Copy the new executables over the old ones.
+          -    Start  FSetup and  go into  the  Area Manager  and the  Node
+               Manager. Save changes when exiting.
+
+          IMPORTANT: Some programs  that access the FMail  config files may
+          not  be  able to  do  so any  more  after the  upgrade.  With the
+          AutoExport feature, you can export  FMail config files in the old
+          format  to another directory thus enabling other programs to keep
+          working properly.
+
+
+
+          THE MOST IMPORTANT NEW FEATURES IN FMAIL 1.22
+          =============================================
+          -    There's   a  new  Global  function  in  AreaMgr.  It's  also
+               available in  the Node Manager  as well! You first  make the
+               desired  changes  in  the  record.  Changed  fields  get  an
+               asterisk in front of the field name. Fields with an asterisk
+               are  the only  fields that  will  be update  in de  selected
+               records. You can also turn  the asterisk by pressing INS and
+               turn it off by pressing DEL. In the Area Manager you can use
+               the groups to select areas. In the Node Manager you  can use
+               node numbers with wildcards to select records.
+          -    SEEN-BYs are now stored in the right JAM subfields again.
+          -    FMail Pack zone number bug  fixed. This bug caused FMail not
+               to see  the right  zone number of  netmail messages  if they
+               were not  from the main  AKA's zone and  did not  contain an
+               INTL kludge.
+          -    I think the  netmail import problem is fixed  too. I suspect
+               it was caused  by the zone number problem  which also caused
+               FMail Pack to use the wrong zone number.
+          -    The 32-bit  versions of  FMail do  not require  FMLX_ARC any
+               more.
+          -    The problem  with the Other  AKAs option in the  AreaMgr has
+               been fixed.
+          -    ProBoard export fixed.
+          -    List general config fixed (gave an exception if Proboard was
+               selected in FSetup).
+          -    The RA 2.5 AutoExport now exports the area number correctly.
+          -    FMail now marks scanned JAM messages as deleted/sent.
+          -    FTools POST file attach bug has been fixed.
+          -    The maximum size  of JAM subfields  has been increased  from
+               4096 to 8192.
+          -    The Areafix  exception bug in  32 bit versions of  FMail has
+               been fixed.
+
+
+
+
+
+          THE MOST IMPORTANT NEW FEATURES IN FMAIL 1.20
+          =============================================
+
+          GENERAL
+          -------
+          -    FMail now supports 32 AKAs!
+          -    Full netmail board support for all AKAs.
+          -    The Sent and Received mail directories may now be located on
+               other drives.
+          -    FMail  can put  mail for  nodes uncompressed  in a  separate
+               directory.
+          -    Various small bugs have been fixed.
+
+          SETUP
+          -----
+          -    FMail now can import GEcho area files and node files!
+          -    New switch "Never use ARCmail" causes FMail never to use the
+               ARCmail 0.60 naming convention.
+          -    New  switch "Daily  bundles" causes  FMail to  create a  new
+               bundle every day.
+          -    New switch "No point in PATH" causes FMail not to generate a
+               PATH line in  echomail messages that originate from  a point
+               system.
+          -    The  parameter  %p may  be  used  as  an argument  with  the
+               Compression programs.  It contains the  directory where  PKT
+               files should be stored (see also the Node Manager).
+          -    AutoPassive options in the Node Manager.
+          -    Separate entries for 16-bit archivers and 32-bit archivers.
+          -    You can  now enter  a default JAM  base path in  the AreaMgr
+               defaults screen.
+          -    Some date fields have been added to the Node Manager and the
+               Area Manager.
+          -    Added netmail directory to GoldEd export.
+          -    ProBoard AutoExport added.
+          -    FSetup now asks  if a new area  should be added to  the Area
+               Manager.
+
+          FMAIL
+          -----
+          -    The  message 'Skipping garbage'  is now also  entered in the
+               log file.
+          -    AutoPassive  messages  are  now also  sent  to  the downlink
+               concerned.
+          -    Dupe detection has been improved.
+          -    Binkley/Xenia busy flags are supported.
+          -    The Xenia XMRESCAN flag is supported.
+          -    Fixed a bug when reading messages greater than 47kb from PKT
+               files.
+          -    Support for Audit Req bits Hudson netmail messages.
+          -    Fixed  AutoExport bug for RA 2.50 exports with auto-assigned
+               board numbers.
+          -    Fixed change to RAR/UC2 with AreaFix.
+          -    Added check of total sizes of MSGTXT.BBS and MSGTXT.FML.
+
+
+
+
+
+          FTOOLS
+          ------
+          -    Fixed display of RAR/UC2 in FTNOTIFY

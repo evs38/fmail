@@ -1,0 +1,125 @@
+UPGRADE INFORMATION:
+====================
+
+If you currently are using an FMail version between 1.02 and 1.46,
+do the following:
+- Backup you config files and your executables.
+- Copy the new executables over the old ones.
+- Start FSetup and go into the Area Manager and the Node
+  Manager. Save changes when exiting.
+
+IMPORTANT: Some programs that access the FMail config files may
+not be able to do so any more after the upgrade. With the AutoExport
+feature, you can export FMail config files in the old 1.02 format
+to another directory thus enabling other programs to keep working
+properly.
+
+
+NEW/FIXED IN 1.59d/beta
+=======================
+- Long filenames support for JAM bases has been fixed.
+- A problem in the dupe system that could cause exceptions has been fixed.
+- A problem that caused FMail to be slow when the MT aware switch was
+  enabled has been fixed.
+- NEW: FTools Addnew now also can create the AutoUpdate files if you add /A.
+
+
+NEW FEATURES IN 1.59/beta
+=========================
+- The maximum number of nodes has been increased to 8000 for 32 bit and
+  DOS-DPMI versions.
+- FTOOLS ADDNEW function has been added. If you run this command after new
+  areas have been received (FMail Toss), these areas will be added to
+  FMAIL.AR (using the defaults you set on the AreaMgr defaults page in
+  FSetup). After that, you can run FMAIL TOSS /B to retoss the bad messages.
+  You can detect the arrival of new areas by testing from your batch file
+  whether or not FMAIL.BDE exists in the FMail directory.
+- NT compressed directories are now supported.
+- The product code list has been updated to FTSCPROD.005.
+- It's now possible to have netmail messages sent by you be moved to the
+  Personal Mail directory (extra Yes/No toggle).
+- It's now possible to do JAM base maintenance for selected areas.
+- EleBBS support added.
+- SMTP now can handle multiple filenames when sending netmail messages
+  with more than one file attached.
+
+
+PROBLEMS FIXED IN 1.59/beta
+===========================
+- The bug where FMAIL TOSS /B could corrupt the Hudson message base if at
+  the time of execution the message base was almost full has been fixed.
+- Extra checks on the Hudson message base size have been added to prevent
+  message base problems.
+- Fixed statistics in SUMMARY.LOG file.
+- Fixed sort problem of the export addresses in the Area Manager.
+- Global update of the Comment field in the Area Manager has been fixed.
+- Rescan via '=' command in AreaFix messages has been fixed.
+- Update of the QuickBBS info has been fixed.
+- Some time zone related problems have been fixed.
+- A small Y2K problem (100 in Toss Summary log file) has been fixed.
+- Not all memory was released after using the 'List members' in FSetup.
+  This has been fixed.
+- Problem with wrong destination of 'Passive' notify message has been fixed.
+
+
+PROBLEMS FIXED IN 1.48b
+=======================
+- The problem of MsgInfo.BBS not being updated correctly has been fixed.
+- Sometimes FMail displayed negative message numbers. This has been fixed.
+- There is a new switch /t for the FTools Maint command. It fixes problems
+  with incorrect text length fields in MsgHdr.BBS. Normally you should not
+  use this new switch.
+- The export of AreaMgr information to a text file now displays the correct
+  read/write/sysop flags.
+- FTools could cause a division by zero exception on volumes of certain
+  sizes. This problem has been fixed.
+- The prodoct code list has been updated (to FTSCPROD.003).
+- The FastEcho areas import function now imports JAM message base names
+  correctly.
+
+
+PROBLEMS FIXED IN 1.48a
+=======================
+- The problems that were caused by a compilerbug in the 1.48 OS/2 version
+  have been solved.
+- "Registered users only" features should now work correctly.
+- The text filter that removed 'high ASCII' characters from exported files
+  has been removed itself! :-)
+- There were some problems with the AKA selection screen in FSetup which
+  have been fixed.
+- The import routine for FastEcho area and node files has been fixed.
+- If FMail could not determine the cluster size of a partition, a division
+  by zero error could occur. This has been fixed.
+- Fixed some problems in the SMTP code.
+- Improved checking for bad dates in PKT files caused by third party software
+  that is not Y2K compliant.
+- File attaches with BCL files now contain the right source and destination
+  addresses.
+- If you try to clear the email address in the Node Manager, you no longer
+  get a message that the address is not valid.
+- Some problems with the Hudson base have been fixed (badly updated
+  MSGINFO.BBS etc).
+- Some problems with the JAM base have hopefully been fixed (seek errors).
+- In order to track the cause of problems with the AutoPassive system in
+  the Node Manager, a new date field has been added. It is called 'Ref'
+  and contains the reference date that is used by FMail to determine if
+  the node should be set to passive. It is normally the same as the
+  'New bundle' date, but is cleared when the status of a node is changed
+  from Passive to Active.
+
+The program EXPFIX fixes a problem that sometimes occurs when installing the
+current version of FMail (1.48/48a/48b) over an earlier version.
+The export addresses in the Area Manager then seem to have disappeared.
+If you then run EXPFIX once, the export addresses should be back (running
+it again will make the addresses disappear again).
+
+
+NEW FEATURES IN FMAIL 1.48
+==========================
+- Problems with the AutoBCL areafix command have been fixed
+- Dups are not tossed in the Bad messages area anymore
+- The TOSS /B command works again
+- Some problems in the export to GoldEd (AREAS.GLD) have been fixed
+- If a mail bundle is locked, FMail will now create a new bundle instead
+  of displaying an error message.
+

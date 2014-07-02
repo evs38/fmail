@@ -1,0 +1,40 @@
+BUG FIX UPDATE 1.22
+===================
+This is a bug fix update of FMail 1.20. I didn't have time to test everything
+extensively, so please be careful and make a backup first! I'll be away for
+a couple of weeks, so I can't answer all messages immediatly.
+
+IF YOU CARRY MORE ECHO AREAS THAN THE STANDARD VERSION OF FSETUP CAN HANDLE
+===========================================================================
+The current version of FSetup requires more memory than the previous ones.
+As a consequence, you may encounter problems when entering the Area Manager.
+I'll try to find a solution as soon as possible. For the time being, you
+could try using the DPMI version of FSetup which can be found in the FMail
+DPMI package. You can only use this version of FSetup if you use a 80386
+computer or higher.
+
+NEW LOG OPTION IN FMAIL
+=======================
+FMail is now able to log all failed file open commands. You can enable this by
+setting the switch "File open errors" or the switch "DEBUG: log all" to Yes.
+A file open error message does _NOT_ necessarily mean that there is something
+wrong. Not every file that FMail tries to open has to exist. The option is
+meant for debugging purposes, so normally you should DISABLE this option!!!
+
+MIXING DPMI 16/32 VERSIONS
+==========================
+The FMail DPMI package contains both 16 bit and 32 bit versions. Running
+those versions at the same time may cause problems. So don't try to start
+FSetup (16 bit) and FMailX32 or FToolsX32 at the same time. I'll try to
+find a solution for this problem.
+
+WHICH FMAIL TO USE
+==================
+Standard DOS version:   If you run a 8086 or 80286 computer or if you have
+                        a 80386 computer or higher and you don't carry too
+                        many echomail areas.
+DPMI version:           If you use a 80386 computer or higher and carry
+                        more areas than the standard version can handle.
+Windows/32 version      If you run FMail under Windows/95 or NT.
+OS/2 version:           if you run FMail under OS/2.
+

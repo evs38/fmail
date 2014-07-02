@@ -1,0 +1,111 @@
+UPGRADE INFORMATION:
+====================
+
+If you currently are using an FMail version between 1.02 and 1.46,
+do the following:
+- Backup you config files and your executables.
+- Copy the new executables over the old ones.
+- Start FSetup and go into the Area Manager and the Node
+  Manager. Save changes when exiting.
+
+IMPORTANT: Some programs that access the FMail config files may
+not be able to do so any more after the upgrade. With the AutoExport
+feature, you can export FMail config files in the old 1.02 format
+to another directory thus enabling other programs to keep working
+properly.
+
+
+NEW FEATURES IN FMAIL 1.48
+==========================
+- Problems with the AutoBCL areafix command have been fixed
+- The Windows version is now optimized for Pentium processors (and up) and
+  won't run om i486 processors anymore
+- Dups are not tossed in the Bad messages area anymore
+- The TOSS /B command works again
+- Some problems in the export to GoldEd (AREAS.GLD) have been fixed
+- If a mail bundle is locked, FMail will now create a new bundle instead
+  of displaying an error message.
+
+
+NEW FEATURES IN FMAIL 1.42g/1.44/1.46
+=====================================
+
+FMail 1.46 contains a fix for a problem with the key system that mainly
+affected unregistered users. Also it contains a fixed OS/2 version. The
+new features in FMail 1.42g/1.44 were:
+
+- The Windows/32 version can send mail directly thru the Internet
+- GoldEd AutoExport files are now exported correctly (R/O Loc flags)
+- The import of BACKBONE.NA is now case insensitive
+- FSetup now uses less memory!
+- FMailX32 now runs archivers correctly again (fixed compiler bug)
+- Max number of nodes is now 1024 in DPMI versions and 32 bit versions
+- FSetup2 Netmail boards buffer problem fixed (compiler bug)
+- Nodes now can be made read/only, write/only or locked. In the Area Manager
+  Exports list you can set nodes to Read Only by pressing R, to Write Only
+  by pressing W and to Locked (both read and write not allowed) by pressing L.
+
+
+SOME OF THE MOST IMPORTANT NEW FEATURES IN FMAIL 1.40g
+======================================================
+
+FMail
+=====
+- The message size is now variable (32 bit versions only).
+  See FSetup->Mail options.
+- There now is a QuickBBS Goldbase version available.
+  The message base maintenance features of FTools are not available
+  in the Goldbase version.
+- You can change the time out period that is used when two copies of
+  FMail are started (previously it was  30 seconds). See FSetup, System info,
+  Miscellaneous
+- FMail can now create a list of all areas in which mail has been tossed.
+  See FSetup, Micellaneous, Message base
+- If you place a file called AREAMGR.TXT in the FMail directory,
+  the contents of that file will be appended to areafix messages.
+- The New Bundle date field is now updated correctly.
+- The 'Use AKA' field in the node manager now has also effect on the
+  origin address of echomail messages.
+- Long file names are now supported for JAM areas. You have to enable it
+  in FSetup: System info->Miscellaneous. Please make sure that the drive
+  that you use for JAM supports long file names, as the internal checking
+  isn't optimal yet.
+- I've taken a special safety measure in the JAM code. If some of the JAM
+  pointers are not correct, a seek operation may occur that causes the file
+  file to get very large. Such a seek operation now isn't executed anymore,
+  but displays the message "Illegal Seek operation".
+  IMPORTANT: for the export of area information to a BBS program, you should
+  set the flag "BBS export" in the BBS info section to Yes.
+- Auto JAM path creation. FMail will generate a unique name for new JAM
+  areas.
+- The '=' command can now be used in Areafix messages to rescan an area
+  without having to disconnect it first.
+- FMail can generate Binary Conference Listings. Downlinks can request such a
+  BCL file by using the command %BLIST in Areafix requests. In the Uplink
+  Manager you can specify that an uplink can send BCL's. FMail will then
+  automatically move received BCL files to the config directory and
+  change the file entry in the Uplink Manager. See the included file
+  FSC-0057.003 for more information.
+  NEW SWITCH: Uplink Areas List in the Mgr Options menu. Currently this
+  only works for BCL files. In future, it will be available for the
+  <AREANAME> <DESCRIPTION> files as well.
+- Variable number of links per echomail area (is now 64).
+- JAR supporthas been added! Suggested formats are for compression
+  "JAR.EXE a -y" and for decompression "JAR.EXE e -y -o%f %a". Suggestions
+  for other/better switches are welcome.
+
+
+FSetup
+======
+- Now there is a native OS/2 version of FSetup!
+- FSetup now always performs an AutoUpdate procedure when exiting.
+- IMPORTANT: when leaving the Area Manager, FMail now no longer asks you
+  if you want to save the changes you made. FMail now saves the changes
+  immediatly after you exit a specific area.
+- New alias F9 for the F5 function key in the Area Manager and Node Manager.
+  New alias F10 to exit Area Manager and Node Manager.
+- New option in the Node Manager: you now can use the F8 key to get a list
+  of all areas a node is connected to. Later it will be possible to add new
+  areas this way.
+
+
