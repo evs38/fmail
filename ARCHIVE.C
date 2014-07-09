@@ -1178,8 +1178,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   {
     if (config.mailer != dMT_Binkley && config.mailer != dMT_Xenia)
     {
-      // fileAttach always does a kill/sent so there is no need to make an exception for attaching .pkt files
-      if (fileAttach(archiveStr, srcNode, destNode, nodeInfo))
+      if (fileAttach(archiveStr, srcNode, destNode, nodeInfo, nodeInfo->archiver != 0xFF))
       {
         if (semaHandle >= 0)
         {

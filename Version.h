@@ -21,9 +21,9 @@
 //
 //----------------------------------------------------------------------------
 
-#define VERNUM       "1.68"
+#define VERNUM       "1.69"
 #define SERIAL_MAJOR  1
-#define SERIAL_MINOR  68
+#define SERIAL_MINOR  69
 
 const char *VersionStr   (void);
 const char *TearlineStr  (void);

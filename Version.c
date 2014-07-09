@@ -19,6 +19,10 @@
 //
 //----------------------------------------------------------------------------
 
+#if 1
+  #define BETA
+#endif
+
 #include "Version.h"
 
 #include "pp_date.h"
@@ -57,10 +61,6 @@
 #else
 #define MBTYPE
 #define MBNAME "Hudson"
-#endif
-
-#if 0
-  #define BETA
 #endif
 
 #ifdef BETA

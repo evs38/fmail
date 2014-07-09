@@ -21,16 +21,16 @@
 //
 //---------------------------------------------------------------------------
 
+#include <ctype.h>
+#include <dir.h>
+#include <dos.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dir.h>
-#include <dos.h>
-#include <io.h>
-#include <ctype.h>
-#include <fcntl.h>
 #include <sys/stat.h>
-#include <errno.h>
 #include <time.h>
 
 #include "fmail.h"
@@ -71,9 +71,8 @@ extern internalMsgType *message;
 
 s16 messagesMoved = 0;
 
-
-
-void moveMsg (char *msgName, char *destDir)
+//---------------------------------------------------------------------------
+void moveMsg(char *msgName, char *destDir)
 {
   s32          highMsgNum;
   struct ffblk ffblkMsg;
@@ -111,8 +110,7 @@ void moveMsg (char *msgName, char *destDir)
     else if (destDir == config.rcvdPath) highMsgNumRcvd = highMsgNum;
   }
 }
-
-
+//---------------------------------------------------------------------------
 static void removeTrunc(char *path)
 {
   s16          doneMsg;
@@ -162,8 +160,7 @@ static void removeTrunc(char *path)
     }
   }
 }
-
-
+//---------------------------------------------------------------------------
 static void subRemTrunc(char *path)
 {
   tempStrType  tempStr;
@@ -189,7 +186,7 @@ static void subRemTrunc(char *path)
     doneDir = findnext (&ffblkDir);
   }
 }
-
+//---------------------------------------------------------------------------
 u32 totalBundleSize[MAX_NODES];
 
 void initMsg (s16 noAreaFix)
@@ -474,10 +471,8 @@ void initMsg (s16 noAreaFix)
   else
     removeTrunc(config.outPath);
 }
-
-
-
-u16 getFlags (char *text)
+//---------------------------------------------------------------------------
+u16 getFlags(char *text)
 {
   u16      flags = 0;
   char     *helpPtr1,
@@ -514,11 +509,9 @@ u16 getFlags (char *text)
     helpPtr1++;
   }
 
-  return (flags);
+  return flags;
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 attribMsg (u16 attribute, s32 msgNum)
 {
   tempStrType tempStr1,
@@ -539,26 +532,18 @@ s16 attribMsg (u16 attribute, s32 msgNum)
   close(msgMsgHandle);
 
   if (attribute & RECEIVED)
-  {
-    moveMsg (tempStr1, config.rcvdPath);
-  }
+    moveMsg(tempStr1, config.rcvdPath);
   else
-  {
     if (attribute & SENT)
-    {
-      moveMsg (tempStr1, config.sentPath);
-    }
-  }
+      moveMsg(tempStr1, config.sentPath);
+
   globVars.createSemaphore++;
-  return (0);
+  return 0;
 }
-
-
-
-//extern nodeInfoType *nodeInfo;
+//---------------------------------------------------------------------------
 extern u16           nodeCount;
 
-s16 readMsg (internalMsgType *message, s32 msgNum)
+s16 readMsg(internalMsgType *message, s32 msgNum)
 {
   tempStrType tempStr1,
   tempStr2;
@@ -664,7 +649,7 @@ s16 readMsg (internalMsgType *message, s32 msgNum)
 
   make4d (message);
 
-  /* re-route to point */
+  // re-route to point
   if (getLocalAka(&message->destNode) >= 0)
   {
     count = 0;
@@ -686,18 +671,18 @@ s16 readMsg (internalMsgType *message, s32 msgNum)
     }
   }
 
-  return (0);
+  return 0;
 }
-
+//---------------------------------------------------------------------------
 
 #define MAX_FNPTR 8
 
 s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 {
-  /* valid = 0 : write .FML file
-     valid = 1 : write .MSG file
-     valid = 2 : write READ-ONLY .MSG file
-  */
+// valid = 0 : write .FML file
+// valid = 1 : write .MSG file
+// valid = 2 : write READ-ONLY .MSG file
+
   fhandle      msgHandle;
   int          len;
   tempStrType  tempStr
@@ -712,41 +697,38 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
   u16          xu
              , fnPtrCnt = 0;
 
-  memset (&msgMsg, 0, sizeof(msgMsgType));
+  memset(&msgMsg, 0, sizeof(msgMsgType));
 
-  strcpy (msgMsg.fromUserName, message->fromUserName);
-  strcpy (msgMsg.toUserName, message->toUserName);
+  strcpy(msgMsg.fromUserName, message->fromUserName);
+  strcpy(msgMsg.toUserName, message->toUserName);
 
-  if ( (message->attribute & FILE_ATT) &&
-       (strchr(message->subject,'\\') == NULL) )
+  if ((message->attribute & FILE_ATT) && strchr(message->subject, '\\') == NULL)
   {
     helpPtr = strchr(strcpy(tempFName, message->subject), ' ');
-    if ( helpPtr != NULL )
+    if (helpPtr != NULL)
       *(helpPtr++) = 0;
-    if ( strlen(config.inPath) + strlen(message->subject) < 72 )
+    if (strlen(config.inPath) + strlen(message->subject) < 72)
       strcpy(stpcpy(msgMsg.subject, config.inPath), tempFName);
     else
       strcpy(msgMsg.subject, tempFName);
-    while ( helpPtr != NULL && fnPtrCnt < MAX_FNPTR )
+    while (helpPtr != NULL && fnPtrCnt < MAX_FNPTR)
     {
-      while ( *helpPtr == ' ' )
+      while (*helpPtr == ' ')
         ++helpPtr;
-      if ( !*helpPtr )
+      if (!*helpPtr)
         break;
       fnPtr[fnPtrCnt++] = helpPtr;
-      if ( (helpPtr = strchr(helpPtr, ' ')) != NULL )
+      if ((helpPtr = strchr(helpPtr, ' ')) != NULL)
         *(helpPtr++) = 0;
     }
   }
   else
-  {
-    strcpy (msgMsg.subject, message->subject);
-  }
+    strcpy(msgMsg.subject, message->subject);
 
-  sprintf (msgMsg.dateTime, "%02u %.3s %02u  %02u:%02u:%02u",
-           message->day,      months+(message->month-1)*3,
-           message->year%100, message->hours,
-           message->minutes,  message->seconds);
+  sprintf( msgMsg.dateTime, "%02u %.3s %02u  %02u:%02u:%02u"
+         , message->day,      months + (message->month - 1) * 3
+         , message->year%100, message->hours
+         , message->minutes,  message->seconds);
 
   msgMsg.wrTime.hours    = message->hours;
   msgMsg.wrTime.minutes  = message->minutes;
@@ -755,10 +737,10 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
   msgMsg.wrTime.month    = message->month;
   msgMsg.wrTime.year     = message->year-1980;
 
-  msgMsg.origNet   = message->srcNode.net;
-  msgMsg.origNode  = message->srcNode.node;
-  msgMsg.destNet   = message->destNode.net;
-  msgMsg.destNode  = message->destNode.node;
+  msgMsg.origNet  = message->srcNode.net;
+  msgMsg.origNode = message->srcNode.node;
+  msgMsg.destNet  = message->destNode.net;
+  msgMsg.destNode = message->destNode.node;
 
   msgMsg.attribute = message->attribute;
 
@@ -771,13 +753,13 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
       helpPtr = stpcpy(tempStr, config.pmailPath);
       break;
     case SECHOMSG:
-      helpPtr = stpcpy (tempStr, config.sentEchoPath);
+      helpPtr = stpcpy(tempStr, config.sentEchoPath);
       break;
     default:
       return -1;
   }
 
-  /* Determine highest message */
+  // Determine highest message
 
   highMsgNum = 0;
   strcpy(helpPtr, "LASTREAD");
@@ -788,43 +770,41 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     close(msgHandle);
   }
   strcpy (helpPtr, valid ? "*.msg" : "*."MBEXTB );
-  doneMsg = findfirst (tempStr, &ffblkMsg, FA_RDONLY|FA_HIDDEN|FA_SYSTEM|
-                       /*FA_LABEL|*/FA_DIREC);
+  doneMsg = findfirst(tempStr, &ffblkMsg, FA_RDONLY | FA_HIDDEN | FA_SYSTEM | FA_DIREC);
 
   while (!doneMsg)
   {
-    highMsgNum = max (highMsgNum, atoi (ffblkMsg.ff_name));
-    doneMsg = findnext (&ffblkMsg);
+    highMsgNum = max(highMsgNum, atoi(ffblkMsg.ff_name));
+    doneMsg = findnext(&ffblkMsg);
   }
 
   xu = 0;
   do
   {
-    if ( xu )
+    if (xu)
     {
-      if ( strlen(config.inPath) + strlen(fnPtr[xu-1]) < 72 )
+      if (strlen(config.inPath) + strlen(fnPtr[xu-1]) < 72)
         strcpy(stpcpy(msgMsg.subject, config.inPath), fnPtr[xu-1]);
       else
         strcpy(msgMsg.subject, fnPtr[xu-1]);
     }
 
-    /* Try to open file */
+    // Try to open file
     count = 0;
-    sprintf (helpPtr, valid ? "%lu.msg" : "%lu."MBEXTB, ++highMsgNum);
+    sprintf(helpPtr, valid ? "%lu.msg" : "%lu."MBEXTB, ++highMsgNum);
 
-    while ((count < 20) &&
-           ((msgHandle = openP(tempStr, O_RDWR|O_CREAT|O_EXCL|
-                               O_TRUNC|O_BINARY|O_DENYNONE,
-                               S_IREAD|S_IWRITE)) == -1))
+    while (  count < 20
+          && (msgHandle = openP( tempStr, O_RDWR|O_CREAT|O_EXCL|O_TRUNC|O_BINARY|O_DENYNONE
+                               , S_IREAD|S_IWRITE)) == -1)
     {
       highMsgNum += count++ < 10 ? 1 : 10;
-      sprintf (helpPtr, valid ? "%lu.msg" : "%lu."MBEXTB, highMsgNum);
+      sprintf(helpPtr, valid ? "%lu.msg" : "%lu."MBEXTB, highMsgNum);
     }
 
     if (msgHandle == -1)
     {
-      printString ("Can't open output file.\n");
-      return (-1);
+      printString("Can't open output file.\n");
+      return -1;
     }
 
     len = strlen(message->text) + 1;
@@ -834,15 +814,14 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
        )
     {
       close(msgHandle);
-      printString ("Can't write to output file.\n");
-      return (-1);
+      printString("Can't write to output file.\n");
+      return -1;
     }
     close(msgHandle);
 
     if (valid == 2)
       chmod(tempStr, S_IREAD);
 
-    /* if (!valid) */
     {
       switch (msgType)
       {
@@ -854,23 +833,23 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
           globVars.perCount++;
           break;
         default:
-          return (-1);
+          return -1;
       }
     }
   }
-  while ( ++xu <= fnPtrCnt );
+  while (++xu <= fnPtrCnt);
 
-  return (highMsgNum);
+  return highMsgNum;
 }
-
+//---------------------------------------------------------------------------
 s32 writeMsgLocal(internalMsgType *message, s16 msgType, s16 valid)
 {
   struct date dateRec;
   struct time timeRec;
   tempStrType tempStr;
 
-  getdate (&dateRec);
-  gettime (&timeRec);
+  getdate(&dateRec);
+  gettime(&timeRec);
 
   message->hours     = timeRec.ti_hour;
   message->minutes   = timeRec.ti_min;
@@ -881,46 +860,43 @@ s32 writeMsgLocal(internalMsgType *message, s16 msgType, s16 valid)
 
   message->attribute |= LOCAL;
 
-  /* PID kludge */
+  // PID kludge
 
   sprintf(tempStr, "\1PID: %s\r", PIDStr());
-  insertLine (message->text, tempStr);
+  insertLine(message->text, tempStr);
 
-  /* MSGID kludge */
+  // MSGID kludge
 
-  sprintf (tempStr, "\1MSGID: %s %08lx\r",
-           nodeStr (&message->srcNode), uniqueID());
-  insertLine (message->text, tempStr);
+  sprintf(tempStr, "\1MSGID: %s %08lx\r", nodeStr(&message->srcNode), uniqueID());
+  insertLine(message->text, tempStr);
 
-  /* FMPT kludge */
+  // FMPT kludge
 
   if (message->srcNode.point != 0)
   {
-    sprintf (tempStr, "\1FMPT %u\r", message->srcNode.point);
-    insertLine (message->text, tempStr);
+    sprintf(tempStr, "\1FMPT %u\r", message->srcNode.point);
+    insertLine(message->text, tempStr);
   }
 
-  /* TOPT kludge */
+  // TOPT kludge
 
   if (message->destNode.point != 0)
   {
-    sprintf (tempStr, "\1TOPT %u\r", message->destNode.point);
-    insertLine (message->text, tempStr);
+    sprintf(tempStr, "\1TOPT %u\r", message->destNode.point);
+    insertLine(message->text, tempStr);
   }
 
-  /* INTL kludge */
+  // INTL kludge
 
-  sprintf (tempStr, "\1INTL %u:%u/%u %u:%u/%u\r",
-           message->destNode.zone, message->destNode.net,
-           message->destNode.node, message->srcNode.zone,
-           message->srcNode.net,   message->srcNode.node);
-  insertLine (message->text, tempStr);
+  sprintf( tempStr, "\1INTL %u:%u/%u %u:%u/%u\r"
+         , message->destNode.zone, message->destNode.net
+         , message->destNode.node, message->srcNode.zone
+         , message->srcNode.net,   message->srcNode.node);
+  insertLine(message->text, tempStr);
 
-  return (writeMsg (message, msgType, valid));
+  return writeMsg(message, msgType, valid);
 }
-
-
-
+//---------------------------------------------------------------------------
 void validateMsg (void)
 {
   s16          c, count;
@@ -992,59 +968,56 @@ void validateMsg (void)
   globVars.perCount     = 0;
   globVars.perNetCount  = 0;
 }
-
-
-
-s16 fileAttach (char *fileName, nodeNumType *srcNd, nodeNumType *destNd,
-                nodeInfoType *nodeInfo)
+//---------------------------------------------------------------------------
+s16 fileAttach(char *fileName, nodeNumType *srcNd, nodeNumType *destNd, nodeInfoType *nodeInfo, int truncate)
 {
   tempStrType tempStr;
-  nodeNumType srcNode, destNode;
+  nodeNumType srcNode
+            , destNode;
+  char       *helpPtr;
 
-  srcNode = *srcNd;
+  srcNode  = *srcNd;
   destNode = *destNd;
-  memset (message, 0, INTMSG_SIZE);
+  memset(message, 0, INTMSG_SIZE);
 
-  strcpy (message->fromUserName, "ARCmail");
-  strcpy (message->toUserName, *nodeInfo->sysopName?nodeInfo->sysopName:"SysOp");
-  strcpy (message->subject, fileName);
+  strcpy(message->fromUserName, "ARCmail");
+  strcpy(message->toUserName, *nodeInfo->sysopName ? nodeInfo->sysopName : "SysOp");
+  strcpy(message->subject, fileName);
 
-  message->srcNode   = srcNode;
-  message->destNode  = destNode;
+  message->srcNode  = srcNode;
+  message->destNode = destNode;
 
-  strcpy (message->text, "\1FLAGS TFS");
+  helpPtr = stpcpy(message->text, truncate ? "\1FLAGS TFS" : "\1FLAGS KFS");
 
   message->attribute = LOCAL | PRIVATE | FILE_ATT | KILLSENT;
 
   switch (nodeInfo->outStatus)
   {
-    case 1 :
+    case 1:
       message->attribute |= HOLDPICKUP;
       break;
-    case 2 :
+    case 2:
       message->attribute |= CRASH;
       break;
-    case 3 :
+    case 3:
       message->attribute |= HOLDPICKUP;
-      strcat (message->text, " DIR");
+      helpPtr = stpcpy(helpPtr, " DIR");
       break;
-    case 4 :
+    case 4:
       message->attribute |= CRASH;
-    case 5 :
-      strcat (message->text, " DIR");
+    case 5:
+      helpPtr = stpcpy(helpPtr, " DIR");
       break;
   }
 
-  strcat (message->text, "\r");
+  strcpy(helpPtr, "\r");
 
-  if (writeMsgLocal (message, NETMSG, 1) == -1)
-  {
-    return (1);
-  }
-  sprintf (tempStr, "Sending new mail from %s to %s",
-           nodeStr(&srcNode), nodeStr(&destNode));
-  logEntry (tempStr, LOG_OUTBOUND, 0);
+  if (writeMsgLocal(message, NETMSG, 1) == -1)
+    return 1;
 
-  return (0);
+  sprintf(tempStr, "Sending new mail from %s to %s", nodeStr(&srcNode), nodeStr(&destNode));
+  logEntry(tempStr, LOG_OUTBOUND, 0);
+
+  return 0;
 }
-
+//---------------------------------------------------------------------------

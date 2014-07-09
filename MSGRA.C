@@ -521,23 +521,23 @@ s16 multiUpdate (void)
              (write (destIdxHandle, idxBuf, recsRead*sizeof(msgIdxRec)) != recsRead*sizeof(msgIdxRec)) ||
              (write (destToIdxHandle, toIdxBuf, recsRead*sizeof(msgToIdxRec)) != recsRead*sizeof(msgToIdxRec)))
          {
-            free (hdrBuf);
-            free (idxBuf);
-            free (toIdxBuf);
-            chsize (destIdxHandle,   msgHdrOffset*(u32)sizeof(msgIdxRec));
-            chsize (destToIdxHandle, msgHdrOffset*(u32)sizeof(msgToIdxRec));
-            chsize (destHdrHandle,   msgHdrOffset*(u32)sizeof(msgHdrRec));
-            chsize (destTxtHandle,   ((u32)msgTxtOffset) << 8);
+            free(hdrBuf);
+            free(idxBuf);
+            free(toIdxBuf);
+            chsize(destIdxHandle,   msgHdrOffset*(u32)sizeof(msgIdxRec));
+            chsize(destToIdxHandle, msgHdrOffset*(u32)sizeof(msgToIdxRec));
+            chsize(destHdrHandle,   msgHdrOffset*(u32)sizeof(msgHdrRec));
+            chsize(destTxtHandle,   ((u32)msgTxtOffset) << 8);
             close(destTxtHandle);
             close(destToIdxHandle);
             close(destIdxHandle);
             close(destHdrHandle);
             close(srcTxtHandle);
             close(srcHdrHandle);
-            unlockMB ();
-            logEntry ("Can't update the message base files", LOG_ALWAYS, 0);
-            newLine ();
-            return (1);
+            unlockMB();
+            logEntry("Can't update the message base files", LOG_ALWAYS, 0);
+            newLine();
+            return 1;
          }
       }
 
@@ -548,9 +548,9 @@ s16 multiUpdate (void)
       close(srcTxtHandle);
       close(srcHdrHandle);
 
-      free (hdrBuf);
-      free (idxBuf);
-      free (toIdxBuf);
+      free(hdrBuf);
+      free(idxBuf);
+      free(toIdxBuf);
 
       readMsgInfo(0);
 
@@ -559,18 +559,16 @@ s16 multiUpdate (void)
       newInfoRec.TotalActive += infoRec.TotalActive;
 
       for (count = 0; count < MBBOARDS; count++)
-      {
          newInfoRec.ActiveMsgs[count] += infoRec.ActiveMsgs[count];
-      }
 
-      lseek (lockHandle, 0, SEEK_SET);
-      write (lockHandle, &newInfoRec, sizeof(infoRecType));
+      lseek(lockHandle, 0, SEEK_SET);
+      write(lockHandle, &newInfoRec, sizeof(infoRecType));
 
-      unlockMB ();
+      unlockMB();
 
-      delete (config.bbsPath, "MSG*."MBEXTB);
+      delete(config.bbsPath, "MSG*."MBEXTB);
    }
-   return (0);
+   return 0;
 }
 
 

@@ -83,14 +83,13 @@ extern configType   config;
 s16 twist = 0;
 
 //---------------------------------------------------------------------------
-void initPkt ()
+void initPkt(void)
 {
-   twist = (getenv ("TWIST") != NULL);
+   twist = (getenv("TWIST") != NULL);
 
-   if ((pktRdBuf = malloc (PKT_BUFSIZE)) == NULL)
-   {
+   if ((pktRdBuf = malloc(PKT_BUFSIZE)) == NULL)
       logEntry ("Error allocating memory for packet read buffer", LOG_ALWAYS, 2);
-   }
+
    pmHdr.two = 2;
 
    PKT_BUFSIZE = (32000>>3) *
@@ -104,12 +103,12 @@ void initPkt ()
 #endif
 }
 //---------------------------------------------------------------------------
-void deInitPkt ()
+void deInitPkt(void)
 {
   free(pktRdBuf);
 }
 //---------------------------------------------------------------------------
-s16 openPktRd (char *pktName, s16 secure)
+s16 openPktRd(char *pktName, s16 secure)
 {
    u16             srcCapability;
    nodeInfoType    *nodeInfoPtr;
@@ -408,140 +407,141 @@ static s16 bgets(char *s, size_t n) // !MSGSIZE
    return 0;
 }
 //---------------------------------------------------------------------------
-s16 bgetdate (char *dateStr,
-              u16 *year,  u16 *month,   u16 *day,
-              u16 *hours, u16 *minutes, u16 *seconds)
+s16 bgetdate( char *dateStr
+            , u16 *year,  u16 *month,   u16 *day
+            , u16 *hours, u16 *minutes, u16 *seconds
+            )
 {
-   char monthStr[23];
+  char monthStr[23];
+
 #pragma messsage("Lengte ivm 2000 verhoogd van 21 naar 23. Nog controleren!")
 
-   if ((bgets (dateStr, 23)) || (strlen (dateStr) < 15))
-      return (EOF);
+  if (bgets(dateStr, 23) || strlen (dateStr) < 15)
+   return (EOF);
 
-   *seconds = 0;
+  *seconds = 0;
 
-   if (!((isdigit(dateStr[0]))||(isdigit(dateStr[1]))||
-         (isdigit(dateStr[2]))))                       /* Skip day-of-week */
-      dateStr += 4;
+  if (!(isdigit(dateStr[0]) || isdigit(dateStr[1]) || isdigit(dateStr[2])))
+    dateStr += 4;  // Skip day-of-week
 
-   if (sscanf (dateStr, "%hd-%hd-%hd %hd:%hd:%hd", day, month, year,
-                                             hours, minutes, seconds) < 5)
-   {
-      if (sscanf (dateStr, "%hd %s %hd %hd:%hd:%hd", day, monthStr, year,
-                                                hours, minutes, seconds) < 5)
-      {
-         printString (" Error in date: ");
-         printString (dateStr);
-         newLine ();
+  if (sscanf(dateStr, "%hd-%hd-%hd %hd:%hd:%hd", day, month, year, hours, minutes, seconds) < 5)
+  {
+    if (sscanf(dateStr, "%hd %s %hd %hd:%hd:%hd", day, monthStr, year, hours, minutes, seconds) < 5)
+    {
+      printString(" Error in date: ");
+      printString(dateStr);
+      newLine();
 
-         *day     =  1;
-         *month   =  1;
-         *year    = 80;
-         *hours   =  0;
-         *minutes =  0;
-      }
-      else
-      {
-         *month = (((s16)strstr(upcaseMonths,strupr(monthStr))-
-                    (s16)upcaseMonths)/3) + 1;
-      }
-   }
+      *day     =  1;
+      *month   =  1;
+      *year    = 80;
+      *hours   =  0;
+      *minutes =  0;
+    }
+    else
+      *month = (((s16)strstr(upcaseMonths, strupr(monthStr)) - (s16)upcaseMonths) / 3) + 1;
+  }
 
 #pragma messsage("Eerste twee tests ivm 2000 Toegevoegd. Nog controleren!")
-   if ( *year < 1980 )
-   {  if (*year >= 200)
-         *year = 1980;
+
+  if (*year < 1980)
+  {
+    if (*year >= 200)
+      *year = 1980;
+    else
+    {
+      if (*year >= 100)
+        *year %= 100;
+      if (*year >= 80)
+        *year += 1900;
       else
-      {  if ( *year >= 100 )
-            *year %= 100;
-         if (*year >= 80)
-            *year += 1900;
-         else
-            *year += 2000;
-      }
-   }
+        *year += 2000;
+    }
+  }
 
-   if ((*month == 0) || (*month > 12))
-      *month = 1;
+  if (*month == 0 || *month > 12)
+    *month = 1;
 
-   if ((*day == 0) || (*day > 31))
-      *day = 1;
+  if (*day == 0 || *day > 31)
+    *day = 1;
 
-   if (*hours >= 24)
-      *hours = 0;
+  if (*hours >= 24)
+    *hours = 0;
 
-   if (*minutes >= 60)
-      *minutes = 0;
+  if (*minutes >= 60)
+    *minutes = 0;
 
-   if (*seconds >= 60)
-      *seconds = 0;
+  if (*seconds >= 60)
+    *seconds = 0;
 
-   if (endBuf-startBuf < 1)
-   {
-      startBuf = 0;
-      oldStart = 0;
-      endBuf = _read (pktHandle, pktRdBuf, PKT_BUFSIZE);
-   }
-   if (  (strlen(dateStr) < 19)
-      && (endBuf - startBuf > 0)
-      && (((*(pktRdBuf + startBuf) > 0) && (*(pktRdBuf + startBuf) < 32))
-      || (*(pktRdBuf + startBuf) == (char)255))
-      )
-     startBuf++;
+  if (endBuf - startBuf < 1)
+  {
+    startBuf = 0;
+    oldStart = 0;
+    endBuf = _read(pktHandle, pktRdBuf, PKT_BUFSIZE);
+  }
+  if (  (strlen(dateStr) < 19)
+     && (endBuf - startBuf > 0)
+     && (((*(pktRdBuf + startBuf) > 0) && (*(pktRdBuf + startBuf) < 32))
+     || (*(pktRdBuf + startBuf) == (char)255))
+     )
+    startBuf++;
 
-   return (0);
+  return 0;
 }
 //---------------------------------------------------------------------------
 s16 readPkt(internalMsgType *message)
 {
-   u16 check = 0;
+  u16 check = 0;
 
-// returnTimeSlice(0);
+  *message->okDateStr = 0;
+  *message->tinySeen  = 0;
+  *message->normSeen  = 0;
+  *message->normPath  = 0;
+  memset(&message->srcNode, 0, 2 * sizeof(nodeNumType) + PKT_INFO_SIZE);
 
-   *message->okDateStr = 0;
-   *message->tinySeen  = 0;
-   *message->normSeen  = 0;
-   *message->normPath  = 0;
-   memset (&message->srcNode, 0, 2*sizeof(nodeNumType)+PKT_INFO_SIZE);
-
-   do
-   {
-      if (check++)
+  do
+  {
+    if (check++)
+    {
+  	  startBuf = oldStart;
+  	  if (check == 2)
       {
-    	 startBuf = oldStart;
-    	 if (check == 2)
-         {  newLine();
-            logEntry("Skipping garbage in PKT file...", LOG_ALWAYS, 0);
-         }
+        newLine();
+        logEntry("Skipping garbage in PKT file...", LOG_ALWAYS, 0);
       }
-      if (bscanstart())
-	      return (EOF);
-      oldStart = startBuf;
-   }
-   while (bgetw (&message->srcNode.node)    ||
-	  bgetw (&message->destNode.node)   ||
-	  bgetw (&message->srcNode.net)     ||
-	  bgetw (&message->destNode.net)    ||
-	  bgetw (&message->attribute)       ||
-	  bgetw (&message->cost)            ||
-	  bgetdate (message->dateStr,
-                    &(message->year),    &(message->month),
-                    &(message->day),     &(message->hours),
-                    &(message->minutes), &(message->seconds)) ||
-	  bgets (message->toUserName, 36)   ||
-	  bgets (message->fromUserName, 36) ||
-          bgets (message->subject, 72)); //      ||
-   bgets (message->text, TEXT_SIZE-0x0800); // );
+    }
+    if (bscanstart())
+      return EOF;
+    oldStart = startBuf;
+  }
+  while (  bgetw(&message->srcNode.node )
+        || bgetw(&message->destNode.node)
+        || bgetw(&message->srcNode.net  )
+        || bgetw(&message->destNode.net )
+        || bgetw(&message->attribute    )
+        || bgetw(&message->cost         )
+        || bgetdate( message->dateStr
+                   , &(message->year   ), &(message->month  )
+                   , &(message->day    ), &(message->hours  )
+                   , &(message->minutes), &(message->seconds)
+                   )
+        || bgets(message->toUserName  , 36)
+        || bgets(message->fromUserName, 36)
+        || bgets(message->subject     , 72)
+        )
+    ;
+  bgets(message->text, TEXT_SIZE - 0x0800);
 
-   return (0);
+  return 0;
 }
 //---------------------------------------------------------------------------
-void closePktRd()
+void closePktRd(void)
 {
   close(pktHandle);
 }
 //---------------------------------------------------------------------------
-s16 openPktWr (nodeFileRecType *nfInfoRec)
+s16 openPktWr(nodeFileRecType *nfInfoRec)
 {
    pktHdrType   msgPktHdr;
    struct time  timeRec;
