@@ -416,10 +416,10 @@ void tossBad(internalMsgType *message)
 {
   tempStrType tempStr;
 
-  sprintf(tempStr, "\r\1FMAIL DEST: %s", nodeStr(&globVars.packetDestNode));
+  sprintf(tempStr, "\1FMAIL DEST: %s\r", nodeStr(&globVars.packetDestNode));
   insertLineN(message->text, tempStr, 1);
 
-  sprintf(tempStr, "\r\1FMAIL SRC: %s", nodeStr(&globVars.packetSrcNode));
+  sprintf(tempStr, "\1FMAIL SRC: %s\r", nodeStr(&globVars.packetSrcNode));
   insertLineN(message->text, tempStr, 1);
 
   if (writeBBS(message, config.badBoard, 1))
@@ -428,6 +428,8 @@ void tossBad(internalMsgType *message)
   globVars.badCount++;
 }
 //---------------------------------------------------------------------------
+time_t oldMsgTime = 0;
+
 static s16 processPkt(u16 secure, s16 noAreaFix)
 {
   tempStrType    pktStr
@@ -676,7 +678,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                           break;
                         }
                       }
-                      if ( count != -1 )
+                      if (count != -1)
                         ++globVars.fromNoExpSec;
                       printStringFill(" Security violation "dARROW" Bad message");
                       tossBad(message);
@@ -684,14 +686,29 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                     }
                   }
 
-                  // if (checkOld(message))
-                  // {
-                  //   sprintf(tempStr, "\1FMAIL BAD: message too old\r");
-                  //   insertLineN(message->text, tempStr, 1);
-                  //   printStringFill(" "dARROW" Old message");
-                  //   tossBad(message);
-                  //   break;
-                  // }
+                  if (oldMsgTime)  // Only check for old messages if set
+                  {
+                    struct tm tm;
+                    time_t msgTime;
+
+                    // Calculate message time
+                    tm.tm_year = message->year  - 1900;
+                    tm.tm_mon  = message->month - 1;
+                    tm.tm_mday = message->day;
+                    tm.tm_hour = message->hours;
+                    tm.tm_min  = message->minutes;
+                    tm.tm_sec  = message->seconds;
+                    msgTime = mktime(&tm);
+
+                    if (msgTime < oldMsgTime)
+                    {
+                      sprintf(tempStr, "\1FMAIL BAD: message too old\r");
+                      insertLineN(message->text, tempStr, 1);
+                      printStringFill(" "dARROW" Old message");
+                      tossBad(message);
+                      break;
+                    }
+                  }
 
                   if (checkDup(message, echoAreaList[areaIndex].areaNameCRC))
                   {
@@ -953,6 +970,10 @@ void Toss(int argc, char *argv[])
   if (!diskError && !breakPressed)
   {
     printString ("Tossing messages...\n");
+
+    if (config.oldMsgDays)
+      // Set after initFMail() and before processPkt()
+      oldMsgTime = startTime - config.oldMsgDays * 24 * 60 * 60;
 
     diskError = processPkt(1, (u16)(switches & SW_A));
 

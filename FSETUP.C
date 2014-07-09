@@ -1280,31 +1280,20 @@ int cdecl main(int argc, char *argv[])
            "Use 64 kb of EMS memory to store message signatures in");
 #endif
 #endif
-  addItem(mailMenu, BOOL_INT, "Check PKT dest", 0, &config.mailOptions, BIT2, 0,
-           "Only toss PKT files that are addressed to one of your AKAs");
-  addItem(mailMenu, NUM_INT, "Max message size (kb) ", 28, &config.maxMsgSize, 4, 9999,
-           "Maximum size of a message in kilobytes (45-9999) / 32-bit versions only!");
-  addItem(mailMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(mailMenu, NUM_INT, "Max PKT size (kb)", 0, &config.maxPktSize, 4, 9999,
-           "Maximum size of a PKT file in kilobytes (1-9999, 0 = no maximum)");
-  addItem(mailMenu, NUM_INT, "Max net msgs          ", 28, &config.allowedNumNetmail, 4, 9999,
-           "Max allowed number of net msgs in one packet when tossing (1-9999, 0 = no max)");
-  addItem(mailMenu, NUM_INT, "Max bundle size (kb)", 0, &config.maxBundleSize, 4, 9999,
-           "Maximum size of a mail bundle in kilobytes (1-9999, 0 = no maximum)");
-  addItem(mailMenu, BOOL_INT, "Keep exported netmail ", 28, &config.mailOptions, BIT14, 0,
-           "Keep exported .MSG netmail after they have been sent");
-  addItem(mailMenu, BOOL_INT, "Kill empty netmail", 0, &config.mailOptions, BIT15, 0,
-           "Kill empty netmail messages");
-  addItem(mailMenu, BOOL_INT, "Remove netmail kludges", 28, &config.mailOptions, BIT0, 0,
-           "Remove INTL, FMPT and TOPT kludges from forwarded echomail messages");
-  addItem(mailMenu, BOOL_INT, "Kill bad ARCmail msg", 0, &config.mailOptions, BIT7, 0,
-           "Kill ARCmail messages of which the attached file is missing");
-  addItem(mailMenu, BOOL_INT, "Set Pvt on import     ", 28, &config.mailOptions, BIT13, 0,
-           "Set private status on all imported netmail messages");
-  addItem(mailMenu, BOOL_INT, "No point in PATH", 0, &config.mailOptions, BIT1, 0,
-           "Do not add the node number of the boss to the PATH kludge on point systems");
-  addItem(mailMenu, BOOL_INT, "Daily mailbundles     ", 28, &config.mailOptions, BIT5, 0,
-           "Create a new mail bundle every day");
+  addItem(mailMenu, BOOL_INT, "Check PKT dest"        ,  0, &config.mailOptions      , BIT2,  0, "Only toss PKT files that are addressed to one of your AKAs"                     );
+  addItem(mailMenu, NUM_INT , "Max message size (kb) ", 28, &config.maxMsgSize       , 4,  9999, "Maximum size of a message in kilobytes (45-9999) / 32-bit versions only!"       );
+  addItem(mailMenu, DISPLAY , NULL                    ,  0, NULL                     , 0,     0, NULL                                                                             );
+  addItem(mailMenu, NUM_INT , "Old message    (days) ", 28, &config.oldMsgDays       , 4,  9999, "Msgs older then the specified number of days are tossed to the bad area (0=Off)");
+  addItem(mailMenu, NUM_INT , "Max PKT size (kb)"     ,  0, &config.maxPktSize       , 4,  9999, "Maximum size of a PKT file in kilobytes (1-9999, 0 = no maximum)"               );
+  addItem(mailMenu, NUM_INT , "Max net msgs          ", 28, &config.allowedNumNetmail, 4,  9999, "Max allowed number of net msgs in one packet when tossing (1-9999, 0 = no max)" );
+  addItem(mailMenu, NUM_INT , "Max bundle size (kb)"  ,  0, &config.maxBundleSize    , 4,  9999, "Maximum size of a mail bundle in kilobytes (1-9999, 0 = no maximum)"            );
+  addItem(mailMenu, BOOL_INT, "Keep exported netmail ", 28, &config.mailOptions      , BIT14, 0, "Keep exported .MSG netmail after they have been sent"                           );
+  addItem(mailMenu, BOOL_INT, "Kill empty netmail"    ,  0, &config.mailOptions      , BIT15, 0, "Kill empty netmail messages"                                                    );
+  addItem(mailMenu, BOOL_INT, "Remove netmail kludges", 28, &config.mailOptions      , BIT0,  0, "Remove INTL, FMPT and TOPT kludges from forwarded echomail messages"            );
+  addItem(mailMenu, BOOL_INT, "Kill bad ARCmail msg"  ,  0, &config.mailOptions      , BIT7,  0, "Kill ARCmail messages of which the attached file is missing"                    );
+  addItem(mailMenu, BOOL_INT, "Set Pvt on import     ", 28, &config.mailOptions      , BIT13, 0, "Set private status on all imported netmail messages"                            );
+  addItem(mailMenu, BOOL_INT, "No point in PATH"      ,  0, &config.mailOptions      , BIT1,  0, "Do not add the node number of the boss to the PATH kludge on point systems"     );
+  addItem(mailMenu, BOOL_INT, "Daily mailbundles     ", 28, &config.mailOptions      , BIT5,  0, "Create a new mail bundle every day"                                             );
 
   if ((mgrMenu = createMenu(" Mgr options ")) == NULL)
     goto nomem;

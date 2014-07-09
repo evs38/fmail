@@ -328,7 +328,7 @@ typedef struct
   mgrOptionsType  mgrOptions;
   _akaListType    _akaList;
   u16             _netmailBoard[MAX_NA_OLD];
-  u16             _reservedNet[16-MAX_NA_OLD];
+  u16             _reservedNet[16 - MAX_NA_OLD];
   genOptionsType  genOptions;
   mbOptionsType   mbOptions;
   mailOptionsType mailOptions;
@@ -347,7 +347,8 @@ typedef struct
   u16             activTimeOut;
   u16             maxMsgSize;
   u16             defMaxRescan;
-  uchar           reserved2[62];
+  u16             oldMsgDays;
+  uchar           reserved2[60];
   u16             colorSet;
   uchar           sysopName[36];
   u16             defaultArc;
