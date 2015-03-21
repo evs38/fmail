@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -941,7 +941,7 @@ void Toss(int argc, char *argv[])
 
   initMsg((u16)(switches & SW_A));  // After initNodeInfo & initAreaInfo
   retryArc();                       // After initMsg
-  scan_bcl();
+  ScanNewBCL();
   _mb_upderr = multiUpdate();
 
   initBBS();
@@ -1029,7 +1029,7 @@ void Toss(int argc, char *argv[])
         strcpy(tempStr, config.inPath);
         strcat(tempStr, bundlePtr->name);
         unpackArc(tempStr, &bundlePtr->blk);
-        scan_bcl();
+        ScanNewBCL();
         diskError = processPkt(0, (u16)(switches & SW_A));
         bundlePtr2 = bundlePtr;
         bundlePtr = bundlePtr->nextb;
@@ -1459,7 +1459,7 @@ void Scan(int argc, char *argv[])
 
   initMsg((u16)(switches & SW_A));  // After initNodeInfo
   retryArc();                       // After initMsg
-  scan_bcl();
+  ChkAutoBCL();
   _mb_upderr = multiUpdate();
 
   initBBS();
@@ -1726,7 +1726,6 @@ void Import(int argc, char *argv[])
 
   initMsg((u16)(switches & SW_A));  // After initNodeInfo
   retryArc();                       // After initMsg
-  scan_bcl();
   _mb_upderr = multiUpdate();
 
   initBBS();
@@ -1852,7 +1851,7 @@ void Pack(int argc, char *argv[])
 
   initMsg((u16)(switches & SW_A));  // after initNodeInfo
   retryArc();                       // after initMsg
-  scan_bcl();
+//ChkAutoBCL();
   _mb_upderr = multiUpdate();
 
   pack(argc, argv, switches);
@@ -1886,7 +1885,7 @@ void Mgr(int argc, char *argv[])
   initAreaInfo(); // for AreaFix
 
   initMsg(0);  // after initNodeInfo
-  scan_bcl();
+//ScanNewBCL();
 
 #ifdef __WINDOWS32__
   sendmail_smtp();

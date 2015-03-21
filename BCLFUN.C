@@ -83,6 +83,7 @@ udef readBCL(u8 **tag, u8 **descr)
     return 0;
   if ( read(bclHandle, buf, bcl.EntryLength - sizeof(bcl_type)) != (int)(bcl.EntryLength - sizeof(bcl_type)) )
     return 0;
+
   *tag = buf;
   *descr = strchr(buf, 0) + 1;
 
@@ -92,26 +93,6 @@ udef readBCL(u8 **tag, u8 **descr)
 udef closeBCL(void)
 {
   return close(bclHandle);
-}
-//---------------------------------------------------------------------------
-udef autoBCL(void)
-{
-  u16 index;
-
-  logEntry("AutoBCL check", LOG_DEBUG, 0);
-
-  for (index = 0; index < nodeCount; index++)
-  {
-    returnTimeSlice(0);
-    if (  nodeInfo[index]->autoBCL
-       && startTime - (time_t)nodeInfo[index]->lastSentBCL > nodeInfo[index]->autoBCL * 86400L
-       )
-    {
-      send_bcl(&config.akaList[matchAka(&nodeInfo[index]->node, 0)].nodeNum, &(nodeInfo[index]->node), nodeInfo[index]);
-      nodeInfo[index]->lastSentBCL = startTime;
-    }
-  }
-  return 0;
 }
 //---------------------------------------------------------------------------
 udef process_bcl(u8 *fileName)
@@ -162,14 +143,31 @@ udef process_bcl(u8 *fileName)
   return 1;
 }
 //---------------------------------------------------------------------------
-udef scan_bcl(void)
+void ChkAutoBCL(void)
+{
+  u16 index;
+
+  logEntry("Check AutoBCL", LOG_DEBUG, 0);
+
+  for (index = 0; index < nodeCount; index++)
+  {
+    nodeInfoType *ni = nodeInfo[index];
+    u16 autobcl = ni->autoBCL;
+
+    if (autobcl && startTime - (time_t)ni->lastSentBCL > autobcl * 86400L)
+    {
+      send_bcl(&config.akaList[matchAka(&ni->node, 0)].nodeNum, &ni->node, ni);
+      ni->lastSentBCL = startTime;
+    }
+  }
+}
+//---------------------------------------------------------------------------
+udef ScanNewBCL(void)
 {
   tempStrType  tempStr;
   struct ffblk ffblk;
   int  done;
   udef count = 0;
-
-  autoBCL();
 
   logEntry("Scan for received BCL files", LOG_DEBUG, 0);
 
