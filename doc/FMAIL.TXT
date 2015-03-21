@@ -65,6 +65,7 @@
     4.3  Import
     4.4  Pack
          4.4.1  Examples
+    4.5  Mgr
 
 5   AreaMgr
 
@@ -73,14 +74,13 @@
     6.1  Maint
     6.2  Delete
     6.3  Undelete
-
     6.4  Post
-
     6.5  Export
     6.7  Sort
-
     6.8  Stat
     6.9  Notify
+    6.10 MsgM
+    6.11 Addnew
 
 7   Credits
 
