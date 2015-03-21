@@ -661,7 +661,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #endif
 
 #ifdef _DEBUG
-  sprintf(tempStr, "[packArc Debug] file %s  %s -> %s", qqqName, nodeStr(srcNode), nodeStr(destNode));
+  sprintf(tempStr, "[packArc Debug] file %s  %s -> %s  outStatus:%d", qqqName, nodeStr(srcNode), nodeStr(destNode), nodeInfo->outStatus);
   logEntry(tempStr, LOG_DEBUG, 0);
 #endif
 
@@ -1171,6 +1171,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   {
     if (config.maxBundleSize != 0 && (arcSize >> 10) >= config.maxBundleSize)
       memcpy(&fAttInfo[oldArc], &fAttInfo[oldArc + 1], sizeof(fAttInfoType) * (--fAttCount - oldArc));
+
     sprintf(tempStr, "Mail bundle already going from %s to %s", nodeStr(srcNode), nodeStr(destNode));
     logEntry(tempStr, LOG_OUTBOUND, 0);
   }
@@ -1178,7 +1179,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   {
     if (config.mailer != dMT_Binkley && config.mailer != dMT_Xenia)
     {
-      if (fileAttach(archiveStr, srcNode, destNode, nodeInfo, nodeInfo->archiver != 0xFF))
+      if (fileAttach(archiveStr, srcNode, destNode, nodeInfo))
       {
         if (semaHandle >= 0)
         {
@@ -1187,6 +1188,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
         }
         rename(pktName, qqqName);
         newLine();
+
         return 1;
       }
     }
@@ -1200,9 +1202,9 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 
       strcpy(archivePtr, ".?lo");
       if (findfirst(archiveStr, &ffblkArc, 0) == -1)
-        sprintf(archivePtr, ".%clo", (nodeInfo->outStatus == 1) ? 'h'
+        sprintf(archivePtr, ".%clo", nodeInfo->outStatus == 1 ? 'h'
                 : (nodeInfo->outStatus == 2) ? 'c'
-                : ((nodeInfo->outStatus >= 3) && (nodeInfo->outStatus <= 5)) ? 'c' : 'f');
+                : (nodeInfo->outStatus >= 3 && nodeInfo->outStatus <= 5) ? 'c' : 'f');
       else
         strcpy(archivePtr, strchr(ffblkArc.ff_name, '.'));
 
@@ -1215,6 +1217,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
         }
         rename(pktName, qqqName);
         newLine();
+
         return 1;
       }
 #ifdef __WINDOWS32__

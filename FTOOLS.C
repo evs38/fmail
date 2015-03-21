@@ -311,23 +311,23 @@ int cdecl main(int argc, char *argv[])
   s16 ch;
   tempStrType tempStr, tempStr2, tempStr3;
   u16 count
-  , c
-  , ddd
-  , temp
-  , bufCount
-  , newBufCount;
+    , c
+    , ddd
+    , temp
+    , bufCount
+    , newBufCount;
   fhandle configHandle
-  , lastReadHandle
-  , semaHandle;
+        , lastReadHandle
+        , semaHandle;
   s16 postBoard;
   s32 switches;
-  rawEchoType    *areaPtr;
+  rawEchoType *areaPtr;
 
-  char           *helpPtr, *helpPtr2, *helpPtr3;
+  char        *helpPtr, *helpPtr2, *helpPtr3;
 
   u16 areaSubjChain[256];
 
-  u16            *msgRenumBuf;
+  u16         *msgRenumBuf;
   s16 doneSearch;
   struct ffblk ffblkMsg;
   u16 msgNum;
@@ -1365,10 +1365,11 @@ int cdecl main(int argc, char *argv[])
         printString("Updating LastRead."MBEXTN"...");
 #ifdef STDO
         newLine();
-#endif
-        percentCount = 0;
+#else
         if ((ddd = (u16)(filelength(lastReadHandle) / 100)) == 0)
           ddd = 1;
+#endif
+        percentCount = 0;
         while ((bufCount = _read(lastReadHandle, lruBuf, LRU_BUFSIZE)) > 0)
         {
 #ifndef STDO
@@ -1399,8 +1400,9 @@ int cdecl main(int argc, char *argv[])
         percentCount = 0;
         c = 0;
 
-        if (config.bbsProgram == BBS_RA20 || config.bbsProgram == BBS_RA25
-            || config.bbsProgram == BBS_PROB || config.bbsProgram == BBS_ELEB)
+        if (  config.bbsProgram == BBS_RA20 || config.bbsProgram == BBS_RA25
+           || config.bbsProgram == BBS_PROB || config.bbsProgram == BBS_ELEB
+           )
         {
           // new RA format and ProBoard format
           if (filelength(usersBBSHandle) % 1016)
@@ -1410,14 +1412,15 @@ int cdecl main(int argc, char *argv[])
           }
           else
           {
+#ifndef STDO
             if ((ddd = (u16)(filelength(usersBBSHandle) / 1016)) == 0)
               ddd = 1;
-
+#endif
             while (((lseek(usersBBSHandle, 452 + (1016 * (s32)c++), SEEK_SET) != -1)
                     && (_read(usersBBSHandle, &temp4, 4)) == 4))
             {
 #ifndef STDO
-              sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / d));
+              sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / ddd));
               gotoTab(39);
               printString(tempStr);
               updateCurrLine();
@@ -1439,14 +1442,15 @@ int cdecl main(int argc, char *argv[])
           }
           else
           {
+#ifndef STDO
             if ((ddd = (u16)(filelength(usersBBSHandle) / 158)) == 0)
               ddd = 1;
-
+#endif
             while (((lseek(usersBBSHandle, 130 + (158 * (s32)c++), SEEK_SET) != -1)
                     && (_read(usersBBSHandle, &temp, 2)) == 2))
             {
 #ifndef STDO
-              sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / d));
+              sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / ddd));
               gotoTab(39);
               printString(tempStr);
               updateCurrLine();
@@ -1802,8 +1806,11 @@ nextarea:
         newLine();
         sprintf(tempStr, "Message base   : %9lu bytes", (u32)totalTxtBBS * 256 + totalMsgs * 226 + 406);
         logEntry(tempStr, LOG_STATS, 0);
-        sprintf(tempStr, "Disk space     : %9lu bytes free on message base drive", diskFree(config.bbsPath) /*dtable.df_avail*(s32)dtable.df_bsec*dtable.df_sclus*/);
-        //                                                                          *config.bbsPath);
+#ifdef __CANUSE64BIT
+        sprintf(tempStr, "Disk space     : %9s bytes free on message base drive", fmtU64(diskFree64(config.bbsPath)));
+#else
+        sprintf(tempStr, "Disk space     : %9lu bytes free on message base drive", diskFree(config.bbsPath));
+#endif
         logEntry(tempStr, LOG_STATS, 0);
 
         newLine();

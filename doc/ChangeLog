@@ -1,3 +1,10 @@
+2014-07-10  1.69.1.94-Beta
+  * Detect old messages and move to bad area.
+
+2014-07-09  1.69.0.93-Beta
+  * File attached netmails for .pkt files will have the KFS flag set.
+  * Paths and files in fsetup, can be entered in mixed case.
+
 2014-07-02  1.68.10.91
   * Release!
   * Updated the documentation

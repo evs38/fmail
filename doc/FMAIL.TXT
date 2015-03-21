@@ -693,6 +693,12 @@ Max bundle size (kb)
           you entered. You are advised not to enter a relatively a
           large number there if you use Max bundle size.
 
+Old message (days)
+
+          When tossing, messages older then the specified number of
+          days are tossed to the bad area. Set to 0 (the default) to
+          turn this option off and not detect old messages.
+
 Kill empty netmail
 
           Kill empty received netmail messages when scanning the

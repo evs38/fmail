@@ -9,9 +9,9 @@
       OBJ.6\FMailW32\CFGFILE.obj OBJ.6\FMailW32\CONFIG.obj 
       OBJ.6\FMailW32\CRC.obj OBJ.6\FMailW32\DUPS32.obj OBJ.6\FMailW32\FILESYS.obj 
       OBJ.6\FMailW32\FMAIL.obj OBJ.6\FMailW32\FTSCPROD.obj 
-      OBJ.6\FMailW32\JAMFUN.obj OBJ.6\FMailW32\JAMMAINT.obj 
-      OBJ.6\FMailW32\JAMSCAN.obj OBJ.6\FMailW32\LOG.obj 
-      OBJ.6\FMailW32\MSGMSG.obj OBJ.6\FMailW32\MSGPKT.obj 
+      OBJ.6\FMailW32\ispathch.obj OBJ.6\FMailW32\JAMFUN.obj 
+      OBJ.6\FMailW32\JAMMAINT.obj OBJ.6\FMailW32\JAMSCAN.obj 
+      OBJ.6\FMailW32\LOG.obj OBJ.6\FMailW32\MSGMSG.obj OBJ.6\FMailW32\MSGPKT.obj 
       OBJ.6\FMailW32\MSGRA.obj OBJ.6\FMailW32\MTASK.obj 
       OBJ.6\FMailW32\NODEINFO.obj OBJ.6\FMailW32\OUTPUT.obj 
       OBJ.6\FMailW32\PACK.obj OBJ.6\FMailW32\SENDSMTP.obj 
@@ -72,6 +72,7 @@
       <FILE FILENAME="FILESYS.C" FORMNAME="" UNITNAME="FILESYS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="FMAIL.C" FORMNAME="" UNITNAME="FMAIL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="FTSCPROD.C" FORMNAME="" UNITNAME="FTSCPROD" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ispathch.c" FORMNAME="" UNITNAME="ispathch" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="JAMFUN.C" FORMNAME="" UNITNAME="JAMFUN" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="JAMMAINT.C" FORMNAME="" UNITNAME="JAMMAINT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="JAMSCAN.C" FORMNAME="" UNITNAME="JAMSCAN" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -100,8 +101,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=69
-Release=1
-Build=94
+Release=2
+Build=97
 Debug=1
 PreRelease=1
 Special=0
@@ -113,9 +114,9 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FMail mail tosser
-FileVersion=1.69.1.94
+FileVersion=1.69.2.97
 InternalName=fmail
-LegalCopyright=Copyright (c) 1991 - 2014 FMail developers
+LegalCopyright=Copyright (c) 1991 - 2015 FMail developers
 LegalTrademarks=
 OriginalFilename=FMailW32.exe
 ProductName=FMail

@@ -402,15 +402,15 @@ void initMsg (s16 noAreaFix)
 
   for (count = 0; count < aFixCount; count++)
   {
-    if (readMsg (message, aFixMsgNum[count]) == 0)
+    if (readMsg(message, aFixMsgNum[count]) == 0)
     {
       if (getLocalAkaNum(&message->destNode) != -1)
       {
-        /* Message is for this node */
+        // Message is for this node
 
-        sprintf (fileNameStr, "%s%u.msg", config.netPath, aFixMsgNum[count]);
+        sprintf(fileNameStr, "%s%u.msg", config.netPath, aFixMsgNum[count]);
 
-        /* DENYNONE was DENYALL */
+        // DENYNONE was DENYALL
         if ((msgMsgHandle = openP(fileNameStr, O_RDWR|O_DENYNONE|O_BINARY,S_IREAD|S_IWRITE)) != -1)
         {
           if (messagesMoved)
@@ -424,28 +424,24 @@ void initMsg (s16 noAreaFix)
           {
             close (msgMsgHandle);
             if ( config.mgrOptions.keepRequest || containsNote )
-            {
               attribMsg (temp|RECEIVED, aFixMsgNum[count]);
-            }
             else
-            {
               unlink (fileNameStr);
-            }
-            validateMsg ();
+
+            validateMsg();
           }
           else
-          {
-            close (msgMsgHandle);
-          }
-          newLine ();
+            close(msgMsgHandle);
+
+          newLine();
         }
       }
     }
   }
 
-  /* Remove old truncated mailbundles (or w/o file attach in D'B mode) */
+  // Remove old truncated mailbundles (or w/o file attach in D'B mode)
 
-  if ( config.mailer == 3 || config.mailer == 5 )
+  if (config.mailer == 3 || config.mailer == 5)
   {
     if ((helpPtr = strchr(strrchr(strcpy(fileNameStr, config.outPath), '\\'), '.')) != NULL)
       strcpy(helpPtr, ".*");
@@ -481,30 +477,25 @@ u16 getFlags(char *text)
 
   helpPtr1 = text;
 
-  while ((helpPtr1 = findCLStr (helpPtr1, "\1FLAGS ")) != NULL)
+  while ((helpPtr1 = findCLStr(helpPtr1, "\1FLAGS ")) != NULL)
   {
-    helpPtr2 = strchr (helpPtr1, 0x0d);
+    helpPtr2 = strchr(helpPtr1, 0x0d);
 
-    if (((helpPtr3 = strstr (helpPtr1, "IMM")) != NULL) &&
+    if (((helpPtr3 = strstr(helpPtr1, "IMM")) != NULL) &&
         (helpPtr3 < helpPtr2))
-    {
       flags |= FL_IMMEDIATE;
-    }
-    if (((helpPtr3 = strstr (helpPtr1, "DIR")) != NULL) &&
+
+    if (((helpPtr3 = strstr(helpPtr1, "DIR")) != NULL) &&
         (helpPtr3 < helpPtr2))
-    {
       flags |= FL_DIRECT;
-    }
-    if (((helpPtr3 = strstr (helpPtr1, "FRQ")) != NULL) &&
+
+    if (((helpPtr3 = strstr(helpPtr1, "FRQ")) != NULL) &&
         (helpPtr3 < helpPtr2))
-    {
       flags |= FL_FILE_REQ;
-    }
-    if (((helpPtr3 = strstr (helpPtr1, "LOK")) != NULL) &&
+
+    if (((helpPtr3 = strstr(helpPtr1, "LOK")) != NULL) &&
         (helpPtr3 < helpPtr2))
-    {
       flags |= FL_LOK;
-    }
 
     helpPtr1++;
   }
@@ -512,22 +503,22 @@ u16 getFlags(char *text)
   return flags;
 }
 //---------------------------------------------------------------------------
-s16 attribMsg (u16 attribute, s32 msgNum)
+s16 attribMsg(u16 attribute, s32 msgNum)
 {
-  tempStrType tempStr1,
-  tempStr2;
+  tempStrType tempStr1
+            , tempStr2;
   fhandle     msgMsgHandle;
 
-  sprintf (tempStr1, "%s%lu.msg", config.netPath, msgNum);
+  sprintf(tempStr1, "%s%lu.msg", config.netPath, msgNum);
 
   if (((msgMsgHandle = openP(tempStr1, O_RDWR|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1) ||
-      (lseek (msgMsgHandle, sizeof(msgMsgType)-4, SEEK_SET) == -1) ||
-      (_write (msgMsgHandle, &attribute, 2) != 2))
+      (lseek(msgMsgHandle, sizeof(msgMsgType)-4, SEEK_SET) == -1) ||
+      (_write(msgMsgHandle, &attribute, 2) != 2))
   {
     close(msgMsgHandle);
-    sprintf (tempStr2, "Can't update file %s", tempStr1);
-    logEntry (tempStr2, LOG_ALWAYS, 0);
-    return (-1);
+    sprintf(tempStr2, "Can't update file %s", tempStr1);
+    logEntry(tempStr2, LOG_ALWAYS, 0);
+    return -1;
   }
   close(msgMsgHandle);
 
@@ -969,25 +960,21 @@ void validateMsg (void)
   globVars.perNetCount  = 0;
 }
 //---------------------------------------------------------------------------
-s16 fileAttach(char *fileName, nodeNumType *srcNd, nodeNumType *destNd, nodeInfoType *nodeInfo, int truncate)
+s16 fileAttach(char *fileName, nodeNumType *srcNd, nodeNumType *destNd, nodeInfoType *nodeInfo)
 {
   tempStrType tempStr;
-  nodeNumType srcNode
-            , destNode;
   char       *helpPtr;
 
-  srcNode  = *srcNd;
-  destNode = *destNd;
   memset(message, 0, INTMSG_SIZE);
 
   strcpy(message->fromUserName, "ARCmail");
   strcpy(message->toUserName, *nodeInfo->sysopName ? nodeInfo->sysopName : "SysOp");
   strcpy(message->subject, fileName);
 
-  message->srcNode  = srcNode;
-  message->destNode = destNode;
+  message->srcNode  = *srcNd;
+  message->destNode = *destNd;
 
-  helpPtr = stpcpy(message->text, truncate ? "\1FLAGS TFS" : "\1FLAGS KFS");
+  helpPtr = stpcpy(message->text, nodeInfo->archiver != 0xFF ? "\1FLAGS TFS" : "\1FLAGS KFS");
 
   message->attribute = LOCAL | PRIVATE | FILE_ATT | KILLSENT;
 
@@ -1015,7 +1002,7 @@ s16 fileAttach(char *fileName, nodeNumType *srcNd, nodeNumType *destNd, nodeInfo
   if (writeMsgLocal(message, NETMSG, 1) == -1)
     return 1;
 
-  sprintf(tempStr, "Sending new mail from %s to %s", nodeStr(&srcNode), nodeStr(&destNode));
+  sprintf(tempStr, "Sending new mail from %s to %s", nodeStr(srcNd), nodeStr(destNd));
   logEntry(tempStr, LOG_OUTBOUND, 0);
 
   return 0;

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -27,6 +27,8 @@
 #include <time.h>
 
 #include "utils.h"
+
+#include "ispathch.h"
 
 extern configType config;
 
@@ -108,3 +110,39 @@ char *stristr(const char *str1, const char *str2)
   }
 }
 //---------------------------------------------------------------------------
+void MakeJamAreaPath(rawEchoType *echo)
+{
+  char *tempPtr
+     , *tempPtr2
+     ;
+  tempPtr = tempPtr2 = strchr(echo->msgBasePath, 0);
+  strncpy(tempPtr, echo->areaName, MB_PATH_LEN - strlen(echo->msgBasePath) - 1);
+  if (!config.genOptions.lfn)
+  {
+    while (*tempPtr)
+    {
+      if (!isalnum(*tempPtr))
+        strcpy(tempPtr, tempPtr + 1);
+      else
+        ++tempPtr;
+    }
+    tempPtr2[8] = 0;
+    strupr(echo->msgBasePath);
+  }
+  else
+  {
+    int toLower = 1;
+    while (*tempPtr)
+    {
+      if (!ispathch(*tempPtr))
+        strcpy(tempPtr, tempPtr + 1);
+      else
+        if (islower(*tempPtr++))
+          toLower = 0;
+    }
+    if (toLower)
+      strlwr(tempPtr2);
+  }
+}
+//---------------------------------------------------------------------------
+

@@ -32,6 +32,15 @@
 //
 //---------------------------------------------------------------------------
 
+#if __BORLANDC__ >= 0x0500 && defined(__32BIT__)
+#define __CANUSE64BIT
+#endif
+
+#ifdef __CANUSE64BIT
+#include <stdint.h>
+#else
+#define UINT32_MAX (4294967295UL)
+#endif
 
 // **** Modify the type definitions below if necessary for your compiler ****
 
@@ -50,6 +59,9 @@
 #define s32 long signed int
 #define udef unsigned int
 #define sdef signed int
+#ifdef __CANUSE64BIT
+#define u64 uint64_t
+#endif
 
 #define MAXU16 0xFFFF
 #define MAXU32 0xFFFFFFFFL

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -42,16 +42,6 @@
 #include "msgpkt.h"  // for openP
 #include "output.h"
 #include "version.h"
-
-#if __BORLANDC__ >= 0x0500 && defined(__32BIT__)
-#define CANUSE64BIT
-#endif
-
-#ifdef CANUSE64BIT
-#include <stdint.h>
-#else
-#define UINT32_MAX (4294967295UL)
-#endif
 
 extern configType config;
 psType *seenByArray;
@@ -132,13 +122,68 @@ s16 existDir(const char *dir, const char *descr)
   return 1;
 }
 //---------------------------------------------------------------------------
+#ifdef __CANUSE64BIT
+const char *fmtU64(u64 u)
+{
+  static tempStrType tempStr;
+
+  if (u >= 100ui64 * 1024)
+  {
+    if (u >= 100ui64 * 1024 * 1024)
+    {
+      if (u >= 100ui64 * 1024 * 1024 * 1024)
+        sprintf(tempStr, "%LuGB", u / (1024 * 1024 * 1024));
+      else
+        sprintf(tempStr, "%LuMB", u / (1024 * 1024));
+    }
+    else
+      sprintf(tempStr, "%LuKB", u / 1024);
+  }
+  else
+    sprintf(tempStr, "%Lu", u);
+
+  return tempStr;
+}
+//---------------------------------------------------------------------------
+u64 diskFree64(const char *path)
+{
+  tempStrType  tempStr;
+  struct dfree dtable;
+  char        *helpPtr;
+
+  helpPtr = (strchr(path, 0) - 1);
+  if (*helpPtr == '\\')
+    *helpPtr = 0;
+  else
+    helpPtr = NULL;
+
+  if (isalpha(path[0]) && path[1] == ':')
+    getdfree(toupper(path[0]) - 'A' + 1, &dtable);
+  else
+  {
+    getcwd(tempStr, sizeof(tempStrType));
+    chdir(path);
+    getdfree(0, &dtable);
+    chdir(tempStr);
+  }
+
+  if (helpPtr != NULL)
+    *helpPtr = '\\';
+
+  if (dtable.df_sclus == (unsigned)-1)
+    return UINT64_MAX;
+
+  return (u64)dtable.df_avail * (u64)dtable.df_bsec * (u64)dtable.df_sclus;
+}
+#endif
+//---------------------------------------------------------------------------
 u32 diskFree(const char *path)
 {
   tempStrType  tempStr;
   struct dfree dtable;
   char        *helpPtr;
-#ifdef CANUSE64BIT
-  uint64_t dfs;
+#ifdef __CANUSE64BIT
+  u64          dfs;
 #endif
 
   helpPtr = (strchr(path, 0) - 1);
@@ -148,9 +193,7 @@ u32 diskFree(const char *path)
     helpPtr = NULL;
 
   if (isalpha(path[0]) && path[1] == ':')
-  {
     getdfree(toupper(path[0]) - 'A' + 1, &dtable);
-  }
   else
   {
     getcwd(tempStr, sizeof(tempStrType));
@@ -164,22 +207,10 @@ u32 diskFree(const char *path)
 
   if (dtable.df_sclus == (unsigned)-1)
     return UINT32_MAX;
-#ifdef CANUSE64BIT
-  dfs = (uint64_t)dtable.df_avail * (uint64_t)dtable.df_bsec * (uint64_t)dtable.df_sclus;
-  if (dfs >= 100ui64 * 1024)
-  {
-    if (dfs >= 100ui64 * 1024 * 1024)
-    {
-      if (dfs >= 100ui64 * 1024 * 1024 * 1024)
-        sprintf(tempStr, "Disk %s free: %LuGB", path, dfs / (1024 * 1024 * 1024));
-      else
-        sprintf(tempStr, "Disk %s free: %LuMB", path, dfs / (1024 * 1024));
-    }
-    else
-      sprintf(tempStr, "Disk %s free: %LuKB", path, dfs / 1024);
-  }
-  else
-    sprintf(tempStr, "Disk %s free: %Lu", path, dfs);
+#ifdef __CANUSE64BIT
+  dfs = (u64)dtable.df_avail * (u64)dtable.df_bsec * (u64)dtable.df_sclus;
+
+  sprintf(tempStr, "Disk %s free: %s", path, fmtU64(dfs));
 
 	logEntry(tempStr, LOG_ALWAYS, 0);
 

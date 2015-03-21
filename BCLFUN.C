@@ -1,235 +1,237 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
-
+#include <dir.h>
+#include <fcntl.h>
+#include <io.h>
 #include <stdio.h>
 #include <string.h>
-#include <io.h>
-#include <time.h>
-#include <fcntl.h>
 #include <sys/stat.h>
-#include <dir.h>
+#include <time.h>
 
 #include "fmail.h"
+
+#include "archive.h"
+#include "areainfo.h"
+#include "bclfun.h"
 #include "cfgfile.h"
 #include "config.h"
-#include "nodeinfo.h"
-#include "areainfo.h"
-#include "archive.h"
-#include "utils.h"
 #include "log.h"
-#include "mtask.h"
 #include "msgpkt.h"
+#include "mtask.h"
+#include "nodeinfo.h"
 #include "output.h"
-#include "bclfun.h"
+#include "utils.h"
+#include "version.h"
 
-extern  time_t  startTime;
-
-
-/* =============== BCL ================= */
-
+//---------------------------------------------------------------------------
 bcl_header_type bcl_header;
+bcl_type        bcl;
+static fhandle  bclHandle;
 
-bcl_type bcl;
-
-/* ============================================= */
-
-static fhandle bclHandle;
-
-
+//---------------------------------------------------------------------------
 udef openBCL(uplinkReqType *uplinkReq)
-{  tempStrType tempStr;
-   nodeNumType tempNode;
+{
+  tempStrType tempStr;
+  nodeNumType tempNode;
 
-   sprintf (tempStr, "%s%s", configPath, uplinkReq->fileName);
-   if ( (bclHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE)) == -1 ||
-        read(bclHandle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header) )
-   {  close(bclHandle);
-      return 0;
-   }
-   tempNode.point = 0;
-   if ( memcmp(bcl_header.FingerPrint, "BCL", 4) ||
-        sscanf (bcl_header.Origin, "%hu:%hu/%hu.%hu",
-                                   &tempNode.zone, &tempNode.net,
-                                   &tempNode.node, &tempNode.point) < 3 )
-   {  close(bclHandle);
-      return 0;
-   }
-   return 1;
+  sprintf(tempStr, "%s%s", configPath, uplinkReq->fileName);
+  if ( (bclHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE)) == -1
+     || read(bclHandle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header)
+     )
+  {
+    close(bclHandle);
+    return 0;
+  }
+  tempNode.point = 0;
+  if (  memcmp(bcl_header.FingerPrint, "BCL", 4)
+     || sscanf (bcl_header.Origin, "%hu:%hu/%hu.%hu", &tempNode.zone, &tempNode.net, &tempNode.node, &tempNode.point) < 3 )
+  {
+    close(bclHandle);
+    return 0;
+  }
+  return 1;
 }
-
-
+//---------------------------------------------------------------------------
 udef readBCL(u8 **tag, u8 **descr)
 {
-   static u8  buf[256];
+  static u8  buf[256];
 
-   if ( eof(bclHandle) )
-      return 0;
-   if ( read(bclHandle, &bcl, sizeof(bcl_type)) != sizeof(bcl_type) )
-      return 0;
-   if ( read(bclHandle, buf, bcl.EntryLength - sizeof(bcl_type)) != (int)(bcl.EntryLength - sizeof(bcl_type)) )
-      return 0;
-   *tag = buf;
-   *descr = strchr(buf, 0) + 1;
-   return 1;
+  if ( eof(bclHandle) )
+    return 0;
+  if ( read(bclHandle, &bcl, sizeof(bcl_type)) != sizeof(bcl_type) )
+    return 0;
+  if ( read(bclHandle, buf, bcl.EntryLength - sizeof(bcl_type)) != (int)(bcl.EntryLength - sizeof(bcl_type)) )
+    return 0;
+  *tag = buf;
+  *descr = strchr(buf, 0) + 1;
+
+  return 1;
 }
-
-
+//---------------------------------------------------------------------------
 udef closeBCL(void)
 {
   return close(bclHandle);
 }
-
-
+//---------------------------------------------------------------------------
 udef autoBCL(void)
 {
-   u16 index;
+  u16 index;
 
-   for (index = 0; index < nodeCount; index++)
-   {
-      returnTimeSlice(0);
-      if (nodeInfo[index]->autoBCL
-         && startTime - (time_t)nodeInfo[index]->lastSentBCL > nodeInfo[index]->autoBCL * 86400L
-         )
-      {
-         send_bcl(&config.akaList[matchAka(&nodeInfo[index]->node, 0)].nodeNum, &(nodeInfo[index]->node), nodeInfo[index]);
-         nodeInfo[index]->lastSentBCL = startTime;
-      }
-   }
-   return 0;
+  logEntry("AutoBCL check", LOG_DEBUG, 0);
+
+  for (index = 0; index < nodeCount; index++)
+  {
+    returnTimeSlice(0);
+    if (  nodeInfo[index]->autoBCL
+       && startTime - (time_t)nodeInfo[index]->lastSentBCL > nodeInfo[index]->autoBCL * 86400L
+       )
+    {
+      send_bcl(&config.akaList[matchAka(&nodeInfo[index]->node, 0)].nodeNum, &(nodeInfo[index]->node), nodeInfo[index]);
+      nodeInfo[index]->lastSentBCL = startTime;
+    }
+  }
+  return 0;
 }
-
-
-
+//---------------------------------------------------------------------------
 udef process_bcl(u8 *fileName)
-{  fhandle     handle;
-   tempStrType tempStr, tempStr2;
-   u8          newFileName[13];
-   u16         index;
-   nodeNumType tempNode;
+{
+  fhandle     handle;
+  tempStrType tempStr, tempStr2;
+  u8          newFileName[13];
+  u16         index;
+  nodeNumType tempNode;
 
-   sprintf (tempStr, "%s%s", config.inPath, fileName);
-   if ( (handle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE)) == -1 || 
-        read(handle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header) )
-   {  close(handle);
-      return 0;
-   }
-   close(handle);
-   tempNode.point = 0;
-   if ( memcmp(bcl_header.FingerPrint, "BCL", 4) ||
-        sscanf (bcl_header.Origin, "%hu:%hu/%hu.%hu",
-                                   &tempNode.zone, &tempNode.net,
-                                   &tempNode.node, &tempNode.point) < 3 )
-   {  return 0;
-   }
-   index = 0;
-   while ( index < MAX_UPLREQ )
-   {  if ( config.uplinkReq[index].node.zone &&
-           config.uplinkReq[index].fileType == 2 &&
-           !memcmp(&config.uplinkReq[index].node, &tempNode, sizeof(nodeNumType)) )
-         break;
-      ++index;
-   }
-   if ( index == MAX_UPLREQ )
-      return 0;
+  sprintf (tempStr, "%s%s", config.inPath, fileName);
+  if ( (handle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE)) == -1 ||
+      read(handle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header) )
+  {
+    close(handle);
+    return 0;
+  }
+  close(handle);
+  tempNode.point = 0;
+  if (  memcmp(bcl_header.FingerPrint, "BCL", 4)
+     || sscanf(bcl_header.Origin, "%hu:%hu/%hu.%hu",
+                                 &tempNode.zone, &tempNode.net,
+                                 &tempNode.node, &tempNode.point) < 3 )
+    return 0;
 
-   sprintf(newFileName, "%08lX.BCL", uniqueID());
-   sprintf(tempStr2, "%s%s", configPath, newFileName);
-   if ( !moveFile(tempStr, tempStr2) )
-   {  sprintf(tempStr, "%s%s", configPath, config.uplinkReq[index].fileName);
-      unlink(tempStr);
-      strcpy(config.uplinkReq[index].fileName, newFileName);
-      sprintf(tempStr, "New BCL file received from uplink %s", nodeStr(&tempNode));
-      logEntry(tempStr, LOG_ALWAYS, 0);
-   }
-   return 1;
+  index = 0;
+  while ( index < MAX_UPLREQ )
+  {
+    if ( config.uplinkReq[index].node.zone &&
+         config.uplinkReq[index].fileType == 2 &&
+         !memcmp(&config.uplinkReq[index].node, &tempNode, sizeof(nodeNumType)) )
+      break;
+    ++index;
+  }
+  if (index == MAX_UPLREQ)
+    return 0;
+
+  sprintf(newFileName, "%08lX.BCL", uniqueID());
+  sprintf(tempStr2, "%s%s", configPath, newFileName);
+  if (!moveFile(tempStr, tempStr2))
+  {
+    sprintf(tempStr, "%s%s", configPath, config.uplinkReq[index].fileName);
+    unlink(tempStr);
+    strcpy(config.uplinkReq[index].fileName, newFileName);
+    sprintf(tempStr, "New BCL file received from uplink %s", nodeStr(&tempNode));
+    logEntry(tempStr, LOG_ALWAYS, 0);
+  }
+  return 1;
 }
-
-
-
+//---------------------------------------------------------------------------
 udef scan_bcl(void)
 {
-   tempStrType  tempStr;
-   struct ffblk ffblk;
-   int  done;
-   udef count = 0;
+  tempStrType  tempStr;
+  struct ffblk ffblk;
+  int  done;
+  udef count = 0;
 
-   autoBCL();
+  autoBCL();
 
-   sprintf (tempStr, "%s*.BCL", config.inPath);
-   done = findfirst(tempStr, &ffblk, 0);
-   while (!done)
-   {  count += process_bcl(ffblk.ff_name);
-      done = findnext(&ffblk);
-   }
-   if ( count )
-      newLine();
-   return count;
+  logEntry("Scan for received BCL files", LOG_DEBUG, 0);
+
+  sprintf(tempStr, "%s*.BCL", config.inPath);
+  done = findfirst(tempStr, &ffblk, 0);
+  while (!done)
+  {
+    count += process_bcl(ffblk.ff_name);
+    done = findnext(&ffblk);
+  }
+  if (count)
+    newLine();
+
+  return count;
 }
-
-
-
+//---------------------------------------------------------------------------
 void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInfoPtr)
 {
-   u16         count;
-   tempStrType tempStr;
-   fhandle     helpHandle;
-   headerType  *areaHeader;
-   rawEchoType *areaBuf;
+  u16          count;
+  tempStrType  tempStr;
+  fhandle      helpHandle;
+  headerType  *areaHeader;
+  rawEchoType *areaBuf;
 
-   if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
-      return;
+  if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
+    return;
 
-   sprintf (tempStr, "%s%08lX.$$$", config.outPath, uniqueID());
-   if ( (helpHandle = openP(tempStr,
-                            O_WRONLY|O_BINARY|O_CREAT|O_TRUNC,S_IREAD|S_IWRITE)) != -1 )
-   {  memset(&bcl_header, 0, sizeof(bcl_header));
-      strcpy(bcl_header.FingerPrint, "BCL");
-      strcpy(bcl_header.ConfMgrName, "FMail");
-      strcpy(bcl_header.Origin, nodeStr(srcNode));
-      bcl_header.CreationTime = time(NULL);
-      bcl_header.flags = BCLH_ISLIST;
-      write(helpHandle, &bcl_header, sizeof(bcl_header));
-      for ( count = 0; count < areaHeader->totalRecords; count++ )
-      {
-         getRec(CFG_ECHOAREAS, count);
+  sprintf(tempStr, "%s%08lX.$$$", config.outPath, uniqueID());
+  if ((helpHandle = openP(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
+  {
+    tempStrType logStr;
+    sprintf(logStr, "Creating BCL file for node %s -> %s", nodeStr(destNode), tempStr);
+    logEntry(logStr, LOG_ALWAYS, 0);
 
-         if ( !areaBuf->options.active || areaBuf->options.local)
-            continue;
-         if ( !(areaBuf->group & nodeInfoPtr->groups) )
-            continue;
+    memset(&bcl_header, 0, sizeof(bcl_header));
+    strcpy(bcl_header.FingerPrint, "BCL");
+    strncpy(bcl_header.ConfMgrName, VersionStr(), 30);
+    strcpy(bcl_header.Origin, nodeStr(srcNode));
+    bcl_header.CreationTime = time(NULL);
+    bcl_header.flags = BCLH_ISLIST;
+    write(helpHandle, &bcl_header, sizeof(bcl_header));
+    for (count = 0; count < areaHeader->totalRecords; count++)
+    {
+      getRec(CFG_ECHOAREAS, count);
 
-         bcl.EntryLength = sizeof(bcl)+
-                           strlen(areaBuf->areaName)+1 +
-                           strlen(areaBuf->comment)+1 + 1;
-         bcl.flags1 = FLG1_MAILCONF |
-                      (areaBuf->options.allowPrivate ? FLG1_PRIVATE : 0) |
-                      ((nodeInfoPtr->writeLevel < areaBuf->writeLevel) ? FLG1_READONLY : 0);
-         write(helpHandle, &bcl, sizeof(bcl));
-         write(helpHandle, areaBuf->areaName, strlen(areaBuf->areaName)+1);
-         write(helpHandle, areaBuf->comment, strlen(areaBuf->comment)+1);
-         write(helpHandle, "", 1);
-      }
-      close(helpHandle);
-      packArc (tempStr, srcNode, destNode, nodeInfoPtr);
-   }
-   closeConfig(CFG_ECHOAREAS);
+      if (!areaBuf->options.active || areaBuf->options.local)
+        continue;
+      if (!(areaBuf->group & nodeInfoPtr->groups))
+        continue;
+
+      bcl.EntryLength = sizeof(bcl) + strlen(areaBuf->areaName) + 1 + strlen(areaBuf->comment) + 1 + 1;
+      bcl.flags1 = FLG1_MAILCONF
+                 | (areaBuf->options.allowPrivate ? FLG1_PRIVATE : 0)
+                 | ((nodeInfoPtr->writeLevel < areaBuf->writeLevel) ? FLG1_READONLY : 0);
+      write(helpHandle, &bcl, sizeof(bcl));
+      write(helpHandle, areaBuf->areaName, strlen(areaBuf->areaName)+1);
+      write(helpHandle, areaBuf->comment, strlen(areaBuf->comment)+1);
+      write(helpHandle, "", 1);
+    }
+    close(helpHandle);
+    packArc(tempStr, srcNode, destNode, nodeInfoPtr);
+  }
+  closeConfig(CFG_ECHOAREAS);
 }
+//---------------------------------------------------------------------------

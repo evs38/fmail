@@ -1,3 +1,5 @@
+#ifndef msgmsgH
+#define msgmsgH
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
@@ -77,5 +79,7 @@ s16  readMsg      (internalMsgType *message, s32 msgNum);
 s32  writeMsg     (internalMsgType *message, s16 msgType, s16 valid);
 s32  writeMsgLocal(internalMsgType *message, s16 msgType, s16 valid);
 void validateMsg  (void);
-s16  fileAttach   (char *fileName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInfo, int truncate);
+s16  fileAttach   (char *fileName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInfo);
 //---------------------------------------------------------------------------
+
+#endif  // msgmsgH

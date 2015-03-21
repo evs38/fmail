@@ -26,6 +26,7 @@
 #include "fmail.h"
 
 #include "areainfo.h"
+#include "fmstruct.h"
 
 #define ECHO_SEENBY 0
 #define ECHO_PATH   1
@@ -66,49 +67,54 @@
 extern u32 lastID;
 
 //---------------------------------------------------------------------------
-int    moveFile      (const char *oldName, const char *newName);
-s16    existDir      (const char *dir, const char *descr);
-u32    diskFree      (const char *path);
-u32    fileLength    (int handle);
-s16    matchAka      (nodeNumType *node, char useAka);
-void   touch         (const char *path, const char *filename, const char *t);
-s16    emptyText     (char *text);
-void   delete        (char *path, char *wildCard);
-s32    getSwitch     (int *argc, char *argv[], s32 mask);
-u32    uniqueID      (void);
-char  *removeRe      (char *string);
-void   removeLfSr    (char *msgText);
-void   removeLf      (char *msgText);
-void   removeSr      (char *msgText);
-char  *srchar        (char *string, s16 t, s16 c);
-char  *nodeStr       (nodeNumType *nodeNum);
-char  *nodeStrZ      (nodeNumType *nodeNum);
-char  *findCLStr     (char *s1, const char *s2);
-char  *findCLiStr    (char *s1, const char *s2);
-void   removeLine    (char *s);
-void   addINTL       (internalMsgType *message);
-s16    getLocalAka   (nodeNumType *node);
-s16    isLocalPoint  (nodeNumType *node);
-s16    node2d        (nodeNumType *node);
-void   make2d        (internalMsgType *message);
-s16    node4d        (nodeNumType *node);
-void   point4d       (internalMsgType *message);
-void   make4d        (internalMsgType *message);
-s16    getLocalAkaNum(nodeNumType *node);
-char  *insertLine    (char *pos, const char *line);
-char  *insertLineN   (char *pos, char *line, u16 num);
-void   addPathSeenBy (char *msgText, char *seenBy, char *tinySeen, char *path, echoToNodeType echoToNode, u16 areaIndex);
-void   addVia        (char *msgText, u16 aka);
-s16    scanDate      (unsigned char *datePtr, u16 *year, u16 *month, u16 *day, u16 *hours, u16 *minutes);
-s32    checkDate     (u16 year,  u16 month,  u16 day, u16 hours, u16 minutes, u16 seconds);
-uchar *makeName      (uchar *path, uchar *name);
-long   fmseek        (int handle, long offset, int fromwhere, int code);
-uchar *makeFullPath  (uchar *deflt, uchar *override, uchar *name);
-u16    getKludge     (char *txt, char *kludge, char *subfield, u16 bufsize);
-void   getKludgeNode (char *txt, char *kludge, nodeNumType *nodeNum);
-u16    firstFile     (u8 *string, u8 **filename);
-u16    nextFile      (u8 **filename);
-char  *stristr       (const char *str1, const char *str2);
+int    moveFile       (const char *oldName, const char *newName);
+s16    existDir       (const char *dir, const char *descr);
+u32    diskFree       (const char *path);
+#ifdef __CANUSE64BIT
+const char *fmtU64    (u64 u);
+u64    diskFree64     (const char *path);
+#endif
+u32    fileLength     (int handle);
+s16    matchAka       (nodeNumType *node, char useAka);
+void   touch          (const char *path, const char *filename, const char *t);
+s16    emptyText      (char *text);
+void   delete         (char *path, char *wildCard);
+s32    getSwitch      (int *argc, char *argv[], s32 mask);
+u32    uniqueID       (void);
+char  *removeRe       (char *string);
+void   removeLfSr     (char *msgText);
+void   removeLf       (char *msgText);
+void   removeSr       (char *msgText);
+char  *srchar         (char *string, s16 t, s16 c);
+char  *nodeStr        (nodeNumType *nodeNum);
+char  *nodeStrZ       (nodeNumType *nodeNum);
+char  *findCLStr      (char *s1, const char *s2);
+char  *findCLiStr     (char *s1, const char *s2);
+void   removeLine     (char *s);
+void   addINTL        (internalMsgType *message);
+s16    getLocalAka    (nodeNumType *node);
+s16    isLocalPoint   (nodeNumType *node);
+s16    node2d         (nodeNumType *node);
+void   make2d         (internalMsgType *message);
+s16    node4d         (nodeNumType *node);
+void   point4d        (internalMsgType *message);
+void   make4d         (internalMsgType *message);
+s16    getLocalAkaNum (nodeNumType *node);
+char  *insertLine     (char *pos, const char *line);
+char  *insertLineN    (char *pos, char *line, u16 num);
+void   addPathSeenBy  (char *msgText, char *seenBy, char *tinySeen, char *path, echoToNodeType echoToNode, u16 areaIndex);
+void   addVia         (char *msgText, u16 aka);
+s16    scanDate       (unsigned char *datePtr, u16 *year, u16 *month, u16 *day, u16 *hours, u16 *minutes);
+s32    checkDate      (u16 year,  u16 month,  u16 day, u16 hours, u16 minutes, u16 seconds);
+uchar *makeName       (uchar *path, uchar *name);
+long   fmseek         (int handle, long offset, int fromwhere, int code);
+uchar *makeFullPath   (uchar *deflt, uchar *override, uchar *name);
+u16    getKludge      (char *txt, char *kludge, char *subfield, u16 bufsize);
+void   getKludgeNode  (char *txt, char *kludge, nodeNumType *nodeNum);
+u16    firstFile      (u8 *string, u8 **filename);
+u16    nextFile       (u8 **filename);
+char  *stristr        (const char *str1, const char *str2);
+void   MakeJamAreaPath(rawEchoType *tempInfo);
 
 //---------------------------------------------------------------------------
 #endif  // utilH

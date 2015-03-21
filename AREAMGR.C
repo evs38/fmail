@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -42,7 +42,7 @@
 #include "cfgfile.h"
 #include "fs_func.h"
 #include "fs_util.h"
-#include "fs_util.h"
+#include "utils.h"
 #include "window.h"
 
 typedef struct      /* OLD !!! */
@@ -369,7 +369,7 @@ static void freeAreaInfo(u16 index)
 
 s16 areaMgr (void)
 {
-   u8		*tempPtr, *tempPtr2;
+   u8		*tempPtr; //, *tempPtr2;
    u16          index = 0;
    u16          pos, idx;
    areaInfoPtr  areaHelpPtr;
@@ -980,59 +980,49 @@ s16 areaMgr (void)
 
 				 tempInfo.options.active = 1;
 
-				 if (badEchoCount)
-                                 {  strncpy (tempInfo.areaName,
-				   	     badEchos[--badEchoCount].badEchoName, ECHONAME_LEN-1);
-				    strncpy (tempInfo.comment,
-					     badEchos[badEchoCount].badEchoName, ECHONAME_LEN-1);
-				    strupr (tempInfo.areaName);
-                                    tempInfo.forwards[0].nodeNum = badEchos[badEchoCount].srcNode;
+				  if (badEchoCount)
+          {
+            strncpy(tempInfo.areaName, badEchos[--badEchoCount].badEchoName, ECHONAME_LEN-1);
+				    strncpy(tempInfo.comment , badEchos[  badEchoCount].badEchoName, ECHONAME_LEN-1);
+				 // strupr(tempInfo.areaName);
+            tempInfo.forwards[0].nodeNum = badEchos[badEchoCount].srcNode;
 				    tempInfo.address = badEchos[badEchoCount].destAka;
 
-                                    if ( tempInfo.board == 2 ) /* JAM */
-                                    {  tempPtr = tempPtr2 = strchr(tempInfo.msgBasePath, 0);
-                                       strncpy(tempPtr, tempInfo.areaName,
-                                               MB_PATH_LEN - strlen(tempInfo.msgBasePath) - 1);
-                                       while ( *tempPtr )
-                                       {  if ( !isalnum(*tempPtr) )
-                                             strcpy(tempPtr, tempPtr + 1);
-                                          else
-                                             ++tempPtr;
-                                       }
-                                       if ( !config.genOptions.lfn )
-                                       {  tempPtr2[8] = 0;
-                                          strupr(tempInfo.msgBasePath);
-                                       }
-                                       for ( ; ; )
-                                       {  idx = 0;
-                                          while ( idx < areaInfoCount )
-                                          {  if ( *areaInfo[idx]->msgBasePath && !stricmp(areaInfo[idx]->msgBasePath, tempInfo.msgBasePath) )
-                                                break;
-                                             ++idx;
-                                          }
-                                          if ( idx == areaInfoCount )
-                                             break;
-                                          tempPtr = strchr(tempInfo.msgBasePath, 0) - 1;
-                                          for ( ; ; )
-                                          {  if ( !isdigit(*tempPtr) )
-                                                *tempPtr = '0';
-                                             else
-                                             {  if ( *tempPtr != '9' )
-                                                   ++*tempPtr;
-                                                else
-                                                {  *tempPtr = '0';
-                                                   --tempPtr;
-                                                   if ( tempPtr >= tempInfo.msgBasePath && *tempPtr != '\\' )
-                                                      continue;
-                                                }
-                                             }
-                                             break;
-                                          }
-                                       }
-                                    }
-                                    update = 1;
+            if (tempInfo.board == 2) // JAM
+            {
+              MakeJamAreaPath(&tempInfo);
+              for ( ; ; )
+              {
+                idx = 0;
+                while ( idx < areaInfoCount )
+                {
+                  if ( *areaInfo[idx]->msgBasePath && !stricmp(areaInfo[idx]->msgBasePath, tempInfo.msgBasePath) )
+                    break;
+                  ++idx;
+                }
+                if ( idx == areaInfoCount )
+                  break;
+                tempPtr = strchr(tempInfo.msgBasePath, 0) - 1;
+                for ( ; ; )
+                {  if ( !isdigit(*tempPtr) )
+                      *tempPtr = '0';
+                   else
+                   {  if ( *tempPtr != '9' )
+                         ++*tempPtr;
+                      else
+                      {  *tempPtr = '0';
+                         --tempPtr;
+                         if ( tempPtr >= tempInfo.msgBasePath && *tempPtr != '\\' )
+                            continue;
+                      }
+                   }
+                   break;
+                }
+              }
+            }
+            update = 1;
 				 }
-			      }
+      }
                               tempInfo.boardNumRA = 0;
 
                               areaInfoBoard = 0;
@@ -1293,6 +1283,6 @@ error:
 // free (gNdMenu);
 // free (aglMenu);
 
-   return (update);
+   return update;
 }
 

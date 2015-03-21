@@ -1,9 +1,8 @@
-#ifndef packH
-#define packH
+#ifndef ispathchH
+#define ispathchH
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -23,7 +22,8 @@
 //
 //---------------------------------------------------------------------------
 
-s16 readNodeNum(char *nodeString, nodeNumType *nodeNum, u16 *valid);
-s16 pack(s16 argc, char *argv[], s32 switches);
+extern unsigned char _pathtype[256];
 
-#endif  // packH
+#define ispathch(c)  (_pathtype[(unsigned char)(c)])
+
+#endif  // ispathchH

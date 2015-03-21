@@ -9,12 +9,12 @@
       OBJ.6\FToolsW32\FTLOG.obj OBJ.6\FToolsW32\FTNOTIFY.obj 
       OBJ.6\FToolsW32\FTOOLS.obj OBJ.6\FToolsW32\FTR.obj 
       OBJ.6\FToolsW32\FTSORTHB.obj OBJ.6\FToolsW32\HUDSON.obj 
-      OBJ.6\FToolsW32\IMPDESC.obj OBJ.6\FToolsW32\JAMFUN.obj 
-      OBJ.6\FToolsW32\JAMMAINT.obj OBJ.6\FToolsW32\MTASK.obj 
-      OBJ.6\FToolsW32\OUTPUT.obj OBJ.6\FToolsW32\SMTP.obj 
-      OBJ.6\FToolsW32\totalsec.obj OBJ.6\FToolsW32\UPDATE.obj 
-      OBJ.6\FToolsW32\UTILS.obj OBJ.6\FToolsW32\UTILS2.obj 
-      OBJ.6\FToolsW32\Version.obj"/>
+      OBJ.6\FToolsW32\IMPDESC.obj OBJ.6\FToolsW32\ispathch.obj 
+      OBJ.6\FToolsW32\JAMFUN.obj OBJ.6\FToolsW32\JAMMAINT.obj 
+      OBJ.6\FToolsW32\MTASK.obj OBJ.6\FToolsW32\OUTPUT.obj 
+      OBJ.6\FToolsW32\SMTP.obj OBJ.6\FToolsW32\totalsec.obj 
+      OBJ.6\FToolsW32\UPDATE.obj OBJ.6\FToolsW32\UTILS.obj 
+      OBJ.6\FToolsW32\UTILS2.obj OBJ.6\FToolsW32\Version.obj"/>
     <RESFILES value="FToolsW32.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -29,7 +29,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__"/>
+    <USERDEFINES value="FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FToolsW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -38,11 +38,11 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -Q -Vx -Ve -C -X- -a1 -6 -b -d -k- -vi -tWC -tWM- -c"/>
-    <PFLAGS value="-N2OBJ.6\FToolsW32 -N0OBJ.6\FToolsW32 -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
+    <CFLAG1 value="-Od -Q -Vx -Ve -C -X- -r- -a1 -6 -b -d -k -y -v -vi- -tWC -tWM- -c"/>
+    <PFLAGS value="-N2OBJ.6\FToolsW32 -N0OBJ.6\FToolsW32 -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-IOBJ.6\FToolsW32 -D&quot;&quot; -ap -Tpe -x -Gn"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-IOBJ.6\FToolsW32 -D&quot;&quot; -ap -Tpe -x -Gn -v"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -65,6 +65,7 @@
       <FILE FILENAME="FTSORTHB.C" FORMNAME="" UNITNAME="FTSORTHB" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="HUDSON.C" FORMNAME="" UNITNAME="HUDSON" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="IMPDESC.C" FORMNAME="" UNITNAME="IMPDESC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ispathch.c" FORMNAME="" UNITNAME="ispathch" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="JAMFUN.C" FORMNAME="" UNITNAME="JAMFUN" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="JAMMAINT.C" FORMNAME="" UNITNAME="JAMMAINT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="MTASK.C" FORMNAME="" UNITNAME="MTASK" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -84,9 +85,9 @@
 IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
-MinorVer=68
-Release=10
-Build=56
+MinorVer=69
+Release=2
+Build=60
 Debug=0
 PreRelease=0
 Special=0
@@ -98,13 +99,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FTools Windows 32 bit version
-FileVersion=1.68.10.56
+FileVersion=1.69.2.60
 InternalName=FTools
-LegalCopyright=Copyright (c) 1991 - 2013 FMail developers
+LegalCopyright=Copyright (c) 1991 - 2015 FMail developers
 LegalTrademarks=
 OriginalFilename=FToolsW32.exe
 ProductName=FMail
-ProductVersion=1.68
+ProductVersion=1.69
 
 [Excluded Packages]
 C:\Program Files\Borland\CBuilder6\Bin\dclstd60.bpl=Borland Standard Components
@@ -145,8 +146,8 @@ Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=10
-Item0=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item1=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item0=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item1=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
 Item2=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
 Item3=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
 Item4=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
