@@ -1,24 +1,25 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #include <ctype.h>
 #include <dos.h>
@@ -65,17 +66,29 @@ s16 nodeScroll (void)
    char     tempStr[35];
    nodeNumType tempNode;
 
+/*
+0         1         2         3         4         5         6         7         8
+012345678901234567890123456789012345678901234567890123456789012345678901234567890
+Page Up   Page Down   Ins Insert   Del Delete   Home First   End Last    ^   V  |
+Page Up  Page Down  Insert  Delete  Home First  End Last  R/o  W/o  Lock  ^V    |
+*/
    printString("Page Up   "    ,  0, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("Page Down   "  , 10, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("Ins "          , 22, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("Insert   "     , 26, 24, LIGHTMAGENTA, BLACK, MONO_HIGH);
-   printString("Del "          , 35, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("Delete   "     , 39, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString("Home "         , 48, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("First   "      , 53, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString("End "          , 61, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("Last   "       , 65, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString(" \x18   \x19  ", 72, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("Page Down  "   ,  9, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("Ins"           , 20, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("ert  "         , 23, 24, LIGHTMAGENTA, BLACK, MONO_HIGH);
+   printString("Del "          , 28, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("ete  "         , 31, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("Home "         , 36, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("First  "       , 41, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("End "          , 48, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("Last  "        , 52, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("R"             , 58, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("/o  "          , 59, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("W"             , 63, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("/o  "          , 64, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("L"             , 68, 24, YELLOW      , BLACK, MONO_NORM);
+   printString("ock  "         , 69, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("\x18\x19    "  , 74, 24, YELLOW      , BLACK, MONO_NORM);
 
    while ((elemCount < MAX_FORWARD) && (tempInfo.forwards[elemCount].nodeNum.zone != 0))
    {
