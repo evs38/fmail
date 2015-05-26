@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -127,9 +127,9 @@ typedef areaInfoPtrO  areaInfoPtrArrO[MAX_AREAS];
 
 #define MAX_BAD_ECHOS 50
 
-s16  makeNFInfo (nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode);
-void initAreaInfo (void);
-void deInitAreaInfo (void);
+s16  makeNFInfo    (nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode);
+void initAreaInfo  (void);
+void deInitAreaInfo(void);
 
 //---------------------------------------------------------------------------
 #define ETN_INDEX(i) (i >> 3)

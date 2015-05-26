@@ -48,6 +48,7 @@
 
 char jam_subfields[_JAM_MAXSUBLENTOT];
 
+#if 0
 static int _mdays [13] =
 				{
 /* Jan */   0,
@@ -134,7 +135,7 @@ struct tm * jam_gettime(u32 t)
 
 	 return(&m);
 }
-
+#endif
 
 static fhandle jam_idxhandle = -1;
 static fhandle jam_hdrhandle = -1;
@@ -222,9 +223,10 @@ void jam_closeall(void)
    jam_close(jam_code);
 }
 
-
+//---------------------------------------------------------------------------
 u16 jam_initmsghdrrec(JAMHDR *jam_msghdrrec, internalMsgType *message, u16 local)
-{       struct tm tm;
+{
+  struct tm tm;
 	time_t timer;
 
 	memset(jam_msghdrrec, 0, sizeof(JAMHDR));
@@ -232,31 +234,30 @@ u16 jam_initmsghdrrec(JAMHDR *jam_msghdrrec, internalMsgType *message, u16 local
 	jam_msghdrrec->Revision = 1;
 	jam_msghdrrec->MsgIdCRC = -1L;
 	jam_msghdrrec->ReplyCRC = -1L;
-	tm.tm_year = message->year-1900;
-        tm.tm_mon  = message->month-1;
+	tm.tm_year = message->year - 1900;
+  tm.tm_mon  = message->month - 1;
 	tm.tm_mday = message->day;
 	tm.tm_hour = message->hours;
 	tm.tm_min  = message->minutes;
 	tm.tm_sec  = message->seconds;
-	jam_msghdrrec->DateWritten = jam_maketime(&tm);
+	jam_msghdrrec->DateWritten = mktime(&tm);
 	timer = time(NULL);
-        tm = *gmtime(&timer);
-	jam_msghdrrec->DateProcessed = jam_maketime(&tm);
-        jam_msghdrrec->Attribute = (local ? (MSG_LOCAL|MSG_TYPEECHO) : MSG_TYPEECHO) |
-                                   ((message->attribute & PRIVATE)? MSG_PRIVATE : 0);
-
-
-        jam_msghdrrec->MsgNum = (filelength(jam_idxhandle)/sizeof(JAMIDXREC))+1;
+  tm = *gmtime(&timer);
+	jam_msghdrrec->DateProcessed = mktime(&tm);
+  jam_msghdrrec->Attribute = (local ? (MSG_LOCAL|MSG_TYPEECHO) : MSG_TYPEECHO) |
+                             ((message->attribute & PRIVATE)? MSG_PRIVATE : 0);
+  jam_msghdrrec->MsgNum = (filelength(jam_idxhandle) / sizeof(JAMIDXREC))+1;
 	jam_msghdrrec->PasswordCRC = -1L;
+
 	return 1;
 }
-
-
+//---------------------------------------------------------------------------
 u16 jam_newidx(u32 jam_code, JAMIDXREC *jam_idxrec, u32 *jam_msgnum)
-{       u32 temp;
+{
+  u32 temp;
 	dummy = jam_code;
 
-        if ( ((temp = lseek(jam_idxhandle, 0, SEEK_END)) % sizeof(JAMIDXREC)) != 0 )
+  if ( ((temp = lseek(jam_idxhandle, 0, SEEK_END)) % sizeof(JAMIDXREC)) != 0 )
 		return 0;
 	if ( write(jam_idxhandle, jam_idxrec, sizeof(JAMIDXREC)) != sizeof(JAMIDXREC) )
 		return 0;
@@ -270,7 +271,7 @@ u16 jam_getidx(u32 jam_code, JAMIDXREC *jam_idxrec, u32 jam_msgnum)
 {  dummy = jam_code;
 
    if ( !jam_msgnum )
-      jam_msgnum++;	
+      jam_msgnum++;
    if ( fmseek(jam_idxhandle, (jam_msgnum-1)*sizeof(JAMIDXREC), SEEK_SET, 1) != (jam_msgnum-1)*sizeof(JAMIDXREC) )
       return 0;
    if ( read(jam_idxhandle, jam_idxrec, sizeof(JAMIDXREC)) != sizeof(JAMIDXREC) )
@@ -282,7 +283,7 @@ u16 jam_getidx(u32 jam_code, JAMIDXREC *jam_idxrec, u32 jam_msgnum)
 
 u16 jam_updidx(u32 jam_code, JAMIDXREC *jam_idxrec)
 {  dummy = jam_code;
-	
+
         if ( lseek(jam_idxhandle, -(s32)sizeof(JAMIDXREC), SEEK_CUR) < 0 )
 		return 0;
 	if ( write(jam_idxhandle, jam_idxrec, sizeof(JAMIDXREC)) != sizeof(JAMIDXREC) )
@@ -441,7 +442,7 @@ u16 jam_makesubfields(u32 jam_code, char *jam_subfields, u32 *jam_subfieldLen,
 	char  tempStr[_JAM_MAXSUBLEN];
 
 	dummy = jam_code;
-	
+
 	helpPtr2 = jam_subfields;
 	*jam_subfieldLen = 0;
 	for ( count = 0; count < sizeof(jam_fields)/sizeof(u16); count++)
@@ -528,51 +529,53 @@ u16 jam_makesubfields(u32 jam_code, char *jam_subfields, u32 *jam_subfieldLen,
 
 
 
-u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_subfields,
-					internalMsgType *message)
-{  dummy = jam_code;
+u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_subfields, internalMsgType *message)
+{
+  dummy = jam_code;
 
-   if ( (u32)fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 2) != jam_hdroffset )
-      return 0;
-   if ( read(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR) )
-      return 0;
-   if ( jam_hdrrec->SubfieldLen >= _JAM_MAXSUBLENTOT ) // SubfieldLen not defined yet?!?
-   {  logEntry("Subfields too big", LOG_ALWAYS, 0);
-      return 0;
-   }
-   if ( read(jam_hdrhandle, jam_subfields, (udef)jam_hdrrec->SubfieldLen) != jam_hdrrec->SubfieldLen )
-      return 0;
-   if ( message != NULL )
-   {  
-      struct tm tm = *jam_gettime(jam_hdrrec->DateWritten);
-      message->year    = tm.tm_year + 1900;
-      message->month   = tm.tm_mon + 1;
-      message->day     = tm.tm_mday;
-      message->hours   = tm.tm_hour;
-      message->minutes = tm.tm_min;
-      message->seconds = tm.tm_sec;
-      message->attribute = ((jam_hdrrec->Attribute & MSG_PRIVATE) ? PRIVATE : 0);
-   }
-   return 1;
+  if ((u32)fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 2) != jam_hdroffset)
+    return 0;
+  if (read(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR))
+    return 0;
+  if (jam_hdrrec->SubfieldLen >= _JAM_MAXSUBLENTOT) // SubfieldLen not defined yet?!?
+  {
+    logEntry("Subfields too big", LOG_ALWAYS, 0);
+    return 0;
+  }
+  if ( read(jam_hdrhandle, jam_subfields, (udef)jam_hdrrec->SubfieldLen) != jam_hdrrec->SubfieldLen )
+    return 0;
+  if ( message != NULL )
+  {
+    struct tm *tm = gmtime((const time_t *)&jam_hdrrec->DateWritten);
+    message->year    = tm->tm_year + 1900;
+    message->month   = tm->tm_mon + 1;
+    message->day     = tm->tm_mday;
+    message->hours   = tm->tm_hour;
+    message->minutes = tm->tm_min;
+    message->seconds = tm->tm_sec;
+    message->attribute = ((jam_hdrrec->Attribute & MSG_PRIVATE) ? PRIVATE : 0);
+  }
+  return 1;
 }
 
 
 
 u16 jam_puthdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec)
-{  dummy = jam_code;
+{
+  dummy = jam_code;
 
-   if ( (u32)fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 3) != jam_hdroffset )
-      return 0;
-   if ( write(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR) )
-      return 0;
-   return 1;
+  if ( (u32)fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 3) != jam_hdroffset )
+    return 0;
+  if ( write(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR) )
+    return 0;
+  return 1;
 }
 
 
 
 u16 jam_newhdr(u32 jam_code, u32 *jam_hdrOffset, JAMHDR *jam_hdrrec, char *jam_subfields)
 {  dummy = jam_code;
-	
+
    if ( (signed long)(*jam_hdrOffset = lseek(jam_hdrhandle, 0, SEEK_END)) < 0 )
       return 0;
    if ( jam_hdrrec->SubfieldLen >= _JAM_MAXSUBLENTOT )
@@ -710,7 +713,7 @@ u32 jam_writemsg(char *msgbasename, internalMsgType *message, u16 local)
 	jam_idxrec.UserCRC = crc32jam(message->toUserName);
 	jam_newidx(jam_code, &jam_idxrec, &msgNum);
 	jam_incmsgcount(jam_code);
-	
+
   /*--- create/update ECHOMAIL.JAM */
 	if ( local )
 	{  strcpy (tempStr, config.bbsPath);

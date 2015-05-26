@@ -9,6 +9,7 @@
 /doc/fmail1.msg
 /doc/fmail2.msg
 /doc/fmail2.msg
+/doc/fsp-1034.001
 /doc/gpl-url.txt
 /doc/header.txt
 /doc/todo_tmp
@@ -33,7 +34,6 @@
 /OBJ.6/*/*.obj
 /old
 /Release/W32
+/test
 /tst.out
 /VersionTest*
-/doc/fsp-1034.001
-/test_removelf

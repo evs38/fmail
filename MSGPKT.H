@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -56,23 +56,23 @@ typedef struct
 
 typedef struct
 {
-   u16       origNode,
-	     destNode,
-	     origPoint,
-	     destPoint;
-   uchar     reserved[8];
-   u16       subVersion,
-	     packetType,
-	     origNet,
-	     destNet;
-   uchar     prodCode,
-	     revisionLevel;
-   uchar     password [8];
-   u16       origZone,
-	     destZone;
-   uchar     origDomain[8],
-             destDomain[8];
-   uchar     prodData[4];
+   u16   origNode
+       , destNode
+       , origPoint
+       , destPoint;
+   uchar reserved[8];
+   u16   subVersion
+       , packetType
+       , origNet
+       , destNet;
+   uchar prodCode
+       , revisionLevel;
+   uchar password [8];
+   u16   origZone
+       , destZone;
+   uchar origDomain[8]
+       , destDomain[8];
+   uchar prodData[4];
 } FSC45pktHdrType;
 
 
@@ -99,24 +99,24 @@ typedef struct
 */
 //---------------------------------------------------------------------------
 
-void initPkt (void);
-void deInitPkt (void);
+void initPkt  (void);
+void deInitPkt(void);
 
-s16  openPktRd  (char *fileName, s16 secure);
-s16  readPkt    (internalMsgType *message);
-void closePktRd (void);
+s16  openPktRd (char *fileName, s16 secure);
+s16  readPkt   (internalMsgType *message);
+void closePktRd(void);
 
-s16  closeLuPkt        (void);
-fhandle openP          (const char *pathname, int access, u16 mode);
-fhandle fsopenP        (const char *pathname, int access, u16 mode);
+s16  closeLuPkt       (void);
+fhandle openP         (const char *pathname, int access, u16 mode);
+fhandle fsopenP       (const char *pathname, int access, u16 mode);
 
-s16  writeEchoPkt      (internalMsgType *message,
-                        s16 tinySeenByArea, echoToNodeType echoToNode);
-void freePktHandles    (void);
-s16  validateEchoPktWr (void);
-s16  closeEchoPktWr    (void);
-s16  writeNetPktValid  (internalMsgType *message, nodeFileRecType *nfInfoRec);
-s16  closeNetPktWr     (nodeFileRecType *nfInfoRec);
+s16  writeEchoPkt     (internalMsgType *message,
+                       s16 tinySeenByArea, echoToNodeType echoToNode);
+void freePktHandles   (void);
+s16  validateEchoPktWr(void);
+s16  closeEchoPktWr   (void);
+s16  writeNetPktValid (internalMsgType *message, nodeFileRecType *nfInfoRec);
+s16  closeNetPktWr    (nodeFileRecType *nfInfoRec);
 
 //---------------------------------------------------------------------------
 #endif  // msgpktH

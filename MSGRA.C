@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -297,10 +297,11 @@ s16 multiUpdate (void)
    if ((config.mbOptions.mbSharing) &&
        (findfirst (expandName("MSGHDR", 0), &tempBlk, 0) == 0))
    {
-      logEntry ("Updating actual message base files...", LOG_MSGBASE, 0);
-      newLine ();
+      logEntry("Updating actual message base files...", LOG_MSGBASE, 0);
+      newLine();
+      flush();
 
-      if (lockMB ())
+      if (lockMB())
          return (1);
 
       lseek (lockHandle, 0, SEEK_SET);
@@ -326,7 +327,7 @@ s16 multiUpdate (void)
       {
          close(srcHdrHandle);
          unlockMB ();
-	 logEntry ("Can't update the message base files", LOG_ALWAYS, 0);
+         logEntry ("Can't update the message base files", LOG_ALWAYS, 0);
          newLine ();
          return (1);
       }

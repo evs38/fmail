@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -548,10 +548,11 @@ int cdecl main(int argc, char *argv[])
     exit(4);
   }
 
-  if (  (existDir(config.netPath, "netmail")      == 0)
-     || (existDir(config.bbsPath, "message base") == 0)
-     || (existDir(config.inPath,  "inbound")      == 0)
-     || (existDir(config.outPath, "outbound")     == 0))
+  if (  existDir(config.netPath, "netmail")      == 0
+     || existDir(config.bbsPath, "message base") == 0
+     || existDir(config.inPath,  "inbound")      == 0
+     || existDir(config.outPath, "outbound")     == 0
+     )
   {
     printString("Please enter the required subdirectories first!\n");
     showCursor();
@@ -2254,4 +2255,3 @@ fhandle fsopenP(const char *pathname, int access, u16 mode)
   return open(pathname, access, mode);
 }
 //----------------------------------------------------------------------------
-

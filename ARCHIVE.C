@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------------
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -161,13 +161,14 @@ static s16 execute(char *arcType, char *program, char *parameters, char *archive
 #endif
                   )
 {
-  s16 dosExitCode = -1;
-  uchar tempStr[MAX_PARSIZE];
+  s16         dosExitCode = -1;
+  uchar       tempStr[MAX_PARSIZE];
   tempStrType tempPath;
-  uchar       *helpPtr;
-  u16 len = 0;
+  uchar      *helpPtr;
+  u16         len = 0;
+  clock_t     ct = clock();
 #if !defined __FMAILX__ && !defined __32BIT__
-  fhandle EMSHandle;
+  fhandle     EMSHandle;
 #endif
 
   while ((helpPtr = strstr(parameters, "\%a")) != NULL)
@@ -227,7 +228,8 @@ static s16 execute(char *arcType, char *program, char *parameters, char *archive
   sprintf(tempStr, "Executing %s %s", program, parameters);
   logEntry(tempStr, LOG_EXEC | LOG_NOSCRN, 0);
 
-	printString("<-- External Program Start    -->\n");
+  sprintf(tempStr, "<-- %s Start -->\n", arcType);
+  printString(tempStr);
 	showCursor();
 
 #if !defined __FMAILX__ && !defined __32BIT__
@@ -276,7 +278,10 @@ static s16 execute(char *arcType, char *program, char *parameters, char *archive
 #ifndef __NOSPAWNL__
 // for Win16 compile
   if (dosExitCode == -1)
+  {
     dosExitCode = spawnl(P_WAIT, program, program, parameters, NULL);
+    flush();
+  }
 
 #endif
 #else
@@ -305,7 +310,9 @@ static s16 execute(char *arcType, char *program, char *parameters, char *archive
   }
 #endif
 	noCursor();
-	printString("<-- External Program Finished -->\n");
+  sprintf(tempStr, "<-- %s End [%.2f] -->\n", arcType, (clock() - ct) / CLK_TCK);
+  printString(tempStr);
+  flush();
   if (dosExitCode == -1)
   {
     sprintf(tempStr, "Cannot execute %s utility: ", arcType);
@@ -336,8 +343,7 @@ static s16 execute(char *arcType, char *program, char *parameters, char *archive
   }
   if (dosExitCode != 0)
   {
-    sprintf(tempStr, "Archiving utility for %s method reported errorlevel %u"
-            , arcType, dosExitCode);
+    sprintf(tempStr, "Archiving utility for %s method reported errorlevel %u", arcType, dosExitCode);
     logEntry(tempStr, LOG_ALWAYS, 0);
     return 1;
   }
@@ -518,15 +524,15 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
   }
   sprintf(tempStr, "Decompressing %s (%s)", fullFileName, extPtr);
   logEntry(tempStr, LOG_INBOUND, 0);
-  sprintf(tempStr, "Archive info: %uk, %u-%.3s-%u %u:%02u"
-          , max(1, (u16)((ffblkArc->ff_fsize + 512) >> 10))
-          , ffblkArc->ff_fdate & 0x1f
-          , months + (((ffblkArc->ff_fdate >> 5) & 0x0f) - 1) * 3
-          , ((ffblkArc->ff_fdate >> 9) & 0x7f) + 1980
-          , (ffblkArc->ff_ftime >> 11) & 0x1f
-          , (ffblkArc->ff_ftime >> 5) & 0x3f
-       // , (ffblkArc->ff_ftime & 0x1f) << 1
-          );
+  sprintf(tempStr, "Archive info: %ld, %04u-%02u-%02u %02u:%02u:%02u"
+         , ffblkArc->ff_fsize
+         , ((ffblkArc->ff_fdate >> 9) & 0x7f) + 1980
+         , ((ffblkArc->ff_fdate >> 5) & 0x0f)
+         , ffblkArc->ff_fdate & 0x1f
+         , (ffblkArc->ff_ftime >> 11) & 0x1f
+         , (ffblkArc->ff_ftime >> 5) & 0x3f
+         , (ffblkArc->ff_ftime & 0x1f) << 1
+         );
   logEntry(tempStr, LOG_INBOUND, 0);
 
   strcpy(unpackPathStr, config.inPath);  /* pktPath */
@@ -605,9 +611,9 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
     if (!checkExist(tempStr, procStr1, procStr2))
     {
 #if (defined __FMAILX__ || defined __32BIT__)
-      execute("Post-Unpack",  procStr1, procStr2, fullFileName, unpackPathStr,  NULL);
+      execute("Post-Unpack", procStr1, procStr2, fullFileName, unpackPathStr, NULL);
 #else
-      execute("Post-Unpack",  procStr1, procStr2, fullFileName, unpackPathStr,  NULL, config.postUnarc.memRequired);
+      execute("Post-Unpack", procStr1, procStr2, fullFileName, unpackPathStr, NULL, config.postUnarc.memRequired);
 #endif
     }
   }
@@ -1179,6 +1185,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   {
     if (config.mailer != dMT_Binkley && config.mailer != dMT_Xenia)
     {
+      // Het file attach bericht moet sommige flags (direct, immediate, crash) overnemen van de toegevoegde berichten
       if (fileAttach(archiveStr, srcNode, destNode, nodeInfo))
       {
         if (semaHandle >= 0)
@@ -1202,9 +1209,10 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 
       strcpy(archivePtr, ".?lo");
       if (findfirst(archiveStr, &ffblkArc, 0) == -1)
-        sprintf(archivePtr, ".%clo", nodeInfo->outStatus == 1 ? 'h'
-                : (nodeInfo->outStatus == 2) ? 'c'
-                : (nodeInfo->outStatus >= 3 && nodeInfo->outStatus <= 5) ? 'c' : 'f');
+        sprintf(archivePtr, ".%clo"
+               ,  nodeInfo->outStatus == 1  ? 'h'
+               : (nodeInfo->outStatus == 2) ? 'c'
+               : (nodeInfo->outStatus >= 3 && nodeInfo->outStatus <= 5) ? 'c' : 'f');
       else
         strcpy(archivePtr, strchr(ffblkArc.ff_name, '.'));
 
@@ -1266,6 +1274,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     close(semaHandle);
     unlink(semaName);
   }
+  flush();
   return 0;
 }
 //---------------------------------------------------------------------------

@@ -95,6 +95,24 @@ udef closeBCL(void)
   return close(bclHandle);
 }
 //---------------------------------------------------------------------------
+void LogFileDetails(char *fname, char *txt)
+{
+  struct stat statbuf;
+  tempStrType tempStr;
+
+  if (0 == stat(fname, &statbuf))
+  {
+    struct tm *tm = localtime(&statbuf.st_mtime);
+    sprintf(tempStr, "%s %s %lu, %04d-%02d-%02d %02d:%02d:%02d", txt, fname, statbuf.st_size
+                   , tm->tm_year + 1900, tm->tm_mon +1, tm->tm_mday
+                   , tm->tm_hour, tm->tm_min, tm->tm_sec);
+  }
+  else
+    sprintf(tempStr, "%s %s", txt, fname);
+
+  logEntry(tempStr, LOG_ALWAYS, 0);
+}
+//---------------------------------------------------------------------------
 udef process_bcl(u8 *fileName)
 {
   fhandle     handle;
@@ -104,8 +122,9 @@ udef process_bcl(u8 *fileName)
   nodeNumType tempNode;
 
   sprintf (tempStr, "%s%s", config.inPath, fileName);
-  if ( (handle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE)) == -1 ||
-      read(handle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header) )
+  if ( (handle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1
+     || read(handle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header)
+     )
   {
     close(handle);
     return 0;
@@ -119,11 +138,10 @@ udef process_bcl(u8 *fileName)
     return 0;
 
   index = 0;
-  while ( index < MAX_UPLREQ )
+  while (index < MAX_UPLREQ)
   {
-    if ( config.uplinkReq[index].node.zone &&
-         config.uplinkReq[index].fileType == 2 &&
-         !memcmp(&config.uplinkReq[index].node, &tempNode, sizeof(nodeNumType)) )
+    if (  config.uplinkReq[index].node.zone && config.uplinkReq[index].fileType == 2
+       && !memcmp(&config.uplinkReq[index].node, &tempNode, sizeof(nodeNumType)) )
       break;
     ++index;
   }
@@ -134,11 +152,13 @@ udef process_bcl(u8 *fileName)
   sprintf(tempStr2, "%s%s", configPath, newFileName);
   if (!moveFile(tempStr, tempStr2))
   {
-    sprintf(tempStr, "%s%s", configPath, config.uplinkReq[index].fileName);
-    unlink(tempStr);
-    strcpy(config.uplinkReq[index].fileName, newFileName);
     sprintf(tempStr, "New BCL file received from uplink %s", nodeStr(&tempNode));
     logEntry(tempStr, LOG_ALWAYS, 0);
+    sprintf(tempStr, "%s%s", configPath, config.uplinkReq[index].fileName);
+    LogFileDetails(tempStr , "Old:");
+    unlink(tempStr);
+    LogFileDetails(tempStr2, "New:");
+    strcpy(config.uplinkReq[index].fileName, newFileName);
   }
   return 1;
 }
@@ -199,7 +219,7 @@ void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInf
   if ((helpHandle = openP(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
   {
     tempStrType logStr;
-    sprintf(logStr, "Creating BCL file for node %s -> %s", nodeStr(destNode), tempStr);
+    sprintf(logStr, "Creating BCL file for node %s: %s", nodeStr(destNode), tempStr);
     logEntry(logStr, LOG_ALWAYS, 0);
 
     memset(&bcl_header, 0, sizeof(bcl_header));

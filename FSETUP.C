@@ -559,6 +559,8 @@ int cdecl main(int argc, char *argv[])
   logStyleToggle.retval[2] = 2;
   logStyleToggle.text[3] = "Binkley";
   logStyleToggle.retval[3] = 3;
+  logStyleToggle.text[4] = "FMail (W32)";
+  logStyleToggle.retval[4] = 4;
 
   colorToggle.data    = (char*)&config.colorSet;
   colorToggle.text[0] = "Summer";
@@ -1200,7 +1202,7 @@ int cdecl main(int argc, char *argv[])
   if ((logMenu = createMenu(" Log files ")) == NULL)
     goto nomem;
 
-  addItem(logMenu, ENUM_INT, "Log style", 0, &logStyleToggle, 0, 4,
+  addItem(logMenu, ENUM_INT, "Log style", 0, &logStyleToggle, 0, 5,
            "Which log file format should be used");
   addItem(logMenu, FILE_NAME, "Log file name", 0, config.logName, sizeof(pathType) - 1, 0,
            "Name of the FMail log file");

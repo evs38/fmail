@@ -51,12 +51,14 @@ INT32 _JAMPROC JAMsysWrite(JAMAPIRECptr apirec, FHANDLE fh, VOIDptr pBuf, INT32 
 */
 UINT32 _JAMPROC JAMsysCrc32(void _JAMFAR *pBuf, unsigned int len, UINT32 crc);
 
+#if 0
 /*
 **  Time functions
 */
 UINT32 _JAMPROC JAMsysTime(UINT32ptr pTime);
 UINT32 _JAMPROC JAMsysMkTime(JAMTMptr pTm);
 JAMTMptr _JAMPROC JAMsysLocalTime(UINT32ptr pt);
+#endif
 
 /*
 **  Pointer functions / macros

@@ -47,145 +47,147 @@
 
 typedef struct      /* OLD !!! */
 {
-   uchar           zero; /* Should always be zero */
-   uchar           msgBasePath[MB_PATH_LEN_OLD];
-   uchar           groupsQBBS;
-   uchar           flagsTemplateQBBS[4];
-   uchar           comment[COMMENT_LEN];
-   u32             group;
-   u16             board;
-   u16             address;
-   u16             alsoSeenBy;
-   u16             groupRA;
-   u16             altGroupRA[3];
-   areaOptionsType options;
-   u16             outStatus;
-   u16             days;
-   u16             msgs;
-   u16             daysRcvd;
-   u16             templateSecQBBS;
-   u16             readSecRA;
-   uchar           flagsRdRA[4];
-   u16             writeSecRA;
-   uchar           flagsWrRA[4];
-   u16             sysopSecRA;
-   uchar           flagsSysRA[4];
-   uchar           attrRA;
-   uchar           msgKindsRA;
-   u16             attrSBBS;
-   uchar           replyStatSBBS;
-   areaNameType    areaName;
-   uchar           qwkName[13];
-   u16             minAgeSBBS;
-   uchar           attr2RA;
-   uchar           aliasesQBBS;
-   uchar           originLine[ORGLINE_LEN];
-   nodeNumType     export[MAX_FORWARDOLD];
+  uchar           zero; /* Should always be zero */
+  uchar           msgBasePath[MB_PATH_LEN_OLD];
+  uchar           groupsQBBS;
+  uchar           flagsTemplateQBBS[4];
+  uchar           comment[COMMENT_LEN];
+  u32             group;
+  u16             board;
+  u16             address;
+  u16             alsoSeenBy;
+  u16             groupRA;
+  u16             altGroupRA[3];
+  areaOptionsType options;
+  u16             outStatus;
+  u16             days;
+  u16             msgs;
+  u16             daysRcvd;
+  u16             templateSecQBBS;
+  u16             readSecRA;
+  uchar           flagsRdRA[4];
+  u16             writeSecRA;
+  uchar           flagsWrRA[4];
+  u16             sysopSecRA;
+  uchar           flagsSysRA[4];
+  uchar           attrRA;
+  uchar           msgKindsRA;
+  u16             attrSBBS;
+  uchar           replyStatSBBS;
+  areaNameType    areaName;
+  uchar           qwkName[13];
+  u16             minAgeSBBS;
+  uchar           attr2RA;
+  uchar           aliasesQBBS;
+  uchar           originLine[ORGLINE_LEN];
+  nodeNumType     export[MAX_FORWARDOLD];
 
 } rawEchoTypeOld;
 
 
 typedef struct
 {
-   u16             signature; /* contains "AE" for echo areas in FMAIL.AR and */
-                              /* "AD" for default settings in FMAIL.ARD       */
-   u16             writeLevel;
-   areaNameType    areaName;
-   uchar           comment[COMMENT_LEN];
-   areaOptionsType options;
-   u16             boardNumRA;
-   uchar           msgBaseType;
-   uchar           msgBasePath[MB_PATH_LEN];
-   u16             board;
-   uchar           originLine[ORGLINE_LEN];
-   u16             address;
-   u32             group;
-   u16             alsoSeenBy;
-   u16             msgs;
-   u16             days;
-   u16             daysRcvd;
+  u16             signature; /* contains "AE" for echo areas in FMAIL.AR and */
+                            /* "AD" for default settings in FMAIL.ARD       */
+  u16             writeLevel;
+  areaNameType    areaName;
+  uchar           comment[COMMENT_LEN];
+  areaOptionsType options;
+  u16             boardNumRA;
+  uchar           msgBaseType;
+  uchar           msgBasePath[MB_PATH_LEN];
+  u16             board;
+  uchar           originLine[ORGLINE_LEN];
+  u16             address;
+  u32             group;
+  u16             alsoSeenBy;
+  u16             msgs;
+  u16             days;
+  u16             daysRcvd;
 
-   nodeNumType     forwards[MAX_FORWARDOLD];
+  nodeNumType     forwards[MAX_FORWARDOLD];
 
-   u16             readSecRA;
-   uchar           flagsRdNotRA[4];
-   uchar           flagsRdRA[4];
-   u16             writeSecRA;
-   uchar           flagsWrNotRA[4];
-   uchar           flagsWrRA[4];
-   u16             sysopSecRA;
-   uchar           flagsSysRA[4];
-   uchar           flagsSysNotRA[4];
-   u16             templateSecQBBS;
-   uchar           flagsTemplateQBBS[4];
-   uchar           reserved2;
-   u16             netReplyBoardRA;
-   uchar           boardTypeRA;
-   uchar           attrRA;
-   uchar           attr2RA;
-   u16             groupRA;
-   u16             altGroupRA[3];
-   uchar           msgKindsRA;
-   uchar           qwkName[13];
-   u16             minAgeSBBS;
-   u16             attrSBBS;
-   uchar           replyStatSBBS;
-   uchar           groupsQBBS;
-   uchar           aliasesQBBS;  } rawEchoType102;
+  u16             readSecRA;
+  uchar           flagsRdNotRA[4];
+  uchar           flagsRdRA[4];
+  u16             writeSecRA;
+  uchar           flagsWrNotRA[4];
+  uchar           flagsWrRA[4];
+  u16             sysopSecRA;
+  uchar           flagsSysRA[4];
+  uchar           flagsSysNotRA[4];
+  u16             templateSecQBBS;
+  uchar           flagsTemplateQBBS[4];
+  uchar           reserved2;
+  u16             netReplyBoardRA;
+  uchar           boardTypeRA;
+  uchar           attrRA;
+  uchar           attr2RA;
+  u16             groupRA;
+  u16             altGroupRA[3];
+  uchar           msgKindsRA;
+  uchar           qwkName[13];
+  u16             minAgeSBBS;
+  u16             attrSBBS;
+  uchar           replyStatSBBS;
+  uchar           groupsQBBS;
+  uchar           aliasesQBBS;
+} rawEchoType102;
 
 typedef struct
 {
-   u16             signature; /* contains "AE" for echo areas in FMAIL.AR and */
-                              /* "AD" for default settings in FMAIL.ARD       */
-   u16             writeLevel;
-   areaNameType    areaName;
-   uchar           comment[COMMENT_LEN];
-   areaOptionsType options;
-   u16             boardNumRA;
-   uchar           msgBaseType;
-   uchar           msgBasePath[MB_PATH_LEN];
-   u16             board;
-   uchar           originLine[ORGLINE_LEN];
-   u16             address;
-   u32             group;
-   u16             _alsoSeenBy; /* obsolete: see the 32-bit alsoSeenBy below */
-   u16             msgs;
-   u16             days;
-   u16             daysRcvd;
+  u16             signature; /* contains "AE" for echo areas in FMAIL.AR and */
+                            /* "AD" for default settings in FMAIL.ARD       */
+  u16             writeLevel;
+  areaNameType    areaName;
+  uchar           comment[COMMENT_LEN];
+  areaOptionsType options;
+  u16             boardNumRA;
+  uchar           msgBaseType;
+  uchar           msgBasePath[MB_PATH_LEN];
+  u16             board;
+  uchar           originLine[ORGLINE_LEN];
+  u16             address;
+  u32             group;
+  u16             _alsoSeenBy; /* obsolete: see the 32-bit alsoSeenBy below */
+  u16             msgs;
+  u16             days;
+  u16             daysRcvd;
 
-   nodeNumType     forwards[MAX_FORWARDOLD];
+  nodeNumType     forwards[MAX_FORWARDOLD];
 
-   u16             readSecRA;
-   uchar           flagsRdRA[4];
-   uchar           flagsRdNotRA[4];
-   u16             writeSecRA;
-   uchar           flagsWrRA[4];
-   uchar           flagsWrNotRA[4];
-   u16             sysopSecRA;
-   uchar           flagsSysRA[4];
-   uchar           flagsSysNotRA[4];
-   u16             templateSecQBBS;
-   uchar           flagsTemplateQBBS[4];
-   uchar           _internalUse;
-   u16             netReplyBoardRA;
-   uchar           boardTypeRA;
-   uchar           attrRA;
-   uchar           attr2RA;
-   u16             groupRA;
-   u16             altGroupRA[3];
-   uchar           msgKindsRA;
-   uchar           qwkName[13];
-   u16             minAgeSBBS;
-   u16             attrSBBS;
-   uchar           replyStatSBBS;
-   uchar           groupsQBBS;
-   uchar           aliasesQBBS;
-   u32             lastMsgTossDat;
-   u32             lastMsgScanDat;
-   u32             alsoSeenBy;
-   areaStatType    stat;
-   uchar           reserved[180];   } rawEchoType120;
+  u16             readSecRA;
+  uchar           flagsRdRA[4];
+  uchar           flagsRdNotRA[4];
+  u16             writeSecRA;
+  uchar           flagsWrRA[4];
+  uchar           flagsWrNotRA[4];
+  u16             sysopSecRA;
+  uchar           flagsSysRA[4];
+  uchar           flagsSysNotRA[4];
+  u16             templateSecQBBS;
+  uchar           flagsTemplateQBBS[4];
+  uchar           _internalUse;
+  u16             netReplyBoardRA;
+  uchar           boardTypeRA;
+  uchar           attrRA;
+  uchar           attr2RA;
+  u16             groupRA;
+  u16             altGroupRA[3];
+  uchar           msgKindsRA;
+  uchar           qwkName[13];
+  u16             minAgeSBBS;
+  u16             attrSBBS;
+  uchar           replyStatSBBS;
+  uchar           groupsQBBS;
+  uchar           aliasesQBBS;
+  u32             lastMsgTossDat;
+  u32             lastMsgScanDat;
+  u32             alsoSeenBy;
+  areaStatType    stat;
+  uchar           reserved[180];
 
+} rawEchoType120;
 
 
 extern badEchoType  badEchos[MAX_BAD_ECHOS];
@@ -214,33 +216,7 @@ char boardCodeInfo[512];
 funcParType multiAkaSelectRec;
 rawEchoType tempInfo, updInfo;
 
-
-
-
-/*
-static s32 getGroups (void)
-{
-   char tempStr[28];
-   char ch;
-
-   saveWindowLook();
-   strcpy (tempStr, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-   if (displayWindow (NULL, 36, 13, 72, 15) != 0) return (0);
-   printString ("Groups", 38, 14, windowLook.promptfg,
-                                  windowLook.background,
-                                  MONO_NORM);
-   ch = editString (tempStr, 27, 45, 14, ALPHA_AST|UPCASE);
-   removeWindow();
-   restoreWindowLook();
-
-   if (ch == _K_ESC_)
-      return (-1);
-
-   return (getGroupCode (tempStr));
-}
-*/
-
-
+//---------------------------------------------------------------------------
 s16 getSetReset (void)
 {
    u16 ch;
@@ -259,9 +235,7 @@ s16 getSetReset (void)
    removeWindow ();
    return (ch);
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 multiAkaSelect (void)
 {
    u16      update = 0;
@@ -336,9 +310,7 @@ s16 multiAkaSelect (void)
    removeWindow ();
    return (update);
 }
-
-
-
+//---------------------------------------------------------------------------
 static void fillAreaInfo(u16 index, rawEchoType *tempInfo)
 {
    memset(areaInfo[index], 0, sizeof(rawEchoTypeX));
@@ -355,19 +327,15 @@ static void fillAreaInfo(u16 index, rawEchoType *tempInfo)
    areaInfo[index]->address = tempInfo->address;
    areaInfo[index]->group = tempInfo->group;
 }
-
-
+//---------------------------------------------------------------------------
 static void freeAreaInfo(u16 index)
 {
    free(areaInfo[index]->areaName);
    free(areaInfo[index]->comment);
    free(areaInfo[index]->msgBasePath);
 }
-
-
-
-
-s16 areaMgr (void)
+//---------------------------------------------------------------------------
+s16 areaMgr(void)
 {
    u8		*tempPtr; //, *tempPtr2;
    u16          index = 0;
@@ -1285,4 +1253,4 @@ error:
 
    return update;
 }
-
+//---------------------------------------------------------------------------

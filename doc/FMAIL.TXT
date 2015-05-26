@@ -2,7 +2,7 @@
 
 
 
-                            FMail 1.68
+                            FMail 1.69
 
 
 
@@ -13,7 +13,7 @@
 
 
           Copyright (C) 1991 - 1999  Folkert J. Wijnstra
-          Copyright (C) 2013 - 2014  Wilfred van Velzen
+          Copyright (C) 2013 - 2015  Wilfred van Velzen
 
 
 
@@ -1108,9 +1108,10 @@ Semaphore (optional)
 
 Log style
 
-          The layout that should be used for the log file.
-          Possible settings are: FrontDoor, QuickBBS, D'Bridge and
-          Binkley.
+          The layout that should be used for the log file. Possible
+          settings are: FrontDoor, QuickBBS, D'Bridge, Binkley and
+          FMail (W32). FMail style (only for the W32 version) is like
+          FrontDoor style, but with milliseconds added to the time.
 
 Log file name (optional)
 
@@ -1368,8 +1369,6 @@ Areas file type
           files to the right entry of the Uplink Manager if this
           switch is set to BCL.
 
-          --- more BCL info ---
-
 Areas file name
 
           Name of the file containing area names that should be
@@ -1607,8 +1606,13 @@ Auto BCL days
 
           If you set a value here, FMail automatically sends BCL
           files to this node. The value set indicates the number
-          of days between two files. See page 27 for more
-          information about this feature.
+          of days between two files.
+
+          If you have links with this value set, make sure you execute
+          FMail with the Scan function on a periodic basis, because
+          the Scan function is what creates the auto generated BCL
+          files. For instance with the /S option for the Scan function
+          in a daily maintenance event would be good practice.
 
 AreaMgr password
 
@@ -2063,7 +2067,7 @@ The format of an AreaLink request:
 
   %AUTOBCL 7         Request to receive a BCL file from FMail every 7 days.
                      Use 0 if you don't want to receive BCL files anymore.
-                     See FMAIL.DOC for more information about this feature
+                     See FMAIL.TXT for more information about this feature
 
   %NOTE              or
   ...                or

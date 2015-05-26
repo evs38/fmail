@@ -102,7 +102,7 @@ typedef void _JAMDATA *         VOIDptr;
     #define JAMSH_DENYWR        SH_DENYWR
     #define JAMSH_DENYRW        SH_DENYRW
 
-
+#if 0
 /*
 **  Structure to contain date/time information
 */
@@ -118,6 +118,7 @@ typedef struct JAMtm
             tm_yday,                   /* Day of year 0..365                */
             tm_isdst;                  /* Daylight savings time (not used)  */
     } JAMTM, _JAMDATA * JAMTMptr;
+#endif
 
 #endif /* __JAMSYS_H__ */
 

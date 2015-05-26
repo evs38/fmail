@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //  This file is part of FMail.
 //
@@ -43,13 +43,13 @@
 #include "utils.h"
 
 
-#define MAXNETREC    1024
+#define MAXNETREC  1024
 
-#define DEST_NONE       0
-#define DEST_VIA        1
-#define DEST_HOST       2
+#define DEST_NONE     0
+#define DEST_VIA      1
+#define DEST_HOST     2
 
-
+//---------------------------------------------------------------------------
 typedef struct
 {
   u32           msgNum;
@@ -71,6 +71,7 @@ static u16              netIndex;
 static u32              msgNum;
 static netListType     *netList;
 
+//---------------------------------------------------------------------------
 s16 packValid(nodeNumType *node, char *packedNodes)
 {
   tempStrType tempStr;
@@ -84,53 +85,38 @@ s16 packValid(nodeNumType *node, char *packedNodes)
     return 0;
 
   strcpy(tempStr, packedNodes);
-  helpPtr = strtok (tempStr, " ");
+  helpPtr = strtok(tempStr, " ");
 
   *nodeTempStr = 0;
 
   while (helpPtr != NULL)
   {
-    if ((*(u16*)helpPtr == '*') ||
-        (strchr(helpPtr,':')!=NULL))
-    {
-      strcpy (nodeTempStr,helpPtr);
-    }
+    if (*(u16*)helpPtr == '*' || strchr(helpPtr, ':') != NULL)
+      strcpy(nodeTempStr,helpPtr);
     else
     {
-      if (strchr(helpPtr,'/')!=NULL)
+      if (strchr(helpPtr, '/') != NULL)
       {
-        if ((helpPtr2=strchr(nodeTempStr,':'))!=NULL)
-        {
-          strcpy (helpPtr2+1,helpPtr);
-        }
+        if ((helpPtr2 = strchr(nodeTempStr, ':')) != NULL)
+          strcpy(helpPtr2 + 1, helpPtr);
         else
-        {
-          logEntry("Bad entry in Pack Manager",LOG_ALWAYS,4);
-        }
+          logEntry("Bad entry in Pack Manager", LOG_ALWAYS, 4);
       }
       else
       {
-        if (*(helpPtr)!='.')
+        if (*helpPtr != '.')
         {
-          if ((helpPtr2=strchr(nodeTempStr,'/'))!=NULL)
-          {
-            strcpy (helpPtr2+1,helpPtr);
-          }
+          if ((helpPtr2 = strchr(nodeTempStr, '/')) != NULL)
+            strcpy(helpPtr2 + 1, helpPtr);
           else
-          {
-            logEntry("Bad entry in Pack Manager",LOG_ALWAYS,4);
-          }
+            logEntry("Bad entry in Pack Manager", LOG_ALWAYS, 4);
         }
         else
         {
-          if ((helpPtr2=strchr(nodeTempStr,'.'))!=NULL)
-          {
-            strcpy (helpPtr2,helpPtr);
-          }
+          if ((helpPtr2 = strchr(nodeTempStr, '.')) != NULL)
+            strcpy(helpPtr2, helpPtr);
           else
-          {
-            strcat (nodeTempStr,helpPtr);
-          }
+            strcat(nodeTempStr, helpPtr);
         }
       }
     }
@@ -138,41 +124,35 @@ s16 packValid(nodeNumType *node, char *packedNodes)
 
     for (count = 0; count < strlen(nodeTempStr); count++)
     {
-      if ((nodeTempStr[count]=='?') && isdigit(stringNode[count]))
-      {
-        stringNode[count]='?';
-      }
-      if (nodeTempStr[count]=='*')
+      if ((nodeTempStr[count] == '?') && isdigit(stringNode[count]))
+        stringNode[count] = '?';
+
+      if (nodeTempStr[count] == '*')
       {
         if (nodeTempStr[count + 1] != 0)
-        {
           logEntry ("Asterisk only allowed as last character of node number", LOG_ALWAYS, 4);
-        }
+
         nodeTempStr[count] = 0;
         stringNode[count] = 0;
         if (count && (nodeTempStr[count - 1] == '.') &&
             (stringNode[count - 1] == 0))
-        {
           nodeTempStr[count - 1] = 0;
-        }
+
         break;
       }
     }
-    if (strcmp (stringNode, nodeTempStr) == 0)
-    {
-      return (1);
-    }
+    if (strcmp(stringNode, nodeTempStr) == 0)
+      return 1;
+
     if ((helpPtr = strchr(stringNode, '.')) != NULL)
     {
       *helpPtr = 0;
-      if (strcmp (stringNode, nodeTempStr) == 0)
-      {
-        return (1);
-      }
+      if (strcmp(stringNode, nodeTempStr) == 0)
+        return 1;
     }
-    helpPtr = strtok (NULL, " ");
+    helpPtr = strtok(NULL, " ");
   }
-  return (0);
+  return 0;
 }
 //---------------------------------------------------------------------------
 void packRoute(char *packedNodes, char *exceptNodes, char destType, nodeNumType *destNode, s32 switches)
@@ -183,7 +163,8 @@ void packRoute(char *packedNodes, char *exceptNodes, char destType, nodeNumType 
 
   for (count = 0; count < netIndex; count++)
   {
-    if ((*netList)[count].viaNode.zone) continue;
+    if ((*netList)[count].viaNode.zone)
+      continue;
 
     switch (destType)
     {
@@ -235,14 +216,14 @@ static void processPackLine(char *line, s32 switches)
   char        newWildCard;
 
   newWildCard = (strchr(line, '#') != NULL);
-  for (count = 0; count <= (newWildCard?9:0); count++)
+  for (count = 0; count <= (newWildCard ? 9 : 0); count++)
   {
     strcpy(lineBuf, line);
     if (newWildCard)
     {
       helpPtr = lineBuf;
       while ((helpPtr = strchr(helpPtr, '#')) != NULL)
-        *(helpPtr++) = '0'+count;
+        *(helpPtr++) = '0' + count;
     }
     destType = DEST_NONE;
 
@@ -252,10 +233,10 @@ static void processPackLine(char *line, s32 switches)
       helpPtr = strtok(helpPtr + 1, " ");
       while (helpPtr != NULL)
       {
-        helpPtr[1]=toupper(helpPtr[1]);
-        if (  helpPtr[0]!='/'
-           || (helpPtr[1]!='I' && helpPtr[1]!='L' && helpPtr[1]!='C' && helpPtr[1]!='H' && helpPtr[1]!='O')
-           || helpPtr[2]!=0
+        helpPtr[1] = toupper(helpPtr[1]);
+        if (  helpPtr[0] != '/'
+           || (helpPtr[1] != 'I' && helpPtr[1] != 'L' && helpPtr[1] != 'C' && helpPtr[1] != 'H' && helpPtr[1] != 'O')
+           || helpPtr[2] != 0
            )
         {
           sprintf(tempStr, "Bad switch in Pack Manager: %s", helpPtr);
@@ -272,15 +253,15 @@ static void processPackLine(char *line, s32 switches)
     if ((helpPtr = strstr(strupr(lineBuf), " VIA ")) != NULL)
     {
       *helpPtr = 0;
-      if (stricmp(helpPtr+5, "HOST") == 0)
+      if (stricmp(helpPtr + 5, "HOST") == 0)
         destType = DEST_HOST;
       else
       {
-        if (((helpPtr = strtok (helpPtr+5, " ")) == NULL) ||
+        if (((helpPtr = strtok(helpPtr + 5, " ")) == NULL) ||
             ((sscanf(helpPtr, "%hu:%hu/%hu.%hu",
                      &destNode.zone, &destNode.net, &destNode.node, &destNode.point) < 3) ||
-             !((strcmp (helpPtr, nodeStr(&destNode)) == 0) ||
-               (strcmp (helpPtr, nodeStrZ(&destNode)) == 0))))
+             !((strcmp(helpPtr, nodeStr(&destNode)) == 0) ||
+               (strcmp(helpPtr, nodeStrZ(&destNode)) == 0))))
           logEntry ("Bad VIA node", LOG_ALWAYS, 4);
 
         destType = DEST_VIA;
@@ -323,11 +304,11 @@ s16 pack(s16 argc, char *argv[], s32 switches)
     logEntry("Not enough memory to pack netmail messages", LOG_ALWAYS, 2);
 
   memset(netList, 0, sizeof(netListType));
-  memset(pack, 0, sizeof(packType));
+  memset(pack   , 0, sizeof(packType   ));
 
   strcpy(stpcpy(tempStr, configPath), dPCKFNAME);
 
-  if ((fileHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
+  if ((fileHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
   {
     if ((_read(fileHandle, pack, sizeof(packType)) != sizeof(packType)) ||
         (close(fileHandle) == -1))
@@ -354,21 +335,22 @@ s16 pack(s16 argc, char *argv[], s32 switches)
         !(message->attribute & FILE_ATT))
     {
       count = 0;
-      while ((count < MAX_AKAS) &&
-             ((config.akaList[count].nodeNum.zone == 0) ||
-              (memcmp (&config.akaList[count].nodeNum,
-                       &message->destNode, sizeof(nodeNumType)) != 0)))
+      while (count < MAX_AKAS
+            && (  (config.akaList[count].nodeNum.zone == 0)
+               || (memcmp(&config.akaList[count].nodeNum, &message->destNode, sizeof(nodeNumType)) != 0)
+               )
+            )
         count++;
 
       if (count == MAX_AKAS)
       {
-        low = 0;
+        low  = 0;
         high = netIndex;
         while (low < high)
         {
           mid = (low + high) >> 1;
           if (msgNum > (*netList)[mid].msgNum)
-            low = mid + 1;
+            low  = mid + 1;
           else
             high = mid;
         }
@@ -397,10 +379,9 @@ s16 pack(s16 argc, char *argv[], s32 switches)
   else
   {
     for (count = nodeCount - 1; count >= 0; count--)
-    {
       if (nodeInfo[count]->options.packNetmail)
         packRoute(NULL, NULL, DEST_VIA, &(nodeInfo[count]->node), switches);
-    }
+
     for (count = 0; count < MAX_PACK && *(*pack)[count]; count++)
       processPackLine((*pack)[count], 0);
   }
@@ -421,16 +402,15 @@ s16 pack(s16 argc, char *argv[], s32 switches)
       oldAttribute = (*netList)[count].attribute;
       msgNum       = (*netList)[count].msgNum;
 
-      if ((readMsg(message, msgNum) == 0) &&
-          (oldAttribute == message->attribute) &&
-          (memcmp(&message->destNode,
-                   &(*netList)[count].destNode, sizeof(nodeNumType)) == 0) &&
-          ((!isLocalPoint(&message->destNode)) ||
-           (memcmp(&(*netList)[count].viaNode,
-                   &message->destNode, sizeof(nodeNumType))==0)))
+      if (  readMsg(message, msgNum) == 0
+         && oldAttribute == message->attribute
+         && memcmp(&message->destNode, &(*netList)[count].destNode, sizeof(nodeNumType)) == 0
+         && (  !isLocalPoint(&message->destNode)
+            || memcmp(&(*netList)[count].viaNode, &message->destNode, sizeof(nodeNumType)) == 0
+            )
+         )
       {
-        message->attribute &= PRIVATE     | FILE_ATT   | UNUSED |
-                              RET_REC_REQ | IS_RET_REC | AUDIT_REQ;
+        message->attribute &= PRIVATE | FILE_ATT | UNUSED | RET_REC_REQ | IS_RET_REC | AUDIT_REQ;
 
         if (errorDisplay)
         {
@@ -440,31 +420,28 @@ s16 pack(s16 argc, char *argv[], s32 switches)
 
         sprintf( tempStr, "Message #%lu : %s "dARROW" %s", msgNum
                , nodeStr(&message->srcNode), nodeStr(&message->destNode));
-        if (memcmp(&(*netList)[count].viaNode,
-                   &message->destNode, sizeof(nodeNumType))!=0)
+        if (memcmp(&(*netList)[count].viaNode, &message->destNode, sizeof(nodeNumType)) != 0)
         {
-          strcat (tempStr, " via ");
-          strcat (tempStr, nodeStr(&(*netList)[count].viaNode));
+          strcat(tempStr, " via ");
+          strcat(tempStr, nodeStr(&(*netList)[count].viaNode));
         }
 
-        logEntry (tempStr, LOG_PACK, 0);
+        logEntry(tempStr, LOG_PACK, 0);
 
-        if ((!(nodeFileInfo.nodePtr->capability & PKT_TYPE_2PLUS)) &&
-            (memcmp (&nodeFileInfo.destNode4d,
-                     &message->destNode, sizeof(nodeNumType)) == 0))
+        if (  !(nodeFileInfo.nodePtr->capability & PKT_TYPE_2PLUS)
+           && memcmp(&nodeFileInfo.destNode4d, &message->destNode, sizeof(nodeNumType)) == 0
+           )
           make2d(message);
 
-
         count2 = 0;
-        while ((count2 < MAX_AKAS) &&
-               (memcmp(&message->srcNode,
-                       &config.akaList[count2].nodeNum,
-                       sizeof(nodeNumType)) != 0))
+        while (  count2 < MAX_AKAS
+              && memcmp(&message->srcNode, &config.akaList[count2].nodeNum, sizeof(nodeNumType)) != 0
+              )
           count2++;
 
-        addVia(message->text, (count2<MAX_AKAS)?count2:nodeFileInfo.srcAka);
+        addVia(message->text, count2 < MAX_AKAS ? count2 : nodeFileInfo.srcAka);
 
-        if ( writeNetPktValid (message, &nodeFileInfo) )
+        if (writeNetPktValid(message, &nodeFileInfo))
           diskError = DERR_PACK;
         else
         {
@@ -499,10 +476,10 @@ s16 pack(s16 argc, char *argv[], s32 switches)
           {
             sprintf(tempStr, "%s%u.msg", config.netPath, msgNum);
 
-            if ((fileHandle = openP(tempStr, O_RDWR|O_DENYALL|O_BINARY, S_IREAD|S_IWRITE)) != -1)
+            if ((fileHandle = openP(tempStr, O_RDWR | O_DENYALL | O_BINARY, S_IREAD | S_IWRITE)) != -1)
             {
-              close (fileHandle);
-              fileHandle = unlink (tempStr);
+              close(fileHandle);
+              fileHandle = unlink(tempStr);
             }
           }
           if (fileHandle == -1)
@@ -516,7 +493,7 @@ s16 pack(s16 argc, char *argv[], s32 switches)
 
   if (errorDisplay)
   {
-    errorDisplay=0;
+    errorDisplay = 0;
     newLine();
   }
   free(netList);

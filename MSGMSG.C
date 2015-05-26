@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007 - 2014 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -1002,7 +1002,7 @@ s16 fileAttach(char *fileName, nodeNumType *srcNd, nodeNumType *destNd, nodeInfo
   if (writeMsgLocal(message, NETMSG, 1) == -1)
     return 1;
 
-  sprintf(tempStr, "Sending new mail from %s to %s", nodeStr(srcNd), nodeStr(destNd));
+  sprintf(tempStr, "Created file attach netmail from %s to %s", nodeStr(srcNd), nodeStr(destNd));
   logEntry(tempStr, LOG_OUTBOUND, 0);
 
   return 0;

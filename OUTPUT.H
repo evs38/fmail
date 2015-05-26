@@ -20,7 +20,7 @@
  */
 #ifndef __output_h
 #define __output_h
- 
+
 #define COLOR_BLINK     0x08
 
 #define MONO_NORM       0x07
@@ -67,16 +67,18 @@ void gotoPos         (u16 px, u16 py);
 #define newLine()        putchar('\n')
 #define printString(S)   printf(S)
 #define printChar(C)     putchar(C)
+#define flush()          fflush(stdout)
 #define noCursor()       ((void)0)
 #define setAttr(f, b, m) ((void)0)
 #define showCursor()     ((void)0)
 #else
-void newLine         (void);
-void printString     (char *string);
-void printChar       (char ch);
-void noCursor        (void);
-void setAttr         (u16 fgc, u16 bgc, u16 mattr);
-void showCursor      (void);
+void    newLine          (void);
+void    printString      (char *string);
+void    printChar        (char ch);
+#define flush()          ((void)0)
+void    noCursor         (void);
+void    setAttr          (u16 fgc, u16 bgc, u16 mattr);
+void    showCursor       (void);
 #endif
 
 #define printInt(a)  printLong(a)

@@ -490,19 +490,19 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
           if (headerStat == 0)
           {
             if ((globVars.remoteCapability & 1) == 1)
-              sprintf(tempStr, "Pkt info: %s %u.%02u, Type 2+, %uk, %u-%.3s-%u %u:%02u%s%s",
+              sprintf(tempStr, "Pkt info: %s %u.%02u, Type 2+, %ld, %04u-%02u-%02u %02u:%02u:%02u%s%s",
                        helpPtr, globVars.versionHi, globVars.versionLo,
-                       globVars.packetSize, globVars.day,
-                       months+(globVars.month-1)*3, globVars.year,
-                       globVars.hour, globVars.min, /* globVars.sec, */
+                       globVars.packetSize,
+                       globVars.year, globVars.month, globVars.day,
+                       globVars.hour, globVars.min, globVars.sec,
                        globVars.password?", Pwd":"", (globVars.password==2)?", Sec":"");
             else
-              sprintf(tempStr, "Pkt info: %s, Type %s, %uk, %u-%.3s-%u %u:%02u%s%s",
+              sprintf(tempStr, "Pkt info: %s, Type %s, %ld, %04u-%02u-%02u %02u:%02u:%02u%s%s",
                        helpPtr,
                        globVars.remoteCapability == 0xffff ? "2.2" :"2.0",
-                       globVars.packetSize, globVars.day,
-                       months+(globVars.month-1)*3, globVars.year,
-                       globVars.hour, globVars.min, /* globVars.sec, */
+                       globVars.packetSize,
+                       globVars.year, globVars.month, globVars.day,
+                       globVars.hour, globVars.min, globVars.sec,
                        globVars.password?", Pwd":"", (globVars.password==2)?", Sec":"");
             logEntry(tempStr, LOG_XPKTINFO, 0);
 
@@ -969,7 +969,7 @@ void Toss(int argc, char *argv[])
 
   if (!diskError && !breakPressed)
   {
-    printString ("Tossing messages...\n");
+    printString("Tossing messages...\n");
 
     if (config.oldMsgDays)
       // Set after initFMail() and before processPkt()
@@ -1045,15 +1045,17 @@ void Toss(int argc, char *argv[])
   if (badEchoCount)
   {
     strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
-    if ((tempHandle = openP(tempStr, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
+    if ((tempHandle = openP(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
     {
-      write(tempHandle, badEchos, badEchoCount*sizeof(badEchoType));
+      write(tempHandle, badEchos, badEchoCount * sizeof(badEchoType));
       close(tempHandle);
     }
   }
 
   if (config.mailOptions.warnNewMail && globVars.perCountV)
   {
+    logEntry("Send warning for new mail", LOG_DEBUG, 0);
+
     strcpy(message->toUserName,   config.sysopName);
     strcpy(message->fromUserName, "FMail");
     strcpy(message->subject,      "New messages");
@@ -1082,10 +1084,11 @@ void Toss(int argc, char *argv[])
         if (echoAreaList[count].msgCountV)
           write(tempHandle, tempStr, sprintf(tempStr, "%s\n", echoAreaList[count].areaName));
 
-    if (*config.summaryLogName &&
-         (tempHandle = openP( config.summaryLogName
-                            , O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
+    if ( *config.summaryLogName
+       && (tempHandle = openP( config.summaryLogName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1
+       )
     {
+      logEntry("Writing toss summary", LOG_DEBUG, 0);
       write( tempHandle, tempStr
            , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u %02u:%02u:%02u, %s - Toss Summary\n\n"
                     , dayName[timeBlock.tm_wday]
@@ -1162,10 +1165,9 @@ void Toss(int argc, char *argv[])
                                                         "------------------------  -----\n"));
             temp++;
           }
-          write(tempHandle, tempStr
-               , sprintf(tempStr, "%-24s  %5u\n"
-                        , nodeStr(&nodeFileInfo[count]->destNode4d)
-                        , nodeFileInfo[count]->totalMsgs));
+          write(tempHandle, tempStr , sprintf( tempStr, "%-24s  %5u\n"
+                                             , nodeStr(&nodeFileInfo[count]->destNode4d)
+                                             , nodeFileInfo[count]->totalMsgs));
         }
       }
       write(tempHandle, "\n", 1);
@@ -1175,9 +1177,12 @@ void Toss(int argc, char *argv[])
 
   if (config.mbOptions.updateChains && globVars.jamCountV)
   {
+    // Update reply chains
     headerType  *areaHeader;
     rawEchoType *areaBuf;
-    u16         count2;
+    u16          count2;
+
+    logEntry("Updating reply chains: Start", LOG_DEBUG, 0);
 
     if (openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
     {
@@ -1187,15 +1192,17 @@ void Toss(int argc, char *argv[])
         if (*areaBuf->msgBasePath)
         {
           count2 = 0;
-          while (count2 < echoCount &&
-                 (echoAreaList[count2].JAMdirPtr == NULL ||
-                  echoAreaList[count2].msgCountV == 0 ||
-                  strcmp(areaBuf->msgBasePath, echoAreaList[count2].JAMdirPtr) != 0))
+          while (  count2 < echoCount
+                && (echoAreaList[count2].JAMdirPtr == NULL || echoAreaList[count2].msgCountV == 0
+                   || strcmp(areaBuf->msgBasePath, echoAreaList[count2].JAMdirPtr) != 0
+                   )
+                )
             count2++;
 
           if (count2 < echoCount)
           {
             s32 space;
+
             if (!JAMmaint(areaBuf, 0, config.sysopName, &space))
             {
               areaBuf->stat.tossedTo = 0;
@@ -1206,6 +1213,7 @@ void Toss(int argc, char *argv[])
       }
       closeConfig(CFG_ECHOAREAS);
     }
+    logEntry("Updating reply chains: End", LOG_DEBUG, 0);
   }
 
   deInitAreaInfo();
@@ -2003,17 +2011,15 @@ int cdecl main(int argc, char *argv[])
   }
 
   sprintf( tempStr, "Netmail: %u,  Personal: %u,  "MBNAME": %u,  JAMbase: %u"
-         , globVars.netCountV, globVars.perCountV
-         , globVars.mbCountV,  globVars.jamCountV);
+         , globVars.netCountV, globVars.perCountV, globVars.mbCountV,  globVars.jamCountV);
   logEntry(tempStr, LOG_STATS, 0);
   sprintf( tempStr, "Msgbase net: %u, echo: %u, dup: %u, bad: %u"
-         , globVars.nmbCountV, globVars.echoCountV
-         , globVars.dupCountV, globVars.badCountV);
+         , globVars.nmbCountV, globVars.echoCountV, globVars.dupCountV, globVars.badCountV);
   logEntry(tempStr, LOG_STATS, 0);
 
 
   // Semaphore files
-
+  //
   // Create FDRESCAN / FMRESCAN / IMRESCAN / IERESCAN / MDRESCAN
 
   if ((config.mailer <= 2 || config.mailer >= 4)

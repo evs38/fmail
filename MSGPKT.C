@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -288,34 +288,34 @@ s16 openPktRd(char *pktName, s16 secure)
             strcpy (tempStr, pktName);
             strcpy (tempStr+strlen(tempStr)-3, "SEC");
             rename (pktName, tempStr);
-            return (3); /* Password security violation */
+
+            return 3; /* Password security violation */
          }
          else
-         {
             globVars.password++;
-         }
       }
       else
       {
          if (*password)
          {
-            sprintf (tempStr, "Unexpected packet password \"%s\" from node %s",
-                              password, nodeStr(&globVars.packetSrcNode));
-            logEntry (tempStr, LOG_UNEXPPWD, 0);
+            sprintf( tempStr, "Unexpected packet password \"%s\" from node %s"
+                   , password, nodeStr(&globVars.packetSrcNode));
+            logEntry(tempStr, LOG_UNEXPPWD, 0);
          }
       }
    }
 
-   globVars.packetSize = max(1,(u16)((filelength(pktHandle)+512)>>10));
-   getftime (pktHandle, &fileTime);
+   globVars.packetSize = filelength(pktHandle);
+   getftime(pktHandle, &fileTime);
    globVars.hour  = fileTime.ft_hour;
    globVars.min   = fileTime.ft_min ;
-   globVars.sec   = fileTime.ft_tsec<<1;
+   globVars.sec   = fileTime.ft_tsec << 1;
    globVars.day   = fileTime.ft_day;
    globVars.month = fileTime.ft_month;
-   globVars.year  = fileTime.ft_year+1980;
+   globVars.year  = fileTime.ft_year + 1980;
 
    nodeInfoPtr->lastMsgRcvdDat = startTime;
+
    return 0;
 }
 //---------------------------------------------------------------------------
@@ -971,7 +971,7 @@ s16 closeEchoPktWr(void)
    return 0;
 }
 //---------------------------------------------------------------------------
-s16 writeNetPktValid (internalMsgType *message, nodeFileRecType *nfInfo)
+s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
 {
    u16         len;
    fhandle     pktHandle;
@@ -1053,7 +1053,8 @@ s16 writeNetPktValid (internalMsgType *message, nodeFileRecType *nfInfo)
    }
 
    if ((config.maxPktSize != 0) && (tempLen >= config.maxPktSize*(s32)1000))
-   {  if (_write (pktHandle, &zero, 2) != 2)
+   {
+      if (_write (pktHandle, &zero, 2) != 2)
       {
          printString("Cannot write to PKT file.\n");
          close(pktHandle);
@@ -1085,10 +1086,11 @@ s16 writeNetPktValid (internalMsgType *message, nodeFileRecType *nfInfo)
    return (0);
 }
 //---------------------------------------------------------------------------
-s16 closeNetPktWr (nodeFileRecType *nfInfo)
+s16 closeNetPktWr(nodeFileRecType *nfInfo)
 {
-   fhandle     pktHandle;
-   fnRecType   *fnPtr, *fnPtr2;
+   fhandle    pktHandle;
+   fnRecType *fnPtr
+           , *fnPtr2;
 
    if (*nfInfo->pktFileName != 0)
    {
@@ -1125,18 +1127,17 @@ s16 closeNetPktWr (nodeFileRecType *nfInfo)
          else
             fnPtr2->nextRec = NULL;
 
-         packArc (fnPtr->fileName, &nfInfo->srcNode, &nfInfo->destNode, nfInfo->nodePtr);
+         packArc(fnPtr->fileName, &nfInfo->srcNode, &nfInfo->destNode, nfInfo->nodePtr);
          newLine();
-         free (fnPtr);
+         free(fnPtr);
       }
 
-      packArc (nfInfo->pktFileName, &nfInfo->srcNode,
-                                    &nfInfo->destNode, nfInfo->nodePtr);
-      newLine ();
+      packArc(nfInfo->pktFileName, &nfInfo->srcNode, &nfInfo->destNode, nfInfo->nodePtr);
+      newLine();
       *nfInfo->pktFileName = 0;
    }
 
-   return (0);
+   return 0;
 }
 //---------------------------------------------------------------------------
 #undef open

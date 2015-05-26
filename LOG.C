@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -29,6 +29,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef __WIN32__
+#include <windows.h>
+#endif
 
 #include "fmail.h"
 
@@ -45,6 +48,7 @@ extern char      *dayName[7];
 extern char      *months;
 
 time_t            startTime;
+clock_t           at;
 struct tm         timeBlock;
 u16               dayOfWeek;
 
@@ -79,49 +83,68 @@ struct  COUNTRY
 //---------------------------------------------------------------------------
 static void writeLogLine(fhandle logHandle, const char *s)
 {
-  time_t    timer;
-  struct tm timeBlockL;
-  uchar     tempStr[256+32];
-  int       sl;
+  time_t      timer;
+  struct tm   tm;
+	tempStrType tempStr;
+  int         sl;
 
-  time (&timer);
-  timeBlockL = *gmtime(&timer);
+#ifdef __WIN32__
+  SYSTEMTIME st;
+  GetLocalTime(&st);
+  if (config.logStyle != 4)
+  {
+    tm.tm_year = st.wYear  - 1900;
+    tm.tm_mon  = st.wMonth - 1;
+    tm.tm_mday = st.wDay;
+    tm.tm_hour = st.wHour;
+    tm.tm_min  = st.wMinute;
+    tm.tm_sec  = st.wSecond;
+  }
+#else
+  time(&timer);
+  tm = *gmtime(&timer);
+#endif
 
   switch (config.logStyle)
   {
-    case 1  : /* QuickBBS */
+    case 1:  // QuickBBS
       sl = sprintf( tempStr ,"%02u-%.3s-%02u %02u:%02u  %s\n"
-                  , timeBlockL.tm_mday
-                  , months + (timeBlockL.tm_mon * 3)
-                  , timeBlockL.tm_year % 100
-                  , timeBlockL.tm_hour
-                  , timeBlockL.tm_min, s
+                  , tm.tm_mday
+                  , months + (tm.tm_mon * 3)
+                  , tm.tm_year % 100
+                  , tm.tm_hour
+                  , tm.tm_min, s
                   );
       break;
-    case 2  : /* D'Bridge */
+    case 2:  // D'Bridge
       sl = sprintf( tempStr ,"%02u/%02u/%02u %02u:%02u  %s\n"
-                  , timeBlockL.tm_mon + 1
-                  , timeBlockL.tm_mday
-                  , timeBlockL.tm_year % 100
-                  , timeBlockL.tm_hour
-                  , timeBlockL.tm_min, s
+                  , tm.tm_mon + 1
+                  , tm.tm_mday
+                  , tm.tm_year % 100
+                  , tm.tm_hour
+                  , tm.tm_min, s
                   );
       break;
-    case 3  : /* Binkley */
+    case 3:  // Binkley
       sl = sprintf( tempStr ,"> %02u %.3s %02u %02u:%02u:%02u FMAIL  %s\n"
-                  , timeBlockL.tm_mday
-                  , months + (timeBlockL.tm_mon * 3)
-                  , timeBlockL.tm_year % 100
-                  , timeBlockL.tm_hour
-                  , timeBlockL.tm_min
-                  , timeBlockL.tm_sec, s
+                  , tm.tm_mday
+                  , months + (tm.tm_mon * 3)
+                  , tm.tm_year % 100
+                  , tm.tm_hour
+                  , tm.tm_min
+                  , tm.tm_sec, s
                   );
       break;
-    default : /* FrontDoor */
+#ifdef __WIN32__
+    case 4:  // FMail
+      sl = sprintf(tempStr, "%2u:%02u:%02u.%03u  %s\n", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
+      break;
+#endif
+    default:  // FrontDoor
       sl = sprintf( tempStr, "  %2u%c%02u%c%02u  %s\n"
-                  , timeBlockL.tm_hour, countryInfo.co_tmsep[0]
-                  , timeBlockL.tm_min , countryInfo.co_tmsep[0]
-                  , timeBlockL.tm_sec , s
+                  , tm.tm_hour, countryInfo.co_tmsep[0]
+                  , tm.tm_min , countryInfo.co_tmsep[0]
+                  , tm.tm_sec , s
                   );
       break;
   }
@@ -130,22 +153,24 @@ static void writeLogLine(fhandle logHandle, const char *s)
 //---------------------------------------------------------------------------
 void initLog(char *s, s32 switches)
 {
-   fhandle     logHandle;
-   tempStrType tempStr,
-               tempStr2;
-   u16         count;
-   s32         select = 1;
-   char        *helpPtr;
+  fhandle     logHandle;
+  tempStrType tempStr
+            , tempStr2;
+  u16         count;
+  s32         select = 1;
+  char       *helpPtr;
 
-   time(&startTime);
-   timeBlock = *gmtime(&startTime);
-   dayOfWeek = timeBlock.tm_wday;
+  at = clock();
 
-   if (!*config.logName)
-     config.logInfo = 0;
+  time(&startTime);
+  timeBlock = *gmtime(&startTime);
+  dayOfWeek = timeBlock.tm_wday;
 
-   if (!config.logInfo)
-     return;
+  if (!*config.logName)
+    config.logInfo = 0;
+
+  if (!config.logInfo)
+    return;
 
 #ifndef __WIN32__
    country(0, &countryInfo);
@@ -153,53 +178,78 @@ void initLog(char *s, s32 switches)
    countryInfo.co_tmsep[0] = ':';
 #endif
 
-   if ((logHandle = openP(config.logName, O_RDWR|O_CREAT|O_APPEND|O_TEXT|O_DENYNONE,
-                 S_IREAD|S_IWRITE)) == -1)
-   {
-     printString ("WARNING: Can't open log file\n\n");
-     config.logInfo = 0;
-   }
-   else
-   {
-     sprintf(tempStr2, "%s - %s", VersionStr(), s);
-     helpPtr = strchr(tempStr2, 0);
+  if ((logHandle = openP(config.logName, O_RDWR | O_CREAT | O_APPEND | O_TEXT | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
+  {
+    printString ("WARNING: Can't open log file\n\n");
+    config.logInfo = 0;
+  }
+  else
+  {
+#ifdef __WIN32__
+    if (config.logStyle == 4)
+      helpPtr = stpcpy(tempStr2, s);
+    else
+#endif
+      helpPtr = tempStr2 + sprintf(tempStr2, "%s - %s", VersionStr(), s);
 
-     for (count = 0; count < 26; count++)
-     {
-       if (switches & select)
-       {
-         *(helpPtr++) = ' ';
-         *(helpPtr++) = '/';
-         *(helpPtr++) = 'A'+count;
-       }
-       select <<= 1;
-     }
-     *helpPtr = 0;
+    for (count = 0; count < 26; count++)
+    {
+      if (switches & select)
+      {
+        *(helpPtr++) = ' ';
+        *(helpPtr++) = '/';
+        *(helpPtr++) = 'A' + count;
+      }
+      select <<= 1;
+    }
+    *helpPtr = 0;
 
-     if (config.logStyle == 0)
-     {
-       write( logHandle, tempStr
-            , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u, %s\n"
-                     , dayName[timeBlock.tm_wday]
-                     , timeBlock.tm_year + 1900
-                     , timeBlock.tm_mon + 1
-                     , timeBlock.tm_mday
-                     , tempStr2
-                     )
-            );
-     }
-     else
-     {
-       if (config.logStyle == 1)
-         writeLogLine(logHandle, "**************************************************");
-
-       if (config.logStyle == 3)
-         write(logHandle, "\n", 1);
-
-       writeLogLine(logHandle, tempStr2);
-     }
-     close(logHandle);
-   }
+    switch (config.logStyle)
+    {
+      case 1:
+      case 2:
+      case 3:
+      {
+        switch (config.logStyle)
+        {
+          case 1:
+            writeLogLine(logHandle, "**************************************************");
+            break;
+          case 3:
+            write(logHandle, "\n", 1);
+            break;
+        }
+        writeLogLine(logHandle, tempStr2);
+        break;
+      }
+#ifdef __WIN32__
+      case 4:
+        write( logHandle, tempStr
+             , sprintf( tempStr, "\n------------  %s %4u-%02u-%02u, %s\n"
+                      , dayName[timeBlock.tm_wday]
+                      , timeBlock.tm_year + 1900
+                      , timeBlock.tm_mon + 1
+                      , timeBlock.tm_mday
+                      , VersionStr()
+                      )
+             );
+        writeLogLine(logHandle, tempStr2);
+        break;
+#endif
+      default:
+        write( logHandle, tempStr
+             , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u, %s\n"
+                      , dayName[timeBlock.tm_wday]
+                      , timeBlock.tm_year + 1900
+                      , timeBlock.tm_mon + 1
+                      , timeBlock.tm_mday
+                      , tempStr2
+                      )
+             );
+        break;
+    }
+    close(logHandle);
+  }
 }
 //---------------------------------------------------------------------------
 void logEntry(char *s, u16 entryType, u16 errorLevel)
@@ -235,10 +285,8 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
     return;
   }
 
-  if ((logHandle = openP(config.logName, O_RDWR|O_APPEND|O_TEXT|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
-  {
+  if ((logHandle = openP(config.logName, O_RDWR | O_APPEND | O_TEXT | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
     writeLogLine(logHandle, s);
-  }
 
   if (errorLevel)
   {
@@ -259,9 +307,7 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
     exit (errorLevel==100 ? 0 : errorLevel);
   }
   if (logHandle != -1)
-  {
     close(logHandle);
-  }
 }
 //---------------------------------------------------------------------------
 void mgrLogEntry(char *s)
@@ -277,10 +323,15 @@ void mgrLogEntry(char *s)
       ((logHandle = openP(config.areaMgrLogName, O_RDWR|O_CREAT|O_APPEND|O_TEXT|O_DENYNONE,
                                                  S_IREAD|S_IWRITE)) != -1))
   {
-    if (config.logStyle == 0)
+    if (config.logStyle == 0 || config.logStyle == 4)
     {
       write( logHandle, tempStr
-           , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u, %s - AreaMgr\n"
+           , sprintf( tempStr, "\n----------%s  %s %4u-%02u-%02u, %s - AreaMgr\n"
+#ifdef __WIN32__
+                    , config.logStyle ? "--" : ""
+#else
+                    , ""
+#endif
                     , dayName[timeBlock.tm_wday]
                     , timeBlock.tm_year + 1900
                     , timeBlock.tm_mon + 1
@@ -292,36 +343,30 @@ void mgrLogEntry(char *s)
     else
     {
       if (config.logStyle == 1)
-      {
         writeLogLine(logHandle, "**************************************************");
-      }
+
       if (config.logStyle == 3)
-      {
         write(logHandle, "\n", 1);
-      }
+
       writeLogLine(logHandle, s);
     }
     close(logHandle);
   }
 
-  if (((logHandle = openP(*config.areaMgrLogName ?
-                           config.areaMgrLogName : config.logName,
-            O_RDWR|O_APPEND|O_TEXT|O_DENYNONE, S_IREAD|S_IWRITE)) != -1))
+  if (((logHandle = openP( *config.areaMgrLogName ? config.areaMgrLogName : config.logName
+                         , O_RDWR | O_APPEND | O_TEXT | O_DENYNONE, S_IREAD | S_IWRITE)) != -1))
   {
-    writeLogLine (logHandle, s);
+    writeLogLine(logHandle, s);
     close(logHandle);
   }
 }
 //---------------------------------------------------------------------------
-void logActive (void)
+void logActive(void)
 {
-  time_t endTime;
-  char   timeStr[32];
+  tempStrType timeStr;
 
   newLine();
-  time(&endTime);
-  endTime -= startTime;
-  sprintf(timeStr, "Active: %2u:%02u", (u16)(endTime / 60), (u16)(endTime % 60));
+  sprintf(timeStr, "Active: %.3f sec.", (clock() - at) / CLK_TCK);
   logEntry(timeStr, LOG_STATS, 0);
 }
 //---------------------------------------------------------------------------
