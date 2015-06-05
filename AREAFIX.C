@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -1053,16 +1053,17 @@ s16 areaFix(internalMsgType *message)
           {
             c++;
           }
-          if (c<MAX_FORWARD)
+          if (c < MAX_FORWARD)
           {
             activeAreasCount++;
 
-            if ( (*areaFixList)[count].remove == 8 &&
-                 (!nodeInfoPtr->options.allowRescan ||
-                  areaBuf->forwards[c].flags.writeOnly) )
-            {
+            if ( (*areaFixList)[count].remove == 8
+               && ( !nodeInfoPtr->options.allowRescan
+                  || areaBuf->options.noRescan
+                  || areaBuf->forwards[c].flags.writeOnly
+                  )
+               )
               (*areaFixList)[count].remove = 9;
-            }
           }
         }
       }
@@ -1121,7 +1122,8 @@ s16 areaFix(internalMsgType *message)
         mgrLogEntry (helpPtr2);
         *(helpPtr++) = '\r';
       }
-      if (areaFixCount) newLine();
+      if (areaFixCount)
+        newLine();
 
       if (activeAreasCount)
         helpPtr += sprintf(helpPtr, "\rYou are connected to %u area%s.\r", activeAreasCount, activeAreasCount != 1 ? "s" : "");
@@ -1136,9 +1138,7 @@ s16 areaFix(internalMsgType *message)
       }
 
       if (notifyChange)
-      {
         nodeInfoPtr->options.notify = 2-notifyChange;
-      }
 
 #ifdef __32BIT__
       if ((archiver ==  0 && *config.arc32.programName == 0) ||
@@ -1397,12 +1397,11 @@ Send:
           if (openConfig(CFG_AREADEF, &adefHeader, (void*)&adefBuf))
           {
             if (getRec(CFG_AREADEF, 0))
-            {
-              memcpy (&rawEchoInfo2, adefBuf, RAWECHO_SIZE);
-            }
-            closeConfig (CFG_AREADEF);
+              memcpy(&rawEchoInfo2, adefBuf, RAWECHO_SIZE);
+
+            closeConfig(CFG_AREADEF);
           }
-          strcpy (rawEchoInfo2.areaName, (*areaFixList)[c].areaName);
+          strcpy(rawEchoInfo2.areaName, (*areaFixList)[c].areaName);
 
           *descrStr = 0;
           if (checkForward((*areaFixList)[c].areaName, nodeInfoPtr) != -1 &&
@@ -1547,7 +1546,7 @@ Send:
           lseek (helpHandle, 0, SEEK_SET);
           while (read(helpHandle, &areaFixRec, sizeof(areaFixType)) > 0)
           {
-            if ((areaFixRec.remove == 2 || areaFixRec.remove == 8) && (areaFixRec.maxRescan))
+            if ((areaFixRec.remove == 2 || areaFixRec.remove == 8) && areaFixRec.maxRescan)
             {
               rescan(nodeInfoPtr, areaFixRec.areaName,
                       areaFixRec.maxRescan != -1 ? areaFixRec.maxRescan :

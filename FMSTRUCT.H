@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //  This file is part of FMail.
 //
@@ -136,7 +136,7 @@ typedef struct
   unsigned active      : 1; /* Bit  0 */
   unsigned tinySeenBy  : 1; /* Bit  1 */
   unsigned security    : 1; /* Bit  2 */
-  unsigned             : 1; /* Bit  3 */
+  unsigned noRescan    : 1; /* Bit  3 */
   unsigned allowPrivate: 1; /* Bit  4 */
   unsigned impSeenBy   : 1; /* Bit  5 */
   unsigned checkSeenBy : 1; /* Bit  6 */

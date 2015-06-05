@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -460,19 +460,20 @@ s16 echoNGOnly (s16 editType, s16 code)
    else
       return (DISPLAY);
 }
-
-
-s16 echoDefOnly (s16 editType, s16 code)
+//---------------------------------------------------------------------------
+s16 echoDefOnly(s16 editType, s16 code)
 {
-   if ((editType == EDIT_ECHO) || (editType == DISPLAY_ECHO_DATA) ||
-       (editType == EDIT_ECHO_GLOBAL)  ||
-       (editType == EDIT_ECHO_DEFAULT) || (editType == DISPLAY_ECHO_WINDOW))
-      return (code);
-   else
-      return (DISPLAY);
+  if (  editType == EDIT_ECHO
+     || editType == DISPLAY_ECHO_DATA
+     || editType == EDIT_ECHO_GLOBAL
+     || editType == EDIT_ECHO_DEFAULT
+     || editType == DISPLAY_ECHO_WINDOW
+     )
+    return code;
+  else
+    return DISPLAY;
 }
-
-
+//---------------------------------------------------------------------------
 s16 nonGlobOnly (s16 editType, s16 code)
 {
    if ( editType != EDIT_ECHO_GLOBAL )
@@ -1304,44 +1305,44 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
                          MBNAME" message base board in which messages will be imported");
 #endif
    }
-   addItem (areaMenu, echoOnly(editType,BOOL_INT), "Local      ", 35, &tempInfo.options, BIT8, 0,
-                      "Set to Yes for a non-echomail area");
-   addItem (areaMenu, echoOnly(editType,BOOL_INT), "Active      ", 54, &tempInfo.options, BIT0, 0,
-                      "Set to No to deactivate this area");
-   addItem (areaMenu, echoDefOnly(editType, NUM_INT), "Write level", 0, &tempInfo.writeLevel, 5, 32767,
-                      "Level should be > than Write Level of a node in order to be read-only");
-   addItem (areaMenu, echoDefOnly(editType,BOOL_INT), "AreaFix    ", 35, &tempInfo.options, BIT11, 0,
-                      "Allow systems to connect and disconnect this area themselves");
-   addItem (areaMenu, NEW_WINDOW, "BBS info    ", 54, raMenu, 0, 2,
-                      "BBS message board information, used by AutoExport");
-   addItem (areaMenu, echoDefNGOnly(editType,FUNC_PAR), "Group", 0, &groupSelect, 1, 0,
-                      "Group of areas to which this area belongs (A-Z)");
-   addItem (areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-   addItem (areaMenu, echoDefOnly(editType,BOOL_INT), "Use SeenBy", 0, &tempInfo.options, BIT6, 0,
-                      "Use SEEN-BYs for duplicate prevention (normally NOT necessary)");
-   addItem (areaMenu, echoDefOnly(editType,BOOL_INT), "Security", 19, &tempInfo.options, BIT2, 0,
-                      "Check origin of incoming mailbundles");
-   addItem (areaMenu, NUM_INT, "# Messages ", 35, &tempInfo.msgs, 4, 9999,
-                      "Maximum number of messages in an area (1-9999, 0 = no maximum)");
-   addItem (areaMenu, BOOL_INT, "Arrival date", 54, &tempInfo.options, BIT14, 0,
-                      "Use the date that a message arrived on your system when deleting messages");
-   addItem (areaMenu, echoDefOnly(editType,BOOL_INT), "Tiny SeenBy", 0, &tempInfo.options, BIT1, 0,
-                      "Remove all SEEN-BYs except of your own downlinks (should normally NOT be used)");
-   addItem (areaMenu, echoDefOnly(editType,BOOL_INT), "Private ", 19, &tempInfo.options, BIT4, 0,
-                      "Allow private (privileged) messages");
-   addItem (areaMenu, NUM_INT, "# Days old ", 35, &tempInfo.days, 3, 999,
-                      "Delete messages older than a number of days (1-999, 0 = no maximum)");
-   addItem (areaMenu, BOOL_INT, "Keep SysOp  ", 54, &tempInfo.options, BIT15, 0,
-                      "Do not remove messages that have not been read by the SysOp (user #1)");
-   addItem (areaMenu, echoDefOnly(editType,BOOL_INT), "Imp. SeenBy", 0, &tempInfo.options, BIT5, 0,
-                      "Import SEEN-BYs into the message base");
-   addItem (areaMenu, NUM_INT, "# Days rcvd", 35, &tempInfo.daysRcvd, 3, 999,
-                      "Delete received messages older than a number of days (1-999, 0 = no maximum)");
-   addItem (areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-/* addItem (areaMenu, echoOnly(editType,FUNC_PAR), "Origin AKA", 0, &akaFunc, 23, 0,
-                      "Address used for origin line and as packet origin address");
-*/ addItem (areaMenu, echoOnly(editType,ENUM_INT), "Origin AKA", 0, &addressToggle, 0, MAX_AKAS,
-                      "Address used for origin line and as packet origin address");
+   addItem(areaMenu, echoOnly(editType,BOOL_INT), "Local      ", 35, &tempInfo.options, BIT8, 0,
+                     "Set to Yes for a non-echomail area");
+   addItem(areaMenu, echoOnly(editType,BOOL_INT), "Active      ", 54, &tempInfo.options, BIT0, 0,
+                     "Set to No to deactivate this area");
+   addItem(areaMenu, echoDefOnly(editType, NUM_INT), "Write level", 0, &tempInfo.writeLevel, 5, 32767,
+                     "Level should be > than Write Level of a node in order to be read-only");
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "AreaFix    ", 35, &tempInfo.options, BIT11, 0,
+                     "Allow systems to connect and disconnect this area themselves");
+   addItem(areaMenu, NEW_WINDOW, "BBS info    ", 54, raMenu, 0, 2,
+                     "BBS message board information, used by AutoExport");
+   addItem(areaMenu, echoDefNGOnly(editType, FUNC_PAR), "Group", 0, &groupSelect, 1, 0,
+                     "Group of areas to which this area belongs (A-Z)");
+   addItem(areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Use SeenBy", 0, &tempInfo.options, BIT6, 0,
+                     "Use SEEN-BYs for duplicate prevention (normally NOT necessary)");
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Security ", 19, &tempInfo.options, BIT2, 0,
+                     "Check origin of incoming mailbundles");
+   addItem(areaMenu, NUM_INT, "# Messages ", 35, &tempInfo.msgs, 4, 9999,
+                     "Maximum number of messages in an area (1-9999, 0 = no maximum)");
+   addItem(areaMenu, BOOL_INT, "Arrival date", 54, &tempInfo.options, BIT14, 0,
+                     "Use the date that a message arrived on your system when deleting messages");
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Tiny SeenBy", 0, &tempInfo.options, BIT1, 0,
+                     "Remove all SEEN-BYs except of your own downlinks (should normally NOT be used)");
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Private  ", 19, &tempInfo.options, BIT4, 0,
+                     "Allow private (privileged) messages");
+   addItem(areaMenu, NUM_INT, "# Days old ", 35, &tempInfo.days, 3, 999,
+                     "Delete messages older than a number of days (1-999, 0 = no maximum)");
+   addItem(areaMenu, BOOL_INT, "Keep SysOp  ", 54, &tempInfo.options, BIT15, 0,
+                     "Do not remove messages that have not been read by the SysOp (user #1)");
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Imp. SeenBy", 0, &tempInfo.options, BIT5, 0,
+                     "Import SEEN-BYs into the message base");
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "No Rescan", 19, &tempInfo.options, BIT3, 0,
+                     "Do not allow rescans for this area");
+   addItem(areaMenu, NUM_INT, "# Days rcvd", 35, &tempInfo.daysRcvd, 3, 999,
+                     "Delete received messages older than a number of days (1-999, 0 = no maximum)");
+   addItem(areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
+   addItem(areaMenu, echoOnly(editType, ENUM_INT), "Origin AKA", 0, &addressToggle, 0, MAX_AKAS,
+                     "Address used for origin line and as packet origin address");
    if ( !(editType & EDIT_ECHO_DEFAULT) )
           addItem (areaMenu, DATE|DISPLAY, "LastScanned", 47, &tempInfo.lastMsgScanDat, 0, 0,
                       "Last time a message was scanned from this area");
@@ -1352,7 +1353,6 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
                       "Last time a message was tossed into this area");
    addItem (areaMenu, echoDefOnly(editType,TEXT), "Origin line", 0, tempInfo.originLine, ORGLINE_LEN-1, 0,
                       "Origin line that will be used for messages from your system");
-// addItem (areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
    if ( !(editType & EDIT_ECHO_GLOBAL) )
       addItem (areaMenu, echoOnly(editType,FUNCTION), "Export", 0, nodeScroll, 2, 2,
                       "Nodes to which the echo area is exported");
@@ -1362,9 +1362,7 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
 
    if ((editType == EDIT_ECHO) || (editType == DISPLAY_ECHO_WINDOW) ||
        (editType == DISPLAY_ECHO_DATA))
-   {
       addItem (areaMenu, echoOnly(editType,EXTRA_TEXT|NO_EDIT), NULL, 0, NULL, ORGLINE_LEN-1, 0, "");
-   }
 
    switch (editType)
    {
@@ -1385,7 +1383,7 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
       case EDIT_ECHO_DEFAULT   : temp = runMenuD(areaMenu, 2, 5, NULL, setdef);
 				 break;
    }
-   if ( editType == EDIT_ECHO_DEFAULT )
+   if (editType == EDIT_ECHO_DEFAULT)
    {
       if (defaultEnumRA)
        	 tempInfo.attrRA |= BIT3;
@@ -1425,8 +1423,8 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
                {  ++total;
                   getRec(CFG_ECHOAREAS, count);
                   memcpy(&tempInfo, areaBuf, RAWECHO_SIZE);
-		  temp += changeGlobal(areaMenu, &tempInfo, &updInfo) |
-                          changeGlobal(raMenu, &tempInfo, &updInfo);
+		            temp += changeGlobal(areaMenu, &tempInfo, &updInfo)
+                        | changeGlobal(raMenu, &tempInfo, &updInfo);
                   memcpy(areaBuf, &tempInfo, RAWECHO_SIZE);
                   putRec(CFG_ECHOAREAS, count);
                }
@@ -1436,8 +1434,8 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
       }
    }
 
-   free (raMenu);
-   free (areaMenu);
+   free(raMenu);
+   free(areaMenu);
 
    return (temp || globNodeChange);
 }

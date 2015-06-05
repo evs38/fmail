@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -561,6 +561,7 @@ s16 listAreaConfig (void)
                          "           L - Local                        R - Do not delete messages that\n"
                          "           S - Secure                           have not been read by the SysOp\n"
                          "           P - Allow private messages\n"
+                         "           N - No Rescan allowed\n"
                          "           U - Use SEEN-BYs\n"
                          "           T - Tiny SEEN-BYs\n"
                          "           I - Import SEEN-BYs\n");
@@ -595,11 +596,12 @@ s16 listAreaConfig (void)
          else
             fprintf (textFile, "%u\n", areaInfo[count1]->boardNumRA);
 
-         fprintf (textFile, "Switches    : %c%c%c%c%c%c%c %c%c\n",
+         fprintf (textFile, "Switches    : %c%c%c%c%c%c%c%c %c%c\n",
                   areaInfo[count1]->options.active       ? 'A':'-',
                   areaInfo[count1]->options.local        ? 'L':'-',
                   areaInfo[count1]->options.security     ? 'S':'-',
                   areaInfo[count1]->options.allowPrivate ? 'P':'-',
+                  areaInfo[count1]->options.noRescan     ? 'N':'-',
                   areaInfo[count1]->options.checkSeenBy  ? 'U':'-',
                   areaInfo[count1]->options.tinySeenBy   ? 'T':'-',
                   areaInfo[count1]->options.impSeenBy    ? 'I':'-',
