@@ -1559,8 +1559,7 @@ Allow rescan
           request, that system may also request to scan your
           message base for messages in that area. You can prevent
           a system from rescanning your message base by setting
-          this switch to No. Previously, JAM rescanning was not
-          available, however it is avilable in this release! The
+          this switch to No.
 
           ^aRESCANNED kludge is added to messages which are
           rescanned.
@@ -1800,6 +1799,12 @@ Private
           are allowed in this conference. Otherwise, the private
           bit will be removed from all messages in this
           conference.
+
+Allow rescan
+
+          Allow a connected node to rescan this area or not. If set to
+          'No' this overrules the setting for a particular node in the
+          Node manager.
 
 # Messages
 

@@ -57,21 +57,22 @@ funcParType groupSelect;
 //---------------------------------------------------------------------------
 s16 displayGroups(void)
 {
-   u16      c;
+  u16 c;
 
-   if (displayWindow (" Groups ", 15, 7, 76, 21) != 0) return (0);
+  if (displayWindow(" Groups ", 15, 7, 76, 21) != 0)
+    return 0;
 
-   for (c = 0; c < 13; c++)
-   {
-      printChar ('A'+c, 17, c+8, windowLook.promptfg, windowLook.background, MONO_NORM);
-      printString (config.groupDescr[c], 19, c+8, windowLook.datafg, windowLook.background, MONO_NORM);
-      printChar ('N'+c, 47, c+8, windowLook.promptfg, windowLook.background, MONO_NORM);
-      printString (config.groupDescr[c+13], 49, c+8, windowLook.datafg, windowLook.background, MONO_NORM);
-   }
-	return 1;
+  for (c = 0; c < 13; c++)
+  {
+    printChar ('A'+c, 17, c+8, windowLook.promptfg, windowLook.background, MONO_NORM);
+    printString (config.groupDescr[c], 19, c+8, windowLook.datafg, windowLook.background, MONO_NORM);
+    printChar ('N'+c, 47, c+8, windowLook.promptfg, windowLook.background, MONO_NORM);
+    printString (config.groupDescr[c+13], 49, c+8, windowLook.datafg, windowLook.background, MONO_NORM);
+  }
+  return 1;
 }
-
-s16 askGroup (void)
+//---------------------------------------------------------------------------
+s16 askGroup(void)
 {
    u16      ch;
 
@@ -515,16 +516,6 @@ s16 echoDisplayAreas (u16 *v)
          displayAreasArray[count]++;
       }
    }
-/*
-   for (count = 0; count < areaInfoCount; count++)
-	{
-      if ((areaInfo[count]->board-1 < MBBOARDS) &&
-          (areaInfo[count]->board != areaInfoBoard))
-      {
-/*         displayAreasArray[areaInfo[count]->board-1]++; */
-      }
-   }
-*/
    for (count = 0; count < MAX_NETAKAS; count++)
    {
       if ( config.netmailBoard[count] && config.netmailBoard[count] <= MBBOARDS )
@@ -585,14 +576,6 @@ s16 selectBoardCode (u16 *v)
       boardCodeInfo[(index-1)>>3] &= ~(1<<((index-1)&7));
 
    displayWindow("Board", 37, 11, 44, 19);
-/*
-   if (index == 0)
-   {
-      index = 1;
-      while ((index <= 4096) && (boardCodeInfo[(index-1)>>3] & (1<<((index-1)&7))))
-         index++;
-   }
-*/
    do
    {
       if (index)
@@ -1279,10 +1262,11 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
 
    if ((areaMenu = createMenu (
           (editType == EDIT_ECHO_DEFAULT) ? " AreaMgr defaults ":
-   	  (editType == EDIT_NETMAIL) ? " Netmail areas ":
-                                       " Echo mail areas ")) == NULL)
-   {  free(raMenu);
-      return(0);
+   	      (editType == EDIT_NETMAIL     ) ? " Netmail areas "   :
+                                            " Echo mail areas ")) == NULL)
+   {
+     free(raMenu);
+     return 0;
    }
 
    addItem (areaMenu, (editType&(EDIT_NETMAIL|EDIT_ECHO_DEFAULT|EDIT_ECHO_GLOBAL))?(DISPLAY|WORD):(WORD|UPCASE), "Area name  ", 0, tempInfo.areaName, ECHONAME_LEN-1, 0,
@@ -1305,40 +1289,40 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
                          MBNAME" message base board in which messages will be imported");
 #endif
    }
-   addItem(areaMenu, echoOnly(editType,BOOL_INT), "Local      ", 35, &tempInfo.options, BIT8, 0,
+   addItem(areaMenu, echoOnly(editType,BOOL_INT), "Local      ", 37, &tempInfo.options, BIT8, 0,
                      "Set to Yes for a non-echomail area");
-   addItem(areaMenu, echoOnly(editType,BOOL_INT), "Active      ", 54, &tempInfo.options, BIT0, 0,
+   addItem(areaMenu, echoOnly(editType,BOOL_INT), "Active      ", 56, &tempInfo.options, BIT0, 0,
                      "Set to No to deactivate this area");
    addItem(areaMenu, echoDefOnly(editType, NUM_INT), "Write level", 0, &tempInfo.writeLevel, 5, 32767,
                      "Level should be > than Write Level of a node in order to be read-only");
-   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "AreaFix    ", 35, &tempInfo.options, BIT11, 0,
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "AreaFix    ", 37, &tempInfo.options, BIT11, 0,
                      "Allow systems to connect and disconnect this area themselves");
-   addItem(areaMenu, NEW_WINDOW, "BBS info    ", 54, raMenu, 0, 2,
+   addItem(areaMenu, NEW_WINDOW, "BBS info    ", 56, raMenu, 0, 2,
                      "BBS message board information, used by AutoExport");
    addItem(areaMenu, echoDefNGOnly(editType, FUNC_PAR), "Group", 0, &groupSelect, 1, 0,
                      "Group of areas to which this area belongs (A-Z)");
    addItem(areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Use SeenBy", 0, &tempInfo.options, BIT6, 0,
                      "Use SEEN-BYs for duplicate prevention (normally NOT necessary)");
-   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Security ", 19, &tempInfo.options, BIT2, 0,
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Security    ", 18, &tempInfo.options, BIT2, 0,
                      "Check origin of incoming mailbundles");
-   addItem(areaMenu, NUM_INT, "# Messages ", 35, &tempInfo.msgs, 4, 9999,
+   addItem(areaMenu, NUM_INT, "# Messages ", 37, &tempInfo.msgs, 4, 9999,
                      "Maximum number of messages in an area (1-9999, 0 = no maximum)");
-   addItem(areaMenu, BOOL_INT, "Arrival date", 54, &tempInfo.options, BIT14, 0,
+   addItem(areaMenu, BOOL_INT, "Arrival date", 56, &tempInfo.options, BIT14, 0,
                      "Use the date that a message arrived on your system when deleting messages");
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Tiny SeenBy", 0, &tempInfo.options, BIT1, 0,
                      "Remove all SEEN-BYs except of your own downlinks (should normally NOT be used)");
-   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Private  ", 19, &tempInfo.options, BIT4, 0,
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Private     ", 18, &tempInfo.options, BIT4, 0,
                      "Allow private (privileged) messages");
-   addItem(areaMenu, NUM_INT, "# Days old ", 35, &tempInfo.days, 3, 999,
+   addItem(areaMenu, NUM_INT, "# Days old ", 37, &tempInfo.days, 3, 999,
                      "Delete messages older than a number of days (1-999, 0 = no maximum)");
-   addItem(areaMenu, BOOL_INT, "Keep SysOp  ", 54, &tempInfo.options, BIT15, 0,
+   addItem(areaMenu, BOOL_INT, "Keep SysOp  ", 56, &tempInfo.options, BIT15, 0,
                      "Do not remove messages that have not been read by the SysOp (user #1)");
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Imp. SeenBy", 0, &tempInfo.options, BIT5, 0,
                      "Import SEEN-BYs into the message base");
-   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "No Rescan", 19, &tempInfo.options, BIT3, 0,
-                     "Do not allow rescans for this area");
-   addItem(areaMenu, NUM_INT, "# Days rcvd", 35, &tempInfo.daysRcvd, 3, 999,
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT_REV), "Allow rescan", 18, &tempInfo.options, BIT3, 0,
+                     "Allow rescans for this area");
+   addItem(areaMenu, NUM_INT, "# Days rcvd", 37, &tempInfo.daysRcvd, 3, 999,
                      "Delete received messages older than a number of days (1-999, 0 = no maximum)");
    addItem(areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
    addItem(areaMenu, echoOnly(editType, ENUM_INT), "Origin AKA", 0, &addressToggle, 0, MAX_AKAS,
@@ -1366,22 +1350,29 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
 
    switch (editType)
    {
-      case DISPLAY_ECHO_WINDOW : temp = displayMenu (areaMenu, 2, 5);
-               		         break;
-      case DISPLAY_ECHO_DATA   : displayData (areaMenu, 2, 5, 0);
-      				 temp = 0;
-				 break;
-      case EDIT_GLOB_BBS       : temp = runMenuD(raMenu, 2, 7, NULL, setdef);
-				 break;
-      case EDIT_ECHO           : temp = runMenuD(areaMenu, 2, 5, NULL, setdef);
-      		           	 break;
-      case EDIT_NETMAIL        : temp = runMenuD(areaMenu, 2, 5, NULL, setdef);
-				 break;
-      case EDIT_ECHO_GLOBAL    : runMenuD(areaMenu, 2, 5, NULL, setdef);
-                                 temp = 0;
-                                 break;
-      case EDIT_ECHO_DEFAULT   : temp = runMenuD(areaMenu, 2, 5, NULL, setdef);
-				 break;
+      case DISPLAY_ECHO_WINDOW :
+        temp = displayMenu(areaMenu, 1, 5);
+        break;
+      case DISPLAY_ECHO_DATA   :
+               displayData(areaMenu, 1, 5, 0);
+        temp = 0;
+        break;
+      case EDIT_GLOB_BBS       :
+        temp = runMenuD   (raMenu  , 2, 7, NULL, setdef);
+				break;
+      case EDIT_ECHO           :
+        temp = runMenuD   (areaMenu, 1, 5, NULL, setdef);
+        break;
+      case EDIT_NETMAIL        :
+        temp = runMenuD   (areaMenu, 1, 5, NULL, setdef);
+        break;
+      case EDIT_ECHO_GLOBAL    :
+               runMenuD   (areaMenu, 1, 5, NULL, setdef);
+        temp = 0;
+        break;
+      case EDIT_ECHO_DEFAULT   :
+        temp = runMenuD   (areaMenu, 1, 5, NULL, setdef);
+				break;
    }
    if (editType == EDIT_ECHO_DEFAULT)
    {
@@ -1406,25 +1397,30 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    }
    tempInfo.alsoSeenBy = alsoSeenBy;
 
-   if ( setdef )
-   {  total = 0;
+   if (setdef)
+   {
+      total = 0;
       for ( count = 0; count < areaMenu->entryCount; count++ )
-      {  total += (areaMenu->menuEntry[count].selected != 0);
-      }
+        total += (areaMenu->menuEntry[count].selected != 0);
+
       for ( count = 0; count < raMenu->entryCount; count++ )
-      {  total += (raMenu->menuEntry[count].selected != 0);
-      }
+        total += (raMenu->menuEntry[count].selected != 0);
+
       if ( total )
-      {  temp = total = 0;
+      {
+         temp = total = 0;
          if ((groupCode = getGroups(0)) != -1)
-         {  updInfo = tempInfo;
+         {
+            updInfo = tempInfo;
             for ( count = 0; count < areaInfoCount; count++ )
-            {  if (areaInfo[count]->group & groupCode)
-               {  ++total;
+            {
+               if (areaInfo[count]->group & groupCode)
+               {
+                  ++total;
                   getRec(CFG_ECHOAREAS, count);
                   memcpy(&tempInfo, areaBuf, RAWECHO_SIZE);
-		            temp += changeGlobal(areaMenu, &tempInfo, &updInfo)
-                        | changeGlobal(raMenu, &tempInfo, &updInfo);
+		              temp += changeGlobal(areaMenu, &tempInfo, &updInfo)
+                        | changeGlobal(raMenu  , &tempInfo, &updInfo);
                   memcpy(areaBuf, &tempInfo, RAWECHO_SIZE);
                   putRec(CFG_ECHOAREAS, count);
                }

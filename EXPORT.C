@@ -558,10 +558,10 @@ s16 listAreaConfig (void)
       fprintf (textFile, "\n%s  -  Area configuration  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
       fprintf (textFile, "Switches:  A - Active                       D - Use arrival date when purging\n"
-                         "           L - Local                        R - Do not delete messages that\n"
+                         "           L - Local                        N - Do not delete messages that\n"
                          "           S - Secure                           have not been read by the SysOp\n"
                          "           P - Allow private messages\n"
-                         "           N - No Rescan allowed\n"
+                         "           R - Rescan allowed\n"
                          "           U - Use SEEN-BYs\n"
                          "           T - Tiny SEEN-BYs\n"
                          "           I - Import SEEN-BYs\n");
@@ -601,12 +601,12 @@ s16 listAreaConfig (void)
                   areaInfo[count1]->options.local        ? 'L':'-',
                   areaInfo[count1]->options.security     ? 'S':'-',
                   areaInfo[count1]->options.allowPrivate ? 'P':'-',
-                  areaInfo[count1]->options.noRescan     ? 'N':'-',
+                  areaInfo[count1]->options.noRescan     ? '-':'R',  // Reversed option!
                   areaInfo[count1]->options.checkSeenBy  ? 'U':'-',
                   areaInfo[count1]->options.tinySeenBy   ? 'T':'-',
                   areaInfo[count1]->options.impSeenBy    ? 'I':'-',
                   areaInfo[count1]->options.arrivalDate  ? 'D':'-',
-                  areaInfo[count1]->options.sysopRead    ? 'R':'-');
+                  areaInfo[count1]->options.sysopRead    ? 'N':'-');
 
          if (areaInfo[count1]->msgs != 0)
 	    fprintf (textFile, "# Messages  : %u\n",

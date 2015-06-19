@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -195,7 +195,7 @@ s16 readKbd (void)
          min = timeStruct.ti_min;
          if (!countryInfo.co_time)
          {
-            showChar (77, 1, timeStruct.ti_hour<12?'a':'p', attr, MONO_NORM);
+            showChar(77, 1, timeStruct.ti_hour<12?'a':'p', attr, MONO_NORM);
             if ((timeStruct.ti_hour %= 12) == 0)
                timeStruct.ti_hour += 12;
          }
@@ -264,8 +264,6 @@ s16 readKbd (void)
 #endif
             spawnl(P_WAIT, comspecPtr, comspecPtr, NULL);
 
-/*          _os_execute (comspecPtr, NULL); */
-
             setdisk (*dirStr - 'A');
             chdir (dirStr);
 
@@ -300,11 +298,6 @@ s16 readKbd (void)
    return(ch);
 }
 
-/*
-typedef void interrupt (*inthandler)(void);
-static char newARIFhandler[3] = { 0xb0, 0x03, 0xcf };
-inthandler origARIFhandler;
-*/
 void initWindow (u16 mode)
 {
 
@@ -349,7 +342,6 @@ void initWindow (u16 mode)
         videoModeDOS = videoModeFSetup = _AL & 0x7f;
 
         screen = MK_FP (__SegB000, 0x0000);
-/*      screen = MK_FP (0xb000, 0x0000); */
 
         if (videoModeDOS < 7) /* CGA */
         {
@@ -363,7 +355,6 @@ void initWindow (u16 mode)
                 }
 
                 screen = MK_FP (__SegB800, 0x0000);
-/*      screen = MK_FP (0xb800, 0x0000); */
         }
    else
    {
@@ -1034,16 +1025,13 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
    }
    while (redo);
 
-   if (!error) strcpy (string, tempStr);
-/*
-   if (windowLook.wAttr & FAST_EDIT)
-      return (ch);
-   else
-*/
-   return (ch);
+   if (!error)
+     strcpy(string, tempStr);
+
+   return ch;
 }
 //---------------------------------------------------------------------------
-void displayData (menuType *menu, u16 sx, u16 sy, s16 mark)
+void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
 {
    u16      count,
             exportCount;
@@ -1057,10 +1045,11 @@ void displayData (menuType *menu, u16 sx, u16 sy, s16 mark)
    char     tempStr[80],
             tempStr2[80];
    u16      attr, attr2;
+   const char *NoYes[2] = { "No", "Yes" };
 
-   if ((sx+menu->xWidth >= 80) || (menu->yWidth >= 25))
+   if ((sx + menu->xWidth >= 80) || (menu->yWidth >= 25))
       return;
-   if (sy+menu->yWidth >= 25)
+   if (sy + menu->yWidth >= 25)
       sy = 24 - menu->yWidth;
 
    py = sy;
@@ -1107,213 +1096,210 @@ void displayData (menuType *menu, u16 sx, u16 sy, s16 mark)
 
    py = sy;
 
-   for (count = 0; count < menu->entryCount; count++)
-   {
-      if (menu->menuEntry[count].offset)
-      {
-         px = sx+menu->menuEntry[count].offset+
-              strlen(menu->menuEntry[count].prompt)+4;
-      }
-      else
-      {
-         px = sx+menu->pdEdge;
-         py++;
-      }
+  for (count = 0; count < menu->entryCount; count++)
+  {
+    u16 entryType = menu->menuEntry[count].entryType & MASK;
+    if (menu->menuEntry[count].offset)
+      px = sx+menu->menuEntry[count].offset + strlen(menu->menuEntry[count].prompt) + 4;
+    else
+    {
+      px = sx+menu->pdEdge;
+      py++;
+    }
 
-      switch (menu->menuEntry[count].entryType & MASK)
-      {
-         case EXTRA_TEXT: py--;
-                          lastZone = 0;
-                          lastNet = 0;
-                          lastNode = 0;
-                          exportCount = 0;
-                          *tempStr = 0;
-                          while ((exportCount < MAX_FORWARD) && (tempInfo.forwards[exportCount].nodeNum.zone != 0))
-                          {
-                             strcpy (tempStr2, nodeStr (&tempInfo.forwards[exportCount].nodeNum));
-                             helpPtr = tempStr2;
+    switch (entryType)
+    {
+       case EXTRA_TEXT: py--;
+                        lastZone = 0;
+                        lastNet = 0;
+                        lastNode = 0;
+                        exportCount = 0;
+                        *tempStr = 0;
+                        while ((exportCount < MAX_FORWARD) && (tempInfo.forwards[exportCount].nodeNum.zone != 0))
+                        {
+                           strcpy (tempStr2, nodeStr (&tempInfo.forwards[exportCount].nodeNum));
+                           helpPtr = tempStr2;
 
-                             if (lastZone != tempInfo.forwards[exportCount].nodeNum.zone)
-                             {
-                                helpPtr = tempStr2;
-                             }
-                             else
-                             {
-                                if (lastNet != tempInfo.forwards[exportCount].nodeNum.net)
-                                {
-                                   helpPtr = strchr (tempStr2, ':') + 1;
-                                }
-                                else
-                                {
-                                   if (lastNode != tempInfo.forwards[exportCount].nodeNum.node)
-                                   {
-                                      helpPtr = strchr (tempStr2, '/') + 1;
-                                   }
-                                   else
-                                   {
-                                      if (tempInfo.forwards[exportCount].nodeNum.point == 0)
-                                      {
-                                         helpPtr = strchr (tempStr2, 0);
-                                      }
-                                      else
-                                      {
-                                         helpPtr = strchr (tempStr2, '.');
-                                      }
-                                   }
-                                }
-                             }
-                             lastZone = tempInfo.forwards[exportCount].nodeNum.zone;
-                             lastNet  = tempInfo.forwards[exportCount].nodeNum.net;
-                             lastNode = tempInfo.forwards[exportCount].nodeNum.node;
+                           if (lastZone != tempInfo.forwards[exportCount].nodeNum.zone)
+                           {
+                              helpPtr = tempStr2;
+                           }
+                           else
+                           {
+                              if (lastNet != tempInfo.forwards[exportCount].nodeNum.net)
+                              {
+                                 helpPtr = strchr (tempStr2, ':') + 1;
+                              }
+                              else
+                              {
+                                 if (lastNode != tempInfo.forwards[exportCount].nodeNum.node)
+                                 {
+                                    helpPtr = strchr (tempStr2, '/') + 1;
+                                 }
+                                 else
+                                 {
+                                    if (tempInfo.forwards[exportCount].nodeNum.point == 0)
+                                    {
+                                       helpPtr = strchr (tempStr2, 0);
+                                    }
+                                    else
+                                    {
+                                       helpPtr = strchr (tempStr2, '.');
+                                    }
+                                 }
+                              }
+                           }
+                           lastZone = tempInfo.forwards[exportCount].nodeNum.zone;
+                           lastNet  = tempInfo.forwards[exportCount].nodeNum.net;
+                           lastNode = tempInfo.forwards[exportCount].nodeNum.node;
 
-                             if (strlen (tempStr) + strlen (helpPtr) + 3 < ORGLINE_LEN)
-                             {
-                                if (strlen (tempStr) > 0)
-                                {
-                                   strcat (tempStr, " ");
-                                }
-                                strcat (tempStr, helpPtr);
-                                exportCount++;
-                             }
-                             else
-                             {
-                                strcat (tempStr, " >");
-                                exportCount = MAX_FORWARD;
-                             }
-                          }
-                          width = ORGLINE_LEN-1;
-                          break;
-         case TEXT      :
-         case WORD      :
-         case EMAIL     :
-         case ALPHA     :
-         case ALPHA_AST :
-         case PACK      :
-         case PATH      :
-         case MB_NAME   :
-         case SFILE_NAME:
-         case FILE_NAME : width = menu->menuEntry[count].par1;
-                          strcpy (tempStr, menu->menuEntry[count].data);
-                          break;
-         case DATE      : width = 11;
-                          if ( !*((u32*)menu->menuEntry[count].data) )
-                             strcpy(tempStr, "n/a");
-                          else
-                          {  struct tm *tblock;
+                           if (strlen (tempStr) + strlen (helpPtr) + 3 < ORGLINE_LEN)
+                           {
+                              if (strlen (tempStr) > 0)
+                              {
+                                 strcat (tempStr, " ");
+                              }
+                              strcat (tempStr, helpPtr);
+                              exportCount++;
+                           }
+                           else
+                           {
+                              strcat (tempStr, " >");
+                              exportCount = MAX_FORWARD;
+                           }
+                        }
+                        width = ORGLINE_LEN-1;
+                        break;
+       case TEXT      :
+       case WORD      :
+       case EMAIL     :
+       case ALPHA     :
+       case ALPHA_AST :
+       case PACK      :
+       case PATH      :
+       case MB_NAME   :
+       case SFILE_NAME:
+       case FILE_NAME : width = menu->menuEntry[count].par1;
+                        strcpy (tempStr, menu->menuEntry[count].data);
+                        break;
+       case DATE      : width = 11;
+                        if ( !*((u32*)menu->menuEntry[count].data) )
+                           strcpy(tempStr, "n/a");
+                        else
+                        {  struct tm *tblock;
 
-                             tblock = gmtime(((const time_t*)menu->menuEntry[count].data));
-                             sprintf(tempStr, "%2u %s %u", tblock->tm_mday, months[tblock->tm_mon], tblock->tm_year + 1900);
-                          }
-                          break;
-         case FUNC_PAR  : if (*((funcParType*)menu->menuEntry[count].data)->f == askGroup)
-                          {  sprintf (tempStr, "%c  %s",
-                                      groupToChar(*(s32*)((funcParType*)menu->menuEntry[count].data)->numPtr),
-                                      config.groupDescr[groupToChar(*(s32*)((funcParType*)menu->menuEntry[count].data)->numPtr)-'A']);
-                             width = 32;
-                          }
-                          else
-                          if (*((funcParType*)menu->menuEntry[count].data)->f == askGroups)
-                          {  getGroupString (*(s32*)(((funcParType*)menu->menuEntry[count].data)->numPtr), tempStr);
-                             width = 26;
-                          }
-                          else
-                          if (*((funcParType*)menu->menuEntry[count].data)->f == multiAkaSelect)
-                          {  helpPtr=tempStr;
-                             for (temp = 0; temp < MAX_AKAS; temp++)
-                             if ( *(u32*)(((funcParType*)menu->menuEntry[count].data)->numPtr) & ((u32)1<<temp) )
-                                *helpPtr++ = (temp>=10)?'A'+temp-10:(temp)?'0'+temp:'M';
-//org:                          *helpPtr++ = (*(u32*)(((funcParType*)menu->menuEntry[count].data)->numPtr) & (((u32)1)<<temp))?((temp>=10)?'A'+temp-10:(temp)?'0'+temp:'M'):' ';
-                             *helpPtr=0;
-                             width = 12;
-                          }
-                          else
-                          {  if (*((funcParType*)menu->menuEntry[count].data)->numPtr == 0)
-                                sprintf (tempStr, "None");
-                             else
-                                sprintf (tempStr, "%-4u", *((funcParType*)menu->menuEntry[count].data)->numPtr);
-                             width = 3;
-                          }
-                          break;
-         case NUM_P_INT : if (*((s16*)menu->menuEntry[count].data) == 0)
-                             *((s16*)menu->menuEntry[count].data) = 1;
-         case NUM_INT   : if (*((s16*)menu->menuEntry[count].data) > menu->menuEntry[count].par2)
-                             *((s16*)menu->menuEntry[count].data) =
-                                     menu->menuEntry[count].par2;
-                          width = menu->menuEntry[count].par1;
-                          ultoa ((u16)*((s16*)menu->menuEntry[count].data),
-                                 tempStr, 10);
-                          tempStr[width] = 0;
-                          break;
-         case NUM_LONG  : width = 10;
-                          ultoa (*((s32*)menu->menuEntry[count].data),
-                                 tempStr, 10);
-                          break;
-         case BOOL_INT  : width = 3;
-                          if (*(s16*)menu->menuEntry[count].data &
-                              menu->menuEntry[count].par1)
-                             strcpy (tempStr, "Yes");
-                          else
-                             strcpy (tempStr, "No");
-                          break;
-         case ENUM_INT  : {  u16 teller = 0;
-                             while ((teller < menu->menuEntry[count].par2) &&
-                                    ((*(toggleType*)menu->menuEntry[count].data).retval[teller] !=
-                                     *((*(toggleType*)menu->menuEntry[count].data).data)))
-                             {
-                                teller++;
-                             }
-                             if (teller == menu->menuEntry[count].par2)
-                             {
-                                teller = 0;
-                                *((*(toggleType*)menu->menuEntry[count].data).data) =
-                                  (*(toggleType*)menu->menuEntry[count].data).retval[0];
-                             }
-                             strcpy (tempStr,
-                                     (*(toggleType*)menu->menuEntry[count].data).text[teller]);
-                          }
-                          width = menu->menuEntry[count].par1;
-                          break;
-         case NODE      : if (((nodeFakeType*)menu->menuEntry[count].data)->nodeNum.zone != 0)
-                          {
-                             strcpy(tempStr, nodeStr(menu->menuEntry[count].data));
-                             if ((menu->menuEntry[count].par1 == FAKE) &&
-                                 (((nodeFakeType*)menu->menuEntry[count].data)->fakeNet != 0))
-                             {
-                                sprintf (tempStr+strlen(tempStr), "-%u",
-                                         ((nodeFakeType*)menu->menuEntry[count].data)->fakeNet);
-                             }
-                          }
-                          else
-                             *tempStr = 0;
-                          width = menu->menuEntry[count].par2;
-                          break;
-         case BIT_TOGGLE: temp = 1;
-                          *tempStr = 0;
-                          do
-                          {
-                             if ((unsigned char)*((char*)menu->menuEntry[count].data) & temp)
-                                strcat (tempStr, "x");  // "þ");
-                             else if ((char*)menu->menuEntry[count].data < (char*)&tempInfo.flagsTemplateQBBS &&
-                                      (unsigned char)*((char*)menu->menuEntry[count].data+4) & temp)
-                                strcat (tempStr, "o");  // "þ");
-                             else
-                                strcat (tempStr, "-");
-                          }
-                          while ((char)(temp <<= 1));
-                          break;
-         default        : *tempStr = 0;
-                          width = 0;
-      }
-      if ((menu->menuEntry[count].entryType & MASK) != NEW_WINDOW)
-         printStringFill (tempStr, ' ', width, px, py,
-                          windowLook.datafg, windowLook.background, MONO_NORM);
-   }
+                           tblock = gmtime(((const time_t*)menu->menuEntry[count].data));
+                           sprintf(tempStr, "%2u %s %u", tblock->tm_mday, months[tblock->tm_mon], tblock->tm_year + 1900);
+                        }
+                        break;
+       case FUNC_PAR  : if (*((funcParType*)menu->menuEntry[count].data)->f == askGroup)
+                        {  sprintf (tempStr, "%c  %s",
+                                    groupToChar(*(s32*)((funcParType*)menu->menuEntry[count].data)->numPtr),
+                                    config.groupDescr[groupToChar(*(s32*)((funcParType*)menu->menuEntry[count].data)->numPtr)-'A']);
+                           width = 32;
+                        }
+                        else
+                        if (*((funcParType*)menu->menuEntry[count].data)->f == askGroups)
+                        {  getGroupString (*(s32*)(((funcParType*)menu->menuEntry[count].data)->numPtr), tempStr);
+                           width = 26;
+                        }
+                        else
+                        if (*((funcParType*)menu->menuEntry[count].data)->f == multiAkaSelect)
+                        {  helpPtr=tempStr;
+                           for (temp = 0; temp < MAX_AKAS; temp++)
+                           if ( *(u32*)(((funcParType*)menu->menuEntry[count].data)->numPtr) & ((u32)1<<temp) )
+                              *helpPtr++ = (temp>=10)?'A'+temp-10:(temp)?'0'+temp:'M';
+                           *helpPtr=0;
+                           width = 12;
+                        }
+                        else
+                        {  if (*((funcParType*)menu->menuEntry[count].data)->numPtr == 0)
+                              sprintf (tempStr, "None");
+                           else
+                              sprintf (tempStr, "%-4u", *((funcParType*)menu->menuEntry[count].data)->numPtr);
+                           width = 3;
+                        }
+                        break;
+       case NUM_P_INT : if (*((s16*)menu->menuEntry[count].data) == 0)
+                           *((s16*)menu->menuEntry[count].data) = 1;
+       case NUM_INT   : if (*((s16*)menu->menuEntry[count].data) > menu->menuEntry[count].par2)
+                           *((s16*)menu->menuEntry[count].data) =
+                                   menu->menuEntry[count].par2;
+                        width = menu->menuEntry[count].par1;
+                        ultoa ((u16)*((s16*)menu->menuEntry[count].data),
+                               tempStr, 10);
+                        tempStr[width] = 0;
+                        break;
+       case NUM_LONG  : width = 10;
+                        ultoa (*((s32*)menu->menuEntry[count].data),
+                               tempStr, 10);
+                        break;
+      case BOOL_INT    :
+        width = 3;
+        strcpy(tempStr, NoYes[(*(s16*)menu->menuEntry[count].data & menu->menuEntry[count].par1) ? 1 : 0]);
+        break;
+      case BOOL_INT_REV:
+        width = 3;
+        strcpy(tempStr, NoYes[(*(s16*)menu->menuEntry[count].data & menu->menuEntry[count].par1) ? 0 : 1]);
+        break;
+      case ENUM_INT  : {  u16 teller = 0;
+                         while ((teller < menu->menuEntry[count].par2) &&
+                                ((*(toggleType*)menu->menuEntry[count].data).retval[teller] !=
+                                 *((*(toggleType*)menu->menuEntry[count].data).data)))
+                         {
+                            teller++;
+                         }
+                         if (teller == menu->menuEntry[count].par2)
+                         {
+                            teller = 0;
+                            *((*(toggleType*)menu->menuEntry[count].data).data) =
+                              (*(toggleType*)menu->menuEntry[count].data).retval[0];
+                         }
+                         strcpy (tempStr,
+                                 (*(toggleType*)menu->menuEntry[count].data).text[teller]);
+                      }
+                      width = menu->menuEntry[count].par1;
+                      break;
+      case NODE      : if (((nodeFakeType*)menu->menuEntry[count].data)->nodeNum.zone != 0)
+                      {
+                         strcpy(tempStr, nodeStr(menu->menuEntry[count].data));
+                         if ((menu->menuEntry[count].par1 == FAKE) &&
+                             (((nodeFakeType*)menu->menuEntry[count].data)->fakeNet != 0))
+                         {
+                            sprintf (tempStr+strlen(tempStr), "-%u",
+                                     ((nodeFakeType*)menu->menuEntry[count].data)->fakeNet);
+                         }
+                      }
+                      else
+                         *tempStr = 0;
+                      width = menu->menuEntry[count].par2;
+                      break;
+      case BIT_TOGGLE:
+        temp = 1;
+        *tempStr = 0;
+        do
+        {
+          if ((unsigned char)*((char*)menu->menuEntry[count].data) & temp)
+            strcat(tempStr, "x");
+          else if ((char*)menu->menuEntry[count].data < (char*)&tempInfo.flagsTemplateQBBS &&
+                  (unsigned char)*((char*)menu->menuEntry[count].data+4) & temp)
+            strcat(tempStr, "o");
+          else
+            strcat(tempStr, "-");
+        }
+        while ((char)(temp <<= 1));
+        break;
+      default:
+        *tempStr = 0;
+        width = 0;
+        break;
+    }
+    if (entryType != NEW_WINDOW)
+      printStringFill(tempStr, ' ', width, px, py, windowLook.datafg, windowLook.background, MONO_NORM);
+  }
 }
-
-
-
-void fillRectangle (char ch, u16 sx, u16 sy, u16 ex, u16 ey,
-                             u16 fgc, u16 bgc, u16 mAttr)
+//---------------------------------------------------------------------------
+void fillRectangle(char ch, u16 sx, u16 sy, u16 ex, u16 ey, u16 fgc, u16 bgc, u16 mAttr)
 {
    u16      count;
    u16      attr;
@@ -1478,13 +1464,8 @@ void removeWindow (void)
    count = 0;
    for (y =  windowStack[windowSP].sy;
         y <= windowStack[windowSP].ey; y++)
-//#ifndef __32BIT__
       memcpy (&(screen[y*columns+windowStack[windowSP].sx]),
               &helpPtr[nx*count++], nx<<1);
-//#else
-//       for (attr = 0; attr < nx; attr++)
-//          showChar(windowStack[windowSP].sx, y, helpPtr[attr].ch, helpPtr[attr].attr, helpPtr[attr].attr);
-//#endif
 
    free (helpPtr);
 
@@ -1582,11 +1563,12 @@ s16 addItem( menuType *menu, u16 entryType, char *prompt, u16 offset
                        break;
       case FUNC_PAR  : dataSize = par1;
                        break;
+      case BOOL_INT_REV:
       case BOOL_INT  : dataSize = 3;
                        break;
       case ENUM_INT  : for (count = 0; count < par2; count++)
-                       if (strlen((*(toggleType*)data).text[count]) > dataSize)
-                          dataSize = strlen((*(toggleType*)data).text[count]);
+                         if (strlen((*(toggleType*)data).text[count]) > dataSize)
+                           dataSize = strlen((*(toggleType*)data).text[count]);
                        menu->menuEntry[menu->entryCount].par1 = dataSize;
                        break;
       case BIT_TOGGLE: dataSize = 9;
@@ -1605,21 +1587,18 @@ s16 addItem( menuType *menu, u16 entryType, char *prompt, u16 offset
    }
 
    if (offset)
-   {
-      menu->xWidth = max(menu->xWidth, promptSize + dataSize + offset + (dataSize?6:4));
-   }
+    menu->xWidth = max(menu->xWidth, promptSize + dataSize + offset + (dataSize ? 6 : 4));
    else
    {
       if (dataSize)
-         dataSize += 2;
+        dataSize += 2;
 
       menu->zDataSize = max (menu->zDataSize, dataSize);
       menu->pdEdge    = max (menu->pdEdge, promptSize+4);
       menu->xWidth    = max (menu->xWidth, menu->pdEdge+menu->zDataSize);
 
       if ((entryType & MASK) != EXTRA_TEXT)
-         menu->yWidth++;
-
+        menu->yWidth++;
    }
    menu->entryCount++;
    return 0;
@@ -1791,17 +1770,20 @@ s16 changeGlobal(menuType *menu, void *org, void *upd)
                               }
                               break;
             case NODE:
-            case BIT_TOGGLE:  if ( memcmp(menu->menuEntry[count].data,
-                                         (u8*)upd+(int)((u8*)menu->menuEntry[count].data-(u8*)org), 8) )
-                              {  update = 1;
-                                 memcpy(menu->menuEntry[count].data,
-                                        (u8*)upd+(int)((u8*)menu->menuEntry[count].data-(u8*)org), 8);
+            case BIT_TOGGLE:  if (memcmp( menu->menuEntry[count].data
+                                        , (u8*)upd+(int)((u8*)menu->menuEntry[count].data-(u8*)org), 8))
+                              {
+                                update = 1;
+                                memcpy( menu->menuEntry[count].data
+                                      , (u8*)upd+(int)((u8*)menu->menuEntry[count].data-(u8*)org), 8);
                               }
                               break;
+            case BOOL_INT_REV:
             case BOOL_INT:    if ( ((*((u16*)menu->menuEntry[count].data)) & menu->menuEntry[count].par1) !=
                                    ((*((u16*)((u8*)upd+(int)((u8*)menu->menuEntry[count].data-(u8*)org)))) & menu->menuEntry[count].par1) )
-                              {  update = 1;
-                                 *((u16*)menu->menuEntry[count].data) ^= menu->menuEntry[count].par1;
+                              {
+                                update = 1;
+                                *((u16*)menu->menuEntry[count].data) ^= menu->menuEntry[count].par1;
                               }
                               break;
             case NEW_WINDOW:
@@ -1828,71 +1810,66 @@ s16 changeGlobal(menuType *menu, void *org, void *upd)
    }
    return update;
 }
-
-
-
+//---------------------------------------------------------------------------
 static u16 aboutTable[5] = {_K_ALTA_, _K_ALTB_, _K_ALTO_, _K_ALTU_, _K_ALTT_};
 extern u16 am__cp;
        u16 editDefault;
 
 s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc)
 {
-   u16         count, count2, offset, par2;
-   u16         px, py, editX;
-   u16         attr, attr2;
-   s16         more;
-   tempStrType tempStr, tempStr2;
-   u16         ch;
-   u16         update = 0;
+   u16          count
+              , count2
+              , offset
+              , par2;
+   u16          px
+              , py
+              , editX;
+   u16          attr
+              , attr2;
+   s16          more;
+   tempStrType  tempStr
+              , tempStr2;
+   u16          ch;
+   u16          update = 0;
    char        *helpPtr;
-   u16         aboutIndex;
-   u16         maxEntryIndex;
+   u16          aboutIndex;
+   u16          maxEntryIndex;
    char        *title;
-   u16         nx;
+   u16          nx = 0;
    struct ffblk ffblk;
 
-   esc=esc;
+   esc = esc;
 
 #ifdef DEBUG
-   sprintf (tempStr, " %lu ", coreleft());
-   printString (tempStr, 70, 2, YELLOW, RED, MONO_HIGH);
+   sprintf(tempStr, " %lu ", coreleft());
+   printString(tempStr, 70, 2, YELLOW, RED, MONO_HIGH);
 #endif
 
-   if ((sx+menu->xWidth >= 80) || (menu->yWidth >= 25))
+   if ((sx + menu->xWidth >= 80) || (menu->yWidth >= 25))
       return 1;
-   if (sy+menu->yWidth >= 25)
+   if (sy + menu->yWidth >= 25)
       sy = 24 - menu->yWidth;
 
-   if (displayMenu (menu, sx, sy) != 0)
-      return (0);
+   if (displayMenu(menu, sx, sy) != 0)
+      return 0;
 
-   if ( setdef )
-   {   title = "Change global";
-//     if (windowLook.wAttr & TITLE_RIGHT)
-//        nx = ex - strlen(title);
-//     else
-//        if (windowLook.wAttr & TITLE_LEFT)
-             nx = sx + 1;
-//        else
-//           nx = sx + (ex-sx-strlen(title))/2;
-        getAttr (windowLook.titlefg, windowLook.titlebg, attr);
-        while (*title)
-       {
-          showChar (nx, sy, *(title++), attr, windowLook.mono_attr);
-          nx++;
+   if (setdef)
+   {
+      title = "Change global";
+      getAttr (windowLook.titlefg, windowLook.titlebg, attr);
+      while (*title)
+      {
+        showChar(nx, sy, *(title++), attr, windowLook.mono_attr);
+        nx++;
       }
-      getAttr (windowLook.promptfg, windowLook.background, attr);
-      py = sy+1;
-                for ( count = 0; count < menu->entryCount; count++ )
+      getAttr(windowLook.promptfg, windowLook.background, attr);
+      py = sy + 1;
+      for (count = 0; count < menu->entryCount; count++)
       {
          if (menu->menuEntry[count].offset != 0)
-            py--;
-         if ( menu->menuEntry[count].selected )
-         {  showChar(sx+1+menu->menuEntry[count].offset, py, '*', attr, windowLook.mono_attr);
-         }
-         else
-         {  showChar(sx+1+menu->menuEntry[count].offset, py, ' ', attr, windowLook.mono_attr);
-         }
+           py--;
+         showChar( sx + 1 + menu->menuEntry[count].offset, py
+                 , menu->menuEntry[count].selected ? '*' : ' ', attr, windowLook.mono_attr);
          py++;
       }
    }
@@ -1909,11 +1886,13 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
    {
       do
       {
-         ch=readKbd();
+        ch = readKbd();
       }
       while (ch != _K_ESC_);
-                removeWindow ();
-      return (update);
+
+      removeWindow();
+
+      return update;
    }
 
    do
@@ -1957,36 +1936,14 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
       printStringFill (menu->menuEntry[count].comment, ' ', 80, 0, 24,
                        windowLook.commentfg, windowLook.commentbg,
                        MONO_NORM);
-/*
-      if ( (windowLook.wAttr & FAST_EDIT) &&
-           (((menu->menuEntry[count].entryType & MASK) == TEXT) ||
-            ((menu->menuEntry[count].entryType & MASK) == WORD) ||
-            ((menu->menuEntry[count].entryType & MASK) == EMAIL) ||
-            ((menu->menuEntry[count].entryType & MASK) == ALPHA) ||
-            ((menu->menuEntry[count].entryType & MASK) == ALPHA_AST) ||
-            ((menu->menuEntry[count].entryType & MASK) == PACK) ||
-            ((menu->menuEntry[count].entryType & MASK) == PATH) ||
-            ((menu->menuEntry[count].entryType & MASK) == MB_NAME) ||
-            ((menu->menuEntry[count].entryType & MASK) == SFILE_NAME)  ||
-            ((menu->menuEntry[count].entryType & MASK) == FILE_NAME)  ||
-            ((menu->menuEntry[count].entryType & MASK) == DATE)  ||
-            ((menu->menuEntry[count].entryType & MASK) == NUM_P_INT) ||
-            ((menu->menuEntry[count].entryType & MASK) == NUM_INT)   ||
-            ((menu->menuEntry[count].entryType & MASK) == NUM_LONG)))
-         ch = _K_ENTER_;
-      else
-*/
       aboutIndex = 0;
       do
       {
-         ch=readKbd();
-/*       printf(tempStr, "%x",ch);
-         displayMessage(tempStr); */
+         ch = readKbd();
       } while (ch == aboutTable[aboutIndex] && ++aboutIndex < 5);
+
       if (aboutIndex == 5)
          displayMessage("This program was compiled on "__DATE__);
-
-/*    if (ch == _K_ALTH_) onlineHelp(); */
 
       if ( setdef && (menu->menuEntry[count].entryType & MASK) != FUNCTION )
       {  update = 1;
@@ -1995,11 +1952,10 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
          else if ( ch == _K_DEL_ )
             menu->menuEntry[count].selected = 0;
       }
-      if ( (ch == _K_ENTER_) ||
-           (((menu->menuEntry[count].entryType & MASK) == ENUM_INT) &&
-           (ch == 8)) ||
-           (((menu->menuEntry[count].entryType & MASK) == BIT_TOGGLE) &&
-           ((ch >= '1') && (ch <= '8'))))
+      if (  ch == _K_ENTER_
+         || ((menu->menuEntry[count].entryType & MASK) == ENUM_INT   && ch == 8               )
+         || ((menu->menuEntry[count].entryType & MASK) == BIT_TOGGLE && ch >= '1' && ch <= '8')
+         )
       {
          if ( setdef && (menu->menuEntry[count].entryType & MASK) != FUNCTION )
                          menu->menuEntry[count].selected = 1;
@@ -2111,19 +2067,19 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
                               update = 1;
                               break;
             case NUM_LONG   : ultoa (*((s32*)menu->menuEntry[count].data), tempStr, 10);
-                     /*ch =*/ editString(tempStr, 11, editX, py,
-                                         menu->menuEntry[count].entryType);
+                              editString(tempStr, 11, editX, py, menu->menuEntry[count].entryType);
                               *(s32*)menu->menuEntry[count].data = atol (tempStr);
                               update = 1;
                               break;
-            case BOOL_INT   : *(s16*)menu->menuEntry[count].data ^=
-                                        menu->menuEntry[count].par1;
+            case BOOL_INT_REV:
+            case BOOL_INT   : *(s16*)menu->menuEntry[count].data ^= menu->menuEntry[count].par1;
                               // kludge
-                              if ( (nodeOptionsType*)menu->menuEntry[count].data == &tempInfoN.options &&
-                                    (menu->menuEntry[count].par1 == BIT4) &&
-                                    ((nodeOptionsType*)menu->menuEntry[count].data)->active )
+                              if (  (nodeOptionsType*)menu->menuEntry[count].data == &tempInfoN.options
+                                 && (menu->menuEntry[count].par1 == BIT4)
+                                 && ((nodeOptionsType*)menu->menuEntry[count].data)->active
+                                 )
                               {
-                                 tempInfoN.referenceLNBDat = 0;
+                                tempInfoN.referenceLNBDat = 0;
                               }
                               update = 1;
                               break;
@@ -2397,39 +2353,27 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
                              count--;
                           }
                           break;
-#if 0
-            case _K_ESC_: if ( esc )
-                          {
-                             if ( update )
-                             {   if ( askBoolean ("Save changes in record ?", 'Y') == 'N' )
-                                    ch = 0;
-                             }
-                          }
-#endif
-         }
       }
-   }
-   while ((ch != _K_ESC_) && (ch != _K_F7_) && (ch != _K_F10_));
+    }
+  }
+  while ((ch != _K_ESC_) && (ch != _K_F7_) && (ch != _K_F10_));
 
-   removeWindow ();
+  removeWindow();
 
-   if ((ch != _K_ESC_) && (dataPtr != NULL))
-      *dataPtr = count;
+  if ((ch != _K_ESC_) && (dataPtr != NULL))
+    *dataPtr = count;
 
-   return (update);
+  return update;
 }
-
-
-
-void printChar (char ch, u16 sx, u16 sy, u16 fgc, u16 bgc, u16 mAttr)
+//---------------------------------------------------------------------------
+void printChar(char ch, u16 sx, u16 sy, u16 fgc, u16 bgc, u16 mAttr)
 {
-   u16 attr;
+  u16 attr;
 
-   getAttr (fgc, bgc, attr);
-   showChar (sx, sy, ch, attr, mAttr);
+  getAttr(fgc, bgc, attr);
+  showChar(sx, sy, ch, attr, mAttr);
 }
-
-
+//---------------------------------------------------------------------------
 void printString (char *string, u16 sx, u16 sy, u16 fgc, u16 bgc, u16 mAttr)
 {
    u16 attr;

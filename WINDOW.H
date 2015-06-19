@@ -1,26 +1,28 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
-#ifndef __fmail_windows_h 
-#define __fmail_windows_h 
+#ifndef __fmail_windows_h
+#define __fmail_windows_h
 
 #define WB_DOUBLE_H      1
 #define WB_DOUBLE_V      2
@@ -39,11 +41,12 @@
 #define NUM_LONG        10
 #define MB_NAME         11
 #define BOOL_INT        12
-#define ENUM_INT        13
-#define BIT_TOGGLE      14
-#define AKA_SELECT      15
-#define NODE            16
-#define NODE_MATCH      17
+#define BOOL_INT_REV    13
+#define ENUM_INT        14
+#define BIT_TOGGLE      15
+#define AKA_SELECT      16
+#define NODE            17
+#define NODE_MATCH      18
 #define SFILE_NAME      19
 #define PACK            20
 #define DATE            22
@@ -110,29 +113,29 @@
 #define MONO_HIGH_BLINK 0x8f
 
 
-#if !defined(__COLORS)
+#ifndef __COLORS
+#define __COLORS
 
-   #define __COLORS
-
-   enum COLORS {
-	          BLACK, 	  /* dark colors */
-	          BLUE,
-	          GREEN,
-	          CYAN,
-	          RED,
-	          MAGENTA,
-	          BROWN,
-	          LIGHTGRAY,
-	          DARKGRAY,       /* light colors */
-	          LIGHTBLUE,
-	          LIGHTGREEN,
-	          LIGHTCYAN,
-	          LIGHTRED,
-	          LIGHTMAGENTA,
-	          YELLOW,
-	          WHITE
-               };
-#endif
+enum COLORS
+{
+  BLACK, 	  /* dark colors */
+  BLUE,
+  GREEN,
+  CYAN,
+  RED,
+  MAGENTA,
+  BROWN,
+  LIGHTGRAY,
+  DARKGRAY,       /* light colors */
+  LIGHTBLUE,
+  LIGHTGREEN,
+  LIGHTCYAN,
+  LIGHTRED,
+  LIGHTMAGENTA,
+  YELLOW,
+  WHITE
+};
+#endif  // __COLORS
 
 #define BLINK	  128	          /* blink bit */
 
@@ -144,23 +147,23 @@ typedef struct
 
 typedef struct
 {
-  uchar background,
-        actvborderfg,
-        inactvborderfg,
-        promptfg,
-        promptkeyfg,
-        datafg,
-        titlefg,
-        titlebg,
-        scrollbg,
-        scrollfg,
-        editfg,
-        editbg,
-        commentfg,
-        commentbg,
-        atttextfg,
-        mono_attr,
-        wAttr;      
+  uchar background
+      , actvborderfg
+      , inactvborderfg
+      , promptfg
+      , promptkeyfg
+      , datafg
+      , titlefg
+      , titlebg
+      , scrollbg
+      , scrollfg
+      , editfg
+      , editbg
+      , commentfg
+      , commentbg
+      , atttextfg
+      , mono_attr
+      , wAttr;
 } windowLookType;
 
 typedef struct
@@ -176,7 +179,7 @@ typedef struct
 #endif
   u16      selected;
   u16      par1, par2;
-  uchar    *comment;    
+  uchar    *comment;
 } menuEntryType;
 
 typedef struct
@@ -184,7 +187,7 @@ typedef struct
   uchar         *title;
   u16            xWidth, yWidth, pdEdge, zDataSize;
   u16            entryCount;
-  menuEntryType  menuEntry[MAX_ENTRIES]; 
+  menuEntryType  menuEntry[MAX_ENTRIES];
 } menuType;
 
 typedef uchar *txtPtr;
@@ -210,7 +213,7 @@ typedef struct
   u16            sx, sy;
   u16            ex, ey;
   u16            inactvborderfg, background;
-  screenCharType *oldScreen; 
+  screenCharType *oldScreen;
 } windowMemType;
 
 
@@ -219,7 +222,7 @@ typedef struct
 
 
 #define showCharNA(px,py,chr)  \
-   screen[(py)*columns+px].ch = chr    
+   screen[(py)*columns+px].ch = chr
 
 
 #define showChar(px,py,chr,att,matt)  \
@@ -403,4 +406,4 @@ void restoreWindowLook(void);
 void askRemoveDir(char *path);
 void askRemoveJAM(char *msgBasePath);
 
-#endif // __fmail_windows_h 
+#endif // __fmail_windows_h
