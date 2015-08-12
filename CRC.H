@@ -22,11 +22,11 @@
 //
 //---------------------------------------------------------------------------
 
-u32 crc32     (char *string);
-u32 crc32old  (char *string);
-u32 crc32len  (char *string, s16 len);
-u32 crc32alpha(char *string);
-u32 crc32t    (char *string, char terminator);
-u32 crc32jam  (char *string);
+u32 crc32     (const char *string);
+u32 crc32old  (const char *string);
+u32 crc32len  (const char *string, s16 len);
+u32 crc32alpha(const char *string);
+u32 crc32t    (const char *string, char terminator);
+u32 crc32jam  (const char *string);
 
 #endif  // crcH

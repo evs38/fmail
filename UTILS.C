@@ -22,16 +22,20 @@
 //---------------------------------------------------------------------------
 
 #include <ctype.h>
-#include <dir.h>
+#include <dir.h>     // getcwd()
+#ifdef __DOS
+#include <direct.h>  // _chdrive()
+#endif
 #include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h>   // getenv()
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <stdlib.h>
 
 #include "utils.h"
 
@@ -120,6 +124,95 @@ s16 existDir(const char *dir, const char *descr)
     return 0;
   }
   return 1;
+}
+//---------------------------------------------------------------------------
+int ChDir(const char *path)
+{
+#ifdef __DOS  // todo: Use correct define
+  if (path[1] == ':')
+  {
+    char drive = toupper(path[0]);
+    if (drive >= 'A' && drive <= 'Z')
+      if (0 != _chdrive(drive - 'A' + 1))
+        return -1;
+  }
+#endif
+  return chdir(path);
+}
+//---------------------------------------------------------------------------
+// Usage           char *searchpath(const char *filename);
+//
+// Description     searchpath searches for the file 'filename' in the
+//                 current directory, and then in the list of semicolon-
+//                 separated directories specifed by the "PATH" environment variable.
+//
+// Return value    A pointer to the filename string if the file is successfully
+//                 found; this string is stored in a static array that is
+//                 overwritten with each call.  NULL is returned if the
+//                 file is not found.
+//
+static char pathbuf[MAXPATH];
+
+const char *_searchpath(const char *filename)
+{
+  const char *ipath;
+  char c;
+  int  len;
+  char *temp;
+
+  // If the environment variable isn't defined, at least try
+  // the current directory.
+  if ((ipath = getenv("PATH")) == NULL)
+    ipath = "";
+
+  // Try the current directory, then all directories in the
+  // string ipath.
+  if (getcwd(pathbuf, MAXPATH) == NULL)
+    len = 0;
+  else
+    len = strlen(pathbuf);
+
+  for (;;)
+  {
+    // The next directory to try is already in pathname, and its
+    // length is in len.  If it doesn't end in a slash, and isn't
+    // blank, append a slash.
+
+    //pathbuf[len] = '\0';
+
+    if (len != 0 && (c = pathbuf[len - 1]) != '\\' && c != '/')
+      pathbuf[len++] = '\\';
+
+    // Append the filename to the directory name, then break
+    // if the file exists.
+    strcpy(pathbuf + len, filename);
+    if (access(pathbuf, 0) == 0)
+      break;
+
+    // Try the next directory in the ipath string.
+
+    if (*ipath == '\0')           // end of the variable
+      return NULL;
+
+    for (len = 0; *ipath != ';' && *ipath != '\0'; ipath++)
+    {
+      // Strip off any quotes around this individual path dir
+      if (*ipath != '\"')
+        pathbuf[len++] = *ipath;  // copy next directory
+    }
+    if (*ipath != '\0')
+      ipath++;                    // skip over semicolon
+  }
+
+  // Pathname contains the relative path of the found file.  Convert
+  // it to an absolute path.
+  if ((temp = _fullpath(NULL, pathbuf, MAXPATH)) != NULL)
+  {
+    strcpy(pathbuf, temp);
+    free(temp);
+  }
+
+  return (pathbuf[0] == '\0' ? NULL : pathbuf);
 }
 //---------------------------------------------------------------------------
 #ifdef __CANUSE64BIT
@@ -291,23 +384,20 @@ s16 emptyText(char *text)
   return code;
 }
 //---------------------------------------------------------------------------
-void delete(char *path, char *wildCard)
+void Delete(const char *path, const char *wildCard)
 {
   s16          doneFile;
   struct ffblk ffblkFile;
   tempStrType  tempStr;
-  char         *helpPtr;
+  char        *helpPtr;
 
-  strcpy (tempStr, path);
-  helpPtr = strchr (tempStr, 0);
-  strcpy (helpPtr, wildCard);
-  doneFile = findfirst (tempStr, &ffblkFile, 0);
+  helpPtr = stpcpy(tempStr, path);
+  strcpy(helpPtr, wildCard);
 
-  while (!doneFile)
+  for (doneFile = findfirst(tempStr, &ffblkFile, 0); !doneFile; doneFile = findnext(&ffblkFile))
   {
-    strcpy (helpPtr, ffblkFile.ff_name);
-    unlink (tempStr);
-    doneFile = findnext (&ffblkFile);
+    strcpy(helpPtr, ffblkFile.ff_name);
+    unlink(tempStr);
   }
 }
 //---------------------------------------------------------------------------
@@ -1346,9 +1436,10 @@ void addVia(char *msgText, u16 aka)
 }
 #endif
 
-uchar *makeName (uchar *path, uchar *name)
-{  static tempStrType tempStr;
-   uchar *helpPtr;
+char *makeName(char *path, char *name)
+{
+   static tempStrType tempStr;
+   char  *helpPtr;
    struct ffblk tempBlk;
    udef   len;
    u16	  count;
@@ -1357,16 +1448,18 @@ uchar *makeName (uchar *path, uchar *name)
    helpPtr = stpcpy(tempStr, path);
    strcpy(helpPtr, name);
 
-   if ( fileSys(path) )
-      return tempStr;
+   if (fileSys(path))
+     return tempStr;
 
    if ( len > 8 )
-   {  helpPtr[8] = 0;
-      len = 8;
+   {
+     helpPtr[8] = 0;
+     len = 8;
    }
-   while ( (helpPtr = strchr(helpPtr, '.')) != NULL )
-   {  strcpy(helpPtr, helpPtr+1);
-      len--;
+   while ((helpPtr = strchr(helpPtr, '.')) != NULL)
+   {
+     strcpy(helpPtr, helpPtr+1);
+     len--;
    }
 
    helpPtr = strchr(tempStr, 0);
@@ -1396,9 +1489,10 @@ uchar *makeName (uchar *path, uchar *name)
       }
       while ( !findfirst(tempStr, &tempBlk, 0) );
       helpPtr += 2;
-   }
-   *helpPtr = 0;
-   return tempStr;
+  }
+  *helpPtr = 0;
+
+  return tempStr;
 }
 
 
@@ -1415,16 +1509,17 @@ long fmseek(int handle, long offset, int fromwhere, int code)
 }
 
 
-uchar *makeFullPath(uchar *deflt, uchar *override, uchar *name)
+const char *makeFullPath(const char *deflt, const char *override, const char *name)
 {
-   static tempStrType tempStr;
-   uchar  *helpPtr;
+  static tempStrType tempStr;
+  uchar  *helpPtr;
 
-   helpPtr = stpcpy(tempStr, (override && *override) ? override : deflt);
-   if ( *(helpPtr-1) != '\\' )
-      *helpPtr++ = '\\';
-   strcpy(helpPtr, name);
-   return tempStr;
+  helpPtr = stpcpy(tempStr, (override && *override) ? override : deflt);
+  if ( *(helpPtr - 1) != '\\' )
+    *helpPtr++ = '\\';
+  strcpy(helpPtr, name);
+
+  return tempStr;
 }
 
 

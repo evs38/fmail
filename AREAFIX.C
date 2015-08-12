@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -30,6 +30,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef __MINGW32__
+#include <windef.h>  // min() max()
+#endif // __MINGW32__
 
 #include "areafix.h"
 
@@ -46,6 +49,7 @@
 #include "nodeinfo.h"
 #include "output.h"
 #include "pack.h"
+#include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
 
@@ -74,8 +78,8 @@ typedef struct
   char        remove;
   signed char uplink ;
   s16         maxRescan;
-  char        *areaName;
-}  areaFixType;
+  const char *areaName;
+} areaFixType;
 
 typedef struct
 {
@@ -97,30 +101,30 @@ extern configType config;
 extern char *version;
 
 //---------------------------------------------------------------------------
-char getGroupCode (s32 groupCode)
+int getGroupCode(s32 groupCode)
 {
-  char count = 0;
+  int count = 0;
 
-  while ((groupCode>>=1) != 0)
-  {
+  while ((groupCode >>= 1) != 0)
     count++;
-  }
-  return (count);
+
+  return count;
 }
 //---------------------------------------------------------------------------
 static char descrStr[ECHONAME_LEN];
 
-static s16 checkForward (char *areaName, nodeInfoType *nodeInfoPtr)
+static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
 {
   s16      found = -1;
   u16      count;
   fhandle  textHandle;
   char     fileStr[129];
   char     fileStr2[129];
-  char     *helpPtr,
-  *copyPtr;
+  char     *helpPtr
+         , *copyPtr
+         , *tag
+         , *descr;
   tempStrType tempStr;
-  u8       *tag, *descr;
 
   if (nodeInfoPtr->options.forwardReq)
   {
@@ -135,28 +139,25 @@ static s16 checkForward (char *areaName, nodeInfoType *nodeInfoPtr)
       else if (config.uplinkReq[count].node.zone &&
                ((nodeInfoPtr->groups & config.uplinkReq[count].groups) != 0))
       {
-        if ( config.uplinkReq[count].options.unconditional )
+        if (config.uplinkReq[count].options.unconditional)
           found = count;
-        else if ( !*config.uplinkReq[count].fileName )
+        else if (!*config.uplinkReq[count].fileName)
           continue;
-        else if ( config.uplinkReq[count].fileType == 2 )
+        else if (config.uplinkReq[count].fileType == 2)
         {
-          if ( openBCL(&config.uplinkReq[count]) )
+          if (openBCL(&config.uplinkReq[count]))
           {
-            while ( found == -1 && readBCL(&tag, &descr) )
-            {
-              if ( !strcmp(areaName, tag) )
+            while (found == -1 && readBCL(&tag, &descr))
+              if (!strcmp(areaName, tag))
                 found = count;
-            }
+
             closeBCL();
           }
         }
         else
         {
-          strcpy (stpcpy (fileStr, configPath),
-                  config.uplinkReq[count].fileName);
-          if ((textHandle = openP(fileStr,
-                                  O_RDONLY|O_BINARY|O_DENYNONE,S_IREAD|S_IWRITE)) == -1)
+          strcpy(stpcpy(fileStr, configPath), config.uplinkReq[count].fileName);
+          if ((textHandle = openP(fileStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
           {
             sprintf(fileStr, "Uplink areas file %s not found in FMail system dir",
                     config.uplinkReq[count].fileName);
@@ -244,53 +245,42 @@ s16 toAreaFix (char *toName)
           (strnicmp (helpPtr, "FMAIL",    5) == 0));
 }
 //---------------------------------------------------------------------------
-static char *getAreaNamePtr (char *echoName)
+static const char *getAreaNamePtr(const char *echoName)
 {
   u16         count;
-  char        *helpPtr;
+  char       *helpPtr;
   tempStrType tempStr;
 
-  strncpy (tempStr, echoName, ECHONAME_LEN-1);
+  strncpy(tempStr, echoName, ECHONAME_LEN - 1);
   tempStr[ECHONAME_LEN] = 0;
-  if ((helpPtr = strchr (strupr(tempStr), ' ')) != NULL)
-  {
+  if ((helpPtr = strchr(strupr(tempStr), ' ')) != NULL)
     *helpPtr = 0;
-  }
-  if ((helpPtr = strchr (strupr(tempStr), ',')) != NULL)
-  {
-    *helpPtr = 0;
-  }
 
-  if (*tempStr == 0 || strchr(tempStr, '?') != NULL ||
-      strchr(tempStr, '*') != NULL) return (NULL);
+  if ((helpPtr = strchr(strupr(tempStr), ',')) != NULL)
+    *helpPtr = 0;
+
+  if (*tempStr == 0 || strchr(tempStr, '?') != NULL
+     ||  strchr(tempStr, '*') != NULL)
+    return NULL;
 
   count = 0;
-  while ((count < echoCount) &&
-         stricmp(tempStr, echoAreaList[count].areaName) != 0)
-  {
+  while (count < echoCount && stricmp(tempStr, echoAreaList[count].areaName) != 0)
     count++;
-  }
+
   if (count < echoCount)
-  {
-    return (echoAreaList[count].areaName);
-  }
+    return echoAreaList[count].areaName;
 
   count = 0;
-  while ((count < badAreaCount) &&
-         (stricmp ((*badAreaList)[count], tempStr) != 0))
-  {
+  while (count < badAreaCount && stricmp((*badAreaList)[count], tempStr) != 0)
     count++;
-  }
+
   if (count < badAreaCount)
-  {
-    return ((*badAreaList)[count]);
-  }
+    return (*badAreaList)[count];
 
   if (badAreaCount < MAX_BADAREA)
-  {
-    return (strcpy ((*badAreaList)[badAreaCount++], tempStr));
-  }
-  return ("[unknown area]");
+    return strcpy((*badAreaList)[badAreaCount++], tempStr);
+
+  return "[unknown area]";
 }
 //---------------------------------------------------------------------------
 // send message that doesn't contain any kludges in the text body yet
@@ -304,20 +294,20 @@ static void sendMsg( internalMsgType *message, char *replyStr
   char       *helpPtr;
   u16         count;
   nodeNumType tempNode;
-  struct time timeRec;
-  struct date dateRec;
+  time_t      ti;
+  struct tm  *tm;
 
   *message->dateStr = 0;
 
-  gettime (&timeRec);
-  getdate (&dateRec);
+  time(&ti);
+  tm = localtime(&ti);
 
-  message->year      = dateRec.da_year;
-  message->month     = dateRec.da_mon;
-  message->day       = dateRec.da_day;
-  message->hours     = timeRec.ti_hour;
-  message->minutes   = timeRec.ti_min;
-  message->seconds   = timeRec.ti_sec;
+  message->year    = tm->tm_year + 1900;
+  message->month   = tm->tm_mon + 1;
+  message->day     = tm->tm_mday;
+  message->hours   = tm->tm_hour;
+  message->minutes = tm->tm_min;
+  message->seconds = tm->tm_sec;
 
   sprintf(tempStr, "\1PID: %s\r", PIDStr());
   insertLine(message->text, tempStr);
@@ -422,10 +412,10 @@ static void sendMsg( internalMsgType *message, char *replyStr
 //---------------------------------------------------------------------------
 s16 areaFix(internalMsgType *message)
 {
-  nodeInfoType    *nodeInfoPtr;
-  nodeInfoType    *remMaintPtr;
-  char            *helpPtr;
-  char            *helpPtr2;
+  nodeInfoType   *nodeInfoPtr;
+  nodeInfoType   *remMaintPtr;
+  char           *helpPtr;
+  const char     *helpPtr2;
   s16             allType;
   u16             removeArea, updateArea;
   s16             bytesRead;
@@ -460,30 +450,33 @@ s16 areaFix(internalMsgType *message)
   nodeNumType     tempNode;
   tempStrType     tempStr;
   u16             areaSortListIndex;
-  char            oldGroupCode;
+  int             oldGroupCode;
   u32             tempGroups;
   areaSortListType *areaSortList;
-  headerType	   *areaHeader, *adefHeader;
-  rawEchoType	   *areaBuf,    *adefBuf;
+  headerType	   *areaHeader
+               , *adefHeader;
+  rawEchoType	   *areaBuf
+               , *adefBuf;
   udef            komma;
-  u8              *tag, *descr;
+  char           *tag
+               , *descr;
 
-  if ((areaSortList = malloc(sizeof(areaSortListType))) == NULL )
+  if ((areaSortList = (areaSortListType*)malloc(sizeof(areaSortListType))) == NULL )
   {
-    mgrLogEntry ("Not enough memory available for AreaFix");
+    mgrLogEntry("Not enough memory available for AreaFix");
     return -1;
   }
 
 #if defined(__FMAILX__) || defined(__32BIT__)
-  if ((areaFixList = malloc(sizeof(areaFixListType))) == NULL )
+  if ((areaFixList = (areaFixListType*)malloc(sizeof(areaFixListType))) == NULL )
   {
-    mgrLogEntry ("Not enough memory available for AreaFix");
+    mgrLogEntry("Not enough memory available for AreaFix");
     free(areaSortList);
     return -1;
   }
-  if ((badAreaList = malloc(sizeof(badAreaListType))) == NULL )
+  if ((badAreaList = (badAreaListType*)malloc(sizeof(badAreaListType))) == NULL )
   {
-    mgrLogEntry ("Not enough memory available for AreaFix");
+    mgrLogEntry("Not enough memory available for AreaFix");
     free(areaSortList);
     free(areaFixList);
     return -1;
@@ -493,7 +486,7 @@ s16 areaFix(internalMsgType *message)
   badAreaList = (badAreaListType*)(message->text+TEXT_SIZE-sizeof(areaFixListType)-sizeof(badAreaListType));
 #endif
 
-  if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
+  if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
   {
     free(areaSortList);
 #if defined(__FMAILX__) || defined(__32BIT__)
@@ -831,7 +824,7 @@ s16 areaFix(internalMsgType *message)
               compare = 1;
               count = 0;
               while ((count < areaFixCount) &&
-                     ((compare = stricmp (helpPtr2, (*areaFixList)[count].areaName)) > 0))
+                     ((compare = stricmp(helpPtr2, (*areaFixList)[count].areaName)) > 0))
               {
                 count++;
               }
@@ -839,7 +832,7 @@ s16 areaFix(internalMsgType *message)
               {
                 if (compare != 0)
                 {
-                  memmove (&(*areaFixList)[count+1],
+                  memmove (&(*areaFixList)[count + 1],
                            &(*areaFixList)[count],
                            ((areaFixCount++) - count) * sizeof(areaFixType));
                   (*areaFixList)[count].areaName = helpPtr2;
@@ -935,7 +928,7 @@ s16 areaFix(internalMsgType *message)
         }
         if (c < MAX_AREAFIX)
         {
-          memmove (&(*areaSortList)[c+1], &(*areaSortList)[c], sizeof(areaSortType)*(min(areaCount,MAX_AREAFIX)-c));
+          memmove(&(*areaSortList)[c+1], &(*areaSortList)[c], sizeof(areaSortType)*(min(areaCount, MAX_AREAFIX) - c));
           (*areaSortList)[c].index = areaCount;
           (*areaSortList)[c].groupChar = getGroupCode(areaBuf->group);
         }
@@ -1053,16 +1046,17 @@ s16 areaFix(internalMsgType *message)
           {
             c++;
           }
-          if (c<MAX_FORWARD)
+          if (c < MAX_FORWARD)
           {
             activeAreasCount++;
 
-            if ( (*areaFixList)[count].remove == 8 &&
-                 (!nodeInfoPtr->options.allowRescan ||
-                  areaBuf->forwards[c].flags.writeOnly) )
-            {
+            if ( (*areaFixList)[count].remove == 8
+               && ( !nodeInfoPtr->options.allowRescan
+                  || areaBuf->options.noRescan
+                  || areaBuf->forwards[c].flags.writeOnly
+                  )
+               )
               (*areaFixList)[count].remove = 9;
-            }
           }
         }
       }
@@ -1121,7 +1115,8 @@ s16 areaFix(internalMsgType *message)
         mgrLogEntry (helpPtr2);
         *(helpPtr++) = '\r';
       }
-      if (areaFixCount) newLine();
+      if (areaFixCount)
+        newLine();
 
       if (activeAreasCount)
         helpPtr += sprintf(helpPtr, "\rYou are connected to %u area%s.\r", activeAreasCount, activeAreasCount != 1 ? "s" : "");
@@ -1136,9 +1131,7 @@ s16 areaFix(internalMsgType *message)
       }
 
       if (notifyChange)
-      {
         nodeInfoPtr->options.notify = 2-notifyChange;
-      }
 
 #ifdef __32BIT__
       if ((archiver ==  0 && *config.arc32.programName == 0) ||
@@ -1394,15 +1387,14 @@ Send:
 
           memset(&rawEchoInfo2, 0, RAWECHO_SIZE);
 
-          if (openConfig(CFG_AREADEF, &adefHeader, (void*)&adefBuf))
+          if (openConfig(CFG_AREADEF, &adefHeader, (void**)&adefBuf))
           {
             if (getRec(CFG_AREADEF, 0))
-            {
-              memcpy (&rawEchoInfo2, adefBuf, RAWECHO_SIZE);
-            }
-            closeConfig (CFG_AREADEF);
+              memcpy(&rawEchoInfo2, adefBuf, RAWECHO_SIZE);
+
+            closeConfig(CFG_AREADEF);
           }
-          strcpy (rawEchoInfo2.areaName, (*areaFixList)[c].areaName);
+          strcpy(rawEchoInfo2.areaName, (*areaFixList)[c].areaName);
 
           *descrStr = 0;
           if (checkForward((*areaFixList)[c].areaName, nodeInfoPtr) != -1 &&
@@ -1547,7 +1539,7 @@ Send:
           lseek (helpHandle, 0, SEEK_SET);
           while (read(helpHandle, &areaFixRec, sizeof(areaFixType)) > 0)
           {
-            if ((areaFixRec.remove == 2 || areaFixRec.remove == 8) && (areaFixRec.maxRescan))
+            if ((areaFixRec.remove == 2 || areaFixRec.remove == 8) && areaFixRec.maxRescan)
             {
               rescan(nodeInfoPtr, areaFixRec.areaName,
                       areaFixRec.maxRescan != -1 ? areaFixRec.maxRescan :

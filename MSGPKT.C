@@ -604,38 +604,38 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
    return 0;
 }
 //---------------------------------------------------------------------------
+// Try to free a file handle of the pkt file with the least msgs
+//
 static s16 closeLuPkt(void)
 {
-   u16 minimum;
-   s16 minIndex;
-   s16 count;
+  u16 minimum;
+  s16 minIndex;
+  s16 count;
 
-   if (forwNodeCount == 0)
-   {
-      logEntry ("ERROR: Not enough file handles available", LOG_ALWAYS, 0);
-      return (1);
-   }
+  if (forwNodeCount == 0)
+  {
+    logEntry ("ERROR: Not enough file handles available", LOG_ALWAYS, 0);
+    return 1;
+  }
 
-   minimum = 32767;
-   minIndex = -1;
-   for (count = forwNodeCount-1; count >= 0; count--)
-   {
-      if ((nodeFileInfo[count]->pktHandle != 0) &&
-          (nodeFileInfo[count]->totalMsgs < minimum))
-      {
-         minimum = nodeFileInfo[count]->totalMsgs;
-         minIndex = count;
-      }
-   }
-   if (minIndex == -1)
-   {
-      logEntry("ERROR: Not enough file handles available", LOG_ALWAYS, 0);
-      return 1;
-   }
-   close(nodeFileInfo[minIndex]->pktHandle);
-   nodeFileInfo[minIndex]->pktHandle = 0;
+  minimum = 32767;
+  minIndex = -1;
+  for (count = forwNodeCount-1; count >= 0; count--)
+    if (nodeFileInfo[count]->pktHandle != 0 && nodeFileInfo[count]->totalMsgs < minimum)
+    {
+       minimum = nodeFileInfo[count]->totalMsgs;
+       minIndex = count;
+    }
 
-   return 0;
+  if (minIndex == -1)
+  {
+    logEntry("ERROR: Not enough file handles available", LOG_ALWAYS, 0);
+    return 1;
+  }
+  close(nodeFileInfo[minIndex]->pktHandle);
+  nodeFileInfo[minIndex]->pktHandle = 0;
+
+  return 0;
 }
 //---------------------------------------------------------------------------
 void RemoveNetKludge(char *text, const char *kludge)
@@ -1140,35 +1140,40 @@ s16 closeNetPktWr(nodeFileRecType *nfInfo)
    return 0;
 }
 //---------------------------------------------------------------------------
+// Open functions that try to close pkt files if there are too many files
+// open, before giving up.
+//
 #undef open
 
-       int no_msg;
+       int no_msg = 0;
 static int no_log = 0;
 
 //---------------------------------------------------------------------------
-fhandle openP (const char *pathname, int access, u16 mode)
+fhandle openP(const char *pathname, int access, u16 mode)
 {
   fhandle handle;
-  u16     errcode;
-  u8     *helpPtr;
+  int     errcode;
+  char   *helpPtr;
 
   ++no_log;
   while ((handle = open(pathname, access, mode)) == -1)
   {
     errcode = errno;
-    if ((errno != EMFILE) || (closeLuPkt()))
+    // If there are too many open files, try to close a pkt file
+    if (errno != EMFILE || closeLuPkt())
     {
-      if ( !no_msg && (((config.logInfo & LOG_OPENERR) ||
-           (config.logInfo & LOG_ALWAYS)) && no_log == 1) )
+      if (  !no_msg && no_log == 1
+         && ((config.logInfo & LOG_OPENERR) || (config.logInfo & LOG_ALWAYS ))
+         )
       {
         tempStrType tempStr;
-        sprintf(tempStr, "Error opening %s: %s", pathname, strerror(errcode));
-        helpPtr = strchr(tempStr, 0);
-        *--helpPtr = 0;
+        helpPtr = tempStr + sprintf(tempStr, "Error opening %s: %s", pathname, strerror(errcode));
+        *--helpPtr = 0;  // strerror returns a string with \n as last char (in Borland C)
         logEntry(tempStr, LOG_OPENERR, 0);
       }
       --no_log;
       no_msg = 0;
+
       return -1;
     }
   }
@@ -1178,34 +1183,36 @@ fhandle openP (const char *pathname, int access, u16 mode)
   return handle;
 }
 //---------------------------------------------------------------------------
-fhandle fsopenP (const char *pathname, int access, u16 mode)
+fhandle fsopenP(const char *pathname, int access, u16 mode)
 {
   fhandle handle;
-   u16     errcode;
-   u8     *helpPtr;
+  int     errcode;
+  char   *helpPtr;
 
-   ++no_log;
-   while ((handle = fsopen(pathname, access, mode, 1)) == -1)
-   {
+  ++no_log;
+  while ((handle = fsopen(pathname, access, mode, 1)) == -1)
+  {
     errcode = errno;
-      if ((errno != EMFILE) || (closeLuPkt()))
+    // If there are too many open files, try to close a pkt file
+    if (errno != EMFILE || closeLuPkt())
+    {
+      if (  !no_msg && no_log == 1
+         && ((config.logInfo & LOG_OPENERR) || (config.logInfo & LOG_ALWAYS ))
+         )
       {
-        if ( !no_msg && (((config.logInfo & LOG_OPENERR) ||
-               (config.logInfo & LOG_ALWAYS)) && no_log == 1) )
-         {
-          tempStrType tempStr;
-            sprintf(tempStr, "Error opening %s: %s", pathname, strerror(errcode));
-            helpPtr = strchr(tempStr, 0);
-            *--helpPtr = 0;
-            logEntry(tempStr, LOG_OPENERR, 0);
-         }
-         --no_log;
-         no_msg = 0;
-               return (-1);
+        tempStrType tempStr;
+        helpPtr = tempStr + sprintf(tempStr, "Error opening %s: %s", pathname, strerror(errcode));
+        *--helpPtr = 0;  // strerror returns a string with \n as last char (in Borland C)
+        logEntry(tempStr, LOG_OPENERR, 0);
       }
-   }
-   --no_log;
-   no_msg = 0;
+      --no_log;
+      no_msg = 0;
+
+      return -1;
+    }
+  }
+  --no_log;
+  no_msg = 0;
 
   return handle;
 }

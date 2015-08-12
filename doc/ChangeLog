@@ -1,3 +1,27 @@
+2015-06-05  1.69.6.114-Beta
+  * No Rescan allowed option for areas
+
+2015-05-26  1.69.6.111-Beta
+  * FMail log style added
+    Print "Active" time with millisecond precision.
+  * Messure and log time an external program takes to execute.
+  * "Archive info" log line, logs file time in iso format (including seconds).
+  * "Pkt info" log line, logs file time in iso format (including seconds).
+  * Some extra (debug) log lines in the Toss function, to find out where it spends most of its time.
+  * Removed time conversion functions from JAM code because "JAM-time" is equal to unixtime, so we can use the C library functions directly.
+  * BCL description in fmail.txt updated.
+
+2015-05-11  1.69.5.104-Beta
+  * The export window help shows the R/o W/o and Lock options
+
+2015-03-21  1.69.3.99-Beta
+  * Only call ScanNewBCL function from Toss function.
+  * Only call ChkAutoBCL function from Scan function.
+  * More BCL funtionality logging.
+  * FMail.txt: Fixed Table of contents
+  * 64 bit Diskfree routine
+  * Autocreated area file name allows more characters in LFN mode, and converts all uppercase name to lowercase.
+
 2014-07-10  1.69.1.94-Beta
   * Detect old messages and move to bad area.
 

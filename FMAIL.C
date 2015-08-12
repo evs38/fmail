@@ -29,10 +29,8 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 
 #endif
 
-#include <alloc.h>
 #include <conio.h>
 #include <ctype.h>
-#include <dir.h>
 #include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -64,6 +62,7 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include "pack.h"
 #include "pp_date.h"
 #include "sorthb.h"
+#include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
 
@@ -263,17 +262,10 @@ s16              diskError = 0;
 extern s16 breakPressed;
 s16        mailBomb = 0;
 
-
-typedef struct bt
-{
-  char         *name;
-  struct ffblk blk;
-  struct bt    *nextb;
-};
-
 void About(void)
 {
-  char *str = "About FMail:\n"
+  const char *str =
+              "About FMail:\n"
               "\n"
               "    Version          : %s\n"
               "    Operating system : "
@@ -310,7 +302,7 @@ void About(void)
   exit(0);
 }
 //---------------------------------------------------------------------------
-u16 foundToUserName(u8 *toUserName)
+u16 foundToUserName(const char *toUserName)
 {
   return *toUserName &&
          (  stricmp(toUserName, config.users[0].userName) == 0
@@ -327,11 +319,11 @@ u16 foundToUserName(u8 *toUserName)
 u16 getAreaCode(char *msgText)
 {
   areaNameType echoName;
-  char         *helpPtr;
+  char        *helpPtr;
   u16          low, mid, high;
   tempStrType  tempStr;
 
-  if (strncmp (msgText, "AREA:", 5) != 0 && strncmp (msgText, "\1AREA:", 6) != 0)
+  if (strncmp(msgText, "AREA:", 5) != 0 && strncmp(msgText, "\1AREA:", 6) != 0)
     return NETMSG;
 
   if (*msgText == 1)
@@ -432,20 +424,21 @@ time_t oldMsgTime = 0;
 
 static s16 processPkt(u16 secure, s16 noAreaFix)
 {
-  tempStrType    pktStr
-               , tempStr;
-  char          *helpPtr;
-  echoToNodeType tempEchoToNode;
-  s16            count
-               , headerStat
-               , donePkt
-               , echoToNodeCount
-               , areaIndex
-               , localAkaNum
-               , areaFixRep;
-  u16            pktMsgCount;
-  struct ffblk   ffblkPkt;
-  char           prodCodeStr[20];
+  tempStrType        pktStr
+                   , tempStr;
+  char              *helpPtr;
+  echoToNodeType     tempEchoToNode;
+  s16                count
+                   , headerStat
+                   , echoToNodeCount
+                   , areaIndex
+                   , localAkaNum
+                   , areaFixRep;
+  u16                pktMsgCount;
+  struct _finddata_t fdPkt;
+  long               fdHandle
+                   , fdDone;
+  char               prodCodeStr[20];
 
   if (secure && *config.securePath == 0)
     secure = 0;
@@ -455,20 +448,21 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
   do
   {
     strcpy(stpcpy(pktStr, (secure == 2) ? config.securePath : secure ? config.inPath : ".\\"), "*.pkt");
-    donePkt = findfirst(pktStr, &ffblkPkt, 0);
+    fdHandle = _findfirst(pktStr, &fdPkt);
 
-    if (!donePkt) // do not remove !
+    if (fdHandle != -1) // do not remove !
     {
-      while (!donePkt && !diskError && !breakPressed)
+      fdDone = 0;
+      while (!fdDone && !diskError && !breakPressed)
       {
-        if ((ffblkPkt.ff_attrib & FA_RDONLY) == 0)
+        if ((fdPkt.attrib & _A_RDONLY) == 0)
         {
           newLine();
 
-          strcpy(stpcpy(pktStr, (secure == 2) ? config.securePath : secure ? config.inPath : ".\\"), ffblkPkt.ff_name);
+          strcpy(stpcpy(pktStr, (secure == 2) ? config.securePath : secure ? config.inPath : ".\\"), fdPkt.name);
           headerStat = openPktRd(pktStr, secure == 2);
 
-          helpPtr = "";
+          helpPtr = NULL;
           count = 0;
           while (ftscprod[count].prodcode != 0xFFFF)
           {
@@ -479,12 +473,12 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
             }
             ++count;
           }
-          if (*helpPtr == 0)
+          if (helpPtr == NULL)
           {
             sprintf(prodCodeStr, "Program id %04hX", globVars.remoteProdCode);
             helpPtr = prodCodeStr;
           }
-          sprintf(tempStr, "Processing %s from %s to %s", ffblkPkt.ff_name, nodeStr(&globVars.packetSrcNode), nodeStr(&globVars.packetDestNode));
+          sprintf(tempStr, "Processing %s from %s to %s", fdPkt.name, nodeStr(&globVars.packetSrcNode), nodeStr(&globVars.packetDestNode));
           logEntry(tempStr, LOG_PKTINFO, 0);
 
           if (headerStat == 0)
@@ -771,22 +765,15 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
                   if (echoToNodeCount)
                   {
-                    addPathSeenBy(message->text,
-                                   message->normSeen,
-                                   message->tinySeen,
-                                   message->normPath,
-                                   tempEchoToNode,
-                                   areaIndex);
+                    addPathSeenBy(message->text, message->normSeen, message->tinySeen, message->normPath, tempEchoToNode, areaIndex);
 
-                    if (writeEchoPkt(message,
-                                       echoAreaList[areaIndex].options.tinySeenBy,
-                                       tempEchoToNode) )
+                    if (writeEchoPkt(message, echoAreaList[areaIndex].options.tinySeenBy, tempEchoToNode))
                       diskError = DERR_WRPKTE;
                   }
                   else
                   {
                     helpPtr = message->text;
-                    while ((helpPtr = findCLStr (helpPtr, "SEEN-BY: ")) != NULL)
+                    while ((helpPtr = findCLStr(helpPtr, "SEEN-BY: ")) != NULL)
                     {
                       if (echoAreaList[areaIndex].options.impSeenBy)
                       {
@@ -890,10 +877,12 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
           else if (headerStat == 3)
             logEntry("Packet password security violation --> packet is renamed to .SEC", LOG_ALWAYS, 0);
         }
-        donePkt = findnext(&ffblkPkt);
+        fdDone = _findnext(fdHandle, &fdPkt);
       }
       if (!mailBomb)
         newLine();
+
+      _findclose(fdHandle);
     }
   }
   while (!diskError && !breakPressed && secure--);  // do .. while
@@ -903,18 +892,25 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
   return diskError;
 }
 //---------------------------------------------------------------------------
+struct bt
+{
+  struct _finddata_t fd;
+  struct bt         *nextb;
+};
+//---------------------------------------------------------------------------
 void Toss(int argc, char *argv[])
 {
   s32            switches;
   tempStrType    tempStr;
   fhandle        tempHandle;
-  s16            doneArc;
   s16            dayNum;
   struct bt     *bundlePtr
               , *bundlePtr2
               , *bundlePtr3
               ;
-  struct ffblk   ffblkMsg;
+  struct _finddata_t fdMsg;
+  long           fdHandle
+               , fdDone;
   s16            count;
   s16            temp;
 
@@ -950,7 +946,7 @@ void Toss(int argc, char *argv[])
 
   strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
   ++no_msg;
-  if ((tempHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
+  if ((tempHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
   {
     badEchoCount = read(tempHandle, badEchos, MAX_BAD_ECHOS*sizeof(badEchoType) + 1) / sizeof(badEchoType);
     close(tempHandle);
@@ -983,40 +979,38 @@ void Toss(int argc, char *argv[])
     {
       sprintf(tempStr, "%s*.%.2s?", config.inPath, dayName[dayNum++]);
 
-      doneArc = findfirst(tempStr, &ffblkMsg, 0);
-
-      while (!doneArc && !diskError && !breakPressed)
+      if ((fdHandle = _findfirst(tempStr, &fdMsg)) != -1)
       {
-        if ((ffblkMsg.ff_attrib & FA_RDONLY) == 0)
+        fdDone = 0;
+        while (!fdDone && !diskError && !breakPressed)
         {
-          bundlePtr3 = bundlePtr;
-          bundlePtr2 = NULL;
-          while (bundlePtr3 != NULL &&
-                 (bundlePtr3->blk.ff_fdate < ffblkMsg.ff_fdate ||
-                  (bundlePtr3->blk.ff_fdate == ffblkMsg.ff_fdate &&
-                   bundlePtr3->blk.ff_fdate < ffblkMsg.ff_ftime)))
+          if ((fdMsg.attrib & _A_RDONLY) == 0)
           {
-            bundlePtr2 = bundlePtr3;
-            bundlePtr3 = bundlePtr3->nextb;
-          }
-          if (  (bundlePtr3 = malloc(sizeof(struct bt))) == NULL
-             || (bundlePtr3->name = malloc(strlen(ffblkMsg.ff_name)+1)) == NULL)
-            logEntry("Not enough memory available", LOG_ALWAYS, 2);
+            bundlePtr3 = bundlePtr;
+            bundlePtr2 = NULL;
+            while (bundlePtr3 != NULL && (bundlePtr3->fd.time_write < fdMsg.time_write))
+            {
+              bundlePtr2 = bundlePtr3;
+              bundlePtr3 = bundlePtr3->nextb;
+            }
+            if ((bundlePtr3 = (struct bt*)malloc(sizeof(struct bt))) == NULL)
+              logEntry("Not enough memory available", LOG_ALWAYS, 2);
 
-          strcpy(bundlePtr3->name, ffblkMsg.ff_name);
-          bundlePtr3->blk = ffblkMsg;
-          if (bundlePtr2 == NULL)
-          {
-            bundlePtr3->nextb = bundlePtr;
-            bundlePtr = bundlePtr3;
+            bundlePtr3->fd = fdMsg;
+            if (bundlePtr2 == NULL)
+            {
+              bundlePtr3->nextb = bundlePtr;
+              bundlePtr = bundlePtr3;
+            }
+            else
+            {
+              bundlePtr3->nextb = bundlePtr2->nextb;
+              bundlePtr2->nextb = bundlePtr3;
+            }
           }
-          else
-          {
-            bundlePtr3->nextb = bundlePtr2->nextb;
-            bundlePtr2->nextb = bundlePtr3;
-          }
+          fdDone = _findnext(fdHandle, &fdMsg);
         }
-        doneArc = findnext (&ffblkMsg);
+        _findclose(fdHandle);
       }
     }
     if (bundlePtr == NULL)
@@ -1026,14 +1020,12 @@ void Toss(int argc, char *argv[])
       do
       {
         newLine();
-        strcpy(tempStr, config.inPath);
-        strcat(tempStr, bundlePtr->name);
-        unpackArc(tempStr, &bundlePtr->blk);
+        strcpy(stpcpy(tempStr, config.inPath), bundlePtr->fd.name);
+        unpackArc(tempStr, &bundlePtr->fd);
         ScanNewBCL();
         diskError = processPkt(0, (u16)(switches & SW_A));
         bundlePtr2 = bundlePtr;
         bundlePtr = bundlePtr->nextb;
-        free(bundlePtr2->name);
         free(bundlePtr2);
       }
       while (bundlePtr != NULL);
@@ -1184,7 +1176,7 @@ void Toss(int argc, char *argv[])
 
     logEntry("Updating reply chains: Start", LOG_DEBUG, 0);
 
-    if (openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
+    if (openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
     {
       for (count = 0; count < areaHeader->totalRecords; count++)
       {
@@ -1620,8 +1612,7 @@ void Scan(int argc, char *argv[])
         if (((count == 0) && (!(switches & SW_N))) ||
             ((count == 1) && (!(switches & SW_E))))
         {
-          strcpy (tempStr, makeFullPath(config.bbsPath, getenv("QUICK"),
-                                        !count ? "echomail."MBEXTN : "netmail."MBEXTN));
+          strcpy(tempStr, makeFullPath(config.bbsPath, getenv("QUICK"), !count ? "echomail."MBEXTN : "netmail."MBEXTN));
 
           ++no_msg;
           if ((tempHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
@@ -1710,9 +1701,9 @@ void Import(int argc, char *argv[])
   s16           temp;
   tempStrType   tempStr;
   char         *helpPtr;
-  s16           doneMsg;
   s32           msgNum;
-  struct ffblk  ffblkMsg;
+  struct _finddata_t fdMsg;
+  long               fdHandle;
 
   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
   {
@@ -1744,69 +1735,76 @@ void Import(int argc, char *argv[])
   strcpy(tempStr, config.netPath);
   strcat(tempStr, "*.msg");
 
-  doneMsg = findfirst(tempStr, &ffblkMsg, 0);
-
   count = 0;
-  while (!doneMsg)
-  {
-    msgNum = strtoul(ffblkMsg.ff_name, &helpPtr, 10);
+  fdHandle = _findfirst(tempStr, &fdMsg);
 
-    if (msgNum != 0 && *helpPtr == '.'
-       && (!(ffblkMsg.ff_attrib & FA_SPEC))
-       && !readMsg(message, msgNum))
+  if (fdHandle != -1)
+  {
+    do
     {
-      if (stricmp(message->toUserName, "SysOp") == 0)
-        strcpy(message->toUserName, config.sysopName);
-      if ( getLocalAkaNum (&message->destNode) != -1 &&
-           strnicmp(message->toUserName,"ALLFIX",6) != 0 &&
-           strnicmp(message->toUserName,"FILEFIX",7) != 0 &&
-           strnicmp(message->toUserName,"FILEMGR",7) != 0 &&
-           strnicmp(message->toUserName,"RAID",4) != 0 &&
-           strnicmp(message->toUserName,"FFGATE",6) != 0 &&
-           (config.mbOptions.sysopImport ||
-            (stricmp(message->toUserName, config.sysopName) != 0 &&
-             !foundToUserName(message->toUserName))) &&
-           ((boardNum = getNetmailBoard(&message->destNode)) != -1)
+      msgNum = strtoul(fdMsg.name, &helpPtr, 10);
+
+      if (  msgNum != 0
+         && *helpPtr == '.'
+         && (!(fdMsg.attrib & FA_SPEC))  // No special attributes
+         && !readMsg(message, msgNum)
          )
       {
-        if (  (message->attribute & FILE_ATT)
-           &&  strchr(message->subject,'\\') == NULL
-           && (strlen(message->subject) + strlen(config.inPath) < 72))
+        if (stricmp(message->toUserName, "SysOp") == 0)
+          strcpy(message->toUserName, config.sysopName);
+        if ( getLocalAkaNum (&message->destNode) != -1 &&
+             strnicmp(message->toUserName,"ALLFIX",6) != 0 &&
+             strnicmp(message->toUserName,"FILEFIX",7) != 0 &&
+             strnicmp(message->toUserName,"FILEMGR",7) != 0 &&
+             strnicmp(message->toUserName,"RAID",4) != 0 &&
+             strnicmp(message->toUserName,"FFGATE",6) != 0 &&
+             (config.mbOptions.sysopImport ||
+              (stricmp(message->toUserName, config.sysopName) != 0 &&
+               !foundToUserName(message->toUserName))) &&
+             ((boardNum = getNetmailBoard(&message->destNode)) != -1)
+           )
         {
-          strcpy(stpcpy(tempStr, config.inPath), message->subject);
-          strcpy(message->subject, tempStr);
-        }
-        if (config.mailOptions.privateImport)
-          message->attribute |= PRIVATE;
-
-        if (!diskError)
-        {
-          if (writeBBS(message, boardNum, 1))
-            diskError = DERR_WRHECHO;
-          else
+          if (  (message->attribute & FILE_ATT)
+             &&  strchr(message->subject,'\\') == NULL
+             && (strlen(message->subject) + strlen(config.inPath) < 72))
           {
-            strcpy(tempStr, config.netPath);
-            strcat(tempStr, ffblkMsg.ff_name);
-            if (unlink(tempStr) == 0 && !diskError)
+            strcpy(stpcpy(tempStr, config.inPath), message->subject);
+            strcpy(message->subject, tempStr);
+          }
+          if (config.mailOptions.privateImport)
+            message->attribute |= PRIVATE;
+
+          if (!diskError)
+          {
+            if (writeBBS(message, boardNum, 1))
+              diskError = DERR_WRHECHO;
+            else
             {
-              if (validate1BBS())
-                diskError = DERR_VAL;
-              else
+              strcpy(stpcpy(tempStr, config.netPath), fdMsg.name);
+              if (unlink(tempStr) == 0 && !diskError)
               {
-                validate2BBS(0);
-                sprintf( tempStr, "Importing msg #%lu from %s to %s (board #%u)"
-                       , msgNum, nodeStr(&message->srcNode), nodeStr(&message->destNode), boardNum);
-                logEntry(tempStr, LOG_NETIMP, 0);
-                count++;
-                globVars.nmbCountV++;
+                if (validate1BBS())
+                  diskError = DERR_VAL;
+                else
+                {
+                  validate2BBS(0);
+                  sprintf( tempStr, "Importing msg #%lu from %s to %s (board #%u)"
+                         , msgNum, nodeStr(&message->srcNode), nodeStr(&message->destNode), boardNum);
+                  logEntry(tempStr, LOG_NETIMP, 0);
+                  count++;
+                  globVars.nmbCountV++;
+                }
               }
             }
           }
         }
       }
     }
-    doneMsg = findnext(&ffblkMsg);
+    while (!_findnext(fdHandle, &fdMsg));
+
+    _findclose(fdHandle);
   }
+
   if (count)
     newLine ();
 
@@ -1901,7 +1899,7 @@ void Mgr(int argc, char *argv[])
   closeNodeInfo();
 }
 //----------------------------------------------------------------------------
-int cdecl main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   tempStrType  tempStr;
   char        *helpPtr;
@@ -2100,6 +2098,7 @@ int cdecl main(int argc, char *argv[])
   return _mb_upderr ? 50 : 0;
 }
 //----------------------------------------------------------------------------
+#ifdef __BORLANDC__
 void myexit(void)
 {
 #pragma exit myexit
@@ -2109,5 +2108,6 @@ void myexit(void)
   newLine();
 #endif
 }
+#endif  // __BORLANDC__
 //----------------------------------------------------------------------------
 

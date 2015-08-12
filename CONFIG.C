@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -211,20 +211,20 @@ s16 isNetmailBoard (u16 board)
 
 
 
-void initFMail(char *s, s32 switches)
+void initFMail(const char *s, s32 switches)
 {
   s16         ch;
   fhandle     configHandle;
   time_t      time1, time2, time2a;
-	tempStrType tempStr, tempStr2;
-  char	     *helpPtr;
+  tempStrType tempStr, tempStr2;
+  char       *helpPtr;
 
   strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
   if (((configHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE,S_IREAD|S_IWRITE)) == -1) ||
       (_read(configHandle, &config, sizeof(configType)) < sizeof(configType))  ||
       (close(configHandle) == -1))
-	{
+  {
     printString("Can't read "dCFGFNAME"\n");
     showCursor();
     exit(4);
@@ -329,7 +329,6 @@ void initFMail(char *s, s32 switches)
 #endif
         ((*config.pmailPath)&& (existDir (config.pmailPath, "personal mail") == 0)) ||
         ((*config.sentEchoPath)&& (existDir (config.sentEchoPath, "sent echomail") == 0)) ||
-/*      ((*config.autoAreasBBSPath) && (existDir (config.autoAreasBBSPath, "AREAS.BBS") == 0)   ) || */
         ((*config.autoGoldEdAreasPath) && (existDir (config.autoGoldEdAreasPath, "AREAS.GLD") == 0)))
    {
       printString("Please enter the required subdirectories first!\n");
@@ -352,7 +351,7 @@ void initFMail(char *s, s32 switches)
    config.bbsProgram = BBS_QBBS;
 #endif
 
-   initLog (s, switches);
+   initLog(s, switches);
 
    if (((message       = malloc(INTMSG_SIZE)) == NULL)      ||
        ((seenByArray   = malloc(sizeof(psRecType) * MAX_MSGSEENBY)) == NULL) ||

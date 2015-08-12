@@ -40,12 +40,12 @@ extern configType config;
 
 typedef struct
 {
-   const char     *fileName;
+   const char    *fileName;
    u16            recordSize;
    const u16      bufferSize;
    fhandle        handle;
-   char           *recBuf;
-   char           *revString;
+   char          *recBuf;
+   const char    *revString;
    u16            revNumber;
    const u16      dataType;
    const u16      init;
@@ -78,7 +78,7 @@ static configFileInfoType fileData[MAX_CFG_FILES] =
 
 static configFileInfoType cfiArr[MAX_CFG_FILES] = { 0 };
 
-extern char configPath[128]; /* Path to directory with FMail config files */
+extern char configPath[128];  // Path to directory with FMail config files
 
 
 
@@ -108,10 +108,9 @@ restart:
    memset(&cfiArr[fileType].header, 0, sizeof(headerType));
    cfiArr[fileType].status = 0;
 
-   if ((cfiArr[fileType].handle = open(areaInfoPath, O_BINARY|O_RDWR|O_CREAT|O_DENYALL, S_IREAD|S_IWRITE)) == -1)
-   {
+  if ((cfiArr[fileType].handle = open(areaInfoPath, O_BINARY|O_RDWR|O_CREAT|O_DENYALL, S_IREAD|S_IWRITE)) == -1)
     return 0;
-   }
+
    if (filelength(cfiArr[fileType].handle) == 0)
    {
       strcpy((char*)cfiArr[fileType].header.versionString, fileData[fileType].revString);

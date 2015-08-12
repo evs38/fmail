@@ -28,12 +28,12 @@
 
 typedef struct
 {
-  u8  FingerPrint[4];   // BCL<NUL>
-  u8  ConfMgrName[31];  // Name of "ConfMgr"
-  u8  Origin[51];       // Originating network addr
-  u32 CreationTime;     // UNIX-timestamp when created
-  u32 flags;            // Options, see below
-  u8  Reserved[256];    // Reserved data
+  char FingerPrint[4];   // BCL<NUL>
+  char ConfMgrName[31];  // Name of "ConfMgr"
+  char Origin[51];       // Originating network addr
+  u32  CreationTime;     // UNIX-timestamp when created
+  u32  flags;            // Options, see below
+  u8   Reserved[256];    // Reserved data
 } bcl_header_type;
 
 #define FLG1_READONLY 0x00000001L  // Read only, software must not allow users to enter mail.
@@ -52,11 +52,11 @@ extern bcl_header_type bcl_header;
 extern bcl_type bcl;
 
 //---------------------------------------------------------------------------
-udef openBCL(uplinkReqType *uplinkReq);
-udef readBCL(u8 **tag, u8 **descr);
+udef openBCL (uplinkReqType *uplinkReq);
+udef readBCL (char **tag, char **descr);
 udef closeBCL(void);
 
-udef process_bcl(u8 *fileName);
+udef process_bcl(char *fileName);
 void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInfoPtr);
 
 void ChkAutoBCL(void);

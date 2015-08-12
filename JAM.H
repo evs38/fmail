@@ -64,7 +64,6 @@ extern "C" {
 
 /*
 **  Header file information block, stored first in all .JHR files
-/* os2 */
 */
 typedef struct
     {

@@ -310,5 +310,4 @@ s16  updateCurrHdrBBS(internalMsgType *message);
 void moveBadBBS     (void);
 //void closeBBSRd   (void);
 
-s16 rescan (nodeInfoType *nodeInfo, char *areaName,
-            u16 maxRescan, fhandle msgHandle1, fhandle msgHandle2);
+s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle msgHandle1, fhandle msgHandle2);

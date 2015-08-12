@@ -26,6 +26,21 @@
 #include "fmstruct.h"
 
 #define FA_SPEC 0x1F
+// #define FA_NORMAL   0x00        /* Normal file, no attributes */
+// #define FA_RDONLY   0x01        /* Read only attribute */
+// #define FA_HIDDEN   0x02        /* Hidden file */
+// #define FA_SYSTEM   0x04        /* System file */
+// #define FA_LABEL    0x08        /* Volume label */
+// #define FA_DIREC    0x10        /* Directory */
+// #define FA_ARCH     0x20        /* Archive */
+
+// Dos modes
+#ifndef O_DENYNONE
+#define O_DENYNONE 0
+#endif
+#ifndef O_DENYALL
+#define O_DENYALL 0
+#endif
 
 #if (__BORLANDC__ >= 0x0452)
 #ifndef __OS2__
@@ -85,11 +100,11 @@ extern char configPath[128];
 
 typedef struct
 {
-  uchar       fromUserName[36];
-  uchar       toUserName  [36];
-  uchar       subject     [72];
-  uchar       dateStr     [22];
-  uchar       okDateStr   [20];
+  char        fromUserName[36];
+  char        toUserName  [36];
+  char        subject     [72];
+  char        dateStr     [22];
+  char        okDateStr   [20];
   u16         year
             , month
             , day
@@ -100,11 +115,11 @@ typedef struct
   u16         cost;
   nodeNumType srcNode;
   nodeNumType destNode;
-  uchar       tinySeen[TINY_SEEN_SIZE];
-  uchar       normSeen[NORM_SEEN_SIZE];
-  uchar       normPath[NORM_PATH_SIZE];
+  char        tinySeen[TINY_SEEN_SIZE];
+  char        normSeen[NORM_SEEN_SIZE];
+  char        normPath[NORM_PATH_SIZE];
   uchar       pktInfo[PKT_INFO_SIZE];
-  uchar       text[DEF_TEXT_SIZE];
+  char        text[DEF_TEXT_SIZE];
 
 } internalMsgType;
 
@@ -115,8 +130,8 @@ typedef struct
 
 } psRecType;
 
-typedef psRecType psType [];
-typedef uchar tempStrType[256 + 64];  // Groter dan MAXPATH (wordt ook voor paden gebruikt)
+typedef psRecType psType[];
+typedef char tempStrType[256 + 64];  // Groter dan MAXPATH (wordt ook voor paden gebruikt)
 
 typedef struct
 {
@@ -306,7 +321,7 @@ u16 getAreaCode(char *msgText);
     (n1.point >  n2.point)))     \
 )
 
-u16 foundToUserName(u8 *toUserName);
+u16 foundToUserName(const char *toUserName);
 
 // Mailer types:
 #define dMT_FrontDoor  0

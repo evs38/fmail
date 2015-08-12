@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -467,7 +467,7 @@ u16 editNM(s16 editType, u16 setdef)
    addItem(nodeMenu, DATE|DISPLAY, "LastRcvd", 47, &tempInfoN.lastMsgRcvdDat, 0, 0,
                      "Last time a message was received from this node");
    addItem(nodeMenu, NODE, "Via system", 0, &tempInfoN.viaNode, 0, 0,
-                     "Address where to route mail for this node to");
+                     "Address where to send (compressed or not) PKT files for this node to");
    addItem(nodeMenu, DATE|DISPLAY, "LastSent", 47, &tempInfoN.lastMsgSentDat, 0, 0,
                      "Last time a message was sent to this node");
    addItem(nodeMenu, ENUM_INT, "Use AKA", 0, &addressToggle, 0, MAX_AKAS+1,

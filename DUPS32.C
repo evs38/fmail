@@ -118,8 +118,7 @@ void openDup(void)
          for (group = 0; group < 256; group++)
          {
             lseek(dupHandle, sizeof(dupHdrStruct)+dupHdr.kRecs*16*group, SEEK_SET);
-            read(dupHandle, &dupBuffer[config.kDupRecs*4*group],
-                            16*min(config.kDupRecs, dupHdr.kRecs));
+            read(dupHandle, &dupBuffer[config.kDupRecs * 4 * group], 16 * min(config.kDupRecs, dupHdr.kRecs));
             if (dupHdr.nextDup[group] >= config.kDupRecs*4)
                dupHdr.nextDup[group] = 0;
          }

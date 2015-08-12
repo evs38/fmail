@@ -35,8 +35,6 @@ typedef struct
   u16             numMsgs;  
 } boardInfoType;
 
-void initLog   (char *s, s32 switches);
-void logEntry  (char *s, u16 entryType, u16 errorLevel);
 s32 getSwitchFT(int *argc, char *argv[], s32 mask);
 
 #define SW_A  0x00000001L

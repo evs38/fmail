@@ -216,9 +216,9 @@ void initMsg (s16 noAreaFix)
 
   printString ("Scanning netmail directory...\n\n");
 
-  delete (config.netPath, "*."MBEXTB);
+  Delete(config.netPath, "*."MBEXTB);
   if (*config.pmailPath)
-    delete (config.pmailPath, "*."MBEXTB);
+    Delete(config.pmailPath, "*."MBEXTB);
 
   /* Check netmail dir for areafix and file attach messages  */
 

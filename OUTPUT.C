@@ -461,7 +461,7 @@ void newLine(void)
 #endif
 }
 
-void printString(char *string)
+void printString(const char *string)
 {
   if (string != NULL)
   {
@@ -512,7 +512,7 @@ void printFill(void)
 #endif
 }
 
-void printStringFill(char *string)
+void printStringFill(const char *string)
 {
   printString(string);
   printFill();

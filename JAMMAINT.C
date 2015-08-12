@@ -104,7 +104,7 @@ s16 JAMremoveRe(char *buf, u32 *bufsize)
   return 0;
 }
 //---------------------------------------------------------------------------
-char *expJAMname(char *basename, char *ext)
+const char *expJAMname(const char *basename, const char *ext)
 {
   static tempStrType tempStr[2];
   static u16 count = 0;
@@ -125,8 +125,8 @@ char *expJAMname(char *basename, char *ext)
 static JAMHDRINFO  headerInfo;
 static JAMHDR      headerRec;
 static JAMIDXREC   indexRec;
-static char       *buf = NULL;
-static u16        *lrBuf = NULL;
+static char       *buf      = NULL;
+static u16        *lrBuf    = NULL;
 static u32        *msgidBuf = NULL;
 static u32        *replyBuf = NULL;
 
@@ -136,8 +136,26 @@ static u32        *replyBuf = NULL;
 // SW_R - Remove Re:
 // SW_P - Pack message base: WERKT NIET WEGENS DOORLOPEN INDEX (0xFFFFFFFF!)
 
+/*
+  open the 4 jam files for reading
+  Get a lock on the first byte of the header file
+
+  get the size of the 4 files and reserve double buffers for each
+  read the 4 files into the buffers
+
+  do the processing from the 4 read buffers to the 4 write buffers.
+
+  write the data to the 4 files. (should this be done to the originals or
+  temporary files? you do want to keep the lock on the hdr file untill
+  finished!)
+
+  unlock the the first file
+
+*/
+
+
 //---------------------------------------------------------------------------
-s16 JAMmaint(rawEchoType *areaPtr, s32 switches, uchar *name, s32 *spaceSaved)
+s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSaved)
 {
   s16           JAMerror = 0;
   u16           tabPos;
@@ -161,29 +179,22 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, uchar *name, s32 *spaceSaved)
   u16           maxMsg, curMsg;
   tempStrType   tempStr;
   s16           temp;
-  static s16    useLocks = -1;
   s16           stat = 0;
   u32           bufCount
               , delCount;
   time_t        msgTime;
 
+#ifdef _DEBUG
   sprintf(tempStr, "Processing JAM area: %s", areaPtr->areaName);
   logEntry(tempStr, LOG_DEBUG, 0);
+#endif
 
-  if (buf == NULL && (buf = malloc(TXTBUFSIZE)) == NULL)
-    goto NoMem;
-
-  if (lrBuf == NULL && (lrBuf = malloc(LRSIZE * 2)) == NULL)
-    goto NoMem;
-
-  if (msgidBuf == NULL && (msgidBuf = malloc(MSGIDNUM * 4)) == NULL)
-    goto NoMem;
-
-  if (replyBuf == NULL && (replyBuf = malloc(MSGIDNUM * 4)) == NULL)
-  {
-NoMem:
-    logEntry("No enough memory available to pack JAM bases", LOG_ALWAYS, 2);
-  }
+  if (  (buf      == NULL && (buf      = malloc(TXTBUFSIZE  )) == NULL)
+     || (lrBuf    == NULL && (lrBuf    = malloc(LRSIZE   * 2)) == NULL)
+     || (msgidBuf == NULL && (msgidBuf = malloc(MSGIDNUM * 4)) == NULL)
+     || (replyBuf == NULL && (replyBuf = malloc(MSGIDNUM * 4)) == NULL)
+     )
+    logEntry("Not enough memory available to pack JAM bases", LOG_ALWAYS, 2);
 
   memset(lrBuf   , 0, LRSIZE   * 2);
   memset(msgidBuf, 0, MSGIDNUM * 4);
@@ -252,38 +263,29 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
       return 1;
    }
 
-  if (useLocks)
+  stat = lock(JHRhandle, 0L, 1L);
+  if (stat == -1 && config.mbOptions.mbSharing)
   {
-    stat = lock(JHRhandle, 0L, 1L);
-    if (useLocks == -1)
-    {
-      useLocks = 1;
-      if (stat == -1 && errno == EINVAL)
-      {
-        if (!config.mbOptions.mbSharing)
-          useLocks = 0;
-        else
-        {
-          newLine();
-          logEntry("SHARE is required when Message Base Sharing is enabled", LOG_ALWAYS, 0);
-          fsclose(JLRhandleNew);
-          fsclose(JDXhandleNew);
-          fsclose(JDThandleNew);
-          fsclose(JHRhandleNew);
-          fsclose(JDXhandle);
-          fsclose(JLRhandle);
-          fsclose(JDThandle);
-          fsclose(JHRhandle);
-          return 1;
-        }
-      }
-    }
+    newLine();
+    logEntry("SHARE is required when Message Base Sharing is enabled", LOG_ALWAYS, 0);
+    fsclose(JLRhandleNew);
+    fsclose(JDXhandleNew);
+    fsclose(JDThandleNew);
+    fsclose(JHRhandleNew);
+    fsclose(JDXhandle);
+    fsclose(JLRhandle);
+    fsclose(JDThandle);
+    fsclose(JHRhandle);
+    return 1;
   }
+
   printString(tempStr);
   printString("... ");
   flush();
   tabPos = getTab();
+#ifdef _DEBUG
   logEntry("Updating", LOG_DEBUG, 0);
+#endif
   printString("Updating ");
   updateCurrLine();
 
@@ -324,7 +326,9 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
     }
   }
 
+#ifdef _DEBUG
   logEntry("Maint", LOG_DEBUG, 0);
+#endif
   while (!JAMerror && !eof(JDXhandle))
   {
     if (read(JDXhandle, &indexRec, sizeof(JAMIDXREC)) != sizeof(JAMIDXREC))
@@ -494,7 +498,9 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
   }
 
   // Update reply chains
+#ifdef _DEBUG
   logEntry("Update reply chains", LOG_DEBUG, 0);
+#endif
 
   gotoTab(tabPos);
   printString("Reply chains ");
@@ -584,7 +590,9 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
   }
 
   // Update last read info
+#ifdef _DEBUG
   logEntry("Update last read info", LOG_DEBUG, 0);
+#endif
   if ( !JAMerror && JLRhandle != -1 )
   {
     gotoTab(tabPos);
@@ -669,8 +677,9 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
     newLine();
   }
   flush();
+#ifdef _DEBUG
   logEntry("Ready", LOG_DEBUG, 0);
-
+#endif
   return JAMerror;
 }
 //---------------------------------------------------------------------------

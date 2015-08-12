@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //  This file is part of FMail.
 //
@@ -73,8 +73,8 @@
 
 typedef struct
 {
-  uchar programName[46];
-  u16   memRequired;
+  char programName[46];
+  u16  memRequired;
 } archiverInfo;
 
 typedef char pathType[48];
@@ -117,14 +117,14 @@ typedef struct
 
 typedef struct
 {
-  uchar versionString[32]; /* Always starts with 'FMail' */
-  u16   revNumber;         /* Is now 0x0100 */
-  u16   dataType;          /* See #defines above */
-  u16   headerSize;
-  s32   creationDate;
-  s32   lastModified;
-  u16   totalRecords;
-  u16   recordSize;
+  char versionString[32]; /* Always starts with 'FMail' */
+  u16  revNumber;         /* Is now 0x0100 */
+  u16  dataType;          /* See #defines above */
+  u16  headerSize;
+  s32  creationDate;
+  s32  lastModified;
+  u16  totalRecords;
+  u16  recordSize;
 } headerType;
 
 
@@ -136,7 +136,7 @@ typedef struct
   unsigned active      : 1; /* Bit  0 */
   unsigned tinySeenBy  : 1; /* Bit  1 */
   unsigned security    : 1; /* Bit  2 */
-  unsigned             : 1; /* Bit  3 */
+  unsigned noRescan    : 1; /* Bit  3 */
   unsigned allowPrivate: 1; /* Bit  4 */
   unsigned impSeenBy   : 1; /* Bit  5 */
   unsigned checkSeenBy : 1; /* Bit  6 */
@@ -291,16 +291,16 @@ typedef struct
 
 typedef struct
 {
-  uchar userName[36];
+  char  userName[36];
   uchar reserved[28];
 } userType;
 
 typedef struct
 {
   nodeNumType node;
-  uchar       program[9];
-  uchar       password[17];
-  uchar       fileName[13];
+  char        program[9];
+  char        password[17];
+  char        fileName[13];
   uchar       fileType;
   u32         groups;
   uchar       originAka;
@@ -362,7 +362,7 @@ typedef struct
   u16             oldMsgDays;
   uchar           reserved2[60];
   u16             colorSet;
-  uchar           sysopName[36];
+  char            sysopName[36];
   u16             defaultArc;
   u16             _adiscDaysNode;
   u16             _adiscDaysPoint;
@@ -370,13 +370,13 @@ typedef struct
   u16             _adiscSizePoint;
   uchar           reserved3[16];
   uchar           tearType;
-  uchar           tearLine[25];
+  char            tearLine[25];
   pathType        summaryLogName;
   u16             recBoard;
   u16             badBoard;
   u16             dupBoard;
-  uchar           topic1[16];
-  uchar           topic2[16];
+  char            topic1[16];
+  char            topic2[16];
   pathType        bbsPath;
   pathType        netPath;
   pathType        sentPath;
@@ -440,9 +440,9 @@ typedef struct
   userType        users[MAX_USERS];
   akaMatchType    akaMatch[MAX_MATCH];     // not used yet
   uchar           reserved6[752-10*MAX_MATCH];
-  uchar           emailAddress[80];        // max 56 chars used
-  uchar           pop3Server[80];          // max 56 chars used
-  uchar           smtpServer[80];          // max 56 chars used
+  char            emailAddress[80];        // max 56 chars used
+  char            pop3Server[80];          // max 56 chars used
+  char            smtpServer[80];          // max 56 chars used
   pathType        tossedAreasList;
   pathType        sentEchoPath;
   archiverInfo    preUnarc;
@@ -540,7 +540,7 @@ typedef struct
 #define COMMENT_LEN       51
 #define ORGLINE_LEN       59
 
-typedef uchar areaNameType[ECHONAME_LEN];
+typedef char areaNameType[ECHONAME_LEN];
 
 // NOTE: See above for the file header structure !!!
 
@@ -556,13 +556,13 @@ typedef struct
           /* "AD" for default settings in FMAIL.ARD       */
   u16             writeLevel;
   areaNameType    areaName;
-  uchar           comment[COMMENT_LEN];
+  char            comment[COMMENT_LEN];
   areaOptionsType options;
   u16             boardNumRA;
   uchar           msgBaseType;
-  uchar           msgBasePath[MB_PATH_LEN];
+  char            msgBasePath[MB_PATH_LEN];
   u16             board;
-  uchar           originLine[ORGLINE_LEN];
+  char            originLine[ORGLINE_LEN];
   u16             address;
   u32             group;
   u16             _alsoSeenBy; /* obsolete: see the 32-bit alsoSeenBy below */
@@ -589,7 +589,7 @@ typedef struct
   u16             groupRA;
   u16             altGroupRA[3];
   uchar           msgKindsRA;
-  uchar           qwkName[13];
+  char            qwkName[13];
   u16             minAgeSBBS;
   u16             attrSBBS;
   uchar           replyStatSBBS;
@@ -670,21 +670,21 @@ typedef struct
   u8              reserved1;
   u32             groups;
   u16             outStatus;
-  uchar           sysopName[36];
-  uchar           password[18];
-  uchar           packetPwd[9];
+  char            sysopName[36];
+  char            password[18];
+  char            packetPwd[9];
   uchar           useAka;
   u32             lastMsgRcvdDat;
   u32             lastMsgSentDat;
   u32             lastNewBundleDat;
-  uchar           pktOutPath[PKTOUT_PATH_LEN];
+  char            pktOutPath[PKTOUT_PATH_LEN];
   u16             passiveDays;
   u16             passiveSize;
   u32             lastSentBCL;
   u16             autoBCL;
   u32             referenceLNBDat;
   uchar           reserved2[17];
-  uchar           email[PKTOUT_PATH_LEN];
+  char            email[PKTOUT_PATH_LEN];
   uchar           reserved3[11];
 } nodeInfoType;
 

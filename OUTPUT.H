@@ -73,7 +73,7 @@ void gotoPos         (u16 px, u16 py);
 #define showCursor()     ((void)0)
 #else
 void    newLine          (void);
-void    printString      (char *string);
+void    printString      (const char *string);
 void    printChar        (char ch);
 #define flush()          ((void)0)
 void    noCursor         (void);
@@ -84,7 +84,7 @@ void    showCursor       (void);
 #define printInt(a)  printLong(a)
 void printLong       (u32 p);
 void printFill       (void);
-void printStringFill (char *string);
+void printStringFill (const char *string);
 
 #ifdef __32BIT__
 #ifdef STDO

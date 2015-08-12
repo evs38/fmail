@@ -144,7 +144,7 @@ void writeLogLine(fhandle logHandle, const char *s)
       break;
 #ifdef __WIN32__
     case 4:  // FMail
-      sl = sprintf(tempStr, "%2u:%02u:%02u.%03u  %s\n", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
+      sl = sprintf(tempStr, "%02u:%02u:%02u.%03u  %s\n", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
       break;
 #endif
     default:  // FrontDoor
@@ -232,7 +232,7 @@ void initLog(char *s, s32 switches)
 #ifdef __WIN32__
       case 4:
         write( logHandle, tempStr
-             , sprintf( tempStr, "\n------------  %s %4u-%02u-%02u, %s\n"
+             , sprintf( tempStr, "\n------------  %s %04u-%02u-%02u, %s\n"
                       , dayName[timeBlock.tm_wday]
                       , timeBlock.tm_year + 1900
                       , timeBlock.tm_mon + 1
@@ -245,7 +245,7 @@ void initLog(char *s, s32 switches)
 #endif
       default:
         write( logHandle, tempStr
-             , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u, %s\n"
+             , sprintf( tempStr, "\n----------  %s %04u-%02u-%02u, %s\n"
                       , dayName[timeBlock.tm_wday]
                       , timeBlock.tm_year + 1900
                       , timeBlock.tm_mon + 1

@@ -25,9 +25,9 @@
 
 extern time_t startTime;
 
-void initLog    (char *s, s32 switches);
-void logEntry   (char *s, u16 entryType, u16 errorLevel);
-void mgrLogEntry(char *s);
+void initLog    (const char *s, s32 switches);
+void logEntry   (const char *s, u16 entryType, u16 errorLevel);
+void mgrLogEntry(const char *s);
 void logActive  (void);
 
 //---------------------------------------------------------------------------

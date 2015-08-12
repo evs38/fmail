@@ -567,7 +567,7 @@ s16 multiUpdate (void)
 
       unlockMB();
 
-      delete(config.bbsPath, "MSG*."MBEXTB);
+      Delete(config.bbsPath, "MSG*."MBEXTB);
    }
    return 0;
 }
@@ -1612,8 +1612,7 @@ void closeBBSRd ()
 #endif
 
 
-s16 rescan(nodeInfoType *nodeInfo, char *areaName,
-           u16 maxRescan, fhandle msgHandle1, fhandle msgHandle2)
+s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle msgHandle1, fhandle msgHandle2)
 {
    fhandle         origMsgHdrHandle,
                    origMsgTxtHandle;

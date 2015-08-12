@@ -40,6 +40,7 @@
 #include "log.h"
 #include "msgpkt.h"
 #include "output.h"
+#include "stpcpy.h"
 #include "version.h"
 
 //---------------------------------------------------------------------------
@@ -53,37 +54,12 @@ struct tm         timeBlock;
 u16               dayOfWeek;
 
 u16               mgrLogUsed = 0;
-
-
-#ifdef __BORLANDC__
-#ifdef __WIN32__
-#ifndef __DPMI32__
-struct  COUNTRY
-{
-  short co_date;
-  char  co_curr [ 5];
-  char  co_thsep[ 2];
-  char  co_desep[ 2];
-  char  co_dtsep[ 2];
-  char  co_tmsep[ 2];
-  char  co_currstyle;
-  char  co_digits;
-  char  co_time;
-  long  co_case;
-  char  co_dasep[ 2];
-  char  co_fill [10];
-};
-#endif
-#endif
-   struct COUNTRY countryInfo;
-#else
-   struct country countryInfo;
-#endif
-
 //---------------------------------------------------------------------------
 static void writeLogLine(fhandle logHandle, const char *s)
 {
+#ifndef __WIN32__
   time_t      timer;
+#endif // __WIN32__
   struct tm   tm;
 	tempStrType tempStr;
   int         sl;
@@ -100,10 +76,10 @@ static void writeLogLine(fhandle logHandle, const char *s)
     tm.tm_min  = st.wMinute;
     tm.tm_sec  = st.wSecond;
   }
-#else
+#else // __WIN32__
   time(&timer);
   tm = *gmtime(&timer);
-#endif
+#endif // __WIN32__
 
   switch (config.logStyle)
   {
@@ -137,21 +113,17 @@ static void writeLogLine(fhandle logHandle, const char *s)
       break;
 #ifdef __WIN32__
     case 4:  // FMail
-      sl = sprintf(tempStr, "%2u:%02u:%02u.%03u  %s\n", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
+      sl = sprintf(tempStr, "%02u:%02u:%02u.%03u  %s\n", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
       break;
 #endif
     default:  // FrontDoor
-      sl = sprintf( tempStr, "  %2u%c%02u%c%02u  %s\n"
-                  , tm.tm_hour, countryInfo.co_tmsep[0]
-                  , tm.tm_min , countryInfo.co_tmsep[0]
-                  , tm.tm_sec , s
-                  );
+      sl = sprintf(tempStr, "  %2u:%02u:%02u  %s\n", tm.tm_hour, tm.tm_min, tm.tm_sec , s);
       break;
   }
   write(logHandle, tempStr, sl);
 }
 //---------------------------------------------------------------------------
-void initLog(char *s, s32 switches)
+void initLog(const char *s, s32 switches)
 {
   fhandle     logHandle;
   tempStrType tempStr
@@ -171,12 +143,6 @@ void initLog(char *s, s32 switches)
 
   if (!config.logInfo)
     return;
-
-#ifndef __WIN32__
-   country(0, &countryInfo);
-#else
-   countryInfo.co_tmsep[0] = ':';
-#endif
 
   if ((logHandle = openP(config.logName, O_RDWR | O_CREAT | O_APPEND | O_TEXT | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
   {
@@ -225,7 +191,7 @@ void initLog(char *s, s32 switches)
 #ifdef __WIN32__
       case 4:
         write( logHandle, tempStr
-             , sprintf( tempStr, "\n------------  %s %4u-%02u-%02u, %s\n"
+             , sprintf( tempStr, "\n------------  %s %04u-%02u-%02u, %s\n"
                       , dayName[timeBlock.tm_wday]
                       , timeBlock.tm_year + 1900
                       , timeBlock.tm_mon + 1
@@ -238,7 +204,7 @@ void initLog(char *s, s32 switches)
 #endif
       default:
         write( logHandle, tempStr
-             , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u, %s\n"
+             , sprintf( tempStr, "\n----------  %s %04u-%02u-%02u, %s\n"
                       , dayName[timeBlock.tm_wday]
                       , timeBlock.tm_year + 1900
                       , timeBlock.tm_mon + 1
@@ -252,7 +218,7 @@ void initLog(char *s, s32 switches)
   }
 }
 //---------------------------------------------------------------------------
-void logEntry(char *s, u16 entryType, u16 errorLevel)
+void logEntry(const char *s, u16 entryType, u16 errorLevel)
 {
   fhandle     logHandle;
   tempStrType tempStr;
@@ -310,7 +276,7 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
     close(logHandle);
 }
 //---------------------------------------------------------------------------
-void mgrLogEntry(char *s)
+void mgrLogEntry(const char *s)
 {
   fhandle     logHandle;
   tempStrType tempStr;
@@ -326,7 +292,7 @@ void mgrLogEntry(char *s)
     if (config.logStyle == 0 || config.logStyle == 4)
     {
       write( logHandle, tempStr
-           , sprintf( tempStr, "\n----------%s  %s %4u-%02u-%02u, %s - AreaMgr\n"
+           , sprintf( tempStr, "\n----------%s  %s %04u-%02u-%02u, %s - AreaMgr\n"
 #ifdef __WIN32__
                     , config.logStyle ? "--" : ""
 #else
@@ -366,7 +332,7 @@ void logActive(void)
   tempStrType timeStr;
 
   newLine();
-  sprintf(timeStr, "Active: %.3f sec.", (clock() - at) / CLK_TCK);
+  sprintf(timeStr, "Active: %.3f sec.", ((double)(clock() - at)) / CLK_TCK);
   logEntry(timeStr, LOG_STATS, 0);
 }
 //---------------------------------------------------------------------------

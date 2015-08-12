@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------
 //
-// Copyright (C) 2011-2014  Wilfred van Velzen
+// Copyright (C) 2011-2015  Wilfred van Velzen
 //
 // This file is part of FMail.
 //
