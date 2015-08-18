@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -24,7 +24,7 @@
 #include <ctype.h>
 #include <dir.h>
 #include <dos.h>
-#include <errno.h>
+//#include <errno.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>

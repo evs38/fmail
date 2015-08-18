@@ -32,7 +32,7 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include <conio.h>
 #include <ctype.h>
 #include <dos.h>
-#include <errno.h>
+//#include <errno.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
