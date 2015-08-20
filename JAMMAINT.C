@@ -110,7 +110,7 @@ const char *expJAMname(const char *basename, const char *ext)
   return tempStr[count];
 }
 //---------------------------------------------------------------------------
-int InitFileBufs(fhandle h, char &*inbuf, char **outbuf, long &size)
+int InitFileBufs(fhandle h, char &*inbuf, char &*outbuf, long &size)
 {
   struct stat s;
 
@@ -119,18 +119,15 @@ int InitFileBufs(fhandle h, char &*inbuf, char **outbuf, long &size)
     size = s.st_size;
     if (size > 0)
     {
+      outbuf = malloc(size);
       if (outbuf != NULL)
       {
-        *outbuf = malloc(size);
-        if (*outbuf != NULL)
-          memset(*outbuf, 0, size);
-        else
-          return -1;
+        memset(outbuf, 0, size);
+        inbuf = malloc(size);
+        if (inbuf != NULL)
+          if (read(h, inbuf, size) == size)
+            return 0;
       }
-      inbuf = malloc(size);
-      if (inbuf != NULL)
-        if (read(h, inbuf, size) == size)
-          return 0;
     }
   }
   else
@@ -140,6 +137,16 @@ int InitFileBufs(fhandle h, char &*inbuf, char **outbuf, long &size)
     // outbuf = NULL;
   }
   return -1;
+}
+//---------------------------------------------------------------------------
+void writedata(const char *fn, const char *data, size_t n)
+{
+  fhandle h;
+  if ((h = fsopen(fn, O_CREAT | O_TRUNC | O_WRONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) != -1)
+  {
+    write(h, data, n);
+    fsclose(h);
+  }
 }
 //---------------------------------------------------------------------------
 int writefile(fhandle h, char *buf, size_t s)
@@ -157,15 +164,18 @@ int writefile(fhandle h, char *buf, size_t s)
   return 0;
 }
 //---------------------------------------------------------------------------
-void memwrite(void *dest, size_t &offset, const void *src, size_t n, size_t &high, size_t max)
+void* memwrite(void *dest, size_t &offset, const void *src, size_t n, size_t &high, size_t max)
 {
   if (offset + n > max)
     logEntry("Buffer error on JAM bases maintenance", LOG_ALWAYS, 2);
 
-  memcpy(dest + offset, src, n);
+  dest += offset;
+  memcpy(dest, src, n);
   offset += n;
   if (offset > high)
     high = offset;
+
+  return dest;
 }
 //---------------------------------------------------------------------------
 #define LRSIZE     0x3ff0  // 'record' is u16, max 7ff0
@@ -188,7 +198,8 @@ struct data
        , *ibJLR
        , *obJHR
        , *obJDT
-       , *obJDX;
+       , *obJDX
+       , *obJLR;
 };
 //---------------------------------------------------------------------------
 void CleanUp(struct data &d)
@@ -205,6 +216,7 @@ void CleanUp(struct data &d)
   if (d.obJHR != NULL) { free(d.obJHR); d.obJHR = NULL; }
   if (d.obJDT != NULL) { free(d.obJDT); d.obJDT = NULL; }
   if (d.obJDX != NULL) { free(d.obJDX); d.obJDX = NULL; }
+  if (d.obJLR != NULL) { free(d.obJLR); d.obJLR = NULL; }
 }
 //---------------------------------------------------------------------------
 // SW_K - Delete all messages in board
@@ -240,14 +252,15 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
               , highJHR = 0
               , highJDX = 0
               , highJDT = 0
-              , woJHR
-              , woJDX
-              , woJDT
+              , woJHR   = 0
+              , woJDX   = 0
+              , woJDT   = 0
+              , orgSubfieldLen
               ;
   char         *rpJHR
              , *rpJDX
              , *rpJDT
-             , *tp;
+             , *wpSubf;
   JAMHDRINFO   *headerInfo;
   JAMIDXREC    *indexRec;
   JAMHDR       *headerRec;
@@ -290,10 +303,10 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
     return 1;
   }
 
-  if (  0 != InitFileBufs(d.hJHR, d.ibJHR, &d.obJHR, sizeJHR)
-     || 0 != InitFileBufs(d.hJDT, d.ibJDT, &d.obJDT, sizeJDT)
-     || 0 != InitFileBufs(d.hJDX, d.ibJDX, &d.obJDX, sizeJDX)
-     || 0 != InitFileBufs(d.hJLR, d.ibJLR, NULL    , sizeJLR)
+  if (  0 != InitFileBufs(d.hJHR, d.ibJHR, d.obJHR, sizeJHR)
+     || 0 != InitFileBufs(d.hJDT, d.ibJDT, d.obJDT, sizeJDT)
+     || 0 != InitFileBufs(d.hJDX, d.ibJDX, d.obJDX, sizeJDX)
+     || 0 != InitFileBufs(d.hJLR, d.ibJLR, d.obJLR, sizeJLR)
      )
   {
     CleanUp(d);
@@ -309,8 +322,11 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   printString("Updating ");
   updateCurrLine();
 
-  hearderInfo = d.ibJHR;
-  rpJHR = d.ibJHR + sizeof(JAMHDRINFO);
+  woJHR = 0;
+  rpJHR = d.ibJHR;
+  memwrite(d.obJHR, woJHR, rpJHR, sizeof(JAMHDRINFO), highJHR, sizeJHR);
+  rpJHR += sizeof(JAMHDRINFO);
+  hearderInfo = d.obJHR;
 
   if (areaPtr->msgs && headerInfo->ActiveMsgs > (u32)areaPtr->msgs)
     delCount = headerInfo->ActiveMsgs - areaPtr->msgs;
@@ -340,7 +356,6 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   rpJDX = d.ibJDX;
   woJDX = 0;
   woJDT = 0;
-  woJHR = sizeof(JAMHDRINFO);
   while (!JAMerror && rpJDX < d.ibJDX + sizeJDX)
   {
     indexRec = rpJDX;
@@ -355,8 +370,12 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
         break;
       }
       rpJHR = d.ibJHR + indexRec.HdrOffset;
-      headerRec = rpJHR;
+
+      headerRec = memwrite(d.obJHR, woJHR, rpJHR, sizeof(JAMHDR), highJHR, sizeJHR);
       rpJHR += sizeof(JAMHDR);
+      orgSubfieldLen = headerRec->SubfieldLen;
+      wpSubf    = memwrite(d.obJHR, woJHR, rpJHR, orgSubfieldLen, highJHR, sizeJHR);
+      rpJHR += orgSubfieldLen;
 
       if (areaPtr->options.arrivalDate && headerRec->DateProcessed)
         msgTime = headerRec->DateProcessed;
@@ -392,7 +411,9 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
         headerRec->TxtOffset = woJDT;
 
         memwrite(d.obJDT, woJDT, rpJDT, headerRec->TxtLen, highJDT, sizeJDT);
-        rpJDT += headerRec->TxtLen;
+        // rpJDT += headerRec->TxtLen;  // Not used after this point
+
+        indexRec = memwrite(d.obJDX, woJDX, indexRec, sizeof(JAMIDXREC), highJDX, sizeJDX);
 
         indexRec->HdrOffset = woJHR;
 
@@ -412,25 +433,30 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
         }
 
         headerRec->MsgNum = ++msgNumNew;
-        memwrite(d.obJDX, woJDX, indexRec, sizeof(JAMIDXREC), highJDX, sizeJDX);
 
         if (msgNum < LRSIZE)
           lrBuf[(u16)msgNum] = msgNumNew >= 0x0000ffff ? 0xffff : (u16)msgNumNew;
 
-        temp = headerRec->SubfieldLen;
-
         // Remove Re:
         if (switches & SW_R)
-          JAMremoveRe(rpJHR, headerRec->SubfieldLen);   // SubfieldLen could be changed
-
-        memwrite(d.obJHR, woJHR, headerRec, sizeof(JAMHDR)        , highJHR, sizeJHR);
-        memwrite(d.obJHR, woJHR, rpJHR    , headerRec->SubfieldLen, highJHR, sizeJHR);
-        rpJHR += temp;
+          if (JAMremoveRe(wpSubf, headerRec->SubfieldLen))    // SubfieldLen can be changed
+          {
+            long diff = orgSubfieldLen - headerRec->SubfieldLen;
+            if (woJHR == highJHR)
+              highJHR -= diff;
+            woJHR -= diff;
+          }
+      }
+      else
+      {
+        // headerRec & subfield not writen, reset woJHR en highJHR
+        long diff = sizeof(JAMHDR) + orgSubfieldLen;
+        if (woJHR == highJHR)
+          highJHR -= diff;
+        woJHR -= diff;
       }
     }
   }
-  woJHR = 0;
-  memwrite(d.obJHR, woJHR, headerInfo, sizeof(JAMHDRINFO), highJHR, sizeJHR);
 
   // Update reply chains
 #ifdef _DEBUG
@@ -485,15 +511,9 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
             replyNext = count + 1;
         }
       }
-      if (  headerRec->Reply1st  != reply1st
-         || headerRec->ReplyTo   != replyTo
-         || headerRec->ReplyNext != replyNext
-         )
-      {
-        headerRec->Reply1st  = reply1st;
-        headerRec->ReplyTo   = replyTo;
-        headerRec->ReplyNext = replyNext;
-      }
+      headerRec->Reply1st  = reply1st;
+      headerRec->ReplyTo   = replyTo;
+      headerRec->ReplyNext = replyNext;
     }
   }
 
@@ -515,9 +535,9 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
     for (count = 0; count < temp; count++)
     {
       msgNum = ((JAMLREAD *)d.ibJLR)[count].LastReadMsg - oldBaseMsgNum;
-      ((JAMLREAD *)d.ibJLR)[count].LastReadMsg = lrBuf[(msgNum >= LRSIZE - 1) ? LRSIZE - 1 : (u16)msgNum] + headerInfo->BaseMsgNum;
+      ((JAMLREAD *)d.obJLR)[count].LastReadMsg = lrBuf[(msgNum >= LRSIZE - 1) ? LRSIZE - 1 : (u16)msgNum] + headerInfo->BaseMsgNum;
       msgNum = ((JAMLREAD *)d.ibJLR)[count].HighReadMsg - oldBaseMsgNum;
-      ((JAMLREAD *)d.ibJLR)[count].HighReadMsg = lrBuf[(msgNum >= LRSIZE - 1) ? LRSIZE - 1 : (u16)msgNum] + headerInfo->BaseMsgNum;
+      ((JAMLREAD *)d.obJLR)[count].HighReadMsg = lrBuf[(msgNum >= LRSIZE - 1) ? LRSIZE - 1 : (u16)msgNum] + headerInfo->BaseMsgNum;
     }
   }
   *spaceSaved += sizeJDX - highJDX
@@ -533,8 +553,15 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   }
   else
   {
+#ifdef _DEBUG
+    // Write (unchanged) input buffers to backup files
+    writedata(expJAMname(areaPtr->msgBasePath, EXT_BCK_LRD), d.ibJLR, sizeJLR);
+    writedata(expJAMname(areaPtr->msgBasePath, EXT_BCK_IDX), d.ibJDX, sizeJDX);
+    writedata(expJAMname(areaPtr->msgBasePath, EXT_BCK_TXT), d.ibJDT, sizeJDT);
+    writedata(expJAMname(areaPtr->msgBasePath, EXT_BCK_HDR), d.ibJHR, sizeJHR);
+#endif
     // save data.
-    if (  0 != writefile(d.hJLR, d.ibJLR, sizeJLR)
+    if (  0 != writefile(d.hJLR, d.obJLR, sizeJLR)
        || 0 != writefile(d.hJDX, d.obJDX, highJDX)
        || 0 != writefile(d.hJDT, d.obJDT, highJDT)
        || 0 != writefile(d.hJHR, d.obJHR, highJHR)
