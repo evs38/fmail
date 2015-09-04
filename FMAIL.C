@@ -32,7 +32,6 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include <conio.h>
 #include <ctype.h>
 #include <dos.h>
-//#include <errno.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
@@ -58,7 +57,6 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include "msgpkt.h"
 #include "msgra.h"
 #include "nodeinfo.h"
-#include "output.h"
 #include "pack.h"
 #include "pp_date.h"
 #include "sorthb.h"
@@ -256,7 +254,7 @@ extern nodeFileType      nodeFileInfo;
 
 extern s16 messagesMoved;
 
-internalMsgType *message;
+internalMsgType *message   = NULL;
 s16              diskError = 0;
 
 extern s16 breakPressed;
@@ -294,10 +292,7 @@ void About(void)
                "    Message bases    : JAM and "MBNAME"\n"
                "    Max. areas       : %u\n"
                "    Max. nodes       : %u\n";
-  char tStr[1024];
-  sprintf(tStr, str, VersionStr(), YEAR, MONTH + 1, DAY, MAX_AREAS, MAX_NODES);
-  printString(tStr);
-  showCursor();
+  printf(str, VersionStr(), YEAR, MONTH + 1, DAY, MAX_AREAS, MAX_NODES);
 
   exit(0);
 }
@@ -341,7 +336,7 @@ u16 getAreaCode(char *msgText)
     *helpPtr = 0;
 
   if (*echoName == 0)
-    printString("Message has no valid area tag ");
+    printf("Message has no valid area tag ");
   else
   {
     low = 0;
@@ -374,17 +369,14 @@ u16 getAreaCode(char *msgText)
         return low;
 
       if (echoAreaList[low].options.local)
-        printString("Area is local: ");
+        printf("Area is local: ");
       else
-        printString("Area is not active: ");
-      printString(echoName);
-      printChar(' ');
+        printf("Area is not active: ");
+      printf("%s ", echoName);
     }
     else
     {
-      printString("Unknown area: ");
-      printString(echoName);
-      printChar(' ');
+      printf("Unknown area: %s ", echoName);
 
       if (badEchoCount < MAX_BAD_ECHOS)
       {
@@ -504,10 +496,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
             while (!readPkt(message) && !diskError && !breakPressed)
             {
-              gotoTab(0);
-              printString("Pkt message ");
-              printInt(++pktMsgCount);
-              printString(" "dARROW" ");
+              printf("\rPkt message %d "dARROW" ", ++pktMsgCount);
 
               areaIndex = getAreaCode(message->text);
 
@@ -552,7 +541,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
               switch (areaIndex)
               {
                 case NETMSG:
-                  printString("NETMAIL");
+                  printf("NETMAIL");
 
                   message->attribute &= PRIVATE     | FILE_ATT |
                                         RET_REC_REQ |
@@ -568,7 +557,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                       message->attribute |= RECEIVED;
                       writeMsg(message, NETMSG, 1);
                     }
-                    printChar(' ');
+                    putchar(' ');
                     areaFixRep = !areaFix(message);
                   }
                   if (!areaFixRep)
@@ -595,7 +584,6 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                     }
                     if (localAkaNum >= 0)
                     {
-                      printFill();
                       if ((stricmp(message->toUserName, "SysOp") == 0) ||
                           (stricmp(message->toUserName, config.sysopName) == 0))
                       {
@@ -607,12 +595,12 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                     {
                       if (secure == 2 && getLocalAka(&message->srcNode) >= 0)
                       {
-                        printStringFill(" (local secure)");
+                        printf(" (local secure)");
                         message->attribute |= LOCAL | KILLSENT;
                       }
                       else
                       {
-                        printStringFill(" (in transit)");
+                        printf(" (in transit)");
                         message->attribute |= IN_TRANSIT | KILLSENT;
                       }
                       if (!(getNodeInfo(&message->destNode)->capability & PKT_TYPE_2PLUS)
@@ -631,12 +619,12 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                   break;
 
                 case BADMSG:
-                  printStringFill(dARROW" Bad message");
+                  printf(dARROW" Bad message");
                   tossBad(message);
                   break;
 
                 default:
-                  printString(echoAreaList[areaIndex].areaName);
+                  printf(echoAreaList[areaIndex].areaName);
 
                   // Security Check
 
@@ -674,7 +662,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                       }
                       if (count != -1)
                         ++globVars.fromNoExpSec;
-                      printStringFill(" Security violation "dARROW" Bad message");
+                      printf(" Security violation "dARROW" Bad message");
                       tossBad(message);
                       break;
                     }
@@ -698,7 +686,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                     {
                       sprintf(tempStr, "\1FMAIL BAD: message too old\r");
                       insertLineN(message->text, tempStr, 1);
-                      printStringFill(" "dARROW" Old message");
+                      printf(" "dARROW" Old message");
                       tossBad(message);
                       break;
                     }
@@ -717,7 +705,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                     }
                     if (count != -1)
                       ++globVars.fromNoExpDup;
-                    printStringFill(" "dARROW" Duplicate message");
+                    printf(" "dARROW" Duplicate message");
                     if (writeBBS(message, config.dupBoard, 1))
                       diskError = DERR_WRHDUP;
 
@@ -725,7 +713,6 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                     globVars.dupCount++;
                     break;
                   }
-                  printFill();
 
                   echoAreaList[areaIndex].msgCount++;
                   globVars.echoCount++;
@@ -871,7 +858,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
             }
           }
           else if (headerStat == 1)
-            printString("Error opening packet\n");
+            puts("Error opening packet");
           else if (headerStat == 2)
             logEntry("Packet is addressed to another node --> packet is renamed to .DST", LOG_ALWAYS, 0);
           else if (headerStat == 3)
@@ -916,12 +903,11 @@ void Toss(int argc, char *argv[])
 
   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
   {
-    printString("Usage:\n\n"
-                "    FMail Toss [/A] [/B]\n\n"
-                "Switches:\n\n"
-                "    /A   Do not process AreaMgr requests\n"
-                "    /B   Also scan bad message directory for valid echomail messages\n");
-    showCursor();
+    puts("Usage:\n\n"
+         "    FMail Toss [/A] [/B]\n\n"
+         "Switches:\n\n"
+         "    /A   Do not process AreaMgr requests\n"
+         "    /B   Also scan bad message directory for valid echomail messages");
     exit(0);
   }
 
@@ -946,15 +932,15 @@ void Toss(int argc, char *argv[])
 
   strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
   ++no_msg;
-  if ((tempHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
+  if ((tempHandle = openP(tempStr, O_RDONLY | O_BINARY, S_IREAD|S_IWRITE)) != -1)
   {
-    badEchoCount = read(tempHandle, badEchos, MAX_BAD_ECHOS*sizeof(badEchoType) + 1) / sizeof(badEchoType);
+    badEchoCount = read(tempHandle, badEchos, MAX_BAD_ECHOS * sizeof(badEchoType)) / sizeof(badEchoType);
     close(tempHandle);
   }
 
   if (switches & SW_B)
   {
-    printString("Tossing messages from bad message board...\n\n");
+    puts("Tossing messages from bad message board...\n");
     openBBSWr(1);
     moveBadBBS();
     closeBBSWr(1);
@@ -965,7 +951,7 @@ void Toss(int argc, char *argv[])
 
   if (!diskError && !breakPressed)
   {
-    printString("Tossing messages...\n");
+    puts("Tossing messages...");
 
     if (config.oldMsgDays)
       // Set after initFMail() and before processPkt()
@@ -1037,7 +1023,7 @@ void Toss(int argc, char *argv[])
   if (badEchoCount)
   {
     strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
-    if ((tempHandle = openP(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
+    if ((tempHandle = openP(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) != -1)
     {
       write(tempHandle, badEchos, badEchoCount * sizeof(badEchoType));
       close(tempHandle);
@@ -1066,7 +1052,6 @@ void Toss(int argc, char *argv[])
   closeNodeInfo();
   closeDup();
   deInitPkt();
-  free(message);
 
   if (globVars.echoCountV || globVars.dupCountV || globVars.badCountV)
   {
@@ -1194,8 +1179,11 @@ void Toss(int argc, char *argv[])
           if (count2 < echoCount)
           {
             s32 space;
-
+#ifdef _DEBUG0
+            if (!JAMmaint(areaBuf, SW_R, config.sysopName, &space))
+#else
             if (!JAMmaint(areaBuf, 0, config.sysopName, &space))
+#endif
             {
               areaBuf->stat.tossedTo = 0;
               putRec(CFG_ECHOAREAS, count);
@@ -1434,16 +1422,15 @@ void Scan(int argc, char *argv[])
 
   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
   {
-    printString("Usage:\n\n"
-                "    FMail Scan [/A] [/E] [/N] [/S]\n\n"
-                "Switches:\n\n"
-                "    /A   Do not process AreaMgr requests\n"
-                "    /E   Scan for echomail messages only\n"
-                "    /N   Scan for netmail messages only\n"
-                "    /H   Scan "MBNAME" base only\n"
-                "    /J   Scan JAM bases only\n"
-                "    /S   Scan the entire message base (ignore EchoMail."MBEXTN"/JAM and NetMail."MBEXTN")\n");
-    showCursor();
+    puts("Usage:\n\n"
+         "    FMail Scan [/A] [/E] [/N] [/S]\n\n"
+         "Switches:\n\n"
+         "    /A   Do not process AreaMgr requests\n"
+         "    /E   Scan for echomail messages only\n"
+         "    /N   Scan for netmail messages only\n"
+         "    /H   Scan "MBNAME" base only\n"
+         "    /J   Scan JAM bases only\n"
+         "    /S   Scan the entire message base (ignore EchoMail."MBEXTN"/JAM and NetMail."MBEXTN")");
     exit(0);
   }
 
@@ -1480,13 +1467,13 @@ void Scan(int argc, char *argv[])
 
     if (count < echoCount)
     {
-      printString("Scanning JAM message bases for outgoing messages...\n");
+      puts("Scanning JAM message bases for outgoing messages...");
       if (!config.mbOptions.scanAlways && !(switches & SW_S))
       {
         strcpy(tempStr, config.bbsPath);
         strcat(tempStr, "echomail.jam");
         ++no_msg;
-        if ((tempHandle = openP(tempStr, O_RDONLY|O_TEXT|O_DENYNONE,S_IREAD|S_IWRITE)) != -1)
+        if ((tempHandle = openP(tempStr, O_RDONLY | O_TEXT, S_IREAD | S_IWRITE)) != -1)
         {
           memset(tempStr, 0, sizeof(tempStrType));
           if ((count = read(tempHandle, tempStr, sizeof(tempStrType)-1)) != -1)
@@ -1560,13 +1547,12 @@ void Scan(int argc, char *argv[])
                  (switches & SW_S)) && infoBad != -1)
             {
               if (config.mbOptions.scanAlways || (switches & SW_S))
-                printString("Rescanning all JAM areas\n");
+                puts("Rescanning all JAM areas");
               else
-                printString("Rescanning selected JAM areas\n");
+                puts("Rescanning selected JAM areas\n");
               infoBad = -1;
             }
-            sprintf(tempStr, "Scanning JAM area %s...\n", echoAreaList[count].areaName);
-            printString(tempStr);
+            printf("Scanning JAM area %s...\n", echoAreaList[count].areaName);
             msgNum = 0;
             while (!diskError && (msgNum = jam_scan(count, ++msgNum, 0, message)) != 0)
             {
@@ -1589,20 +1575,18 @@ void Scan(int argc, char *argv[])
         unlink(tempStr);
       }
       globVars.jamCountV = scanCount;
-      gotoTab (0);
       if (scanCount == 0)
-        printString("No new outgoing messages\n\n");
+        puts("\rNo new outgoing messages\n");
       else
       {
-        printFill();
-        newLine();
+        puts("\r                        ");
         scanCount = 0;
       }
     }
   }
   if (!(switches & SW_J))
   {
-    printString ("Scanning "MBNAME" message base for outgoing messages...\n");
+    puts("Scanning "MBNAME" message base for outgoing messages...");
     infoBad = 0;
 
     if ((!config.mbOptions.scanAlways) && (!(switches & SW_S)))
@@ -1615,7 +1599,7 @@ void Scan(int argc, char *argv[])
           strcpy(tempStr, makeFullPath(config.bbsPath, getenv("QUICK"), !count ? "echomail."MBEXTN : "netmail."MBEXTN));
 
           ++no_msg;
-          if ((tempHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
+          if ((tempHandle = openP(tempStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) != -1)
           {
   #ifndef GOLDBASE
             while ((_read(tempHandle, &index, 2) == 2)
@@ -1671,14 +1655,10 @@ void Scan(int argc, char *argv[])
       if (scanCount)
         newLine();
     }
-    gotoTab(0);
     if (scanCount == 0)
-      printString ("No new outgoing messages\n\n");
+      puts("\rNo new outgoing messages\n");
     else
-    {
-      printFill();
-      newLine();
-    }
+      puts("\r                        ");
   }
 
   if (closeEchoPktWr())
@@ -1707,11 +1687,10 @@ void Import(int argc, char *argv[])
 
   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
   {
-    printString("Usage:\n\n"
-                "    FMail Import [/A]\n\n"
-                "Switches:\n\n"
-                "    /A   Do not process AreaMgr requests\n");
-    showCursor();
+    puts("Usage:\n\n"
+         "    FMail Import [/A]\n\n"
+         "Switches:\n\n"
+         "    /A   Do not process AreaMgr requests");
     exit(0);
   }
 
@@ -1730,7 +1709,7 @@ void Import(int argc, char *argv[])
   initBBS();
   openBBSWr(0);
 
-  printString("Importing netmail messages\n\n");
+  puts("Importing netmail messages\n");
 
   strcpy(tempStr, config.netPath);
   strcat(tempStr, "*.msg");
@@ -1806,13 +1785,12 @@ void Import(int argc, char *argv[])
   }
 
   if (count)
-    newLine ();
+    newLine();
 
   closeBBSWr(0);
   closeNodeInfo();
   deInitPkt();
-  deInitAreaInfo ();
-  free (message);
+  deInitAreaInfo();
 
   _mb_upderr = multiUpdate();
 
@@ -1834,16 +1812,15 @@ void Pack(int argc, char *argv[])
 
   if ((argc >= 3) && ((argv[2][0] == '?') || (argv[2][1] == '?')))
   {
-    printString("Usage:\n\n"
-                "    FMail Pack [<node> [<node> ...] [VIA <node>] [/A] [/C] [/H] [/O] [/I] [/L]]\n\n"
-                "Switches:\n\n"
-                "    /A   Do not process AreaMgr requests\n\n"
-                "    /C   Include messages with Crash status\n"
-                "    /H   Include messages with Hold status\n"
-                "    /O   Include orphaned messages\n\n"
-                "    /I   Only pack messages that are in transit\n"
-                "    /L   Only pack messages that originated on your system\n");
-    showCursor();
+    puts("Usage:\n\n"
+         "    FMail Pack [<node> [<node> ...] [VIA <node>] [/A] [/C] [/H] [/O] [/I] [/L]]\n\n"
+         "Switches:\n\n"
+         "    /A   Do not process AreaMgr requests\n\n"
+         "    /C   Include messages with Crash status\n"
+         "    /H   Include messages with Hold status\n"
+         "    /O   Include orphaned messages\n\n"
+         "    /I   Only pack messages that are in transit\n"
+         "    /L   Only pack messages that originated on your system");
     exit(0);
   }
 
@@ -1874,11 +1851,10 @@ void Mgr(int argc, char *argv[])
 
   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
   {
-    printString("Usage:\n\n"
-                "    FMail Mgr\n\n"
-                "Switches:\n\n"
-                "    None\n");
-    showCursor();
+    puts("Usage:\n\n"
+         "    FMail Mgr\n\n"
+         "Switches:\n\n"
+         "    None");
     exit(0);
   }
 
@@ -1913,43 +1889,19 @@ int main(int argc, char *argv[])
   smtpID = TIDStr();
 #endif
 
-  initOutput();
+  // initOutput();
 
 #ifndef __32BIT__
   if (_osmajor < 3 || (_osmajor == 3 && _osminor < 30))
   {
-    printString("FMail requires at least DOS 3.30\n");
+    puts("FMail requires at least DOS 3.30");
     exit(4);
   }
 #endif
-  cls();
+  // cls();
 
-#ifndef STDO
-  setAttr(YELLOW, RED, MONO_NORM);
-  printString("ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n");
-  printString("³                                                                             ³\n");
-  printString("³                                                                             ³\n");
-  printString("ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ");
-  setAttr (YELLOW, RED, MONO_HIGH);
-  gotoPos (3, 1);
-#endif
-  printString(VersionStr());
-  printString(" - The Fast Echomail Processor");
-#ifndef STDO
-  gotoPos(3, 2);
-#else
-  newLine();
-  newLine();
-#endif
-  sprintf(tempStr, "Copyright (C) 1991-%s by FMail Developers - All rights reserved", __DATE__ + 7);
-  printString(tempStr);
-#ifndef STDO
-  gotoPos(0, 5);
-  setAttr(LIGHTGRAY, BLACK, MONO_NORM);
-#else
-  newLine();
-  newLine();
-#endif
+  printf("%s - The Fast Echomail Processor\n\n", VersionStr());
+  printf("Copyright (C) 1991-%s by FMail Developers - All rights reserved\n\n", __DATE__ + 7);
 
   memset(&globVars, 0, sizeof(globVarsType));
 
@@ -1990,21 +1942,20 @@ int main(int argc, char *argv[])
 
   else
   {
-    printString("Usage:\n"
-                "\n"
-                "   FMail <command> [parameters]\n"
-                "\n"
-                "Commands:\n"
-                "\n"
-                "   About    Show some information about the program\n"
-                "   Scan     Scan the message base for outgoing messages\n"
-                "   Toss     Toss and forward incoming mailbundles\n"
-                "   Import   Import netmail messages into the message base\n"
-                "   Pack     Pack and compress outgoing netmail found in the netmail directory\n"
-                "   Mgr      Only process AreaMgr requests\n"
-                "\n"
-                "Enter 'FMail <command> ?' for more information about [parameters]\n");
-    showCursor();
+    puts("Usage:\n"
+         "\n"
+         "   FMail <command> [parameters]\n"
+         "\n"
+         "Commands:\n"
+         "\n"
+         "   About    Show some information about the program\n"
+         "   Scan     Scan the message base for outgoing messages\n"
+         "   Toss     Toss and forward incoming mailbundles\n"
+         "   Import   Import netmail messages into the message base\n"
+         "   Pack     Pack and compress outgoing netmail found in the netmail directory\n"
+         "   Mgr      Only process AreaMgr requests\n"
+         "\n"
+         "Enter 'FMail <command> ?' for more information about [parameters]");
     return 0;
   }
 
@@ -2091,7 +2042,6 @@ int main(int argc, char *argv[])
   }
 
   logActive();
-  showCursor();
   deinitFMail();
   close(fmailLockHandle);
 
@@ -2102,8 +2052,8 @@ int main(int argc, char *argv[])
 void myexit(void)
 {
 #pragma exit myexit
-#ifdef _DEBUG0
-  printString("\nPress any key to continue... ");
+#ifdef _DEBUG
+  printf("\nPress any key to continue... ");
   getch();
   newLine();
 #endif

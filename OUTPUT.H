@@ -55,7 +55,7 @@
                };
 #endif
 
-#define BLINK	  128	          /* blink bit */
+#define BLINK  128          // blink bit
 
 
 void initOutput      (void);

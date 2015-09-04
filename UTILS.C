@@ -44,13 +44,12 @@
 #include "fjlib.h"
 #include "log.h"
 #include "msgpkt.h"  // for openP
-#include "output.h"
 #include "version.h"
 
 extern configType config;
-psType *seenByArray;
-psType *pathArray;
-psType *tinySeenArray;
+psType *seenByArray   = NULL;
+psType *pathArray     = NULL;
+psType *tinySeenArray = NULL;
 
 extern u16 echoCount;
 extern u16 forwNodeCount;
@@ -359,10 +358,11 @@ void touch(const char *path, const char *filename, const char *t)
   fhandle     tempHandle;
 
   strcpy(stpcpy(tempStr, path), filename);
-  tempHandle = open(tempStr, O_RDWR|O_CREAT|O_TRUNC|O_DENYNONE,
-                              S_IREAD|S_IWRITE);
-  write(tempHandle, t, strlen(t));
-  close(tempHandle);
+  if ((tempHandle = open(tempStr, O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
+  {
+    write(tempHandle, t, strlen(t));
+    close(tempHandle);
+  }
 }
 //---------------------------------------------------------------------------
 s16 emptyText(char *text)
@@ -415,16 +415,13 @@ s32 getSwitch(int *argc, char *argv[], s32 mask)
     {
       if ( count != --(*argc) )
       {
-         printString("Switches should be last on command line\n");
-         showCursor();
+         puts("Switches should be last on command line");
          exit(4);
       }
       if ((strlen(argv[count]) != 2) ||
           (!(isalpha(argv[count][1]))))
       {
-         printString("Illegal switch: ");
-         printString(argv[count]);
-         newLine();
+         printf("Illegal switch: %s\n", argv[count]);
          error++;
       }
       else
@@ -434,8 +431,8 @@ s32 getSwitch(int *argc, char *argv[], s32 mask)
             result |= tempMask;
          else
          {
-            sprintf (tempStr, "Illegal switch: %s", argv[count]);
-            logEntry (tempStr, LOG_ALWAYS, 0);
+            sprintf(tempStr, "Illegal switch: %s", argv[count]);
+            logEntry(tempStr, LOG_ALWAYS, 0);
             error++;
          }
       }

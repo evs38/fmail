@@ -50,15 +50,15 @@ extern configType config;
 
 typedef struct
 {
-	char ch;
-	char attr;
+  char ch;
+  char attr;
 } screenCharType;
 
 
 #define showChar(chr)               \
 {                                   \
-	screen[y*columns+x].ch   = chr;  \
-	screen[y*columns+x].attr = attr; \
+  screen[y*columns+x].ch   = chr;  \
+  screen[y*columns+x].attr = attr; \
 }
 
 #ifndef __STDIO__
@@ -198,14 +198,13 @@ void updCurrLine(void)
   u16   count;
   uchar tempStr[81];
 
-  gotoxy(1, y+1);
-  textattr(screen[80*y].attr);
+  gotoxy(1, y + 1);
+  textattr(screen[80 * y].attr);
   for (count = 0; count < 80; count++)
-	{
-		tempStr[count] = screen[80*y+count].ch;
-	}
-	tempStr[79] = 0;
-	cputs(tempStr);
+    tempStr[count] = screen[80 * y + count].ch;
+
+  tempStr[79] = 0;
+  cputs(tempStr);
 }
 #endif
 #endif  // __STDIO__
@@ -392,7 +391,7 @@ u16 getTab(void)
 #ifndef STDO
   return x;
 #else
-  return wherex();
+  return wherex() - 1;
 #endif
 }
 

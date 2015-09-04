@@ -47,7 +47,6 @@
 #include "msgpkt.h"
 #include "msgra.h"
 #include "nodeinfo.h"
-#include "output.h"
 #include "pack.h"
 #include "stpcpy.h"
 #include "utils.h"

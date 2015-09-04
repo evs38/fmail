@@ -39,7 +39,6 @@
 #include "dups.h"
 #include "log.h"
 #include "msgpkt.h"
-#include "output.h"
 #include "stpcpy.h"
 #include "version.h"
 
@@ -61,7 +60,7 @@ static void writeLogLine(fhandle logHandle, const char *s)
   time_t      timer;
 #endif // __WIN32__
   struct tm   tm;
-	tempStrType tempStr;
+  tempStrType tempStr;
   int         sl;
 
 #ifdef __WIN32__
@@ -146,7 +145,7 @@ void initLog(const char *s, s32 switches)
 
   if ((logHandle = openP(config.logName, O_RDWR | O_CREAT | O_APPEND | O_TEXT | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
   {
-    printString ("WARNING: Can't open log file\n\n");
+    puts("WARNING: Can't open log file\n");
     config.logInfo = 0;
   }
   else
@@ -224,10 +223,7 @@ void logEntry(const char *s, u16 entryType, u16 errorLevel)
   tempStrType tempStr;
 
   if (!(entryType & LOG_NOSCRN))
-  {
-    printString(s);
-    newLine();
-  }
+    puts(s);
 
   if (  entryType == LOG_NEVER
      || ( ((config.logInfo | LOG_ALWAYS) & entryType) == 0
@@ -239,13 +235,10 @@ void logEntry(const char *s, u16 entryType, u16 errorLevel)
     {
       if (errorLevel != 100)
       {
-        sprintf(tempStr, "Exiting with errorlevel %u", errorLevel);
-        printString(tempStr);
-        newLine();
+        printf("Exiting with errorlevel %u\n", errorLevel);
         if (entryType != LOG_NEVER)
           closeDup();
       }
-      showCursor();
       exit(errorLevel == 100 ? 0 : errorLevel);
     }
     return;
@@ -259,8 +252,7 @@ void logEntry(const char *s, u16 entryType, u16 errorLevel)
     if (errorLevel != 100)
     {
       sprintf(tempStr, "Exiting with errorlevel %u", errorLevel);
-      printString(tempStr);
-      newLine();
+      puts(tempStr);
       if (logHandle != -1)
       {
         writeLogLine(logHandle, tempStr);
@@ -269,8 +261,7 @@ void logEntry(const char *s, u16 entryType, u16 errorLevel)
       if (entryType != LOG_NEVER)
         closeDup();
     }
-    showCursor();
-    exit (errorLevel==100 ? 0 : errorLevel);
+    exit(errorLevel==100 ? 0 : errorLevel);
   }
   if (logHandle != -1)
     close(logHandle);
@@ -281,8 +272,7 @@ void mgrLogEntry(const char *s)
   fhandle     logHandle;
   tempStrType tempStr;
 
-  printString(s);
-  newLine();
+  puts(s);
 
   if ((*config.areaMgrLogName) && (!(mgrLogUsed++)) &&
       stricmp(config.logName, config.areaMgrLogName) &&

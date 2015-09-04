@@ -48,7 +48,6 @@
 #include "msgmsg.h"
 #include "msgpkt.h"
 #include "nodeinfo.h"
-#include "output.h"
 #include "stpcpy.h"
 #include "utils.h"
 
@@ -234,16 +233,14 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
   sprintf(tempStr, "Executing %s %s", program, parameters);
   logEntry(tempStr, LOG_EXEC | LOG_NOSCRN, 0);
 
-  sprintf(tempStr, "<-- %s Start -->\n", arcType);
-  printString(tempStr);
-	showCursor();
+  printf("<-- %s Start -->\n", arcType);
 
 #if !defined __FMAILX__ && !defined __32BIT__
   if ((config.genOptions.swap)
       && ((memReq == 0) || ((coreleft() >> 10) < memReq)))
   {
 #ifdef DEBUG
-    printString("SPAWNLO\n");
+    puts("SPAWNLO");
 #endif
     if (ems)
     {
@@ -286,39 +283,31 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
   if (dosExitCode == -1)
   {
     dosExitCode = spawnl(P_WAIT, program, program, parameters, NULL);
-    flush();
+    // flush();
   }
 
 #endif
 #else
-  sprintf(tempStr, "Running %s utility in an OS/2 shell...", arcType);
-  printString(tempStr);
-  updateCurrLine();
-  if ((dosExitCode = spawnl(P_WAIT, program, program, parameters, NULL)) == -1
-      && errno == ENOEXEC)
+  printf("Running %s utility in an OS/2 shell...", arcType);
+  if (  (dosExitCode = spawnl(P_WAIT, program, program, parameters, NULL)) == -1
+     && errno == ENOEXEC)
   {
     static char *cmdPtr = NULL;
 
-    gotoTab(0);
+    putchar('\r');
     if (cmdPtr == NULL && (cmdPtr = getenv("OS2_SHELL")) == NULL)
     {
       logEntry("Can't find command shell (OS2_SHELL environment var)", LOG_ALWAYS, 0);
       return 1;
     }
-    sprintf(tempStr, "Running %s utility in a DOS shell...\n", arcType);
-    printString(tempStr);
+    printf("Running %s utility in a DOS shell...\n", arcType);
     dosExitCode = spawnl(P_WAIT, cmdPtr, cmdPtr, "/C", program, parameters, NULL);
   }
   else
-  {
-    newLine();
-    newLine();
-  }
+    puts("\n");
 #endif
-	noCursor();
-  sprintf(tempStr, "<-- %s End [%.2f] -->\n", arcType, ((double)(clock() - ct)) / CLK_TCK);
-  printString(tempStr);
-  flush();
+  printf("<-- %s End [%.2f] -->\n", arcType, ((double)(clock() - ct)) / CLK_TCK);
+  // flush();
   if (dosExitCode == -1)
   {
     sprintf(tempStr, "Cannot execute %s utility: ", arcType);
@@ -1282,7 +1271,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     close(semaHandle);
     unlink(semaName);
   }
-  flush();
+  // flush();
   return 0;
 }
 //---------------------------------------------------------------------------

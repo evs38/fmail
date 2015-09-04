@@ -71,6 +71,8 @@
    #define MBBOARDS 200
 #endif
 
+#define dARROW "->"
+
 #define PRODUCTCODE_HIGH  0x00
 #define PRODUCTCODE_LOW   0x81  // ftscprod
 
@@ -320,6 +322,8 @@ u16 getAreaCode(char *msgText);
     (n1.node  == n2.node) &&     \
     (n1.point >  n2.point)))     \
 )
+
+#define newLine()  putchar('\n')
 
 u16 foundToUserName(const char *toUserName);
 

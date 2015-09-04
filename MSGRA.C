@@ -21,7 +21,6 @@
 //
 //---------------------------------------------------------------------------
 
-
 #include <dir.h>
 #include <dos.h>
 #include <errno.h>
@@ -46,7 +45,6 @@
 #include "msgmsg.h"
 #include "msgpkt.h"
 #include "mtask.h"
-#include "output.h"
 #include "utils.h"
 
 u16 HDR_BUFSIZE = 104;
@@ -88,34 +86,25 @@ u16             raTxtRecValid;
 #endif
 u16             secondsInc = 0;
 
-
 extern globVarsType globVars;
+extern configType   config;
 
-extern configType config;
-
-
-
-extern char     *months;
+extern char    *months;
 extern u16      echoCount;
-extern char     *version;
+extern char    *version;
 
-
-tempStrType expandStr;
-
-char *expandName (char *fileName, u16 orgName)
+//---------------------------------------------------------------------------
+char *expandName(char *fileName, u16 orgName)
 {
-   strcpy (expandStr, config.bbsPath);
-   strcat (expandStr, fileName);
-   if ( config.mbOptions.mbSharing && !orgName )
-      strcat (expandStr, "."MBEXTB);
-   else
-      strcat (expandStr, "."MBEXTN);
-   return (expandStr);
+  static tempStrType expandStr;
+
+  strcpy( stpcpy(stpcpy(expandStr, config.bbsPath), fileName)
+        , config.mbOptions.mbSharing && !orgName ? "."MBEXTB : "."MBEXTN);
+
+  return expandStr;
 }
-
-
-
-void initBBS (void)
+//---------------------------------------------------------------------------
+void initBBS(void)
 {
    struct ffblk ffblkData;
 
@@ -157,9 +146,7 @@ void initBBS (void)
 			       ((config.bufSize==3) ? 6 : 7)))));
 #endif
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 testMBUnlockNow (void)
 {
    static s16 time, date;
@@ -185,9 +172,7 @@ s16 testMBUnlockNow (void)
    }
    return (unlock);
 }
-
-
-
+//---------------------------------------------------------------------------
 void setMBUnlockNow (void)
 {
    tempStrType tempStr;
@@ -200,9 +185,7 @@ void setMBUnlockNow (void)
       testMBUnlockNow ();
    }
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 lockMB (void)
 {
    tempStrType tempStr;
@@ -227,7 +210,7 @@ s16 lockMB (void)
       if ((lock (lockHandle, sizeof(infoRecType) + 1, 1) == -1) &&
           (_doserrno == 0x21))
       {
-         printString ("Retrying to lock the message base\n\n");
+         puts("Retrying to lock the message base\n");
          setMBUnlockNow ();
 
          time (&time1);
@@ -251,9 +234,7 @@ s16 lockMB (void)
    }
    return (0);
 }
-
-
-
+//---------------------------------------------------------------------------
 void unlockMB (void)
 {
    if (config.mbOptions.mbSharing)
@@ -262,10 +243,8 @@ void unlockMB (void)
    }
    close(lockHandle);
 }
-
-
-
-s16 multiUpdate (void)
+//---------------------------------------------------------------------------
+s16 multiUpdate(void)
 {
    fhandle  srcTxtHandle;
    fhandle  destTxtHandle;
@@ -273,7 +252,7 @@ s16 multiUpdate (void)
    fhandle  destHdrHandle;
    fhandle  destIdxHandle;
    fhandle  destToIdxHandle;
-   s16      recsRead;
+   int      recsRead;
    u16      count;
 #ifdef GOLDBASE
    u32      msgHdrOffset;
@@ -299,7 +278,7 @@ s16 multiUpdate (void)
    {
       logEntry("Updating actual message base files...", LOG_MSGBASE, 0);
       newLine();
-      flush();
+//    flush();
 
       if (lockMB())
          return (1);
@@ -354,10 +333,10 @@ s16 multiUpdate (void)
          close(destHdrHandle);
          close(srcTxtHandle);
          close(srcHdrHandle);
-	 unlockMB ();
-         logEntry ("Can't update the message base files", LOG_ALWAYS, 0);
-         newLine ();
-         return (1);
+         unlockMB();
+         logEntry("Can't update the message base files", LOG_ALWAYS, 0);
+         newLine();
+         return 1;
       }
       strcpy (helpPtr, "MSGTOIDX."MBEXTN);
       if ((destToIdxHandle = openP(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
@@ -426,29 +405,29 @@ s16 multiUpdate (void)
          return (1);
       }
 
-      lseek (srcTxtHandle, 0, SEEK_SET);
-      lseek (destTxtHandle, ((u32)msgTxtOffset) << 8, SEEK_SET);
+      lseek(srcTxtHandle, 0, SEEK_SET);
+      lseek(destTxtHandle, ((u32)msgTxtOffset) << 8, SEEK_SET);
 
       while ((recsRead = (read(srcTxtHandle, txtBuf, TXT_BUFSIZE*256)+1)>>8) != 0)
       {
          if ((testMBUnlockNow()) ||
              (write (destTxtHandle, txtBuf, recsRead << 8) != (recsRead << 8)))
          {
-	    free (txtBuf);
-            chsize (destTxtHandle, ((u32)msgTxtOffset) << 8);
+            free(txtBuf);
+            chsize(destTxtHandle, ((u32)msgTxtOffset) << 8);
             close(destTxtHandle);
             close(destToIdxHandle);
             close(destIdxHandle);
             close(destHdrHandle);
             close(srcTxtHandle);
             close(srcHdrHandle);
-            unlockMB ();
-            logEntry ("Can't update the message base files", LOG_ALWAYS, 0);
-            newLine ();
-            return (1);
+            unlockMB();
+            logEntry("Can't update the message base files", LOG_ALWAYS, 0);
+            newLine();
+            return 1;
          }
       }
-      free (txtBuf);
+      free(txtBuf);
 
       hdrBuf   = malloc (HDR_BUFSIZE*sizeof(msgHdrRec));
       idxBuf   = malloc (HDR_BUFSIZE*sizeof(msgIdxRec));
@@ -461,7 +440,7 @@ s16 multiUpdate (void)
          if (idxBuf != NULL)
             free (idxBuf);
          if (toIdxBuf != NULL)
-	    free (toIdxBuf);
+            free (toIdxBuf);
 
          chsize (destTxtHandle, ((u32)msgTxtOffset) << 8);
 
@@ -488,7 +467,7 @@ s16 multiUpdate (void)
          {
             hdrBuf[count].MsgNum   += msgNumOffset;
             hdrBuf[count].StartRec += msgTxtOffset;
-	    memcpy (&toIdxBuf[count], &hdrBuf[count].wtLength, 36);
+            memcpy(&toIdxBuf[count], &hdrBuf[count].wtLength, 36);
             idxBuf[count].MsgNum = hdrBuf[count].MsgNum;
             idxBuf[count].Board  = hdrBuf[count].Board;
          }
@@ -515,12 +494,13 @@ s16 multiUpdate (void)
             unlockMB ();
             logEntry ("Can't update the message base files", LOG_ALWAYS, 0);
             newLine ();
-	    return (1);
+            return 1;
          }
-         if ((testMBUnlockNow()) ||
-             (write (destHdrHandle, hdrBuf, recsRead*sizeof(msgHdrRec)) != recsRead*sizeof(msgHdrRec)) ||
-             (write (destIdxHandle, idxBuf, recsRead*sizeof(msgIdxRec)) != recsRead*sizeof(msgIdxRec)) ||
-             (write (destToIdxHandle, toIdxBuf, recsRead*sizeof(msgToIdxRec)) != recsRead*sizeof(msgToIdxRec)))
+         if (  testMBUnlockNow()
+            || (write(destHdrHandle  , hdrBuf  , recsRead * sizeof(msgHdrRec  )) != recsRead * sizeof(msgHdrRec  ))
+            || (write(destIdxHandle  , idxBuf  , recsRead * sizeof(msgIdxRec  )) != recsRead * sizeof(msgIdxRec  ))
+            || (write(destToIdxHandle, toIdxBuf, recsRead * sizeof(msgToIdxRec)) != recsRead * sizeof(msgToIdxRec))
+            )
          {
             free(hdrBuf);
             free(idxBuf);
@@ -571,9 +551,7 @@ s16 multiUpdate (void)
    }
    return 0;
 }
-
-
-
+//---------------------------------------------------------------------------
 static void readMsgInfo(u16 orgName)
 {
    fhandle msgInfoHandle;
@@ -589,9 +567,7 @@ static void readMsgInfo(u16 orgName)
 
    memcpy (&infoRecValid, &infoRec, sizeof(infoRecType));
 }
-
-
-
+//---------------------------------------------------------------------------
 static void writeMsgInfo(u16 orgName)
 {
    fhandle msgInfoHandle;
@@ -605,9 +581,7 @@ static void writeMsgInfo(u16 orgName)
    }
    close(msgInfoHandle);
 }
-
-
-
+//---------------------------------------------------------------------------
 void openBBSWr(u16 orgName)
 {
    readMsgInfo(orgName);
@@ -663,9 +637,7 @@ void openBBSWr(u16 orgName)
    hdrBufCount = 0;
    txtBufCount = 0;
 }
-
-
-
+//---------------------------------------------------------------------------
 #ifdef GOLDBASE
 static s16 writeText (char *msgText, char *seenBy, char *path, u16 skip,
                       u32 *startRec, u16 *numRecs)
@@ -749,9 +721,7 @@ static s16 writeText (char *msgText, char *seenBy, char *path, u16 skip,
    }
    return (0);
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 writeBBS (internalMsgType *message, u16 boardNum, u16 impSeenBy)
 {
    msgHdrRec     msgRa;
@@ -880,9 +850,7 @@ s16 writeBBS (internalMsgType *message, u16 boardNum, u16 impSeenBy)
    }
    return 0;
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 validate1BBS (void)
 {
    s16 error = 0;
@@ -913,9 +881,7 @@ s16 validate1BBS (void)
    }
    return (error);
 }
-
-
-
+//---------------------------------------------------------------------------
 void validate2BBS(u16 orgName)
 {
    fhandle tempHandle;
@@ -953,11 +919,7 @@ void validate2BBS(u16 orgName)
    if ( globVars.dupCount > globVars.dupCountV )
       globVars.dupCountV = globVars.dupCount;
 }
-
-
-
-
-
+//---------------------------------------------------------------------------
 extern  u16             forwNodeCount;
 extern  nodeFileType    nodeFileInfo;
 
@@ -982,11 +944,9 @@ static s16 processMsg(u16 areaIndex)
         echoAreaList[areaIndex].writeLevel >
         nodeFileInfo[count]->nodePtr->writeLevel))
    {
-	 printString("Security violation for area ");
-         printStringFill(echoAreaList[areaIndex].areaName);
-         newLine();
-	 globVars.badCount++;
-	 return 0;
+     printf("Security violation for area %s\n", echoAreaList[areaIndex].areaName);
+     globVars.badCount++;
+     return 0;
    }
 
    if (checkDup (message, echoAreaList[areaIndex].areaNameCRC))
@@ -1001,8 +961,7 @@ static s16 processMsg(u16 areaIndex)
 	 }
       }
 
-      printStringFill (dARROW" Duplicate message");
-      newLine();
+      puts(dARROW" Duplicate message");
       writeBBS (message, config.dupBoard, 1);
 //      if ( writeBBS (message, config.dupBoard, 1) )
 //         diskError = DERR_WRHDUP;
@@ -1010,7 +969,6 @@ static s16 processMsg(u16 areaIndex)
       globVars.dupCount++;
       return -1;
    }
-   printFill();
 
    echoAreaList[areaIndex].msgCount++;
    globVars.echoCount++;
@@ -1118,9 +1076,7 @@ static s16 processMsg(u16 areaIndex)
       return 2;
    return 1;
 }
-
-
-
+//---------------------------------------------------------------------------
 void moveBadBBS(void)
 {
    msgHdrRec   msgRa;
@@ -1150,22 +1106,17 @@ void moveBadBBS(void)
       if ( !result )
          break;
 
-      printString("(");
-#ifndef GOLDBASE
-      printInt((s16)msgIndex.MsgNum);
-#else
-      printLong(msgIndex.MsgNum);
-#endif
-      printString(") ");
+      printf("(%d) ", msgIndex.MsgNum);
       getKludgeNode(message->text, "\1FMAIL SRC: ", &globVars.packetSrcNode);
       getKludgeNode(message->text, "\1FMAIL DEST: ", &globVars.packetDestNode);
       globVars.packetDestAka = getLocalAkaNum(&globVars.packetDestNode);
 
       if ((areaIndex = getAreaCode(message->text)) < 0)
-      {  if ( areaIndex == BADMSG )
+      {
+         if ( areaIndex == BADMSG )
             newLine();
          else
-            gotoTab(0);
+            putchar('\r');
          continue;
       }
 
@@ -1177,29 +1128,12 @@ void moveBadBBS(void)
       if ( result < 0 )
          goto deleteMsg;
 
-      if ( echoAreaList[areaIndex].JAMdirPtr == NULL &&
-           echoAreaList[areaIndex].board )
-      {
-         sprintf(tempStr, "Moving message #%u to "MBNAME" area ", msgIndex.MsgNum);
-         printString(tempStr);
-         printString(echoAreaList[areaIndex].areaName);
-         newLine();
-//         writeBBS(message, echoAreaList[areaIndex].board, 1);
-      }
+      if (echoAreaList[areaIndex].JAMdirPtr == NULL && echoAreaList[areaIndex].board)
+         printf("Moving message #%u to "MBNAME" area %s\n", msgIndex.MsgNum, echoAreaList[areaIndex].areaName);
       else if (echoAreaList[areaIndex].JAMdirPtr == NULL)
-      {
-         sprintf(tempStr, "Deleting message #%u for pass through area ", msgIndex.MsgNum);
-         printString(tempStr);
-         printString(echoAreaList[areaIndex].areaName);
-         newLine();
-      }
+         printf("Deleting message #%u for pass through area %s\n", msgIndex.MsgNum, echoAreaList[areaIndex].areaName);
       else
-      {
-         sprintf(tempStr, "Moving message #%u to JAM area ", msgIndex.MsgNum);
-         printString(tempStr);
-         printString(echoAreaList[areaIndex].areaName);
-         newLine ();
-      }
+         printf("Moving message #%u to JAM area %s\n", msgIndex.MsgNum, echoAreaList[areaIndex].areaName);
 deleteMsg:
       lseek(msgToIdxHandle, (offset - 1) * (u32)sizeof(msgToIdxRec), SEEK_SET);
       write(msgToIdxHandle, "\x0b* Deleted *", 12);
@@ -1226,7 +1160,7 @@ deleteMsg:
    if ( move )
       newLine();
    else
-      gotoTab(0);
+      putchar('\r');
 
 //#pragma message ("Moet deze regel echt weg?")
 // memcpy (&infoRecValid, &infoRec, sizeof(infoRecType));
@@ -1236,9 +1170,7 @@ deleteMsg:
    lseek(msgHdrHandle, 0, SEEK_END);
    lseek(msgTxtHandle, 0, SEEK_END);
 }
-
-
-
+//---------------------------------------------------------------------------
 void closeBBSWr(u16 orgName)
 {
 
@@ -1264,8 +1196,7 @@ void closeBBSWr(u16 orgName)
 
    writeMsgInfo(orgName);
 }
-
-
+//---------------------------------------------------------------------------
 #if 0
 void openBBSRd(void)
 {
@@ -1303,8 +1234,7 @@ void openBBSRd(void)
    txtBufCount = 0;
 }
 #endif
-
-
+//---------------------------------------------------------------------------
 #ifndef GOLDBASE
 s16 scanBBS(u16 index, internalMsgType *message, u16 rescan)
 #else
@@ -1351,9 +1281,9 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
        (msgRa.MsgAttr & RA_LOCAL)) || rescan) &&
        (!(msgRa.MsgAttr & RA_DELETED)))
    {
-      if ( msgRa.NumRecs > ((u32)((u32)TEXT_SIZE-2048) >> 8) ) // !MSGSIZE
+      if ((u32)msgRa.NumRecs > ((u32)((u32)TEXT_SIZE - 2048) >> 8))
       {
-         gotoTab (0);
+         putchar('\r');
          sprintf (tempStr, "Message too big: message #%u in board #%u "dARROW" Skipped",
                            msgRa.MsgNum, (u16)msgRa.Board);
          logEntry (tempStr, LOG_ALWAYS, 0);
@@ -1369,7 +1299,7 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
                     &message->year, &message->month, &message->day,
                     &message->hours, &message->minutes) != 0)
       {
-         gotoTab (0);
+         putchar('\r');
          sprintf (tempStr, "Bad date in message base: message #%u in board #%u "dARROW" Skipped",
                            msgRa.MsgNum, msgRa.Board);
          logEntry (tempStr, LOG_MSGBASE, 0);
@@ -1414,8 +1344,8 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
       {
          if (_read (msgTxtHandle, &txtRa, 256) != 256)
          {
-            printString ("\nError reading MsgTxt."MBEXTN".\n");
-            return (0);
+            puts("\nError reading MsgTxt."MBEXTN".");
+            return 0;
          }
          strncpy (helpPtr, txtRa.txtStr, txtRa.txtLength);
          helpPtr += txtRa.txtLength;
@@ -1491,9 +1421,7 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
    }
    return (-1);
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 updateCurrHdrBBS (internalMsgType *message)
 {
    msgHdrRec     msgRa;
@@ -1598,8 +1526,7 @@ s16 updateCurrHdrBBS (internalMsgType *message)
    unlockMB ();
    return (0);
 }
-
-
+//---------------------------------------------------------------------------
 #if 0
 void closeBBSRd ()
 {
@@ -1610,8 +1537,7 @@ void closeBBSRd ()
    free (msgTxtBuf);
 }
 #endif
-
-
+//---------------------------------------------------------------------------
 s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle msgHandle1, fhandle msgHandle2)
 {
    fhandle         origMsgHdrHandle,
@@ -1688,11 +1614,9 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
       return (-1);
    }
 
-   printString ("Scanning for messages in area ");
-   printString (echoAreaList[echoIndex].areaName);
-   printString ("...\n");
-   sprintf (tempStr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, nodeStr(&config.akaList[echoAreaList[echoIndex].address].nodeNum));
-   makeNFInfo (&nfInfo, echoAreaList[echoIndex].address, &nodeInfo->node);
+   printf("Scanning for messages in area %s...\n", echoAreaList[echoIndex].areaName);
+   sprintf(tempStr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, nodeStr(&config.akaList[echoAreaList[echoIndex].address].nodeNum));
+   makeNFInfo(&nfInfo, echoAreaList[echoIndex].address, &nodeInfo->node);
 
    index = 0;
    while ((msgIdxBufCount = (read(tempHandle, msgIdxBuf, 256*sizeof(msgIdxRec))/3)) != 0)
@@ -1727,23 +1651,23 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
       }
    }
    newLine();
-   closeNetPktWr (&nfInfo);
+   closeNetPktWr(&nfInfo);
 
-   close (msgHdrHandle);
-   close (msgTxtHandle);
-   close (tempHandle);
+   close(msgHdrHandle);
+   close(msgTxtHandle);
+   close(tempHandle);
 
    msgHdrHandle = origMsgHdrHandle;
    msgTxtHandle = origMsgTxtHandle;
 
 next:
-   gotoTab(0);
-   sprintf (tempStr, "Rescanned %u messages in area %s", msgsFound, echoAreaList[echoIndex].areaName);
-   mgrLogEntry (tempStr);
-   strcat (tempStr, "\r");
-   write (msgHandle1, tempStr, strlen(tempStr));
-   write (msgHandle2, tempStr, strlen(tempStr));
+   putchar('\r');
+   sprintf(tempStr, "Rescanned %u messages in area %s", msgsFound, echoAreaList[echoIndex].areaName);
+   mgrLogEntry(tempStr);
+   strcat(tempStr, "\r");
+   write(msgHandle1, tempStr, strlen(tempStr));
+   write(msgHandle2, tempStr, strlen(tempStr));
 
-   return (msgsFound);
+   return msgsFound;
 }
-
+//---------------------------------------------------------------------------

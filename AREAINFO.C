@@ -40,7 +40,6 @@
 #include "log.h"
 #include "msgmsg.h"
 #include "nodeinfo.h"
-#include "output.h"
 #include "time.h"
 #include "utils.h"
 #include "version.h"

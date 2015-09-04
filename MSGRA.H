@@ -184,19 +184,23 @@ typedef struct
 
 
 typedef struct
-{  uchar wtLength;
-   uchar WhoTo[35];   } msgToIdxRec;
+{
+  uchar wtLength;
+  uchar WhoTo[35];
+} msgToIdxRec;
 
 typedef struct
 {
-   uchar txtLength;
-   uchar txtStr[255]; } msgTxtRec;
+  uchar txtLength;
+  uchar txtStr[255];
+} msgTxtRec;
 
 #ifdef GOLDBASE
 
 typedef struct
-{  u32           MsgNum,
-		 ReplyTo,
+{
+   u32           MsgNum,
+                 ReplyTo,
                  SeeAlsoNum;
    u16           TRead;
    u32           StartRec;
@@ -224,22 +228,28 @@ typedef struct
    u32           subjCrc;
    u32           wrTime;
    s32           recTime;
-   u32           checkSum;    } msgHdrRec;
+   u32           checkSum;
+} msgHdrRec;
 
 typedef struct
-{  u32   MsgNum;
-   u16   Board;   } msgIdxRec;
+{
+  u32 MsgNum;
+  u16 Board;
+} msgIdxRec;
 
 typedef struct
-  { u32  LowMsg,
-         HighMsg,
-         TotalActive;
-    u16  ActiveMsgs[MBBOARDS]; } infoRecType;
+{
+  u32 LowMsg
+    , HighMsg
+    , TotalActive;
+  u16  ActiveMsgs[MBBOARDS];
+} infoRecType;
 
 #else
 
 typedef struct
-{  u16           MsgNum,
+{
+   u16           MsgNum,
                  ReplyTo,
                  SeeAlsoNum,
                  TRead,
@@ -268,17 +278,22 @@ typedef struct
    u32           subjCrc;
    u32           wrTime;
    s32           recTime;
-   u32           checkSum;    } msgHdrRec;
+   u32           checkSum;
+} msgHdrRec;
 
 typedef struct
-{  u16   MsgNum;
-   uchar Board;   } msgIdxRec;
+{
+  u16   MsgNum;
+  uchar Board;
+} msgIdxRec;
 
 typedef struct
-  { u16  LowMsg,
-         HighMsg,
-         TotalActive,
-         ActiveMsgs[MBBOARDS]; } infoRecType;
+{
+  u16 LowMsg
+    , HighMsg
+    , TotalActive
+    , ActiveMsgs[MBBOARDS];
+} infoRecType;
 
 #endif
 

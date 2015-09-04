@@ -24,7 +24,6 @@
 #include <ctype.h>
 #include <dir.h>
 #include <dos.h>
-//#include <errno.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
@@ -41,7 +40,6 @@
 #include "msgmsg.h"
 #include "msgpkt.h"  // for openP
 #include "nodeinfo.h"
-#include "output.h"
 #include "utils.h"
 #include "version.h"
 
@@ -214,13 +212,13 @@ void initMsg (s16 noAreaFix)
   nodeNumType  origNode,
   destNode;
 
-  printString ("Scanning netmail directory...\n\n");
+  puts("Scanning netmail directory...\n");
 
   Delete(config.netPath, "*."MBEXTB);
   if (*config.pmailPath)
     Delete(config.pmailPath, "*."MBEXTB);
 
-  /* Check netmail dir for areafix and file attach messages  */
+  // Check netmail dir for areafix and file attach messages
 
   memset (fAttInfo, 0, sizeof(fAttInfo));
 
@@ -591,9 +589,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
                 &message->minutes,
                 &message->seconds) < 5)
     {
-      printString ("\nError in date: ");
-      printString (message->dateStr);
-      newLine ();
+      printf("\nError in date: %s\n", message->dateStr);
 
       message->day     =  1;
       message->month   =  1;
@@ -603,8 +599,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
     }
     else
     {
-      message->month = (((s16)strstr(upcaseMonths,strupr(tempStr1))-
-                         (s16)upcaseMonths)/3) + 1;
+      message->month = (((s16)strstr(upcaseMonths, strupr(tempStr1)) - (s16)upcaseMonths) / 3) + 1;
 
       if (message->year >= 80)
         message->year += 1900;
@@ -794,7 +789,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 
     if (msgHandle == -1)
     {
-      printString("Can't open output file.\n");
+      puts("Can't open output file.");
       return -1;
     }
 
@@ -805,7 +800,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
        )
     {
       close(msgHandle);
-      printString("Can't write to output file.\n");
+      puts("Can't write to output file.");
       return -1;
     }
     close(msgHandle);

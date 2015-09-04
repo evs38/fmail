@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -34,7 +34,6 @@
 #include "msgmsg.h"
 #include "msgpkt.h"
 #include "mtask.h"
-#include "output.h"
 #include "utils.h"
 
 
@@ -94,7 +93,7 @@ u32 jam_scan(u16 echoIndex, u32 jam_msgnum, u16 scanOne, internalMsgType *messag
     if (scanOne)
     {
       jam_close(jam_code);
-      gotoTab(0);
+      putchar('\r');
 
       return 0;
     }
@@ -171,9 +170,7 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   if (!(jam_code = jam_open(echoAreaList[echoIndex].JAMdirPtr, &jam_hdrinforec)))
     return 0;
 
-  printString("Scanning for messages in area ");
-  printString(echoAreaList[echoIndex].areaName);
-  printString("...\n");
+  printf("Scanning for messages in area %s...\n", echoAreaList[echoIndex].areaName);
   sprintf(tempstr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, nodeStr(&config.akaList[echoAreaList[echoIndex].address].nodeNum));
   makeNFInfo(&nfInfo, echoAreaList[echoIndex].address, &nodeInfo->node);
   count = jam_hdrinforec->ActiveMsgs;

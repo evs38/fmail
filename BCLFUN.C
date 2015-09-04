@@ -39,7 +39,6 @@
 #include "msgpkt.h"
 #include "mtask.h"
 #include "nodeinfo.h"
-#include "output.h"
 #include "utils.h"
 #include "version.h"
 

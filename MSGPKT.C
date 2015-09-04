@@ -42,7 +42,6 @@
 #include "msgpkt.h"
 #include "mtask.h"
 #include "nodeinfo.h"
-#include "output.h"
 #include "utils.h"
 #include "version.h"
 
@@ -424,9 +423,7 @@ s16 bgetdate( char *dateStr
   {
     if (sscanf(dateStr, "%hd %s %hd %hd:%hd:%hd", day, monthStr, year, hours, minutes, seconds) < 5)
     {
-      printString(" Error in date: ");
-      printString(dateStr);
-      newLine();
+      printf(" Error in date: %s\n", dateStr);
 
       *day     =  1;
       *month   =  1;
@@ -756,9 +753,9 @@ s16 writeEchoPkt(internalMsgType *message, s16 tinySeenByArea, echoToNodeType ec
       ((pmHdrType*)pktBufStart)->attribute = message->attribute;
       ((pmHdrType*)pktBufStart)->cost      = message->cost;
 
-      if (_write (pktHandle, pktBufStart, pktBufLen) != (int)pktBufLen )
+      if (_write(pktHandle, pktBufStart, pktBufLen) != (int)pktBufLen )
       {
-        printString ("Cannot write to PKT file.\n");
+        puts("Cannot write to PKT file.");
         return 1;
       }
 
@@ -768,7 +765,7 @@ s16 writeEchoPkt(internalMsgType *message, s16 tinySeenByArea, echoToNodeType ec
       {
         if (_write(pktHandle, &zero, 2) != 2)
         {
-          printString("Cannot write to PKT file.\n");
+          puts("Cannot write to PKT file.");
           close(pktHandle);
           return (1);
         }
@@ -872,7 +869,7 @@ s16 validateEchoPktWr(void)
    {
       if (totalPktSize > diskFree(config.outPath))
       {
-         printString("\nFreeing up diskspace...\n");
+         puts("\nFreeing up diskspace...");
 
          return closeEchoPktWr();
       }
@@ -1054,9 +1051,9 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
 
    if ((config.maxPktSize != 0) && (tempLen >= config.maxPktSize*(s32)1000))
    {
-      if (_write (pktHandle, &zero, 2) != 2)
+      if (_write(pktHandle, &zero, 2) != 2)
       {
-         printString("Cannot write to PKT file.\n");
+         puts("Cannot write to PKT file.");
          close(pktHandle);
          nfInfo->pktHandle = 0;
          return 1;

@@ -41,10 +41,10 @@ extern "C" {
 #define EXT_IDX         "j"BASE_EXT_IDX
 #define EXT_LRD         "j"BASE_EXT_LRD
 
-#define EXT_BCK_HDR     "!"BASE_EXT_HDR
-#define EXT_BCK_TXT     "!"BASE_EXT_TXT
-#define EXT_BCK_IDX     "!"BASE_EXT_IDX
-#define EXT_BCK_LRD     "!"BASE_EXT_LRD
+#define EXT_BCK_HDR     "~"BASE_EXT_HDR
+#define EXT_BCK_TXT     "~"BASE_EXT_TXT
+#define EXT_BCK_IDX     "~"BASE_EXT_IDX
+#define EXT_BCK_LRD     "~"BASE_EXT_LRD
 
 #define EXT_NEW_HDR     "$"BASE_EXT_HDR
 #define EXT_NEW_TXT     "$"BASE_EXT_TXT

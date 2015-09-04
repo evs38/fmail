@@ -237,7 +237,7 @@ int cdecl main(int argc, char *argv[])
   memset(&config, 0, sizeof(configType));
   strcpy(stpcpy(configFileName, configPath), dCFGFNAME);
 
-  if (((configHandle = open(configFileName, O_BINARY|O_RDWR|O_DENYNONE)) == -1) ||
+  if (((configHandle = open(configFileName, O_BINARY | O_RDWR)) == -1) ||
       ((count = _read(configHandle, &config, sizeof (configType))) == 0) ||
       (close(configHandle) == -1))
   {
@@ -798,10 +798,10 @@ int cdecl main(int argc, char *argv[])
       (config.versionMinor < 92) ||
       (config.versionMinor > CONFIG_MINOR))
   {
-    displayMessage (dCFGFNAME" was not created by FSetup version 0.90/0.92/0.94/0.96");
-    fillRectangle (' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
-    deInit (5);
-    return (0);
+    displayMessage(dCFGFNAME" was not created by FSetup version 0.90/0.92/0.94/0.96");
+    fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
+    deInit(5);
+    return 0;
   }
 
   if (config.versionMinor != CONFIG_MINOR)
@@ -810,37 +810,33 @@ int cdecl main(int argc, char *argv[])
     config.versionMinor = CONFIG_MINOR;
   }
 
-  defaultEnumRA =  (echoDefaultsRec.attrRA & BIT3) ?
-                   ((echoDefaultsRec.attrRA & BIT5) ? 1 : 2) : 0;
+  defaultEnumRA = (echoDefaultsRec.attrRA & BIT3)
+                ? ((echoDefaultsRec.attrRA & BIT5) ? 1 : 2) : 0;
 
   strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
-  if ((tempHandle = open(tempStr, O_BINARY|O_RDONLY|O_DENYNONE)) != -1)
+  if ((tempHandle = open(tempStr, O_BINARY | O_RDONLY)) != -1)
   {
-    badEchoCount = (read(tempHandle, badEchos,
-                          MAX_BAD_ECHOS*sizeof(badEchoType))+1)/sizeof(badEchoType);
-    close (tempHandle);
+    badEchoCount = read(tempHandle, badEchos, MAX_BAD_ECHOS * sizeof(badEchoType)) / sizeof(badEchoType);
+    close(tempHandle);
     if (badEchoCount)
     {
-      printStringFill ("Install new areas names found by FMail when it was tossing",
-                       ' ', 80, 0, 24, YELLOW, BLACK, MONO_NORM);
-      if ((ch = askBoolean ("New areas found. Install in AreaManager ?",
-                            'Y')) == 'Y')
-      {
+      printStringFill("Install new areas names found by FMail when it was tossing"
+                     , ' ', 80, 0, 24, YELLOW, BLACK, MONO_NORM);
+      if ((ch = askBoolean("New areas found. Install in AreaManager ?", 'Y')) == 'Y')
         areaMgr ();
-      }
+
       if (ch == 'N')
-      {
         unlink (tempStr);
-      }
+
       badEchoCount = 0;
     }
   }
 
   if ((warningMenu = createMenu(" WARNING ")) == NULL)
   {
-    displayMessage ("Not enough memory available");
-    deInit (5);
-    return(1);
+    displayMessage("Not enough memory available");
+    deInit(5);
+    return 1;
   }
   addItem(warningMenu, DISPLAY,
            "FSetup's AutoExport feature overwrites existing", 0, NULL, 0, 0, NULL);
@@ -853,9 +849,9 @@ int cdecl main(int argc, char *argv[])
 
   if ((autoExpMenu = createMenu(" AutoExport ")) == NULL)
   {
-    displayMessage ("Not enough memory available");
-    deInit (5);
-    return(1);
+    displayMessage("Not enough memory available");
+    deInit(5);
+    return 1;
   }
   addItem(autoExpMenu, NEW_WINDOW, "* WARNING *", 0, warningMenu, 6, 3,
            "Read this message before using AutoExport !");

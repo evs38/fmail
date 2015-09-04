@@ -39,7 +39,6 @@
 #include "msgmsg.h"
 #include "msgpkt.h"
 #include "nodeinfo.h"
-#include "output.h"
 #include "utils.h"
 
 
@@ -315,7 +314,7 @@ s16 pack(s16 argc, char *argv[], s32 switches)
       logEntry("Can't read "dPCKFNAME, LOG_ALWAYS, 1);
   }
 
-  printString("Packing messages...\n\n");
+  puts("Packing messages...\n");
 
   netIndex = 0;
 
