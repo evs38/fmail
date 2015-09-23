@@ -1178,12 +1178,9 @@ void Toss(int argc, char *argv[])
 
           if (count2 < echoCount)
           {
-            s32 space;
-#ifdef _DEBUG0
-            if (!JAMmaint(areaBuf, SW_R, config.sysopName, &space))
-#else
+            s32 space = 0;
+            // SW_R/SW_* as second argument for testing/debuging the function
             if (!JAMmaint(areaBuf, 0, config.sysopName, &space))
-#endif
             {
               areaBuf->stat.tossedTo = 0;
               putRec(CFG_ECHOAREAS, count);
@@ -2052,7 +2049,7 @@ int main(int argc, char *argv[])
 void myexit(void)
 {
 #pragma exit myexit
-#ifdef _DEBUG
+#ifdef _DEBUG0
   printf("\nPress any key to continue... ");
   getch();
   newLine();

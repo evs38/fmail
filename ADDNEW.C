@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -35,7 +35,6 @@
 #include "ftools.h"
 #include "ispathch.h"
 #include "log.h"
-#include "output.h"
 #include "update.h"
 #include "utils.h"
 

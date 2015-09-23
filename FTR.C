@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -39,7 +39,6 @@
 #include "msgra.h"
 #include "msgmsg.h"
 #include "log.h"
-#include "output.h"
 #include "utils.h"
 #include "ftools.h"
 #include "ftr.h"
@@ -203,8 +202,8 @@ s16 writeNetMsg (internalMsgType *message, s16 srcAka, nodeNumType *destNode,
 
   if (msgHandle == -1)
   {
-    printString ("Can't open output file.\n");
-    return (1);
+    puts("Can't open output file.");
+    return 1;
   }
 
   len = strlen(message->text)+1;
@@ -213,8 +212,8 @@ s16 writeNetMsg (internalMsgType *message, s16 srcAka, nodeNumType *destNode,
        sizeof(msgMsgType)) ||
       (_write (msgHandle, message->text, len) != len))
   {
-    close (msgHandle);
-    printString ("Can't write to output file.\n");
+    close(msgHandle);
+    puts("Can't write to output file.");
     return (1);
   }
   close(msgHandle);
@@ -360,65 +359,49 @@ s16 export (int argc, char *argv[])
 
   if ( argc < 4 || (argv[2][0] == '?' || argv[2][1] == '?') )
   {
-    printString ("Usage:\n\n"
-                 "    FTools Export <area name> <file name> [/D] [/F] [/T] [/S] [/X] [/P] [/K]\n\n"
-                 "    <area tag>   Name of the area to export\n"
-                 "    <file name>  Name of file to export messages to\n\n"
-                 "Switches:\n\n"
-                 "    /D           Omit 'Date' line\n"
-                 "    /F           Omit 'From' line\n"
-                 "    /T           Omit 'To' line\n"
-                 "    /S           Omit 'Subject' line\n"
-                 "    /X           Omit message text\n"
-                 "    /P           Exclude private messages\n"
-                 "    /K           Show kludges\n");
-    showCursor ();
-    return(0);
+    puts("Usage:\n\n"
+         "    FTools Export <area name> <file name> [/D] [/F] [/T] [/S] [/X] [/P] [/K]\n\n"
+         "    <area tag>   Name of the area to export\n"
+         "    <file name>  Name of file to export messages to\n\n"
+         "Switches:\n\n"
+         "    /D           Omit 'Date' line\n"
+         "    /F           Omit 'From' line\n"
+         "    /T           Omit 'To' line\n"
+         "    /S           Omit 'Subject' line\n"
+         "    /X           Omit message text\n"
+         "    /P           Exclude private messages\n"
+         "    /K           Show kludges");
+    return 0;
   }
 
-  switches = getSwitchFT (&argc, argv, SW_D|SW_F|SW_K|SW_P|SW_S|SW_T|SW_X);
+  switches = getSwitchFT(&argc, argv, SW_D|SW_F|SW_K|SW_P|SW_S|SW_T|SW_X);
 
-  initLog ("EXPORT", switches);
+  initLog("EXPORT", switches);
 
   if ((board = getBoardNum(argv[2], argc-2, &dummy, &areaPtr)) == -1)
-  {
     logEntry("This function does not yet support the JAM base", LOG_ALWAYS, 1000);
-  }
 
-  if ((text = malloc (32767)) == NULL)
-  {
-    logEntry ("Not enough memory available", LOG_ALWAYS, 2);
-  }
+  if ((text = malloc(32767)) == NULL)
+    logEntry("Not enough memory available", LOG_ALWAYS, 2);
 
-  if ((msgHdrBuf = malloc (HDR_BUFSIZE*sizeof(msgHdrRec))) == NULL)
-  {
-    logEntry ("Not enough memory to allocate message base file buffers", LOG_ALWAYS, 2);
-  }
+  if ((msgHdrBuf = malloc(HDR_BUFSIZE*sizeof(msgHdrRec))) == NULL)
+    logEntry("Not enough memory to allocate message base file buffers", LOG_ALWAYS, 2);
 
-  strcpy (tempStr, config.bbsPath);
-  strcat (tempStr, "msghdr."MBEXTN);
+  strcpy(stpcpy(tempStr, config.bbsPath), "msghdr."MBEXTN);
 
-  if ((msgHdrHandle = open(tempStr, O_RDONLY|O_BINARY|O_DENYNONE)) == -1)
-  {
+  if ((msgHdrHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1)
     logEntry ("Can't open message base files for input", LOG_ALWAYS, 1);
-  }
 
-  strcpy (tempStr, config.bbsPath);
-  strcat (tempStr, "msgtxt."MBEXTN);
+  strcpy(stpcpy(tempStr, config.bbsPath), "msgtxt."MBEXTN);
 
-  if ((msgTxtHandle = open(tempStr, O_RDONLY|O_BINARY|O_DENYNONE)) == -1)
-  {
-    logEntry ("Can't open message base files for input", LOG_ALWAYS, 1);
-  }
+  if ((msgTxtHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1)
+    logEntry("Can't open message base files for input", LOG_ALWAYS, 1);
 
-  if ((outHandle = open(argv[3], O_WRONLY|O_CREAT|O_TRUNC|O_TEXT,
-                        S_IREAD|S_IWRITE)) == -1)
-  {
+  if ((outHandle = open(argv[3], O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, S_IREAD | S_IWRITE)) == -1)
     logEntry ("Can't open output file", LOG_ALWAYS, 1);
-  }
 
-  sprintf (tempStr, "Exporting messages in board %u to file %s", board, strupr(argv[3]));
-  logEntry (tempStr, LOG_ALWAYS, 0);
+  sprintf(tempStr, "Exporting messages in board %u to file %s", board, strupr(argv[3]));
+  logEntry(tempStr, LOG_ALWAYS, 0);
 
   totalHdrBuf = 0;
   hdrBufCount = 0;
@@ -514,26 +497,25 @@ s16 export (int argc, char *argv[])
                 if ((helpPtr2 = strchr (helpPtr, '\n')) == NULL)
                   *helpPtr = 0;
                 else
-                  strcpy (helpPtr, helpPtr2+1);
+                  strcpy(helpPtr, helpPtr2+1);
               }
             }
             else
               helpPtr++;
           }
-          write (outHandle, text, strlen(text));
-          write (outHandle, "\n\n", 2);
+          write(outHandle, text, strlen(text));
+          write(outHandle, "\n\n", 2);
         }
       }
     }
     hdrBufCount++;
   }
 
-  close (msgHdrHandle);
-  close (msgTxtHandle);
-  close (outHandle);
+  close(msgHdrHandle);
+  close(msgTxtHandle);
+  close(outHandle);
 
-  showCursor ();
-  return (0);
+  return 0;
 }
 
 
@@ -555,7 +537,7 @@ static s16 getNetAka(char *areaTag)
 }
 
 
-s16 getBoardNum (char *areaTag, s16 valid, u16 *aka, rawEchoType **areaPtr)
+s16 getBoardNum(char *areaTag, s16 valid, u16 *aka, rawEchoType **areaPtr)
 {
   static      rawEchoType areaRec;
   u16         count;

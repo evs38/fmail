@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -35,7 +35,6 @@
 #include "cfgfile.h"
 #include "ftlog.h"
 #include "impdesc.h"
-#include "output.h"
 
 //---------------------------------------------------------------------------
 char *findCLiStr (char *s1, char *s2);
@@ -58,10 +57,11 @@ s16 importNAInfo(char *fileName)
       logEntry("Not enough memory", LOG_ALWAYS, 2);
 
    if ( read(NAHandle, buf, bufsize-1) != bufsize-1 )
-   {  free(buf);
+   {
+      free(buf);
       logEntry("Can't read file", LOG_ALWAYS, 2);
    }
-   close (NAHandle);
+   close(NAHandle);
    buf[bufsize] = 0;
 
    if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
@@ -71,20 +71,20 @@ s16 importNAInfo(char *fileName)
       logEntry("Can't open "dARFNAME, LOG_ALWAYS, 2);
    }
 
-   printString("Importing descriptions...\n\n");
+   puts("Importing descriptions...\n");
 
    while ( getRec(CFG_ECHOAREAS, count++) )
    {
       if ( (helpPtr = findCLiStr(buf, areaBuf->areaName)) == NULL )
-	 continue;
+         continue;
       while ( *helpPtr != ' ')
-	 ++helpPtr;
+         ++helpPtr;
       while ( *helpPtr == ' ')
          ++helpPtr;
       helpPtr2 = areaBuf->comment;
       xu = 0;
       while ( ++xu < ECHONAME_LEN && *helpPtr && *helpPtr != '\r' && *helpPtr != '\n' )
-	 *helpPtr2++ = *helpPtr++;
+         *helpPtr2++ = *helpPtr++;
       do
          *helpPtr2-- = 0;
       while ( helpPtr2 >= areaBuf->comment && *helpPtr2 == ' ' );
@@ -92,11 +92,11 @@ s16 importNAInfo(char *fileName)
       updated++;
    }
 
-   closeConfig (CFG_ECHOAREAS);
+   closeConfig(CFG_ECHOAREAS);
    free(buf);
 
-   sprintf (tempStr, "%u descriptions imported", updated);
+   sprintf(tempStr, "%u descriptions imported", updated);
    logEntry(tempStr, LOG_ALWAYS, 0);
 
-   return (0);
+   return 0;
 }

@@ -97,9 +97,10 @@ void openDup(void)
    strcpy(tempPath, configPath);
    strcat(tempPath, "FMAIL32.DUP");
 
-   if ( ((dupHandle = openP(tempPath, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
-        (read(dupHandle, &dupHdr, sizeof(dupHdrStruct)) != sizeof(dupHdrStruct)) ||
-        (filelength(dupHandle) != dupHdr.totalSize) )
+   if (  (dupHandle = openP(tempPath, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) == -1
+      || read(dupHandle, &dupHdr, sizeof(dupHdrStruct)) != sizeof(dupHdrStruct)
+      || filelength(dupHandle) != (long)dupHdr.totalSize
+      )
    {
       if (dupHandle != -1)
       {
@@ -120,15 +121,15 @@ void openDup(void)
    memset(dupBuffer, 0, config.kDupRecs*DUP_LEVEL*4096);
    if ( dupHandle != -1 )
    {
-      if (dupHdr.kRecs == config.kDupRecs)
+      if (dupHdr.kRecs == (u32)config.kDupRecs)
          read(dupHandle, dupBuffer, dupHdr.kRecs*DUP_LEVEL*4096);
       else
       {
          for (group = 0; group < 256; group++)
          {
             lseek(dupHandle, sizeof(dupHdrStruct)+dupHdr.kRecs*16*group, SEEK_SET);
-            read(dupHandle, &dupBuffer[config.kDupRecs * 4 * group], 16 * min(config.kDupRecs, dupHdr.kRecs));
-            if (dupHdr.nextDup[group] >= config.kDupRecs*4)
+            read(dupHandle, &dupBuffer[config.kDupRecs * 4 * group], 16 * min((u32)config.kDupRecs, dupHdr.kRecs));
+            if (dupHdr.nextDup[group] >= (u32)config.kDupRecs * 4)
                dupHdr.nextDup[group] = 0;
          }
          dupHdr.kRecs = config.kDupRecs;
@@ -248,7 +249,7 @@ void closeDup(void)
 
   if (  (dupHandle = openP(tempPath, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1
      || write(dupHandle, &dupHdr, sizeof(dupHdrStruct)) != sizeof(dupHdrStruct)
-     || write(dupHandle, dupBuffer, dupHdr.kRecs*DUP_LEVEL*4096) != DUP_LEVEL*dupHdr.kRecs*4096
+     || write(dupHandle, dupBuffer, dupHdr.kRecs * DUP_LEVEL * 4096) != (int)(DUP_LEVEL * dupHdr.kRecs * 4096)
      || close(dupHandle) == -1
      )
     logEntry("Can't write to dup file", LOG_ALWAYS, 0);

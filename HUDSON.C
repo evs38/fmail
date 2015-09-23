@@ -1,25 +1,26 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
- 
 #include <stdio.h>
 #include <string.h>
 #include <dir.h>
@@ -29,15 +30,14 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <time.h>
+
 #include "fmail.h"
+
 #include "ftlog.h"
-#include "output.h"
 #include "areainfo.h" /* needed for utils.h */
 #include "utils.h"
 #include "crc.h"
 #include "hudson.h"
-
-
 
 extern configType config;
 extern time_t     startTime;
@@ -50,7 +50,7 @@ fhandle msgIdxHandle;
 fhandle lockHandle;
 
 
-char *expandNameH (char *fileName)
+char *expandNameH(char *fileName)
 {
    static tempStrType expandStr;
 
@@ -126,9 +126,9 @@ s16 lockMB (void)
    if ((lock (lockHandle, sizeof(infoRecType) + 1, 1) == -1) &&
        (_doserrno == 0x21))
    {
-      printString ("Retrying to lock the message base\n\n");
-      setMBUnlockNow ();
-      time (&time1);
+      puts("Retrying to lock the message base\n");
+      setMBUnlockNow();
+      time(&time1);
 
       do
       {
@@ -140,12 +140,12 @@ s16 lockMB (void)
              (time2-time1 < 15));
       if (_doserrno == 0x21)
       {
-         logEntry ("Can't lock the message base for update", LOG_ALWAYS, 0);
-         close (lockHandle);
-         return (1);
+         logEntry("Can't lock the message base for update", LOG_ALWAYS, 0);
+         close(lockHandle);
+         return 1;
       }
    }
-   return (0);
+   return 0;
 }
 
 

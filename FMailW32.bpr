@@ -15,9 +15,8 @@
       OBJ.6\FMailW32\MSGRA.obj OBJ.6\FMailW32\MTASK.obj 
       OBJ.6\FMailW32\NODEINFO.obj OBJ.6\FMailW32\PACK.obj 
       OBJ.6\FMailW32\SENDSMTP.obj OBJ.6\FMailW32\SMTP.obj 
-      OBJ.6\FMailW32\SORTHB.obj OBJ.6\FMailW32\totalsec.obj 
-      OBJ.6\FMailW32\UTILS.obj OBJ.6\FMailW32\Version.obj 
-      OBJ.6\FMailW32\UTILS2.obj"/>
+      OBJ.6\FMailW32\SORTHB.obj OBJ.6\FMailW32\UTILS.obj 
+      OBJ.6\FMailW32\Version.obj OBJ.6\FMailW32\UTILS2.obj"/>
     <RESFILES value="FMailW32.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -45,7 +44,7 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-vGc -vGd -Od -Vx -Ve -C -X- -r- -a1 -6 -b- -d -k -y -v -vi- -tWC -tWM- -c"/>
+    <CFLAG1 value="-Od -Vx -Ve -C -X- -r- -a1 -6 -b- -d -k -y -v -vi- -tWC -tWM- -c"/>
     <PFLAGS value="-N2OBJ.6\FMailW32 -N0OBJ.6\FMailW32 -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zi"/>
@@ -55,7 +54,7 @@
   <LINKER>
     <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
     <ALLRES value="$(RESFILES)"/>
-    <ALLLIB value="cg32.lib $(LIBFILES) $(LIBRARIES) import32.lib cw32.lib"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cw32.lib"/>
     <OTHERFILES value=""/>
   </LINKER>
   <FILELIST>
@@ -86,7 +85,6 @@
       <FILE FILENAME="SENDSMTP.C" FORMNAME="" UNITNAME="SENDSMTP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="SMTP.C" FORMNAME="" UNITNAME="SMTP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="SORTHB.C" FORMNAME="" UNITNAME="SORTHB" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="totalsec.c" FORMNAME="" UNITNAME="totalsec" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UTILS.C" FORMNAME="" UNITNAME="UTILS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Version.c" FORMNAME="" UNITNAME="Version" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UTILS2.C" FORMNAME="" UNITNAME="UTILS2" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -106,7 +104,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=69
 Release=7
-Build=125
+Build=134
 Debug=1
 PreRelease=1
 Special=0
@@ -118,7 +116,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FMail mail tosser
-FileVersion=1.69.7.125
+FileVersion=1.69.7.134
 InternalName=fmail
 LegalCopyright=Copyright (c) 1991 - 2015 FMail developers
 LegalTrademarks=
@@ -175,6 +173,6 @@ RemoteDebug=0
 [Compiler]
 ShowInfoMsgs=0
 LinkDebugVcl=0
-LinkCGLIB=1
+LinkCGLIB=0
   </IDEOPTIONS>
 </PROJECT>

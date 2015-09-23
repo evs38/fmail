@@ -497,9 +497,9 @@ s16 multiUpdate(void)
             return 1;
          }
          if (  testMBUnlockNow()
-            || (write(destHdrHandle  , hdrBuf  , recsRead * sizeof(msgHdrRec  )) != recsRead * sizeof(msgHdrRec  ))
-            || (write(destIdxHandle  , idxBuf  , recsRead * sizeof(msgIdxRec  )) != recsRead * sizeof(msgIdxRec  ))
-            || (write(destToIdxHandle, toIdxBuf, recsRead * sizeof(msgToIdxRec)) != recsRead * sizeof(msgToIdxRec))
+            || (write(destHdrHandle  , hdrBuf  , recsRead * sizeof(msgHdrRec  )) != (int)(recsRead * sizeof(msgHdrRec  )))
+            || (write(destIdxHandle  , idxBuf  , recsRead * sizeof(msgIdxRec  )) != (int)(recsRead * sizeof(msgIdxRec  )))
+            || (write(destToIdxHandle, toIdxBuf, recsRead * sizeof(msgToIdxRec)) != (int)(recsRead * sizeof(msgToIdxRec)))
             )
          {
             free(hdrBuf);
@@ -821,18 +821,12 @@ s16 writeBBS (internalMsgType *message, u16 boardNum, u16 impSeenBy)
          lseek(msgHdrHandle, 0, SEEK_END);
          lseek(msgIdxHandle, 0, SEEK_END);
          lseek(msgToIdxHandle, 0, SEEK_END);
-         if (((u16)_write (msgHdrHandle, msgHdrBuf,
-                                    HDR_BUFSIZE*sizeof(msgHdrRec)) !=
-                                               HDR_BUFSIZE*sizeof(msgHdrRec)) ||
-             (_write (msgIdxHandle, msgIdxBuf,
-                                    HDR_BUFSIZE*sizeof(msgIdxRec)) !=
-                                               HDR_BUFSIZE*sizeof(msgIdxRec)) ||
-             (_write (msgToIdxHandle, msgToIdxBuf,
-                                    HDR_BUFSIZE*sizeof(msgToIdxRec)) !=
-                                               HDR_BUFSIZE*sizeof(msgToIdxRec)))
-         {
+         if (  _write(msgHdrHandle  , msgHdrBuf  , HDR_BUFSIZE * sizeof(msgHdrRec  )) != (int)(HDR_BUFSIZE * sizeof(msgHdrRec  ))
+            || _write(msgIdxHandle  , msgIdxBuf  , HDR_BUFSIZE * sizeof(msgIdxRec  )) != (int)(HDR_BUFSIZE * sizeof(msgIdxRec  ))
+            || _write(msgToIdxHandle, msgToIdxBuf, HDR_BUFSIZE * sizeof(msgToIdxRec)) != (int)(HDR_BUFSIZE * sizeof(msgToIdxRec))
+            )
             return 1;
-         }
+
          hdrBufCount = 0;
       }
 
@@ -860,15 +854,9 @@ s16 validate1BBS (void)
       lseek(msgHdrHandle, 0, SEEK_END);
       lseek(msgIdxHandle, 0, SEEK_END);
       lseek(msgToIdxHandle, 0, SEEK_END);
-      error = (_write (msgHdrHandle, msgHdrBuf,
-                                     hdrBufCount*sizeof(msgHdrRec)) !=
-                                     hdrBufCount*sizeof(msgHdrRec)) ||
-              (_write (msgIdxHandle, msgIdxBuf,
-                                     hdrBufCount*sizeof(msgIdxRec)) !=
-                                     hdrBufCount*sizeof(msgIdxRec)) ||
-              (_write (msgToIdxHandle, msgToIdxBuf,
-                                       hdrBufCount*sizeof(msgToIdxRec)) !=
-                                       hdrBufCount*sizeof(msgToIdxRec));
+      error =  _write(msgHdrHandle  , msgHdrBuf  , hdrBufCount * sizeof(msgHdrRec  )) != (int)(hdrBufCount * sizeof(msgHdrRec  ))
+            || _write(msgIdxHandle  , msgIdxBuf  , hdrBufCount * sizeof(msgIdxRec  )) != (int)(hdrBufCount * sizeof(msgIdxRec  ))
+            || _write(msgToIdxHandle, msgToIdxBuf, hdrBufCount * sizeof(msgToIdxRec)) != (int)(hdrBufCount * sizeof(msgToIdxRec));
       hdrBufCount = 0;
    }
 

@@ -269,11 +269,11 @@ u16 jam_newidx(u32 jam_code, JAMIDXREC *jam_idxrec, u32 *jam_msgnum)
 u16 jam_getidx(u32 jam_code, JAMIDXREC *jam_idxrec, u32 jam_msgnum)
 {  dummy = jam_code;
 
-   if ( !jam_msgnum )
+   if (!jam_msgnum)
       jam_msgnum++;
-   if ( fmseek(jam_idxhandle, (jam_msgnum-1)*sizeof(JAMIDXREC), SEEK_SET, 1) != (jam_msgnum-1)*sizeof(JAMIDXREC) )
+   if (fmseek(jam_idxhandle, (jam_msgnum - 1) * sizeof(JAMIDXREC), SEEK_SET, 1) != (long)((jam_msgnum - 1) * sizeof(JAMIDXREC)))
       return 0;
-   if ( read(jam_idxhandle, jam_idxrec, sizeof(JAMIDXREC)) != sizeof(JAMIDXREC) )
+   if (read(jam_idxhandle, jam_idxrec, sizeof(JAMIDXREC)) != sizeof(JAMIDXREC))
       return 0;
    return 1;
 }
@@ -541,9 +541,9 @@ u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_su
     logEntry("Subfields too big", LOG_ALWAYS, 0);
     return 0;
   }
-  if ( read(jam_hdrhandle, jam_subfields, (udef)jam_hdrrec->SubfieldLen) != jam_hdrrec->SubfieldLen )
+  if (read(jam_hdrhandle, jam_subfields, (udef)jam_hdrrec->SubfieldLen) != (int)jam_hdrrec->SubfieldLen)
     return 0;
-  if ( message != NULL )
+  if (message != NULL)
   {
     struct tm *tm = gmtime((const time_t *)&jam_hdrrec->DateWritten);
     message->year    = tm->tm_year + 1900;
@@ -556,62 +556,70 @@ u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_su
   }
   return 1;
 }
-
-
-
+//---------------------------------------------------------------------------
 u16 jam_puthdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec)
 {
   dummy = jam_code;
 
   if ( (u32)fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 3) != jam_hdroffset )
     return 0;
+
   if ( write(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR) )
     return 0;
+
   return 1;
 }
-
-
-
+//---------------------------------------------------------------------------
 u16 jam_newhdr(u32 jam_code, u32 *jam_hdrOffset, JAMHDR *jam_hdrrec, char *jam_subfields)
-{  dummy = jam_code;
+{
+  dummy = jam_code;
 
-   if ( (signed long)(*jam_hdrOffset = lseek(jam_hdrhandle, 0, SEEK_END)) < 0 )
-      return 0;
-   if ( jam_hdrrec->SubfieldLen >= _JAM_MAXSUBLENTOT )
-   {  logEntry("Subfields too big", LOG_ALWAYS, 0);
-      jam_hdrrec->SubfieldLen = 0;
-   }
-   if ( write(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR) )
-      return 0;
-   if ( write(jam_hdrhandle, jam_subfields, (udef)jam_hdrrec->SubfieldLen) != (udef)jam_hdrrec->SubfieldLen)
-      return 0;
-   return 1;
+  if ((signed long)(*jam_hdrOffset = lseek(jam_hdrhandle, 0, SEEK_END)) < 0)
+    return 0;
+
+  if (jam_hdrrec->SubfieldLen >= _JAM_MAXSUBLENTOT)
+  {
+    logEntry("Subfields too big", LOG_ALWAYS, 0);
+    jam_hdrrec->SubfieldLen = 0;
+  }
+  if (write(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR))
+    return 0;
+
+  if (write(jam_hdrhandle, jam_subfields, (udef)jam_hdrrec->SubfieldLen) != (int)jam_hdrrec->SubfieldLen)
+    return 0;
+
+  return 1;
 }
-
+//---------------------------------------------------------------------------
 u16 jam_gettxt(u32 jam_code, u32 jam_txtoffset, u32 jam_txtlen, char *txt)
 {
   dummy = jam_code;
 
-  if ( jam_txtlen >= TEXT_SIZE )
+  if ((int)jam_txtlen >= TEXT_SIZE)
     return 0;
-  if ( (u32)fmseek(jam_txthandle, jam_txtoffset, SEEK_SET, 4) != jam_txtoffset )
+
+  if (fmseek(jam_txthandle, jam_txtoffset, SEEK_SET, 4) != (int)jam_txtoffset)
     return 0;
+
 // !!!!!!!!!!
-  if (read(jam_txthandle, txt, (udef)jam_txtlen) != jam_txtlen)
+  if (read(jam_txthandle, txt, (udef)jam_txtlen) != (int)jam_txtlen)
     return 0;
+
   return 1;
 }
-
+//---------------------------------------------------------------------------
 u16 jam_puttext(JAMHDR *jam_hdrrec, char *txt)
 {
-   if ( (signed long)(jam_hdrrec->TxtOffset = lseek(jam_txthandle, 0, SEEK_END)) < 0 )
-      return 0;
-   jam_hdrrec->TxtLen = strlen(txt);
-   if ( write(jam_txthandle, txt, (size_t)jam_hdrrec->TxtLen) != (size_t)jam_hdrrec->TxtLen )
-      return 0;
-   return 1;
-}
+  if ((signed long)(jam_hdrrec->TxtOffset = lseek(jam_txthandle, 0, SEEK_END)) < 0)
+    return 0;
 
+  jam_hdrrec->TxtLen = strlen(txt);
+  if (write(jam_txthandle, txt, (size_t)jam_hdrrec->TxtLen) != (int)jam_hdrrec->TxtLen)
+    return 0;
+
+  return 1;
+}
+//---------------------------------------------------------------------------
 static s16 useLocks = -1;
 
 u16 jam_getlock(u32 jam_code)

@@ -114,7 +114,7 @@ typedef struct
 **  Message header
 */
 typedef struct
-    {
+{
     CHAR8   Signature[4];              /* <J><A><M> followed by <NUL> */
     UINT16  Revision;                  /* CURRENTREVLEV */
     UINT16  ReservedWord;              /* Reserved */
@@ -135,8 +135,8 @@ typedef struct
     UINT32  TxtLen;                    /* Length of message text */
     UINT32  PasswordCRC;               /* CRC-32 of password to access msg */
     UINT32  Cost;                      /* Cost of message */
-    }
-    JAMHDR, _JAMDATA * JAMHDRptr;
+
+}   JAMHDR, _JAMDATA * JAMHDRptr;
 
 /*
 **  Message header subfield types

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -36,12 +36,12 @@
 #include "fmail.h"
 
 #include "areainfo.h"
-#include "output.h"
-#include "ftools.h"
-#include "utils.h"
-#include "ftr.h"
 #include "cfgfile.h"
+#include "ftools.h"
+#include "ftlog.h"
+#include "ftr.h"
 #include "mtask.h"
+#include "utils.h"
 
 
 #define MAX_DISPLAY 128
@@ -82,21 +82,15 @@ s16 packValid (nodeNumType *node, char *packedNodes)
    {
       if ((*(u16*)helpPtr == '*') ||
           (strchr(helpPtr,':')!=NULL))
-      {
          strcpy (nodeTempStr,helpPtr);
-      }
       else
       {
          if (strchr(helpPtr,'/')!=NULL)
          {
             if ((helpPtr2=strchr(nodeTempStr,':'))!=NULL)
-            {
-               strcpy (helpPtr2+1,helpPtr);
-            }
+               strcpy(helpPtr2 + 1, helpPtr);
             else
-            {
-               logEntry("Bad node on command line",LOG_ALWAYS,4);
-            }
+               logEntry("Bad node on command line", LOG_ALWAYS, 4);
          }
          else
          {
@@ -177,73 +171,70 @@ s16 packValid (nodeNumType *node, char *packedNodes)
 s16 notify(int argc, char *argv[])
 {
    char            *helpPtr;
-   s32             switches;
-   u16             nodeCount, count, d;
-   u16             bufCount;
-   tempStrType     tempStr;
-   u32             oldGroup;
+   s32              switches;
+   u16              nodeCount
+                  , count
+                  , d;
+   u16              bufCount;
+   tempStrType      tempStr;
+   u32              oldGroup;
    internalMsgType *message;
-   u16             areaCount;
+   u16              areaCount;
    areaSortType    *areaSort;
-   headerType      *nodeHeader, *areaHeader;
+   headerType      *nodeHeader
+                 , *areaHeader;
    rawEchoType     *areaBuf;
    nodeInfoType    *nodeBuf;
-   tempStrType     nodeString;
+   tempStrType      nodeString;
 
-   if ((argc >= 3) && ((argv[2][0] == '?') || (argv[2][1] == '?')))
+   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
    {
-      printString ("Usage:\n\n"
-                   "    FTools Notify [<node> [<node> ...] [/A|/N]\n\n"
-                   "    [<node>]  Node number(s) of systems to send reports to.\n"
-                   "              Wildcards are allowed. If omitted, * (all nodes) is assumed.\n"
-                   "              If wildcards are used, only qualified nodes that are marked\n"
-                   "              in the Node Manager will receive a notify message.\n"
-                   "Switches:\n\n"
-                   "    /A   Send Area Status report\n"
-                   "    /N   Send Node Status report\n");
-      showCursor ();
-      return(0);
+      puts("Usage:\n\n"
+           "    FTools Notify [<node> [<node> ...] [/A|/N]\n\n"
+           "    [<node>]  Node number(s) of systems to send reports to.\n"
+           "              Wildcards are allowed. If omitted, * (all nodes) is assumed.\n"
+           "              If wildcards are used, only qualified nodes that are marked\n"
+           "              in the Node Manager will receive a notify message.\n"
+           "Switches:\n\n"
+           "    /A   Send Area Status report\n"
+           "    /N   Send Node Status report");
+
+      return 0;
    }
    switches = getSwitchFT (&argc, argv, SW_A|SW_N);
 
-   initLog ("NOTIFY", switches);
+   initLog("NOTIFY", switches);
 
    if (switches == 0)
    {
-      logEntry ("Nothing to do!", LOG_ALWAYS, 0);
-      showCursor ();
-      return(0);
+      logEntry("Nothing to do!", LOG_ALWAYS, 0);
+
+      return 0;
    }
 
    if (argc < 3)
-   {
-      strcpy (nodeString, "*");
-   }
+      strcpy(nodeString, "*");
    else
    {
       *nodeString = 0;
       for (count = 2; count < argc-1; count++)
       {
-         strcat (nodeString, argv[count]);
-         strcat (nodeString, " ");
+         strcat(nodeString, argv[count]);
+         strcat(nodeString, " ");
       }
-      strcat (nodeString, argv[count]);
+      strcat(nodeString, argv[count]);
    }
 
    if (((message = malloc (INTMSG_SIZE)) == NULL) ||
        ((areaSort = malloc (MAX_AREAS*sizeof(areaSortType))) == NULL))
-   {
-      logEntry ("Not enough memory available", LOG_ALWAYS, 2);
-   }
+      logEntry("Not enough memory available", LOG_ALWAYS, 2);
 
-   memset (message, 0, INTMSG_SIZE);
+   memset(message, 0, INTMSG_SIZE);
 
-   strcpy (message->fromUserName, *config.sysopName?config.sysopName:"FMail");
+   strcpy(message->fromUserName, *config.sysopName?config.sysopName:"FMail");
 
    if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
-   {
-      logEntry ("Can't open file "dARFNAME, LOG_ALWAYS, 1);
-   }
+      logEntry("Can't open file "dARFNAME, LOG_ALWAYS, 1);
 
    for (areaCount = 0; areaCount<areaHeader->totalRecords; areaCount++)
    {
@@ -255,18 +246,18 @@ s16 notify(int argc, char *argv[])
 
       count = 0;
       while ((count < MAX_AREAS) && (count < areaCount) && (areaBuf->group >= areaSort[count].group))
-      {
-	 count++;
-      }
+         count++;
+
       if (count < MAX_AREAS)
-      {  memmove (&areaSort[count+1], &areaSort[count], sizeof(areaSortType)*(areaCount-count));
+      {
+         memmove(&areaSort[count+1], &areaSort[count], sizeof(areaSortType)*(areaCount-count));
          areaSort[count].index = areaCount;
          areaSort[count].group = areaBuf->group;
       }
    }
 
    if (!openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf))
-          logEntry ("Can't open file "dNODFNAME, LOG_ALWAYS, 1);
+      logEntry ("Can't open file "dNODFNAME, LOG_ALWAYS, 1);
 
    if (switches & SW_N)
    {
@@ -520,6 +511,6 @@ s16 notify(int argc, char *argv[])
    }
    closeConfig (CFG_ECHOAREAS);
    closeConfig (CFG_NODES);
-   showCursor ();
-   return (0);
+
+   return 0;
 }

@@ -176,11 +176,14 @@ void writedata(const char *fn, const char *data, size_t n)
   }
 }
 //---------------------------------------------------------------------------
-int writefile(fhandle h, char *buf, int s)
+int writefile(fhandle h, char *obuf, int os, char *buf, int s)
 {
+  if (s == os && 0 == memcmp(obuf, buf, s))
+    return 0;  // If data isn't changed, don't write it.
+
   if (  0 != lseek(h, 0, SEEK_SET)
-     || (s > 0 && s != write(h, buf, s))
-     || 0 != ftruncate(h, s)
+     || (s >  0 && s != write(h, buf, s))
+     || (s < os && 0 != ftruncate(h, s))
      )
   {
     tempStrType tstr;
@@ -218,13 +221,14 @@ static u16        *lrBuf    = NULL;
 static u32        *msgidBuf = NULL;
 static u32        *replyBuf = NULL;
 
-s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSaved);
+s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name);
 
 //---------------------------------------------------------------------------
 void logComb(const char *fs, const char *ds)
 {
   tempStrType ts;
   sprintf(ts, fs, ds);
+  newLine();
   logEntry(ts, LOG_DEBUG, 0);
 }
 //---------------------------------------------------------------------------
@@ -359,7 +363,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   JAMHDR       *headerRec;
 
 #ifdef _DEBUG
-  if (JAMmaintOld(areaPtr, switches, name, spaceSaved))
+  if (JAMmaintOld(areaPtr, switches, name))
     return -1;
 #endif
 
@@ -607,6 +611,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   {
     JAMLREAD *jamlrr = (JAMLREAD *)d.ibJLR
            , *jamlrw = (JAMLREAD *)d.obJLR;
+    u32 msgNumHigh = maxMsg > 0 ? maxMsg - 1 : 0;
 
     printf("LastRead ");
 
@@ -620,23 +625,28 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
       jamlrw->UserCRC = jamlrr->UserCRC;
       jamlrw->UserID  = jamlrr->UserID;
 
-      msgNum = jamlrr->LastReadMsg - oldBaseMsgNum - 1;
-      // check msgNum: (msgNum >= LRSIZE - 1) ? LRSIZE - 1 : msgNum
-      jamlrw->LastReadMsg = d.lrBuf[msgNum] + headerInfo->BaseMsgNum;
-      msgNum = jamlrr->HighReadMsg - oldBaseMsgNum - 1;
-      jamlrw->HighReadMsg = d.lrBuf[msgNum] + headerInfo->BaseMsgNum;
+      msgNum = jamlrr->LastReadMsg - oldBaseMsgNum;
+      jamlrw->LastReadMsg = d.lrBuf[min(msgNum, msgNumHigh)]; // + headerInfo->BaseMsgNum; == always 1
+      msgNum = jamlrr->HighReadMsg - oldBaseMsgNum;
+      jamlrw->HighReadMsg = d.lrBuf[min(msgNum, msgNumHigh)]; // + headerInfo->BaseMsgNum; == always 1
 
       jamlrr++;
       jamlrw++;
     }
   }
-  *spaceSaved += sizeJDX - highJDX
-               + sizeJDT - highJDT
-               + sizeJHR - highJHR;
+  {
+    s32 ss = sizeJDX - highJDX
+           + sizeJDT - highJDT
+           + sizeJHR - highJHR;
 #ifdef _DEBUG
-  sprintf(tempStr, "Space saved: %d", *spaceSaved);
-  logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
+    if (ss != 0)
+    {
+      sprintf(tempStr, "Space saved: %d", ss);
+      logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
+    }
 #endif
+    *spaceSaved += ss;
+  }
   if (JAMerror)
   {
     newLine();
@@ -662,10 +672,10 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
     logEntry("Save data", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
     // save data.
-    if (  0 != writefile(d.hJLR, d.obJLR, sizeJLR)
-       || 0 != writefile(d.hJDX, d.obJDX, highJDX)
-       || 0 != writefile(d.hJDT, d.obJDT, highJDT)
-       || 0 != writefile(d.hJHR, d.obJHR, highJHR)
+    if (  0 != writefile(d.hJLR, d.ibJLR, sizeJLR, d.obJLR, sizeJLR)
+       || 0 != writefile(d.hJDX, d.ibJDX, sizeJDX, d.obJDX, highJDX)
+       || 0 != writefile(d.hJDT, d.ibJDT, sizeJDT, d.obJDT, highJDT)
+       || 0 != writefile(d.hJHR, d.ibJHR, sizeJHR, d.obJHR, highJHR)
        )
       JAMerror = -1;
 
@@ -687,7 +697,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 }
 #ifdef _DEBUG
 //---------------------------------------------------------------------------
-s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSaved)
+s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
 {
   s16           JAMerror = 0;
   fhandle       JHRhandle
@@ -714,6 +724,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name, s32 *space
   u32           bufCount
               , delCount;
   time_t        msgTime;
+  s32           spaceSaved;
 
 #ifdef _DEBUG
   sprintf(tempStr, "O Processing JAM area: %s", areaPtr->areaName);
@@ -1147,9 +1158,16 @@ jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->are
       }
     }
   }
-  *spaceSaved += filelength(JDXhandle) - filelength(JDXhandleNew)
-               + filelength(JDThandle) - filelength(JDThandleNew)
-               + filelength(JHRhandle) - filelength(JHRhandleNew);
+  spaceSaved = filelength(JDXhandle) - filelength(JDXhandleNew)
+             + filelength(JDThandle) - filelength(JDThandleNew)
+             + filelength(JHRhandle) - filelength(JHRhandleNew);
+
+  if (spaceSaved != 0)
+  {
+    sprintf(tempStr, "o Space saved: %d", spaceSaved);
+    logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
+  }
+
   fsclose(JLRhandleNew);
   fsclose(JDXhandleNew);
   fsclose(JDThandleNew);

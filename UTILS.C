@@ -673,9 +673,10 @@ char *findCLStr(char *s1, const char *s2)
   return NULL;
 }
 //---------------------------------------------------------------------------
-s16 scanDate (unsigned char *dtPtr,
-	      u16 *year,  u16 *month, u16 *day,
-	      u16 *hours, u16 *minutes)
+s16 scanDate( unsigned char *dtPtr
+            , u16 *year , u16 *month, u16 *day
+            , u16 *hours, u16 *minutes
+            )
 {
   char timeStr[6];
   char dateStr[9];
@@ -683,9 +684,9 @@ s16 scanDate (unsigned char *dtPtr,
   if (dtPtr[0] > 5 || dtPtr[6] > 8)
     return -1;
 
-  strncpy(timeStr, dtPtr+1, 5);
+  strncpy(timeStr, dtPtr + 1, 5);
   timeStr[dtPtr[0]] = 0;
-  strncpy(dateStr, dtPtr+7, 8);
+  strncpy(dateStr, dtPtr + 7, 8);
   dateStr[dtPtr[6]] = 0;
 
   if (  sscanf(timeStr, "%hu%*c%hu", hours, minutes) != 2
@@ -696,14 +697,13 @@ s16 scanDate (unsigned char *dtPtr,
   return 0;
 }
 //---------------------------------------------------------------------------
-s32 checkDate (u16 year,  u16 month,   u16 day,
-	       u16 hours, u16 minutes, u16 seconds)
+s32 checkDate(u16 year, u16 month, u16 day, u16 hours, u16 minutes, u16 seconds)
 {
     struct tm tms;
 
     if (((year >= 100) && (year  < 1980)) || (year  > 2099) ||
-	(month < 1)    || (month > 12)   ||
-	(day   < 1)    || (day   > 31))
+        (month < 1)    || (month > 12)   ||
+        (day   < 1)    || (day   > 31))
     {
        year  = 1980;
        month = 1;

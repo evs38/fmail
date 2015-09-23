@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -37,51 +37,87 @@
 u16  allowConversion = 0;
 extern configType config;
 
-
+//---------------------------------------------------------------------------
 typedef struct
 {
-   const char    *fileName;
-   u16            recordSize;
-   const u16      bufferSize;
-   fhandle        handle;
-   char          *recBuf;
-   const char    *revString;
-   u16            revNumber;
-   const u16      dataType;
-   const u16      init;
-   u16            status;
-   headerType     header;
+  const char *fileName;
+  u16         recordSize;
+  const u16   bufferSize;
+  fhandle     handle;
+  char       *recBuf;
+  const char *revString;
+  u16         revNumber;
+  const u16   dataType;
+  const u16   init;
+  u16         status;
+  headerType  header;
 
 } configFileInfoType;
-
+//---------------------------------------------------------------------------
+#define dINITTAG(A,B) ((u16)(A) + ((u16)(B) << 8))
 
 static configFileInfoType fileData[MAX_CFG_FILES] =
 {
-    /* CFG_GENERAL */
-    {       dCFGFNAME, 0, sizeof(configType), -1, NULL,
-            "FMail Configuration File rev. 1.1\x1a",
-            0x0110, DATATYPE_CF, 'CF', 0 },
-    /* CFG_NODES */
-    {       dNODFNAME, 0, sizeof(nodeInfoType), -1, NULL,
-            "FMail Node File rev. 1.1\x1a",
-            0x0110, DATATYPE_NO, 'NO', 0 },
-    /* CFG_ECHOAREAS */
-    {       dARFNAME, 0, RAWECHO_SIZE, -1, NULL,
-            "FMail Area File rev. 1.1\x1a",
-            0x0110, DATATYPE_AE, 'AE', 0 },
-    /* CFG_AREADEF */
-    {       dARDFNAME, 0, RAWECHO_SIZE, -1, NULL,
-            "FMail Area File rev. 1.1\x1a",
-            0x0110, DATATYPE_AD, 'AD', 0 }
+  // CFG_GENERAL
+  {
+    dCFGFNAME                                // fileName
+  , 0                                        // recordSize
+  , sizeof(configType)                       // bufferSize
+  , -1                                       // handle
+  , NULL                                     // recBuf
+  , "FMail Configuration File rev. 1.1\x1a"  // revString
+  , 0x0110                                   // revNumber
+  , DATATYPE_CF                              // dataType
+  , dINITTAG('C','F')                        // init
+  , 0                                        // status
+  }
+  // CFG_NODES
+, {
+    dNODFNAME
+  , 0
+  , sizeof(nodeInfoType)
+  , -1
+  , NULL
+  , "FMail Node File rev. 1.1\x1a"
+  , 0x0110
+  , DATATYPE_NO
+  , dINITTAG('N','O')
+  , 0
+  }
+  // CFG_ECHOAREAS
+, {
+    dARFNAME
+  , 0
+  , RAWECHO_SIZE
+  , -1
+  , NULL
+  , "FMail Area File rev. 1.1\x1a"
+  , 0x0110
+  , DATATYPE_AE
+  , dINITTAG('A','E')
+  , 0
+  }
+  // CFG_AREADEF
+, {
+    dARDFNAME
+  , 0
+  , RAWECHO_SIZE
+  , -1
+  , NULL
+  , "FMail Area File rev. 1.1\x1a"
+  , 0x0110
+  , DATATYPE_AD
+  , dINITTAG('A','D')
+  , 0
+  }
 };
-
+//---------------------------------------------------------------------------
 
 static configFileInfoType cfiArr[MAX_CFG_FILES] = { 0 };
 
 extern char configPath[128];  // Path to directory with FMail config files
 
-
-
+//---------------------------------------------------------------------------
 s16 openConfig(u16 fileType, headerType **header, void **buf)
 {
    pathType areaInfoPath, tempPath;
@@ -130,19 +166,19 @@ restart:
       if (memcmp(cfiArr[fileType].header.versionString, "FMail", 5) ||
           (cfiArr[fileType].header.headerSize < sizeof(headerType)) ||
           ((!allowConversion || converted) && cfiArr[fileType].header.recordSize < fileData[fileType].recordSize) ||
-      (cfiArr[fileType].header.dataType != fileData[fileType].dataType))
+          (cfiArr[fileType].header.dataType != fileData[fileType].dataType))
       {
 error:   close(cfiArr[fileType].handle);
-     cfiArr[fileType].handle = -1;
-     *header = NULL;
-     *buf = NULL;
-     return 0;
+         cfiArr[fileType].handle = -1;
+         *header = NULL;
+         *buf = NULL;
+         return 0;
       }
       if ( cfiArr[fileType].header.recordSize < fileData[fileType].recordSize ||
            ((fileType == CFG_ECHOAREAS || fileType == CFG_AREADEF) &&
            cfiArr[fileType].header.recordSize > fileData[fileType].recordSize) )
       {
-         /* convert old record format */
+         // convert old record format
          oldAreasFile = (fileType == CFG_ECHOAREAS || fileType == CFG_AREADEF) &&
                         cfiArr[fileType].header.recordSize < sizeof(rawEchoType)-(MAX_FORWARDDEF-MAX_FORWARDOLD)*sizeof(nodeNumXType);
 
@@ -153,14 +189,16 @@ error:   close(cfiArr[fileType].handle);
          if ( (cfiArr[fileType].recBuf = (char*)malloc(fileData[fileType].bufferSize)) == NULL )
             goto error;
          if ( (nodeNumBuf = (nodeNumType*)malloc(MAX_FORWARDOLD * sizeof(nodeNumType))) == NULL )
-         {  free(cfiArr[fileType].recBuf);
+         {
+            free(cfiArr[fileType].recBuf);
             goto error;
          }
          if ((temphandle = open(tempPath, O_BINARY|O_RDWR|O_CREAT|O_DENYALL, S_IREAD|S_IWRITE)) == -1)
-         {  free(cfiArr[fileType].recBuf);
+         {
+            free(cfiArr[fileType].recBuf);
             cfiArr[fileType].recBuf = NULL;
             goto error;
-     }
+         }
          orgRecSize = cfiArr[fileType].header.recordSize;
          strcpy((char*)cfiArr[fileType].header.versionString, fileData[fileType].revString);
          cfiArr[fileType].header.revNumber    = fileData[fileType].revNumber;
@@ -170,21 +208,25 @@ error:   close(cfiArr[fileType].handle);
          time(&cfiArr[fileType].header.lastModified);
          write(temphandle, &cfiArr[fileType].header, sizeof(headerType));
          for ( count = 0; count < cfiArr[fileType].header.totalRecords; count++ )
-         {  memset(cfiArr[fileType].recBuf, 0, fileData[fileType].recordSize);
-            if ( read(cfiArr[fileType].handle, cfiArr[fileType].recBuf, orgRecSize) != orgRecSize )
-        {  free(cfiArr[fileType].recBuf);
-           cfiArr[fileType].recBuf = NULL;
-           close(temphandle);
-           unlink(tempPath);
-           goto error;
-        }
-            if ( oldAreasFile )
-            {  memcpy(nodeNumBuf, &((rawEchoType*)cfiArr[fileType].recBuf)->readSecRA, MAX_FORWARDOLD * sizeof(nodeNumType));
+         {
+            memset(cfiArr[fileType].recBuf, 0, fileData[fileType].recordSize);
+            if (read(cfiArr[fileType].handle, cfiArr[fileType].recBuf, orgRecSize) != orgRecSize)
+            {
+              free(cfiArr[fileType].recBuf);
+              cfiArr[fileType].recBuf = NULL;
+              close(temphandle);
+              unlink(tempPath);
+              goto error;
+            }
+            if (oldAreasFile)
+            {
+               memcpy(nodeNumBuf, &((rawEchoType*)cfiArr[fileType].recBuf)->readSecRA, MAX_FORWARDOLD * sizeof(nodeNumType));
                memcpy(cfiArr[fileType].recBuf + offsetof(rawEchoType, readSecRA),
                       cfiArr[fileType].recBuf + offsetof(rawEchoType, readSecRA) + MAX_FORWARDOLD * sizeof(nodeNumType),
                       offsetof(rawEchoType, forwards) - offsetof(rawEchoType, readSecRA));
                for ( count2 = 0; count2 < MAX_FORWARDOLD; count2++ )
-               {  memset(&((rawEchoType*)cfiArr[fileType].recBuf)->forwards[count2], 0, sizeof(nodeNumXType));
+               {
+                  memset(&((rawEchoType*)cfiArr[fileType].recBuf)->forwards[count2], 0, sizeof(nodeNumXType));
                   ((rawEchoType*)cfiArr[fileType].recBuf)->forwards[count2].nodeNum = nodeNumBuf[count2];
                }
                memset(&((rawEchoType*)cfiArr[fileType].recBuf)->forwards[MAX_FORWARDOLD], 0, (MAX_FORWARD-MAX_FORWARDOLD)*sizeof(nodeNumXType));
@@ -193,7 +235,8 @@ error:   close(cfiArr[fileType].handle);
             }
             if (write(temphandle, cfiArr[fileType].recBuf, cfiArr[fileType].header.recordSize) !=
                                                            cfiArr[fileType].header.recordSize)
-            {  free(cfiArr[fileType].recBuf);
+            {
+               free(cfiArr[fileType].recBuf);
                cfiArr[fileType].recBuf = NULL;
                close(temphandle);
                unlink(tempPath);
@@ -215,159 +258,174 @@ error:   close(cfiArr[fileType].handle);
       }
    }
 #ifndef __32BIT__
-   if ( fileType == 1 && cfiArr[fileType].header.totalRecords > 340 )
-      goto error;
+  if ( fileType == 1 && cfiArr[fileType].header.totalRecords > 340 )
+    goto error;
 #endif
-   if ((cfiArr[fileType].recBuf = malloc(fileData[fileType].bufferSize)) == NULL)
-      goto error;
-   *header = &cfiArr[fileType].header;
-   *buf    = cfiArr[fileType].recBuf;
-   return 1;
+  if ((cfiArr[fileType].recBuf = malloc(fileData[fileType].bufferSize)) == NULL)
+    goto error;
+  *header = &cfiArr[fileType].header;
+  *buf    = cfiArr[fileType].recBuf;
+
+  return 1;
 }
-
-
+//---------------------------------------------------------------------------
 s16 getRec(u16 fileType, s16 index)
 {
-   if (cfiArr[fileType].handle == -1) return 0;
+  if (cfiArr[fileType].handle == -1)
+    return 0;
 
-   if (lseek(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
-             cfiArr[fileType].header.recordSize*(s32)index, SEEK_SET) == -1)
-   {  return 0;
-   }
-   if (read(cfiArr[fileType].handle, cfiArr[fileType].recBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
-   {  return 0;
-   }
-   return 1;
+  if (lseek( cfiArr[fileType].handle, cfiArr[fileType].header.headerSize
+           + cfiArr[fileType].header.recordSize * (s32)index, SEEK_SET) == -1
+     )
+    return 0;
+
+  if (read(cfiArr[fileType].handle, cfiArr[fileType].recBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
+    return 0;
+
+  return 1;
 }
-
-
+//---------------------------------------------------------------------------
 s16 putRec(u16 fileType, s16 index)
 {
-   if (cfiArr[fileType].handle == -1) return 0;
+  if (cfiArr[fileType].handle == -1)
+    return 0;
 
-   *(u16*)cfiArr[fileType].recBuf = fileData[fileType].init;
-   if (lseek(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
-             cfiArr[fileType].header.recordSize*(s32)index, SEEK_SET) == -1)
-   {  return 0;
-   }
-   if (write (cfiArr[fileType].handle, cfiArr[fileType].recBuf,
-          cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
-   {  return 0;
-   }
-   cfiArr[fileType].status = 1;
-   return 1;
+  *(u16*)cfiArr[fileType].recBuf = fileData[fileType].init;
+  if (lseek( cfiArr[fileType].handle, cfiArr[fileType].header.headerSize
+           + cfiArr[fileType].header.recordSize * (s32)index, SEEK_SET) == -1
+     )
+    return 0;
+
+  if (write( cfiArr[fileType].handle, cfiArr[fileType].recBuf
+           , cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize
+     )
+    return 0;
+
+  cfiArr[fileType].status = 1;
+
+  return 1;
 }
-
-
+//---------------------------------------------------------------------------
 s16 insRec(u16 fileType, s16 index)
 {
-   s16  count;
-   void *tempBuf;
+  s16  count;
+  void *tempBuf;
 
-   if (cfiArr[fileType].handle == -1) return 0;
+  if (cfiArr[fileType].handle == -1)
+    return 0;
 
-   *(u16*)cfiArr[fileType].recBuf = fileData[fileType].init;
+  *(u16*)cfiArr[fileType].recBuf = fileData[fileType].init;
 
-   if ((tempBuf = malloc(cfiArr[fileType].header.recordSize)) == NULL)
+  if ((tempBuf = malloc(cfiArr[fileType].header.recordSize)) == NULL)
+    return 0;
+
+  count = cfiArr[fileType].header.totalRecords;
+
+  while (--count >= index)
+  {
+    if ( lseek(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize
+       + cfiArr[fileType].header.recordSize*(s32)count, SEEK_SET) == -1
+       )
+    {
+      free(tempBuf);
       return 0;
+    }
+    if (read(cfiArr[fileType].handle, tempBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
+    {
+      free(tempBuf);
+      return 0;
+    }
+    if (write(cfiArr[fileType].handle, tempBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
+    {
+      free(tempBuf);
+      return 0;
+    }
+  }
+  free(tempBuf);
+  if (lseek( cfiArr[fileType].handle, cfiArr[fileType].header.headerSize
+           + cfiArr[fileType].header.recordSize*(s32)index, SEEK_SET) == -1
+     )
+    return 0;
 
-   count = cfiArr[fileType].header.totalRecords;
+  if (write(cfiArr[fileType].handle, cfiArr[fileType].recBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
+    return 0;
 
-   while (--count >= index)
-   {  if (lseek(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
-        cfiArr[fileType].header.recordSize*(s32)count, SEEK_SET) == -1)
-      {  free(tempBuf);
-         return 0;
-      }
-      if (read(cfiArr[fileType].handle, tempBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
-      {  free(tempBuf);
-         return 0;
-      }
-      if (write(cfiArr[fileType].handle, tempBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
-      {  free(tempBuf);
-         return 0;
-      }
-   }
-   free(tempBuf);
-   if (lseek(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
-             cfiArr[fileType].header.recordSize*(s32)index, SEEK_SET) == -1)
-     return 0;
+  cfiArr[fileType].header.totalRecords++;
+  if (lseek(cfiArr[fileType].handle, 0, SEEK_SET) == -1)
+    return 0;
 
-   if (write(cfiArr[fileType].handle, cfiArr[fileType].recBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
-     return 0;
+  time(&cfiArr[fileType].header.lastModified);
+  if (write(cfiArr[fileType].handle, &cfiArr[fileType].header, cfiArr[fileType].header.headerSize) != cfiArr[fileType].header.headerSize)
+    return 0;
 
-   cfiArr[fileType].header.totalRecords++;
-   if (lseek(cfiArr[fileType].handle, 0, SEEK_SET) == -1)
-     return 0;
+  cfiArr[fileType].status = 1;
 
-   time(&cfiArr[fileType].header.lastModified);
-   if (write(cfiArr[fileType].handle, &cfiArr[fileType].header, cfiArr[fileType].header.headerSize) != cfiArr[fileType].header.headerSize)
-     return 0;
-
-   cfiArr[fileType].status = 1;
-   return 1;
+  return 1;
 }
-
-
+//---------------------------------------------------------------------------
 s16 delRec(u16 fileType, s16 index)
 {
-   if (cfiArr[fileType].handle == -1) return 0;
-   while (++index < cfiArr[fileType].header.totalRecords)
-   {  if (lseek(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
-                cfiArr[fileType].header.recordSize*(s32)index, SEEK_SET) == -1)
-      {  return 0;
-      }
-      if (read(cfiArr[fileType].handle, cfiArr[fileType].recBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
-      {  return 0;
-      }
-      if (lseek(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
-                cfiArr[fileType].header.recordSize*(s32)(index-1), SEEK_SET) == -1)
-      {  return 0;
-      }
-      if (write(cfiArr[fileType].handle, cfiArr[fileType].recBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
-      {  return 0;
-      }
-   }
-   chsize(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
-          cfiArr[fileType].header.recordSize*(s32)--cfiArr[fileType].header.totalRecords);
+  if (cfiArr[fileType].handle == -1)
+    return 0;
 
-   if (lseek(cfiArr[fileType].handle, 0, SEEK_SET) == -1)
-   {  return 0;
-   }
-   time(&cfiArr[fileType].header.lastModified);
-   write(cfiArr[fileType].handle, &cfiArr[fileType].header, cfiArr[fileType].header.headerSize);
+  while (++index < cfiArr[fileType].header.totalRecords)
+  {
+    if (lseek(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
+              cfiArr[fileType].header.recordSize*(s32)index, SEEK_SET) == -1)
+      return 0;
 
-   cfiArr[fileType].status = 1;
-   return 1;
+    if (read(cfiArr[fileType].handle, cfiArr[fileType].recBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
+      return 0;
+
+    if (lseek(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
+              cfiArr[fileType].header.recordSize*(s32)(index-1), SEEK_SET) == -1)
+      return 0;
+
+    if (write(cfiArr[fileType].handle, cfiArr[fileType].recBuf, cfiArr[fileType].header.recordSize) != cfiArr[fileType].header.recordSize)
+      return 0;
+
+  }
+  chsize( cfiArr[fileType].handle, cfiArr[fileType].header.headerSize
+        + cfiArr[fileType].header.recordSize*(s32)--cfiArr[fileType].header.totalRecords);
+
+  if (lseek(cfiArr[fileType].handle, 0, SEEK_SET) == -1)
+    return 0;
+
+  time(&cfiArr[fileType].header.lastModified);
+  write(cfiArr[fileType].handle, &cfiArr[fileType].header, cfiArr[fileType].header.headerSize);
+
+  cfiArr[fileType].status = 1;
+
+  return 1;
 }
-
-
+//---------------------------------------------------------------------------
 s16 chgNumRec(u16 fileType, s16 number)
 {
-    cfiArr[fileType].header.totalRecords = number;
-    cfiArr[fileType].status = 1;
-    return 1;
+  cfiArr[fileType].header.totalRecords = number;
+  cfiArr[fileType].status = 1;
+
+  return 1;
 }
-
-
+//---------------------------------------------------------------------------
 s16 closeConfig(u16 fileType)
 {
-   if (cfiArr[fileType].handle == -1) return 0;
+  if (cfiArr[fileType].handle == -1)
+    return 0;
 
-   if ((cfiArr[fileType].status == 1) &&
-       (lseek(cfiArr[fileType].handle, 0, SEEK_SET) != -1))
-   {
-      time(&cfiArr[fileType].header.lastModified);
-      write(cfiArr[fileType].handle, &cfiArr[fileType].header, cfiArr[fileType].header.headerSize);
-      chsize(cfiArr[fileType].handle, cfiArr[fileType].header.headerSize+
-                      cfiArr[fileType].header.recordSize*
-                                      (s32)cfiArr[fileType].header.totalRecords);
-   }
-   close(cfiArr[fileType].handle);
-   cfiArr[fileType].handle = -1;
-   free(cfiArr[fileType].recBuf);
-   cfiArr[fileType].recBuf = NULL;
+  if (  cfiArr[fileType].status == 1
+     && lseek(cfiArr[fileType].handle, 0, SEEK_SET) != -1
+     )
+  {
+    time(&cfiArr[fileType].header.lastModified);
+    write(cfiArr[fileType].handle, &cfiArr[fileType].header, cfiArr[fileType].header.headerSize);
+    chsize( cfiArr[fileType].handle, cfiArr[fileType].header.headerSize
+          + cfiArr[fileType].header.recordSize * (s32)cfiArr[fileType].header.totalRecords);
+  }
+  close(cfiArr[fileType].handle);
+  cfiArr[fileType].handle = -1;
+  free(cfiArr[fileType].recBuf);
+  cfiArr[fileType].recBuf = NULL;
 
-   return 1;
+  return 1;
 }
-
+//---------------------------------------------------------------------------
