@@ -318,88 +318,90 @@ s16 openPktRd(char *pktName, s16 secure)
    return 0;
 }
 //---------------------------------------------------------------------------
-s16 bscanstart (void)
+s16 bscanstart(void)
 {
-   u16 offset;
+  u16 offset;
 
-   do
-   {
-      if (endBuf-startBuf < 2)
-      {
-         offset = 0;
-         if (endBuf-startBuf == 1)
-         {
-            pktRdBuf[0] = pktRdBuf[startBuf];
-            offset = 1;
-         }
-         startBuf = 0;
-         oldStart = 0;
-         if ((endBuf = _read (pktHandle, pktRdBuf+offset,
-                              PKT_BUFSIZE-offset) + offset) < 2)
-            return (EOF);
-      }
-   }
-   while (*(u16*)(pktRdBuf+startBuf++) != 2);
-   startBuf++;
-   return (0);
-}
-//---------------------------------------------------------------------------
-s16 bgetw (u16 *w)
-{
-   u16 offset;
-
-   if (endBuf-startBuf < 2)
-   {
+  do
+  {
+    if (endBuf - startBuf < 2)
+    {
       offset = 0;
-      if (endBuf-startBuf == 1)
+      if (endBuf - startBuf == 1)
       {
-         pktRdBuf[0] = pktRdBuf[startBuf];
-         offset = 1;
+        pktRdBuf[0] = pktRdBuf[startBuf];
+        offset = 1;
       }
       startBuf = 0;
       oldStart = 0;
-      if ((endBuf = _read (pktHandle, pktRdBuf+offset,
-                           PKT_BUFSIZE-offset) + offset) < 2)
-         return (EOF);
-   }
-   *w = *(u16*)(pktRdBuf+startBuf);
-   startBuf += 2;
-   return (0);
+      if ((endBuf = _read(pktHandle, pktRdBuf + offset, PKT_BUFSIZE - offset) + offset) < 2)
+        return EOF;
+    }
+  }
+  while (*(u16*)(pktRdBuf + startBuf++) != 2);
+
+  startBuf++;
+
+  return 0;
+}
+//---------------------------------------------------------------------------
+s16 bgetw(u16 *w)
+{
+  u16 offset;
+
+  if (endBuf - startBuf < 2)
+  {
+    offset = 0;
+    if (endBuf - startBuf == 1)
+    {
+      pktRdBuf[0] = pktRdBuf[startBuf];
+      offset = 1;
+    }
+    startBuf = 0;
+    oldStart = 0;
+    if ((endBuf = _read(pktHandle, pktRdBuf + offset, PKT_BUFSIZE - offset) + offset) < 2)
+      return EOF;
+  }
+  *w = *(u16*)(pktRdBuf + startBuf);
+  startBuf += 2;
+
+  return 0;
 }
 //---------------------------------------------------------------------------
 static s16 bgets(char *s, size_t n) // !MSGSIZE
 {
-   size_t sLen = 0;
-   size_t m;
-   char *helpPtr;
+  size_t sLen = 0;
+  size_t m;
+  char *helpPtr;
 
-   while ((helpPtr = memccpy(s + sLen, pktRdBuf + startBuf, 0, m = min(n - sLen, (size_t)endBuf - (size_t)startBuf))) == NULL)
-   {
-      sLen += m;
-      if (sLen == n)
-      {
-         if ( n )
-            s[n-1] = 0;
-         else
-            *s = 0;
-               return EOF;
-      }
-      startBuf = 0;
-      oldStart = 0;
-      endBuf   = _read (pktHandle, pktRdBuf, PKT_BUFSIZE);
-      if (endBuf == 0)
-      {
-         /*--- put extra zero at end of PKT file */
-               pktRdBuf[0] = 0;
-         ++endBuf;
-      }
-   }
+  while ((helpPtr = memccpy(s + sLen, pktRdBuf + startBuf, 0, m = min(n - sLen, (size_t)endBuf - (size_t)startBuf))) == NULL)
+  {
+    sLen += m;
+    if (sLen == n)
+    {
+      if (n)
+        s[n - 1] = 0;
+      else
+        *s = 0;
+
+      return EOF;
+    }
+    startBuf = 0;
+    oldStart = 0;
+    endBuf   = _read(pktHandle, pktRdBuf, PKT_BUFSIZE);
+    if (endBuf == 0)
+    {
+      /*--- put extra zero at end of PKT file */
+      pktRdBuf[0] = 0;
+      ++endBuf;
+    }
+  }
 #ifdef __32BIT__
-   startBuf += helpPtr - s - sLen;
+  startBuf += helpPtr - s - sLen;
 #else
-   startBuf += (u16)helpPtr - (u16)s - (u16)sLen;
+  startBuf += (u16)helpPtr - (u16)s - (u16)sLen;
 #endif
-   return 0;
+  return 0;
 }
 //---------------------------------------------------------------------------
 s16 bgetdate( char *dateStr
@@ -411,8 +413,8 @@ s16 bgetdate( char *dateStr
 
 #pragma messsage("Lengte ivm 2000 verhoogd van 21 naar 23. Nog controleren!")
 
-  if (bgets(dateStr, 23) || strlen (dateStr) < 15)
-   return (EOF);
+  if (bgets(dateStr, 23) || strlen(dateStr) < 15)
+    return EOF;
 
   *seconds = 0;
 
@@ -497,8 +499,8 @@ s16 readPkt(internalMsgType *message)
   {
     if (check++)
     {
-          startBuf = oldStart;
-          if (check == 2)
+      startBuf = oldStart;
+      if (check == 2)
       {
         newLine();
         logEntry("Skipping garbage in PKT file...", LOG_ALWAYS, 0);
@@ -522,8 +524,8 @@ s16 readPkt(internalMsgType *message)
         || bgets(message->toUserName  , 36)
         || bgets(message->fromUserName, 36)
         || bgets(message->subject     , 72)
-        )
-    ;
+        );
+
   bgets(message->text, TEXT_SIZE - 0x0800);
 
   return 0;

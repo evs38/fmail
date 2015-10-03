@@ -798,7 +798,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                       {
                         if (*(helpPtr = strchr (message->text, '\r') + 1) == '\n')
                           helpPtr++;
-                        memmove(message->text,helpPtr,strlen(helpPtr)+1);
+                        memmove(message->text, helpPtr, strlen(helpPtr) + 1);
                       }
 
                       if (config.mbOptions.removeRe)

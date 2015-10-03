@@ -1,3 +1,34 @@
+2015-10-03  1.69..9.79-Beta
+  * jamfunc.c: Fixed date/time import in jambase from pkt message (DST issue)
+  * jammaint.c: Some little issues in the new jammaint function fixed. Better logging.
+
+2015-09-23  1.69.7.134-Beta
+  * Fixed 2 bugs in the new jammaint function.
+  * ftools now also only uses stdio screen output.
+  * ftools and fmail now compile without any warnings under BCB6.
+  * totalsec.c is not used, so deleted, and removed from the project files.
+
+2015-09-04  1.69.7.125-Beta
+  * FMail only uses stdio functions for output to the console, so output.c is
+    nolonger needed/linked.
+
+2015-08-20  1.69.7.121-Beta
+  * JAMMAINT.C compiles without warnings in Borland. Still needs to be tested!
+
+2015-08-20  1.69.7.120-Beta
+  * Don't change read buffers, so they can be used to be written to backup files.
+
+2015-08-18  1.69.7.120-Beta
+  * Coded jammaint memory routines, still needs compiling, testing, debugging.
+
+2015-08-12  1.69.7.119-Beta
+  * Lots of none functional changes to make it compile with cblocks/mingw.
+    Still compiles with Borland. Not finished yet!
+
+2015-06-19  1.69.7.114-Beta
+  * 'No rescan allowed' option for areas, converted to 'Allow rescan' option.
+    'Which is more clear to users.
+
 2015-06-05  1.69.6.114-Beta
   * No Rescan allowed option for areas
 

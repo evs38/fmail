@@ -178,7 +178,7 @@ void writedata(const char *fn, const char *data, size_t n)
 //---------------------------------------------------------------------------
 int writefile(fhandle h, char *obuf, int os, char *buf, int s)
 {
-  if (s == os && 0 == memcmp(obuf, buf, s))
+  if (s == os && (s <= 0 || 0 == memcmp(obuf, buf, s)))
     return 0;  // If data isn't changed, don't write it.
 
   if (  0 != lseek(h, 0, SEEK_SET)
@@ -187,7 +187,7 @@ int writefile(fhandle h, char *obuf, int os, char *buf, int s)
      )
   {
     tempStrType tstr;
-    sprintf(tstr, "Problem writing JAM base file (your fucked!) [%s]", strerror(errno));
+    sprintf(tstr, "*** Problem writing JAM base file (your fucked!) [%s]", strerror(errno));
     logEntry(tstr, LOG_ALWAYS, 2);
     return 1;
   }
@@ -197,7 +197,7 @@ int writefile(fhandle h, char *obuf, int os, char *buf, int s)
 char *memwrite(char *dest, u32 *offset, const char *src, u32 n, u32 *high, u32 max)
 {
   if (*offset + n > max)
-    logEntry("Buffer error on JAM bases maintenance", LOG_ALWAYS, 2);
+    logEntry("*** Buffer error on JAM bases maintenance", LOG_ALWAYS, 2);
 
   dest += *offset;
   memcpy(dest, src, n);
@@ -379,7 +379,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   {
     CleanUp(&d);
     newLine();
-    sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaName);
+    sprintf(tempStr, "*** JAM area %s was not found or was locked", areaPtr->areaName);
     logEntry(tempStr, LOG_ALWAYS, 0);
     return 1;
   }
@@ -388,24 +388,29 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   {
     CleanUp(&d);
     newLine();
-    logEntry("SHARE is required when Message Base Sharing is enabled", LOG_ALWAYS, 0);
+    logEntry("*** SHARE is required when Message Base Sharing is enabled", LOG_ALWAYS, 0);
     return 1;
   }
 
   if (  InitFileBufs(d.hJHR, &d.ibJHR, &d.obJHR, &sizeJHR) < 0
-     || InitFileBufs(d.hJDT, &d.ibJDT, &d.obJDT, &sizeJDT) < 0
-     || InitFileBufs(d.hJDX, &d.ibJDX, &d.obJDX, &sizeJDX) < 0
+     || InitFileBufs(d.hJDT, &d.ibJDT, &d.obJDT, &sizeJDT) < -1
+     || InitFileBufs(d.hJDX, &d.ibJDX, &d.obJDX, &sizeJDX) < -1
      || InitFileBufs(d.hJLR, &d.ibJLR, &d.obJLR, &sizeJLR) < -1
      )
   {
     CleanUp(&d);
     newLine();
-    logEntry("Not enough memory available to pack JAM bases or JAM file error", LOG_ALWAYS, 0);
+    logEntry("*** Not enough memory available to pack JAM bases or JAM file error", LOG_ALWAYS, 0);
     return 1;
   }
 
   // make bufs aan de hand van sizeJDX
   maxMsg = sizeJDX / sizeof(JAMIDXREC);
+
+#ifdef _DEBUG
+  sprintf(tempStr, "Size old: no:%d jhr:%d jdt:%d jdx:%d jlr:%d tot:%d", maxMsg, sizeJHR, sizeJDT, sizeJDX, sizeJLR, sizeJHR + sizeJDT + sizeJDX + sizeJLR);
+  logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
 
   if (  InitBuf(&d.lrBuf   , maxMsg)
      || InitBuf(&d.msgidBuf, maxMsg)
@@ -414,7 +419,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   {
     CleanUp(&d);
     newLine();
-    logEntry("Not enough memory available to pack JAM bases", LOG_ALWAYS, 0);
+    logEntry("*** Not enough memory available to pack JAM bases", LOG_ALWAYS, 0);
     return 1;
   }
 
@@ -625,10 +630,18 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
       jamlrw->UserCRC = jamlrr->UserCRC;
       jamlrw->UserID  = jamlrr->UserID;
 
-      msgNum = jamlrr->LastReadMsg - oldBaseMsgNum;
-      jamlrw->LastReadMsg = d.lrBuf[min(msgNum, msgNumHigh)]; // + headerInfo->BaseMsgNum; == always 1
-      msgNum = jamlrr->HighReadMsg - oldBaseMsgNum;
-      jamlrw->HighReadMsg = d.lrBuf[min(msgNum, msgNumHigh)]; // + headerInfo->BaseMsgNum; == always 1
+      if (maxMsg > 0)
+      {
+        msgNum = jamlrr->LastReadMsg - oldBaseMsgNum;
+        jamlrw->LastReadMsg = d.lrBuf[min(msgNum, msgNumHigh)];
+        msgNum = jamlrr->HighReadMsg - oldBaseMsgNum;
+        jamlrw->HighReadMsg = d.lrBuf[min(msgNum, msgNumHigh)];
+      }
+      else
+      {
+        jamlrw->LastReadMsg = 0;
+        jamlrw->HighReadMsg = 0;
+      }
 
       jamlrr++;
       jamlrw++;
@@ -639,6 +652,9 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
            + sizeJDT - highJDT
            + sizeJHR - highJHR;
 #ifdef _DEBUG
+    sprintf(tempStr, "Size new: no:%d jhr:%d jdt:%d jdx:%d jlr:%d tot:%d", msgNumNew, highJHR, highJDT, highJDX, sizeJLR, highJHR + highJDT + highJDX + sizeJLR);
+    logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
+
     if (ss != 0)
     {
       sprintf(tempStr, "Space saved: %d", ss);
@@ -650,7 +666,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   if (JAMerror)
   {
     newLine();
-    sprintf(tempStr, "Encountered a problem during JAM base maintenance, area %s", areaPtr->areaName);
+    sprintf(tempStr, "*** Encountered a problem during JAM base maintenance, area %s", areaPtr->areaName);
     logEntry(tempStr, LOG_ALWAYS, 0);
   }
   else
@@ -685,7 +701,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 #ifdef _DEBUG
   logEntry("Ready", LOG_DEBUG | LOG_NOSCRN, 0);
 
-#if 0
+#if _DEBUG0
   printf("\nPress any key to continue... ");
   flush();
   getch();
