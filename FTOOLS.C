@@ -201,14 +201,12 @@ void Usage(void)
               "   Maint     Message base maintenance (also updates reply chains)\n"
               "   Delete    Delete all messages in one board\n"
               "   Undelete  Undelete all messages in one board           ("MBNAME" only)\n"
-#endif
-              "   Post      Post a file as a netmail or echomail message\n"
-#ifndef GOLDBASE
               "   Export    Export messages in a board to a text file    ("MBNAME" only)\n"
               "   Move      Move messages from one board to another      ("MBNAME" only)\n"
               "   Sort      Sorts messages in the message base           ("MBNAME" only)\n"
               "   Stat      Generate message base statistics             ("MBNAME" only)\n"
 #endif
+              "   Post      Post a file as a netmail or echomail message\n"
               "   Notify    Send a status message to selected nodes\n"
               "   MsgM      *.MSG maintenance\n"
               "   AddNew    Add new areas found during FMail Toss\n"
@@ -246,7 +244,7 @@ s16 readAreaInfo(void)
         boardInfo[areaBuf->board].defined++;
         if ((boardInfo[areaBuf->board].name = malloc(strlen(areaBuf->areaName) + 1)) != NULL)
           strcpy(boardInfo[areaBuf->board].name, areaBuf->areaName);
-          
+
         boardInfo[areaBuf->board].aka         = areaBuf->address;
         boardInfo[areaBuf->board].options     = areaBuf->options;
         boardInfo[areaBuf->board].numDays     = areaBuf->days;
@@ -1697,14 +1695,14 @@ nextarea:
 
       memset(message, 0, INTMSG_SIZE);
 
-      strcpy(message->toUserName,   "All");
+      strcpy(message->toUserName  , "All");
       strcpy(message->fromUserName, config.sysopName);
 
       postBoard = 0;
       srcAka = 0;
       if (stricmp(argv[3], "#netdir") != 0)
         postBoard = getBoardNum(argv[3], 1, &srcAka, &areaPtr);
-      isNetmail = (postBoard == 0) || (memicmp(argv[3], "#net", 4) == 0);
+      isNetmail = postBoard == 0 || memicmp(argv[3], "#net", 4) == 0;
 
       for (count = 4; count < argc; count++)
       {
@@ -1762,15 +1760,17 @@ nextarea:
       if (switches & SW_F)
       {
         if ((helpPtr = _fullpath(NULL, message->subject, 72)) == NULL)
-                  logEntry("Can't locate file to be attached", LOG_ALWAYS, 1);
-                  strncpy(message->subject, strlwr(helpPtr), 71);
+          logEntry("Can't locate file to be attached", LOG_ALWAYS, 1);
+
+        strncpy(message->subject, strlwr(helpPtr), 71);
         free(helpPtr);
       }
 
       if (strcmp(argv[2], "-"))
       {
-        if ((lastReadHandle = open(argv[2], O_RDONLY | O_BINARY | O_DENYNONE)) == -1)
+        if ((lastReadHandle = open(argv[2], O_RDONLY | O_BINARY)) == -1)
           logEntry("Can't locate text file", LOG_ALWAYS, 1);
+
         read(lastReadHandle, message->text, TEXT_SIZE - 4096);
         close(lastReadHandle);
         removeLf(message->text);
@@ -1794,9 +1794,8 @@ nextarea:
                              | ((switches & SW_C) ? CRASH : ((switches & SW_H) ? HOLDPICKUP : 0));
         if (switches & (SW_D | SW_E | SW_T))
         {
-          sprintf(tempStr, "\1FLAGS%s%s\r", (switches & SW_D) ? " DIR" : ""
-                  , (switches & SW_E) ? " KFS"
-                  : (switches & SW_T) ? " TFS" : "");
+          sprintf( tempStr, "\1FLAGS%s%s\r", (switches & SW_D) ? " DIR" : ""
+                 , (switches & SW_E) ? " KFS" : (switches & SW_T) ? " TFS" : "");
           insertLine(message->text, tempStr);
         }
 
@@ -1823,29 +1822,27 @@ nextarea:
           message->month   = dateRec.da_mon;
           message->year    = dateRec.da_year;
 
-          message->attribute = ((switches & SW_C) ? CRASH : 0)
-                               | ((switches & SW_P) ? PRIVATE : 0) | LOCAL;
+          message->attribute = ((switches & SW_C) ? CRASH   : 0)
+                             | ((switches & SW_P) ? PRIVATE : 0) | LOCAL;
           addInfo(message, isNetmail);
 
           // write JAM message here
           jam_writemsg(areaPtr->msgBasePath, message, 1);
           jam_closeall();
 
-          sprintf(tempStr, "Posting message in area %s (JAM base %s)"
-                  , areaPtr->areaName, areaPtr->msgBasePath);
+          sprintf(tempStr, "Posting message in area %s (JAM base %s)", areaPtr->areaName, areaPtr->msgBasePath);
           logEntry(tempStr, LOG_ALWAYS, 0);
         }
         else
         {
-          message->attribute = ((switches & SW_C) ? CRASH : 0)
-                               | ((switches & SW_P) ? PRIVATE : 0);
+          message->attribute = ((switches & SW_C) ? CRASH   : 0)
+                             | ((switches & SW_P) ? PRIVATE : 0);
           addInfo(message, isNetmail);
 
           openBBSWr();
           if (writeBBS(message, postBoard, isNetmail) == 0)
           {
-            sprintf(tempStr, "Posting message in area %s ("MBNAME " board %u)"
-                    , areaPtr->areaName, postBoard);
+            sprintf(tempStr, "Posting message in area %s ("MBNAME " board %u)", areaPtr->areaName, postBoard);
             logEntry(tempStr, LOG_ALWAYS, 0);
           }
           closeBBS();

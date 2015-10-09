@@ -110,8 +110,7 @@ s16  closeLuPkt       (void);
 fhandle openP         (const char *pathname, int access, u16 mode);
 fhandle fsopenP       (const char *pathname, int access, u16 mode);
 
-s16  writeEchoPkt     (internalMsgType *message,
-                       s16 tinySeenByArea, echoToNodeType echoToNode);
+s16  writeEchoPkt     (internalMsgType *message, s16 tinySeenByArea, echoToNodeType echoToNode);
 void freePktHandles   (void);
 s16  validateEchoPktWr(void);
 s16  closeEchoPktWr   (void);

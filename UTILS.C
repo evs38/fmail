@@ -36,6 +36,9 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <stdlib.h>
+#if defined(__WIN32__)
+#include <windows.h>
+#endif
 
 #include "utils.h"
 
@@ -748,7 +751,7 @@ void removeLine(char *s)
   }
 }
 //---------------------------------------------------------------------------
-char *insertLineN (char *pos, char *line, u16 num)
+char *insertLineN(char *pos, char *line, u16 num)
 {
    char *helpPtr;
 
@@ -1006,18 +1009,6 @@ static s16 addSeenByNode (u16 net, u16 node,
 
 
 
-void addINTL (internalMsgType *message)
-{
-   tempStrType tempStr;
-
-   if (findCLStr (message->text, "\1INTL") == NULL)
-   {
-      sprintf (tempStr, "\1INTL %u:%u/%u %u:%u/%u\r",
-                        message->destNode.zone, message->destNode.net, message->destNode.node,
-                        message->srcNode.zone, message->srcNode.net, message->srcNode.node);
-      insertLine (message->text, tempStr);
-   }
-}
 
 
 
@@ -1613,6 +1604,114 @@ u16 nextFile(u8 **filename)
   *filename = searchPos;
   searchPos = ep + 1;
   return 1;
+}
+//---------------------------------------------------------------------------
+char *addKludge(char *txt, const char *kludge, const char *kludgeValue)
+{
+  tempStrType tempStr;
+
+  sprintf(tempStr, "\1%s %s\r", kludge, kludgeValue);
+
+  return insertLine(txt, tempStr);
+}
+//---------------------------------------------------------------------------
+void addINTL(internalMsgType *message)
+{
+  if (findCLStr(message->text, "\1INTL") == NULL)
+    addINTLKludge(message, NULL);
+}
+//---------------------------------------------------------------------------
+char *addINTLKludge(internalMsgType *message, char *insertPoint)
+{
+  tempStrType tempStr;
+
+  sprintf(tempStr, "%u:%u/%u %u:%u/%u"
+                 , message->destNode.zone, message->destNode.net, message->destNode.node
+                 , message->srcNode.zone, message->srcNode.net, message->srcNode.node
+         );
+  return addKludge(insertPoint ? insertPoint : message->text, "INTL", tempStr);
+}
+//---------------------------------------------------------------------------
+char *addMSGIDKludge(internalMsgType *message, char *insertPoint)
+{
+  tempStrType tempStr;
+
+  sprintf(tempStr, "%s %08lx", nodeStr(&message->srcNode), uniqueID());
+
+  return addKludge(insertPoint ? insertPoint : message->text, "MSGID:", tempStr);
+}
+//---------------------------------------------------------------------------
+char *addPIDKludge(char *txt)
+{
+  return addKludge(txt, "PID:", PIDStr());
+}
+//---------------------------------------------------------------------------
+char *addPointKludges(internalMsgType *message, char *insertPoint)
+{
+  tempStrType tempStr;
+
+  if (NULL == insertPoint)
+    insertPoint = message->text;
+
+  // TOPT kludge
+  if (message->destNode.point != 0)
+  {
+    sprintf(tempStr, "%u", message->destNode.point);
+    insertPoint = addKludge(insertPoint, "TOPT", tempStr);
+  }
+
+  // FMPT kludge
+  if (message->srcNode.point != 0)
+  {
+    sprintf(tempStr, "%u", message->srcNode.point);
+    insertPoint = addKludge(insertPoint, "FMPT", tempStr);
+  }
+
+  return insertPoint;
+}
+//---------------------------------------------------------------------------
+const char *TZUTCStr(void)
+{
+#if defined(__WIN32__)
+  LONG bias = 0;
+  TIME_ZONE_INFORMATION tzi;
+  unsigned long ubias;
+  static char s[10];
+
+  // Get the timezone info.
+  switch (GetTimeZoneInformation(&tzi))
+  {
+    case TIME_ZONE_ID_UNKNOWN:
+      bias = tzi.Bias;
+      break;
+    case TIME_ZONE_ID_STANDARD:
+      bias = tzi.Bias + tzi.StandardBias;
+      break;
+    case TIME_ZONE_ID_DAYLIGHT:
+      bias = tzi.Bias + tzi.DaylightBias;
+      break;
+    default:
+      *s = 0;
+      return NULL;
+  }
+
+  ubias = abs(bias);
+  sprintf(s, "%s%02u%02u", bias <= 0 ? "" : "-", ubias / 60, ubias % 60);
+
+  return s;
+#else
+  return NULL;
+#endif
+}
+//---------------------------------------------------------------------------
+char *addTZUTCKludge(char *txt)
+{
+  const char *tzutcStr;
+
+  if (NULL != (tzutcStr = TZUTCStr()))
+    return addKludge(txt, "TZUTC:", tzutcStr);
+
+  return txt;
 }
 //---------------------------------------------------------------------------
 u16 firstFile(u8 *string, u8 **filename)

@@ -1388,7 +1388,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
            strstr(tempStr, config.topic2) != NULL) ||
           foundToUserName(message->fromUserName))
        )
-      writeMsg (message, PERMSG, 1);
+      writeMsg(message, PERMSG, 1);
 
     checkDup(message, echoAreaList[count].areaNameCRC);
     validateDups();

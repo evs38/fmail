@@ -832,58 +832,30 @@ s32 writeMsgLocal(internalMsgType *message, s16 msgType, s16 valid)
 {
   struct date dateRec;
   struct time timeRec;
-  tempStrType tempStr;
+  char *p;
 
   getdate(&dateRec);
   gettime(&timeRec);
 
-  message->hours     = timeRec.ti_hour;
-  message->minutes   = timeRec.ti_min;
-  message->seconds   = timeRec.ti_sec;
-  message->day       = dateRec.da_day;
-  message->month     = dateRec.da_mon;
-  message->year      = dateRec.da_year;
+  message->hours   = timeRec.ti_hour;
+  message->minutes = timeRec.ti_min;
+  message->seconds = timeRec.ti_sec;
+  message->day     = dateRec.da_day;
+  message->month   = dateRec.da_mon;
+  message->year    = dateRec.da_year;
 
   message->attribute |= LOCAL;
 
-  // PID kludge
-
-  sprintf(tempStr, "\1PID: %s\r", PIDStr());
-  insertLine(message->text, tempStr);
-
-  // MSGID kludge
-
-  sprintf(tempStr, "\1MSGID: %s %08lx\r", nodeStr(&message->srcNode), uniqueID());
-  insertLine(message->text, tempStr);
-
-  // FMPT kludge
-
-  if (message->srcNode.point != 0)
-  {
-    sprintf(tempStr, "\1FMPT %u\r", message->srcNode.point);
-    insertLine(message->text, tempStr);
-  }
-
-  // TOPT kludge
-
-  if (message->destNode.point != 0)
-  {
-    sprintf(tempStr, "\1TOPT %u\r", message->destNode.point);
-    insertLine(message->text, tempStr);
-  }
-
-  // INTL kludge
-
-  sprintf( tempStr, "\1INTL %u:%u/%u %u:%u/%u\r"
-         , message->destNode.zone, message->destNode.net
-         , message->destNode.node, message->srcNode.zone
-         , message->srcNode.net,   message->srcNode.node);
-  insertLine(message->text, tempStr);
+  p = addINTLKludge  (message, NULL);
+  p = addPointKludges(message, p);
+  p = addMSGIDKludge (message, p);
+  p = addTZUTCKludge (p);
+  p = addPIDKludge   (p);
 
   return writeMsg(message, msgType, valid);
 }
 //---------------------------------------------------------------------------
-void validateMsg (void)
+void validateMsg(void)
 {
   s16          c, count;
   s16          doneMsg;

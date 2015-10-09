@@ -1,4 +1,9 @@
-2015-10-03  1.69..9.79-Beta
+2015-10-03  1.69.11.142-Beta
+  * Added TZUTC kludge to generated messages.
+  * jammaint.c: Make backup files when differences found in debug mode.
+  * util.c: addKludge functions
+
+2015-10-03  1.69.9.79-Beta
   * jamfunc.c: Fixed date/time import in jambase from pkt message (DST issue)
   * jammaint.c: Some little issues in the new jammaint function fixed. Better logging.
 

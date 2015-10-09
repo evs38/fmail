@@ -31,6 +31,10 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef _DEBUG
+#include <dir.h>      // mkdir
+#include <windows.h>  // CopyFile DeleteFile MoveFile
+#endif
 
 #include "fmail.h"
 
@@ -232,9 +236,11 @@ void logComb(const char *fs, const char *ds)
   logEntry(ts, LOG_DEBUG, 0);
 }
 //---------------------------------------------------------------------------
-void compareFileToBuf(const char *fname, const char *buf, u32 size)
+int compareFileToBuf(const char *fname, const char *buf, u32 size)
 {
   fhandle h;
+  int rv = -1;
+
   if ((h = fsopen(fname, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE, 1)) != -1)
   {
     struct stat s;
@@ -252,6 +258,8 @@ void compareFileToBuf(const char *fname, const char *buf, u32 size)
             {
               if (memcmp(buf, ibuf, size))
                 logComb("*** Differ %s", fname);
+              else
+                rv = 0;
             }
             else
               logComb("*** Read error %s", fname);
@@ -261,6 +269,8 @@ void compareFileToBuf(const char *fname, const char *buf, u32 size)
           else
             logComb("*** Can't alloc buffer %s", fname);
         }
+        else
+          rv = 0;
       }
       else
         logComb("*** Size differs %s", fname);
@@ -272,6 +282,8 @@ void compareFileToBuf(const char *fname, const char *buf, u32 size)
     logComb("*** Can't open %s", fname);
 
   fsclose(h);
+
+  return rv;
 }
 //---------------------------------------------------------------------------
 #endif
@@ -363,6 +375,8 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   JAMHDR       *headerRec;
 
 #ifdef _DEBUG
+  int compareResult = 0;
+
   if (JAMmaintOld(areaPtr, switches, name))
     return -1;
 #endif
@@ -532,7 +546,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 
         // Remove Re:
         if (switches & SW_R)
-          if (JAMremoveRe(wpSubf, &headerRec->SubfieldLen))    // SubfieldLen can be changed
+          if (JAMremoveRe(wpSubf, (u32*)&headerRec->SubfieldLen))    // SubfieldLen can be changed
           {
             long diff = orgSubfieldLen - headerRec->SubfieldLen;
             if (woJHR == highJHR)
@@ -680,10 +694,10 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
     writedata(expJAMname(areaPtr->msgBasePath, "#"BASE_EXT_TXT), d.ibJDT, sizeJDT);
     writedata(expJAMname(areaPtr->msgBasePath, "#"BASE_EXT_HDR), d.ibJHR, sizeJHR);
 #endif
-    compareFileToBuf(expJAMname(areaPtr->msgBasePath, EXT_HDR), d.obJHR, highJHR);
-    compareFileToBuf(expJAMname(areaPtr->msgBasePath, EXT_IDX), d.obJDX, highJDX);
-    compareFileToBuf(expJAMname(areaPtr->msgBasePath, EXT_TXT), d.obJDT, highJDT);
-    compareFileToBuf(expJAMname(areaPtr->msgBasePath, EXT_LRD), d.obJLR, sizeJLR);
+    compareResult |= compareFileToBuf(expJAMname(areaPtr->msgBasePath, EXT_HDR), d.obJHR, highJHR);
+    compareResult |= compareFileToBuf(expJAMname(areaPtr->msgBasePath, EXT_IDX), d.obJDX, highJDX);
+    compareResult |= compareFileToBuf(expJAMname(areaPtr->msgBasePath, EXT_TXT), d.obJDT, highJDT);
+    compareResult |= compareFileToBuf(expJAMname(areaPtr->msgBasePath, EXT_LRD), d.obJLR, sizeJLR);
 
     logEntry("Save data", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
@@ -694,14 +708,48 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
        || 0 != writefile(d.hJHR, d.ibJHR, sizeJHR, d.obJHR, highJHR)
        )
       JAMerror = -1;
-
+#ifdef _DEBUG
+#endif
     puts("Ready");
   }
   CleanUp(&d);
 #ifdef _DEBUG
+  if (compareResult)
+  {
+    // Must be done after cleanup. Files need to be closed
+    logEntry("Create debug files", LOG_DEBUG, 0);
+    sprintf(tempStr, "%s-%d", areaPtr->msgBasePath, startTime);
+    if (0 == mkdir(tempStr))
+    {
+      tempStrType nmbp;
+      char *an = strrchr(areaPtr->msgBasePath, '\\');
+      if (an != NULL)
+        an++;
+      else
+        an = areaPtr->msgBasePath;
+      sprintf(nmbp, "%s\\%s", tempStr, an);
+
+      CopyFile(expJAMname(areaPtr->msgBasePath, EXT_HDR), expJAMname(nmbp, EXT_HDR), 0);
+      CopyFile(expJAMname(areaPtr->msgBasePath, EXT_IDX), expJAMname(nmbp, EXT_IDX), 0);
+      CopyFile(expJAMname(areaPtr->msgBasePath, EXT_TXT), expJAMname(nmbp, EXT_TXT), 0);
+      CopyFile(expJAMname(areaPtr->msgBasePath, EXT_LRD), expJAMname(nmbp, EXT_LRD), 0);
+      MoveFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_HDR), expJAMname(nmbp, EXT_BCK_HDR));
+      MoveFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_IDX), expJAMname(nmbp, EXT_BCK_IDX));
+      MoveFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_TXT), expJAMname(nmbp, EXT_BCK_TXT));
+      MoveFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_LRD), expJAMname(nmbp, EXT_BCK_LRD));
+    }
+  }
+  else
+  {
+    // New files are the same, so they are not needed -> Delete them.
+    DeleteFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_HDR));
+    DeleteFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_IDX));
+    DeleteFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_TXT));
+    DeleteFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_LRD));
+  }
   logEntry("Ready", LOG_DEBUG | LOG_NOSCRN, 0);
 
-#if _DEBUG0
+#if 0
   printf("\nPress any key to continue... ");
   flush();
   getch();
@@ -1014,7 +1062,7 @@ jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->are
           // Remove Re:
           if ((switches & SW_R) && headerRec.SubfieldLen < TXTBUFSIZE)
           {
-            if (JAMremoveRe(buf, &headerRec.SubfieldLen))
+            if (JAMremoveRe(buf, (u32*)&headerRec.SubfieldLen))
             {
               if (lseek(JHRhandleNew, -(s32)sizeof(JAMHDR), SEEK_CUR) < 0)
               {

@@ -285,7 +285,7 @@ static const char *getAreaNamePtr(const char *echoName)
 // send message that doesn't contain any kludges in the text body yet
 //
 static void sendMsg( internalMsgType *message, char *replyStr
-                   , nodeInfoType *nodeInfoPtr,  s32 *msgNum1
+                   , nodeInfoType *nodeInfoPtr , s32 *msgNum1
                    , nodeInfoType *nodeInfoPtr2, s32 *msgNum2
                    )
 {
@@ -308,8 +308,8 @@ static void sendMsg( internalMsgType *message, char *replyStr
   message->minutes = tm->tm_min;
   message->seconds = tm->tm_sec;
 
-  sprintf(tempStr, "\1PID: %s\r", PIDStr());
-  insertLine(message->text, tempStr);
+  helpPtr = addTZUTCKludge(message->text);
+  addPIDKludge(helpPtr);
 
   *msgNum1 = 0;
   *msgNum2 = 0;
@@ -318,12 +318,12 @@ static void sendMsg( internalMsgType *message, char *replyStr
 
   for (count = 0; count < 2; count++)
   {
-    if ((count == 0 && nodeInfoPtr  != NULL) || (count == 1 && nodeInfoPtr2 != NULL))
+    if ((count == 0 && nodeInfoPtr != NULL) || (count == 1 && nodeInfoPtr2 != NULL))
     {
       if (count)
       {
         nodeInfoPtr = nodeInfoPtr2;
-        strcpy (message->text, helpPtr);
+        strcpy(message->text, helpPtr);
       }
       if (nodeInfoPtr->node.zone)
         message->destNode = nodeInfoPtr->node;
@@ -342,31 +342,10 @@ static void sendMsg( internalMsgType *message, char *replyStr
       if (!config.mgrOptions.keepReceipt)
         message->attribute |= KILLSENT;
 
-      /* INTL kludge */
+      helpPtr = addINTLKludge  (message, helpPtr);
+      helpPtr = addPointKludges(message, helpPtr);
 
-      sprintf (tempStr, "\1INTL %u:%u/%u %u:%u/%u\r",
-               message->destNode.zone, message->destNode.net, message->destNode.node,
-               message->srcNode.zone, message->srcNode.net, message->srcNode.node);
-      helpPtr = insertLine (helpPtr, tempStr);
-
-      /* TOPT kludge */
-
-      if (message->destNode.point != 0)
-      {
-        sprintf (tempStr, "\1TOPT %u\r", message->destNode.point);
-        helpPtr = insertLine (helpPtr, tempStr);
-      }
-
-      /* FMPT kludge */
-
-      if (message->srcNode.point != 0)
-      {
-        sprintf(tempStr, "\1FMPT %u\r", message->srcNode.point);
-        helpPtr = insertLine (helpPtr, tempStr);
-      }
-
-      /* FLAGS */
-
+      // FLAGS
       switch (nodeInfoPtr->outStatus)
       {
         case 1 :
@@ -386,18 +365,10 @@ static void sendMsg( internalMsgType *message, char *replyStr
           break;
       }
 
-      /* MSGID kludge */
-
-      sprintf(tempStr, "\1MSGID: %s %08lx\r", nodeStr(&message->srcNode), uniqueID());
-      helpPtr = insertLine(helpPtr, tempStr);
-
-      /* REPLY kludge */
+      helpPtr = addMSGIDKludge(message, helpPtr);
 
       if (*replyStr != 0)
-      {
-        sprintf(tempStr, "\x1REPLY: %s\r", replyStr);
-        helpPtr = insertLine(helpPtr, tempStr);
-      }
+        helpPtr = addKludge(helpPtr, "REPLY:", replyStr);
 
       if (count)
         *msgNum2 = writeMsg(message, NETMSG, 1);

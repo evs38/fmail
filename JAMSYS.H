@@ -35,8 +35,10 @@ extern "C" {
 //
 //  __BORLANDC__    Borland C++ 3.x
 
+#ifndef _BASETSD_H_
 typedef s32                 INT32;       // 32 bits signed integer
 typedef u32                 UINT32;      // 32 bits unsigned integer
+#endif
 typedef s16                 INT16;       // 16 bits signed integer
 typedef u16                 UINT16;      // 16 bits unsigned integer
 typedef char                CHAR8;       // 8 bits signed integer

@@ -223,7 +223,10 @@ void logEntry(const char *s, u16 entryType, u16 errorLevel)
   tempStrType tempStr;
 
   if (!(entryType & LOG_NOSCRN))
+  {
     puts(s);
+    fflush(stdout);
+  }
 
   if (  entryType == LOG_NEVER
      || ( ((config.logInfo | LOG_ALWAYS) & entryType) == 0

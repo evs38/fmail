@@ -21,70 +21,51 @@
 //
 //---------------------------------------------------------------------------
 
+#include <ctype.h>
+#include <dir.h>
+#include <dos.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dos.h>
-#include <io.h>
-#include <time.h>
-#include <ctype.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <sys/stat.h>
-#include <dir.h> /* notify */
+#include <time.h>
 
 #include "fmail.h"
+
 #include "areainfo.h"
+#include "cfgfile.h"
 #include "crc.h"
-#include "msgra.h"
-#include "msgmsg.h"
-#include "log.h"
-#include "utils.h"
 #include "ftools.h"
 #include "ftr.h"
-#include "cfgfile.h"
+#include "log.h"
+#include "msgmsg.h"
+#include "msgra.h"
+#include "utils.h"
 #include "version.h"
 
 extern configType config;
 extern const char *months;
 
-
-void addInfo (internalMsgType *message, s16 isNetmail)
+//---------------------------------------------------------------------------
+void addInfo(internalMsgType *message, s16 isNetmail)
 {
-  tempStrType tempStr;
+  char *p;
 
-  sprintf(tempStr, "\1PID: %s\r", PIDStr());
-  insertLine(message->text, tempStr);
-
-  sprintf(tempStr, "\1MSGID: %s %08lx\r", nodeStr(&message->srcNode), uniqueID());
-  insertLine (message->text, tempStr);
+  p = addMSGIDKludge(message, NULL);
+  p = addTZUTCKludge(p);
+  p = addPIDKludge  (p);
 
   if (isNetmail)
   {
-    /* TOPT kludge */
-
-    if (message->destNode.point != 0)
-    {
-      sprintf (tempStr, "\1TOPT %u\r", message->destNode.point);
-      insertLine (message->text, tempStr);
-    }
-
-    /* FMPT kludge */
-
-    if (message->srcNode.point != 0)
-    {
-      sprintf (tempStr, "\1FMPT %u\r", message->srcNode.point);
-      insertLine (message->text, tempStr);
-    }
-
-    addINTL (message);
+    addPointKludges(message, NULL);
+    addINTL(message);
   }
 }
-
-
-
-s16 writeNetMsg (internalMsgType *message, s16 srcAka, nodeNumType *destNode,
-                 u16 capability, u16 outStatus)
+//---------------------------------------------------------------------------
+s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16 capability, u16 outStatus)
 {
   fhandle     msgHandle;
   u16         len;
@@ -103,14 +84,13 @@ s16 writeNetMsg (internalMsgType *message, s16 srcAka, nodeNumType *destNode,
   message->srcNode = config.akaList[srcAka].nodeNum;
   message->destNode = *destNode;
 
-  if ((!(capability & PKT_TYPE_2PLUS)) &&
-      (isLocalPoint(destNode)))
+  if (!(capability & PKT_TYPE_2PLUS) && isLocalPoint(destNode))
   {
     node2d (&message->srcNode);
     node2d (&message->destNode);
   }
 
-  addInfo (message, 1);
+  addInfo(message, 1);
 
   if (outStatus != 0xFFFF)
   {
@@ -135,20 +115,20 @@ s16 writeNetMsg (internalMsgType *message, s16 srcAka, nodeNumType *destNode,
         break;
     }
   }
-  memset (&msgMsg, 0, sizeof(msgMsgType));
+  memset(&msgMsg, 0, sizeof(msgMsgType));
 
-  strcpy (msgMsg.fromUserName, message->fromUserName);
-  strcpy (msgMsg.toUserName, message->toUserName);
-  strcpy (msgMsg.subject, message->subject);
+  strcpy(msgMsg.fromUserName, message->fromUserName);
+  strcpy(msgMsg.toUserName, message->toUserName);
+  strcpy(msgMsg.subject, message->subject);
 
-  gettime (&timeRec);
-  getdate (&dateRec);
+  gettime(&timeRec);
+  getdate(&dateRec);
 
-  sprintf (msgMsg.dateTime, "%02u %.3s %02u  %02u:%02u:%02u",
-           dateRec.da_day,      months+(dateRec.da_mon-1)*3,
-           dateRec.da_year%100, timeRec.ti_hour,
-           timeRec.ti_min,      timeRec.ti_sec);
-
+  sprintf( msgMsg.dateTime, "%02u %.3s %02u  %02u:%02u:%02u"
+         , dateRec.da_day,      months+(dateRec.da_mon-1)*3
+         , dateRec.da_year%100, timeRec.ti_hour
+         , timeRec.ti_min,      timeRec.ti_sec
+         );
   msgMsg.wrTime.hours    = timeRec.ti_hour;
   msgMsg.wrTime.minutes  = timeRec.ti_min;
   msgMsg.wrTime.dSeconds = timeRec.ti_sec >> 1;
@@ -156,17 +136,16 @@ s16 writeNetMsg (internalMsgType *message, s16 srcAka, nodeNumType *destNode,
   msgMsg.wrTime.month    = dateRec.da_mon;
   msgMsg.wrTime.year     = dateRec.da_year-1980;
 
-  msgMsg.origNet   = message->srcNode.net;
-  msgMsg.origNode  = message->srcNode.node;
-  msgMsg.destNet   = message->destNode.net;
-  msgMsg.destNode  = message->destNode.node;
+  msgMsg.origNet  = message->srcNode.net;
+  msgMsg.origNode = message->srcNode.node;
+  msgMsg.destNet  = message->destNode.net;
+  msgMsg.destNode = message->destNode.node;
 
   msgMsg.attribute = message->attribute;
 
-  strcpy (tempStr, config.netPath);
-  helpPtr = strchr (tempStr, 0);
+  helpPtr = stpcpy(tempStr, config.netPath);
 
-  /* Determine highest message */
+  // Determine highest message
 
   highMsgNum = 0;
   strcpy(helpPtr, "lastread");
@@ -176,20 +155,19 @@ s16 writeNetMsg (internalMsgType *message, s16 srcAka, nodeNumType *destNode,
       highMsgNum = 0;
     close(msgHandle);
   }
-  strcpy (helpPtr, "*.msg");
-  doneMsg = findfirst (tempStr, &ffblkMsg, FA_RDONLY|FA_HIDDEN|FA_SYSTEM|
-                       /*FA_LABEL|*/FA_DIREC);
+  strcpy(helpPtr, "*.msg");
+  doneMsg = findfirst(tempStr, &ffblkMsg, FA_RDONLY | FA_HIDDEN | FA_SYSTEM | FA_DIREC);
 
   while (!doneMsg)
   {
-    highMsgNum = max (highMsgNum, atol (ffblkMsg.ff_name));
-    doneMsg = findnext (&ffblkMsg);
+    highMsgNum = max(highMsgNum, atol(ffblkMsg.ff_name));
+    doneMsg = findnext(&ffblkMsg);
   }
 
-  /* Try to open file */
+  // Try to open file
 
   count = 0;
-  sprintf (helpPtr, "%lu.msg", ++highMsgNum);
+  sprintf(helpPtr, "%lu.msg", ++highMsgNum);
 
   while ((count < 20) &&
          ((msgHandle = open(tempStr, O_RDWR|O_CREAT|O_EXCL|
@@ -197,7 +175,7 @@ s16 writeNetMsg (internalMsgType *message, s16 srcAka, nodeNumType *destNode,
                             S_IREAD|S_IWRITE)) == -1))
   {
     highMsgNum += count++ < 10 ? 1 : 10;
-    sprintf (helpPtr, "%lu.msg", highMsgNum);
+    sprintf(helpPtr, "%lu.msg", highMsgNum);
   }
 
   if (msgHandle == -1)
@@ -220,10 +198,8 @@ s16 writeNetMsg (internalMsgType *message, s16 srcAka, nodeNumType *destNode,
 
   return (0);
 }
-
-
-
-s16 readNodeNum (char *nodeString, nodeNumType *nodeNum, u16 *valid)
+//---------------------------------------------------------------------------
+s16 readNodeNum(char *nodeString, nodeNumType *nodeNum, u16 *valid)
 {
   u16 v, order = 0;
 
@@ -331,14 +307,12 @@ s16 readNodeNum (char *nodeString, nodeNumType *nodeNum, u16 *valid)
   }
   return (-1);
 }
-
-
-
+//---------------------------------------------------------------------------
 extern char configPath[128];
 
 #define HDR_BUFSIZE 32
 
-s16 export (int argc, char *argv[])
+s16 export(int argc, char *argv[])
 {
   s32             switches;
   tempStrType     tempStr;
@@ -517,8 +491,7 @@ s16 export (int argc, char *argv[])
 
   return 0;
 }
-
-
+//---------------------------------------------------------------------------
 static s16 getNetAka(char *areaTag)
 {
   u16      count;
@@ -535,8 +508,7 @@ static s16 getNetAka(char *areaTag)
   }
   return -1;
 }
-
-
+//---------------------------------------------------------------------------
 s16 getBoardNum(char *areaTag, s16 valid, u16 *aka, rawEchoType **areaPtr)
 {
   static      rawEchoType areaRec;
@@ -591,3 +563,4 @@ errorhalt:
   logEntry ("Bad or missing area tag", LOG_ALWAYS, 4);
   return 0;
 }
+//---------------------------------------------------------------------------
