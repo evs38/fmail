@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -39,6 +39,9 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef __WIN32__
+#include <windows.h>
+#endif
 
 #include "fmail.h"
 
@@ -412,6 +415,35 @@ void tossBad(internalMsgType *message)
   globVars.badCount++;
 }
 //---------------------------------------------------------------------------
+const char *badTimeStr(void)
+{
+#ifndef __WIN32__
+  time_t      timer;
+#endif // __WIN32__
+  struct tm   tm;
+  static char tStr[16];
+
+#ifdef __WIN32__
+  SYSTEMTIME st;
+  GetLocalTime(&st);
+  tm.tm_year = st.wYear  - 1900;
+  tm.tm_mon  = st.wMonth - 1;
+  tm.tm_mday = st.wDay;
+  tm.tm_hour = st.wHour;
+  tm.tm_min  = st.wMinute;
+  tm.tm_sec  = st.wSecond;
+#else // __WIN32__
+  time(&timer);
+  tm = *gmtime(&timer);
+#endif // __WIN32__
+
+  sprintf(tStr, "%04u%02u%02u%02u%02u%02u"
+              , tm.tm_year + 1900 , tm.tm_mon + 1 , tm.tm_mday
+              , tm.tm_hour, tm.tm_min, tm.tm_sec
+         );
+  return tStr;
+}
+//---------------------------------------------------------------------------
 time_t oldMsgTime = 0;
 
 static s16 processPkt(u16 secure, s16 noAreaFix)
@@ -645,9 +677,9 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                          nodeFileInfo[count]->nodePtr->writeLevel))
                     {
                       if (count == forwNodeCount)
-                        sprintf(tempStr, "\1FMAIL BAD: %s is not connected to this area\r", nodeStr(&globVars.packetSrcNode));
+                        sprintf(tempStr, "\1FMAIL BAD: %s is not connected to this area (%s)\r", nodeStr(&globVars.packetSrcNode), badTimeStr());
                       else
-                        sprintf(tempStr, "\1FMAIL BAD: %s has no write access to area\r", nodeStr(&nodeFileInfo[count]->destNode4d));
+                        sprintf(tempStr, "\1FMAIL BAD: %s has no write access to area (%s)\r", nodeStr(&nodeFileInfo[count]->destNode4d), badTimeStr());
 
                       insertLineN(message->text, tempStr, 1);
 
@@ -684,7 +716,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
                     if (msgTime < oldMsgTime)
                     {
-                      sprintf(tempStr, "\1FMAIL BAD: message too old\r");
+                      sprintf(tempStr, "\1FMAIL BAD: message too old (%s)\r", badTimeStr());
                       insertLineN(message->text, tempStr, 1);
                       printf(" "dARROW" Old message");
                       tossBad(message);
