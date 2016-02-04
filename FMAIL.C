@@ -421,7 +421,7 @@ const char *badTimeStr(void)
   time_t      timer;
 #endif // __WIN32__
   struct tm   tm;
-  static char tStr[16];
+  static char tStr[24];
 
 #ifdef __WIN32__
   SYSTEMTIME st;
@@ -437,7 +437,7 @@ const char *badTimeStr(void)
   tm = *gmtime(&timer);
 #endif // __WIN32__
 
-  sprintf(tStr, "%04u%02u%02u%02u%02u%02u"
+  sprintf(tStr, "%04u-%02u-%02u %02u:%02u:%02u"
               , tm.tm_year + 1900 , tm.tm_mon + 1 , tm.tm_mday
               , tm.tm_hour, tm.tm_min, tm.tm_sec
          );

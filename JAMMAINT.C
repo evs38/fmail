@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -373,6 +373,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   JAMHDRINFO   *headerInfo;
   JAMIDXREC    *indexRec;
   JAMHDR       *headerRec;
+  const char   *mbPath;
 
 #ifdef _DEBUG
   int compareResult = 0;
@@ -385,10 +386,12 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   logEntry(tempStr, LOG_INBOUND | LOG_NOSCRN, 0);
   printf("%s... ", tempStr);
 
-  if (  (d.hJHR = fsopen(expJAMname(areaPtr->msgBasePath, EXT_BCK_HDR), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
-     || (d.hJDT = fsopen(expJAMname(areaPtr->msgBasePath, EXT_BCK_TXT), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
-     || (d.hJDX = fsopen(expJAMname(areaPtr->msgBasePath, EXT_BCK_IDX), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
-     || (d.hJLR = fsopen(expJAMname(areaPtr->msgBasePath, EXT_BCK_LRD), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
+  mbPath = areaPtr->msgBasePath;
+
+  if (  (d.hJHR = fsopen(expJAMname(mbPath, EXT_HDR), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
+     || (d.hJDT = fsopen(expJAMname(mbPath, EXT_TXT), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
+     || (d.hJDX = fsopen(expJAMname(mbPath, EXT_IDX), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
+     || (d.hJLR = fsopen(expJAMname(mbPath, EXT_LRD), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
      )
   {
     CleanUp(&d);
@@ -689,16 +692,25 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 #ifdef MAKEBACKUP
     logEntry("Write backup data", LOG_DEBUG | LOG_NOSCRN, 0);
     // Write (unchanged) input buffers to backup files
-    writedata(expJAMname(areaPtr->msgBasePath, "#"BASE_EXT_LRD), d.ibJLR, sizeJLR);
-    writedata(expJAMname(areaPtr->msgBasePath, "#"BASE_EXT_IDX), d.ibJDX, sizeJDX);
-    writedata(expJAMname(areaPtr->msgBasePath, "#"BASE_EXT_TXT), d.ibJDT, sizeJDT);
-    writedata(expJAMname(areaPtr->msgBasePath, "#"BASE_EXT_HDR), d.ibJHR, sizeJHR);
+    writedata(expJAMname(mbPath, "#"BASE_EXT_LRD), d.ibJLR, sizeJLR);
+    writedata(expJAMname(mbPath, "#"BASE_EXT_IDX), d.ibJDX, sizeJDX);
+    writedata(expJAMname(mbPath, "#"BASE_EXT_TXT), d.ibJDT, sizeJDT);
+    writedata(expJAMname(mbPath, "#"BASE_EXT_HDR), d.ibJHR, sizeJHR);
 #endif
-    compareResult |= compareFileToBuf(expJAMname(areaPtr->msgBasePath, EXT_HDR), d.obJHR, highJHR);
-    compareResult |= compareFileToBuf(expJAMname(areaPtr->msgBasePath, EXT_IDX), d.obJDX, highJDX);
-    compareResult |= compareFileToBuf(expJAMname(areaPtr->msgBasePath, EXT_TXT), d.obJDT, highJDT);
-    compareResult |= compareFileToBuf(expJAMname(areaPtr->msgBasePath, EXT_LRD), d.obJLR, sizeJLR);
+    compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_HDR), d.obJHR, highJHR);
+    compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_IDX), d.obJDX, highJDX);
+    compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_TXT), d.obJDT, highJDT);
+    compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_LRD), d.obJLR, sizeJLR);
 
+    if (compareResult)
+    {
+      logEntry("Save original data", LOG_DEBUG | LOG_NOSCRN, 0);
+      // save original data.
+      writedata(expJAMname(mbPath, EXT_ORG_LRD), d.ibJLR, sizeJLR);
+      writedata(expJAMname(mbPath, EXT_ORG_IDX), d.ibJDX, sizeJDX);
+      writedata(expJAMname(mbPath, EXT_ORG_TXT), d.ibJDT, sizeJDT);
+      writedata(expJAMname(mbPath, EXT_ORG_HDR), d.ibJHR, sizeJHR);
+    }
     logEntry("Save data", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
     // save data.
@@ -708,8 +720,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
        || 0 != writefile(d.hJHR, d.ibJHR, sizeJHR, d.obJHR, highJHR)
        )
       JAMerror = -1;
-#ifdef _DEBUG
-#endif
+
     puts("Ready");
   }
   CleanUp(&d);
@@ -718,34 +729,41 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   {
     // Must be done after cleanup. Files need to be closed
     logEntry("Create debug files", LOG_DEBUG, 0);
-    sprintf(tempStr, "%s-%d", areaPtr->msgBasePath, startTime);
+    sprintf(tempStr, "%s-%d", mbPath, startTime);
     if (0 == mkdir(tempStr))
     {
       tempStrType nmbp;
-      char *an = strrchr(areaPtr->msgBasePath, '\\');
+      const char *an = strrchr(mbPath, '\\');
       if (an != NULL)
         an++;
       else
-        an = areaPtr->msgBasePath;
-      sprintf(nmbp, "%s\\%s", tempStr, an);
+        an = mbPath;
+//    sprintf(nmbp, "%s\\%s", tempStr, an);
+      strcpy(stpcpy(stpcpy(nmbp, tempStr), "\\"), an);
 
-      CopyFile(expJAMname(areaPtr->msgBasePath, EXT_HDR), expJAMname(nmbp, EXT_HDR), 0);
-      CopyFile(expJAMname(areaPtr->msgBasePath, EXT_IDX), expJAMname(nmbp, EXT_IDX), 0);
-      CopyFile(expJAMname(areaPtr->msgBasePath, EXT_TXT), expJAMname(nmbp, EXT_TXT), 0);
-      CopyFile(expJAMname(areaPtr->msgBasePath, EXT_LRD), expJAMname(nmbp, EXT_LRD), 0);
-      MoveFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_HDR), expJAMname(nmbp, EXT_BCK_HDR));
-      MoveFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_IDX), expJAMname(nmbp, EXT_BCK_IDX));
-      MoveFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_TXT), expJAMname(nmbp, EXT_BCK_TXT));
-      MoveFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_LRD), expJAMname(nmbp, EXT_BCK_LRD));
+      CopyFile(expJAMname(mbPath, EXT_HDR), expJAMname(nmbp, EXT_HDR), 0);
+      CopyFile(expJAMname(mbPath, EXT_IDX), expJAMname(nmbp, EXT_IDX), 0);
+      CopyFile(expJAMname(mbPath, EXT_TXT), expJAMname(nmbp, EXT_TXT), 0);
+      CopyFile(expJAMname(mbPath, EXT_LRD), expJAMname(nmbp, EXT_LRD), 0);
+
+      MoveFile(expJAMname(mbPath, EXT_ORG_HDR), expJAMname(nmbp, EXT_ORG_HDR));
+      MoveFile(expJAMname(mbPath, EXT_ORG_IDX), expJAMname(nmbp, EXT_ORG_IDX));
+      MoveFile(expJAMname(mbPath, EXT_ORG_TXT), expJAMname(nmbp, EXT_ORG_TXT));
+      MoveFile(expJAMname(mbPath, EXT_ORG_LRD), expJAMname(nmbp, EXT_ORG_LRD));
+
+      MoveFile(expJAMname(mbPath, EXT_OLD_HDR), expJAMname(nmbp, EXT_OLD_HDR));
+      MoveFile(expJAMname(mbPath, EXT_OLD_IDX), expJAMname(nmbp, EXT_OLD_IDX));
+      MoveFile(expJAMname(mbPath, EXT_OLD_TXT), expJAMname(nmbp, EXT_OLD_TXT));
+      MoveFile(expJAMname(mbPath, EXT_OLD_LRD), expJAMname(nmbp, EXT_OLD_LRD));
     }
   }
   else
   {
     // New files are the same, so they are not needed -> Delete them.
-    DeleteFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_HDR));
-    DeleteFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_IDX));
-    DeleteFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_TXT));
-    DeleteFile(expJAMname(areaPtr->msgBasePath, EXT_BCK_LRD));
+    DeleteFile(expJAMname(mbPath, EXT_OLD_HDR));
+    DeleteFile(expJAMname(mbPath, EXT_OLD_IDX));
+    DeleteFile(expJAMname(mbPath, EXT_OLD_TXT));
+    DeleteFile(expJAMname(mbPath, EXT_OLD_LRD));
   }
   logEntry("Ready", LOG_DEBUG | LOG_NOSCRN, 0);
 
@@ -828,7 +846,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
    JLRhandle = fsopen(expJAMname(areaPtr->msgBasePath, EXT_LRD),
                       O_RDONLY|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1);
 
-   if ( (JHRhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_NEW_HDR),
+   if ( (JHRhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_OLD_HDR),
                                O_CREAT|O_TRUNC|O_RDWR|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JLRhandle);
       fsclose(JDXhandle);
@@ -836,7 +854,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ( (JDThandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_NEW_TXT),
+   if ( (JDThandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_OLD_TXT),
                                O_CREAT|O_TRUNC|O_RDWR|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JHRhandleNew);
       fsclose(JLRhandle);
@@ -845,7 +863,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ( (JDXhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_NEW_IDX),
+   if ( (JDXhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_OLD_IDX),
                                O_CREAT|O_TRUNC|O_RDWR|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JDThandleNew);
       fsclose(JHRhandleNew);
@@ -855,7 +873,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ( (JLRhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_NEW_LRD),
+   if ( (JLRhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_OLD_LRD),
                                O_CREAT|O_TRUNC|O_RDWR|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JDXhandleNew);
       fsclose(JDThandleNew);
@@ -1243,33 +1261,13 @@ jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->are
 
   if (JAMerror)
   {
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_NEW_HDR), 1);
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_NEW_TXT), 1);
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_NEW_IDX), 1);
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_NEW_LRD), 1);
     newLine();
     sprintf(tempStr, "O Disk problems during JAM base maintenance, area %s", areaPtr->areaName);
     logEntry(tempStr, LOG_ALWAYS, 0);
   }
   else
-  {
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_BCK_HDR), 1);
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_BCK_TXT), 1);
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_BCK_IDX), 1);
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_BCK_LRD), 1);
-
-    fsrename(expJAMname(areaPtr->msgBasePath, EXT_HDR), expJAMname(areaPtr->msgBasePath, EXT_BCK_HDR), 1);
-    fsrename(expJAMname(areaPtr->msgBasePath, EXT_TXT), expJAMname(areaPtr->msgBasePath, EXT_BCK_TXT), 1);
-    fsrename(expJAMname(areaPtr->msgBasePath, EXT_IDX), expJAMname(areaPtr->msgBasePath, EXT_BCK_IDX), 1);
-    fsrename(expJAMname(areaPtr->msgBasePath, EXT_LRD), expJAMname(areaPtr->msgBasePath, EXT_BCK_LRD), 1);
-
-    fsrename(expJAMname(areaPtr->msgBasePath, EXT_NEW_HDR), expJAMname(areaPtr->msgBasePath, EXT_HDR), 1);
-    fsrename(expJAMname(areaPtr->msgBasePath, EXT_NEW_TXT), expJAMname(areaPtr->msgBasePath, EXT_TXT), 1);
-    fsrename(expJAMname(areaPtr->msgBasePath, EXT_NEW_IDX), expJAMname(areaPtr->msgBasePath, EXT_IDX), 1);
-    fsrename(expJAMname(areaPtr->msgBasePath, EXT_NEW_LRD), expJAMname(areaPtr->msgBasePath, EXT_LRD), 1);
-
     puts("Ready");
-  }
+
 #ifdef _DEBUG
   logEntry("O Ready", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
