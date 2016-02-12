@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -1393,37 +1393,41 @@ void addPathSeenBy (char *msgText, char *seenBy, char *tinySeen, char *path,
       writePathSeenBy (ECHO_PATH, path, pathArray, pathCount);
 /* return cppError; */
 }
-
+//---------------------------------------------------------------------------
 #ifdef FMAIL
-
 void addVia(char *msgText, u16 aka)
 {
-  struct tm *tmPtr;
-  char      *helpPtr;
+  char *helpPtr;
 
-  tmPtr = gmtime(&startTime);
-
-  if ((tmPtr->tm_year += 1900) < 1980)
-    tmPtr->tm_year += 100;
-
-  if ((helpPtr = strchr (msgText, 0)) != NULL)
+  if ((helpPtr = strchr(msgText, 0)) != NULL)
   {
-    if ((*(helpPtr-1) != '\r') &&
-        ((*(helpPtr-1) != '\n') || (*(helpPtr-2) != '\r')))
-    {
+    if (*(helpPtr - 1) != '\r' && (*(helpPtr - 1) != '\n' || *(helpPtr - 2) != '\r'))
       *(helpPtr++) = '\r';
-    }
 
-    sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s%s\r",
-                      nodeStr (&config.akaList[aka].nodeNum),
-                      tmPtr->tm_year, tmPtr->tm_mon + 1, tmPtr->tm_mday,
-                      tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec,
-                      VersionStr(),
-                      "");
+    {
+#ifdef __WIN32__
+      SYSTEMTIME st;
+      GetSystemTime(&st);
+      sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s\r"
+                     , nodeStr(&config.akaList[aka].nodeNum)
+                     , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds
+                     , VersionStr()
+             );
+#else // __WIN32__
+      struct tm *tmPtr;
+      tmPtr = gmtime(&startTime);
+      sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s\r"
+                     , nodeStr(&config.akaList[aka].nodeNum)
+                     , tmPtr->tm_year + 1900, tmPtr->tm_mon + 1, tmPtr->tm_mday
+                     , tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec
+                     , VersionStr()
+             );
+#endif // __WIN32__
+    }
   }
 }
 #endif
-
+//---------------------------------------------------------------------------
 char *makeName(char *path, char *name)
 {
    static tempStrType tempStr;

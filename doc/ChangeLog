@@ -1,3 +1,6 @@
+2016-02-13  1.69.13.147-Beta
+  * Via kludge shows milliseconds and time in UTC
+
 2016-02-04  1.69.12.145-Beta
   * "FMAIL BAD:" time string more readable
   * jammaint func new routine now active on production files (old routine still executed for comparison)
