@@ -1395,7 +1395,7 @@ void addPathSeenBy (char *msgText, char *seenBy, char *tinySeen, char *path,
 }
 //---------------------------------------------------------------------------
 #ifdef FMAIL
-void addVia(char *msgText, u16 aka)
+void addVia(char *msgText, u16 aka, const char *func)
 {
   char *helpPtr;
 
@@ -1408,19 +1408,19 @@ void addVia(char *msgText, u16 aka)
 #ifdef __WIN32__
       SYSTEMTIME st;
       GetSystemTime(&st);
-      sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s\r"
+      sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s(%s) %s\r"
                      , nodeStr(&config.akaList[aka].nodeNum)
                      , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds
-                     , VersionStr()
+                     , TOOLSTR, func, Version()
              );
 #else // __WIN32__
       struct tm *tmPtr;
       tmPtr = gmtime(&startTime);
-      sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s\r"
+      sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s(%s) %s\r"
                      , nodeStr(&config.akaList[aka].nodeNum)
                      , tmPtr->tm_year + 1900, tmPtr->tm_mon + 1, tmPtr->tm_mday
                      , tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec
-                     , VersionStr()
+                     , TOOLSTR, func, Version()
              );
 #endif // __WIN32__
     }

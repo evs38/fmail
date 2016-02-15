@@ -25,7 +25,10 @@
 #define SERIAL_MAJOR  1
 #define SERIAL_MINOR  69
 
+extern const char *TOOLSTR;
+
 const char *VersionStr   (void);
+const char *Version      (void);
 const char *TearlineStr  (void);
 const char *TIDStr       (void);
 #ifdef __WIN32__

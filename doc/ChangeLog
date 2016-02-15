@@ -1,21 +1,28 @@
+2016-02-15  1.69.14.150-Beta
+  * Space instead of dash separates program name from version string in TID kludge and tear line.
+
+2016-02-15  1.69.13.149-Beta
+  * Via kludge more fts-4009 compliant.
+  * Also add Via kludge on received/tossed netmails.
+
 2016-02-13  1.69.13.147-Beta
-  * Via kludge shows milliseconds and time in UTC
+  * Via kludge shows milliseconds and time in UTC.
 
 2016-02-04  1.69.12.145-Beta
-  * "FMAIL BAD:" time string more readable
-  * jammaint func new routine now active on production files (old routine still executed for comparison)
-  * jammaint func also saves original files for debugging
+  * "FMAIL BAD:" time string more readable.
+  * jammaint func new routine now active on production files (old routine still executed for comparison).
+  * jammaint func also saves original files for debugging.
 
 2016-01-09  1.69.12.144-Beta
-  * "FMAIL BAD:" kludge lines include a processing date/time stamp
+  * "FMAIL BAD:" kludge lines include a processing date/time stamp.
 
 2015-10-09  1.69.11.142-Beta
   * Added TZUTC kludge to generated messages.
   * jammaint.c: Make backup files when differences found in debug mode.
-  * util.c: addKludge functions
+  * util.c: addKludge functions.
 
 2015-10-03  1.69.9.79-Beta
-  * jamfunc.c: Fixed date/time import in jambase from pkt message (DST issue)
+  * jamfunc.c: Fixed date/time import in jambase from pkt message (DST issue).
   * jammaint.c: Some little issues in the new jammaint function fixed. Better logging.
 
 2015-09-23  1.69.7.134-Beta

@@ -63,14 +63,6 @@
 #define MBNAME "Hudson"
 #endif
 
-#ifdef BETA
-  #define BLSTR "-Beta"
-  #define BSSTR "-B"
-#else
-  #define BLSTR ""
-  #define BSSTR ""
-#endif
-
 #if   defined(FSETUP)
   #define TOOL "FSetup"
 #elif defined(FTOOLS)
@@ -79,51 +71,59 @@
   #define TOOL "FMail"
 #endif
 
-#define VERSION_STR  TOOL PTYPE MBTYPE "-%s" BLSTR
-#define TEARLINE_STR "--- " TOOL PTYPE "-%s" BSSTR
-#define TID_STR      TOOL PTYPE "-%s" BSSTR
+#define VERSION_STR  TOOL PTYPE MBTYPE "-%s"
 #ifdef __WIN32__
 #define VERSTR VersionString()
 #else
 #define VERSTR VERNUM
 #endif
+
+const char *TOOLSTR = TOOL PTYPE;
+
 //----------------------------------------------------------------------------
-char versionStr[82] = { 0 };
+static char versionStr[82] = { 0 };
 
 const char *VersionStr(void)
 {
   if (*versionStr == 0)
 #ifdef BETA
-    sprintf(versionStr, VERSION_STR"%04d%02d%02d", VERSTR, YEAR, MONTH + 1, DAY);
+    sprintf(versionStr, VERSION_STR"-Beta%04d%02d%02d", VERSTR, YEAR, MONTH + 1, DAY);
 #else
     sprintf(versionStr, VERSION_STR, VERSTR);
 #endif
   return versionStr;
 }
 //----------------------------------------------------------------------------
-char tearStr[82] = { 0 };
+static char version[42] = { 0 };
+
+const char *Version(void)
+{
+  if (*version == 0)
+#ifdef BETA
+    sprintf(version, "%s-B%04d%02d%02d", VERSTR, YEAR, MONTH + 1, DAY);
+#else
+    sprintf(version, "%s", VERSTR);
+#endif
+  return version;
+}
+//----------------------------------------------------------------------------
+static char tearStr[82] = { 0 };
 
 const char *TearlineStr(void)
 {
   if (*tearStr == 0)
-#ifdef BETA
-    sprintf(tearStr, TEARLINE_STR"%04d%02d%02d\r", VERSTR, YEAR, MONTH + 1, DAY);
-#else
-    sprintf(tearStr, TEARLINE_STR"\r", VERSTR);
-#endif
+    sprintf(tearStr, "--- %s %s\r", TOOLSTR, Version());
+
   return tearStr;
 }
 //----------------------------------------------------------------------------
-char tidStr[82] = { 0 };
+static char tidStr[82] = { 0 };
 
 const char *TIDStr(void)
 {
   if (*tidStr == 0)
-#ifdef BETA
-    sprintf(tidStr, TID_STR"%04d%02d%02d", VERSTR, YEAR, MONTH + 1, DAY);
-#else
-    sprintf(tidStr, TID_STR, VERSTR);
-#endif
+    sprintf(tidStr, "%s %s", TOOLSTR, Version());
+
   return tidStr;
 }
 //----------------------------------------------------------------------------

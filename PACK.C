@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //  This file is part of FMail.
 //
@@ -438,7 +438,7 @@ s16 pack(s16 argc, char *argv[], s32 switches)
               )
           count2++;
 
-        addVia(message->text, count2 < MAX_AKAS ? count2 : nodeFileInfo.srcAka);
+        addVia(message->text, count2 < MAX_AKAS ? count2 : nodeFileInfo.srcAka, "Pack");
 
         if (writeNetPktValid(message, &nodeFileInfo))
           diskError = DERR_PACK;

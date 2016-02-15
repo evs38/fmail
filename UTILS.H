@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -105,7 +105,7 @@ s16         getLocalAkaNum (nodeNumType *node);
 char       *insertLine     (char *pos, const char *line);
 char       *insertLineN    (char *pos, char *line, u16 num);
 void        addPathSeenBy  (char *msgText, char *seenBy, char *tinySeen, char *path, echoToNodeType echoToNode, u16 areaIndex);
-void        addVia         (char *msgText, u16 aka);
+void        addVia         (char *msgText, u16 aka, const char *func);
 s16         scanDate       (unsigned char *datePtr, u16 *year, u16 *month, u16 *day, u16 *hours, u16 *minutes);
 s32         checkDate      (u16 year,  u16 month,  u16 day, u16 hours, u16 minutes, u16 seconds);
 char       *makeName       (char *path, char *name);

@@ -538,6 +538,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
               {
                 make4d(message);
                 localAkaNum = getLocalAka(&message->destNode);
+                addVia(message->text, localAkaNum, "Toss");  // Add Toss Via here before any writeMsg()
               }
 
               if (*config.topic1 || *config.topic2)
@@ -646,7 +647,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                       writeMsg(message, NETMSG, 2);
                     }
                     else
-                      writeMsg (message, NETMSG, 0);
+                      writeMsg(message, NETMSG, 0);
                   }
                   break;
 
