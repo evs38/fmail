@@ -417,30 +417,26 @@ void tossBad(internalMsgType *message)
 //---------------------------------------------------------------------------
 const char *badTimeStr(void)
 {
-#ifndef __WIN32__
-  time_t      timer;
-#endif // __WIN32__
-  struct tm   tm;
-  static char tStr[24];
-
+  static char tStr[32];
 #ifdef __WIN32__
   SYSTEMTIME st;
+
   GetLocalTime(&st);
-  tm.tm_year = st.wYear  - 1900;
-  tm.tm_mon  = st.wMonth - 1;
-  tm.tm_mday = st.wDay;
-  tm.tm_hour = st.wHour;
-  tm.tm_min  = st.wMinute;
-  tm.tm_sec  = st.wSecond;
+  sprintf(tStr, "%04u-%02u-%02u %02u:%02u:%02u"
+              , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond
+         );
 #else // __WIN32__
+  time_t      timer;
+  struct tm   tm;
+
   time(&timer);
   tm = *gmtime(&timer);
-#endif // __WIN32__
-
   sprintf(tStr, "%04u-%02u-%02u %02u:%02u:%02u"
               , tm.tm_year + 1900 , tm.tm_mon + 1 , tm.tm_mday
               , tm.tm_hour, tm.tm_min, tm.tm_sec
          );
+#endif // __WIN32__
+
   return tStr;
 }
 //---------------------------------------------------------------------------

@@ -1,3 +1,6 @@
+2016-02-16  1.69.14.151-Beta
+  * badTimeStr() function optimized for Win32.
+
 2016-02-15  1.69.14.150-Beta
   * Space instead of dash separates program name from version string in TID kludge and tear line.
 
