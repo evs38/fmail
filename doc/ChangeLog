@@ -1,3 +1,8 @@
+2016-02-17  1.69.15.152-Beta
+  * util.c: Added functions for safer aka string retrieval.
+  * Use pkt header destination node number for Via kludge on received netmails.
+  * Better error logging when pkt file reading fails.
+
 2016-02-16  1.69.14.151-Beta
   * badTimeStr() function optimized for Win32.
 

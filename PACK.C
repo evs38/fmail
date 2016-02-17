@@ -76,7 +76,7 @@ s16 packValid(nodeNumType *node, char *packedNodes)
   tempStrType tempStr;
   char       *helpPtr
            , *helpPtr2;
-  char       *stringNode;
+  char        stringNode[32];
   char        nodeTempStr[32];
   size_t      count;
 
@@ -91,7 +91,7 @@ s16 packValid(nodeNumType *node, char *packedNodes)
   while (helpPtr != NULL)
   {
     if (*(u16*)helpPtr == '*' || strchr(helpPtr, ':') != NULL)
-      strcpy(nodeTempStr,helpPtr);
+      strcpy(nodeTempStr, helpPtr);
     else
     {
       if (strchr(helpPtr, '/') != NULL)
@@ -119,11 +119,11 @@ s16 packValid(nodeNumType *node, char *packedNodes)
         }
       }
     }
-    stringNode = nodeStr(node);
+    strcpy(stringNode, nodeStr(node));
 
     for (count = 0; count < strlen(nodeTempStr); count++)
     {
-      if ((nodeTempStr[count] == '?') && isdigit(stringNode[count]))
+      if (nodeTempStr[count] == '?' && isdigit(stringNode[count]))
         stringNode[count] = '?';
 
       if (nodeTempStr[count] == '*')
@@ -133,8 +133,7 @@ s16 packValid(nodeNumType *node, char *packedNodes)
 
         nodeTempStr[count] = 0;
         stringNode[count] = 0;
-        if (count && (nodeTempStr[count - 1] == '.') &&
-            (stringNode[count - 1] == 0))
+        if (count && nodeTempStr[count - 1] == '.' && stringNode[count - 1] == 0)
           nodeTempStr[count - 1] = 0;
 
         break;

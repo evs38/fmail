@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -82,12 +82,12 @@ extern configType   config;
 //---------------------------------------------------------------------------
 void initPkt(void)
 {
-   if ((pktRdBuf = malloc(PKT_BUFSIZE)) == NULL)
-      logEntry ("Error allocating memory for packet read buffer", LOG_ALWAYS, 2);
+  if ((pktRdBuf = malloc(PKT_BUFSIZE)) == NULL)
+    logEntry ("Error allocating memory for packet read buffer", LOG_ALWAYS, 2);
 
-   pmHdr.two = 2;
+  pmHdr.two = 2;
 
-   PKT_BUFSIZE = (32000>>3) *
+  PKT_BUFSIZE = (32000 >> 3) *
 #if defined(__FMAILX__) || defined(__32BIT__)
                               8;
 #else
@@ -105,32 +105,43 @@ void deInitPkt(void)
 //---------------------------------------------------------------------------
 s16 openPktRd(char *pktName, s16 secure)
 {
-   u16             srcCapability;
-   nodeInfoType    *nodeInfoPtr;
-   char            password[9];
-   tempStrType     tempStr;
-   pktHdrType      msgPktHdr;
-   struct ftime    fileTime;
+   u16           srcCapability;
+   nodeInfoType *nodeInfoPtr;
+   char          password[9];
+   tempStrType   tempStr;
+   pktHdrType    msgPktHdr;
+   struct ftime  fileTime;
 
    startBuf = PKT_BUFSIZE;
    endBuf   = PKT_BUFSIZE;
    pktRdBuf [PKT_BUFSIZE-1] = 0;
+   globVars.remoteCapability = 0;
+   globVars.packetDestAka = 0;
+   globVars.remoteProdCode = 0x0104;
 
-   if ((pktHandle = openP(pktName, O_RDONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) == -1)
-      return (1);
-
-   if (_read (pktHandle, &msgPktHdr, 58) < 58)
+   if ((pktHandle = openP(pktName, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
    {
-      close(pktHandle);
-      strcpy (tempStr, pktName);
-      strcpy (tempStr+strlen(tempStr)-3, "ERR");
-      rename (pktName, tempStr);
-      return (1);
+      sprintf(tempStr, "Error opening packet file: %s", pktName);
+      logEntry(tempStr, LOG_ALWAYS, 0);
+
+      return 1;
    }
 
-   globVars.remoteCapability = 0;
+   if (_read(pktHandle, &msgPktHdr, 58) < 58)
+   {
+      tempStrType newPktName;
+
+      close(pktHandle);
+      strcpy(stpcpy(newPktName, pktName) - 3, "ERR");
+      rename(pktName, newPktName);
+
+      sprintf(tempStr, "Error reading packet header in file: %s, renamed to: %s", pktName, newPktName);
+      logEntry(tempStr, LOG_ALWAYS, 0);
+
+      return 1;
+   }
+
    globVars.remoteProdCode = (u16)msgPktHdr.prodCodeLo;
-   globVars.packetDestAka = 0;
 
    /* Capability word */
 
@@ -140,10 +151,11 @@ s16 openPktRd(char *pktName, s16 secure)
    if (srcCapability != (msgPktHdr.capWord & 0x7fff))
       srcCapability = 0;
 
-   if ((srcCapability & 1) || (msgPktHdr.prodCodeLo == 0x0c) ||
-                              (msgPktHdr.prodCodeLo == 0x1a) ||
-                              (msgPktHdr.prodCodeLo == 0x3f) ||
-                              (msgPktHdr.prodCodeLo == 0x45))
+   if ((srcCapability & 1) || msgPktHdr.prodCodeLo == 0x0c
+                           || msgPktHdr.prodCodeLo == 0x1a
+                           || msgPktHdr.prodCodeLo == 0x3f
+                           || msgPktHdr.prodCodeLo == 0x45
+      )
    {
       /* 4-d info */
 
@@ -159,20 +171,17 @@ s16 openPktRd(char *pktName, s16 secure)
               ((msgPktHdr.destNet   != config.akaList[globVars.packetDestAka].fakeNet) ||
                (msgPktHdr.destNode  != config.akaList[globVars.packetDestAka].nodeNum.point) ||
                (msgPktHdr.destPoint != 0))))
-      {
          globVars.packetDestAka++;
-      }
+
 #ifdef DEBUG
-      printString ("Type 2+ dest zone: ");
-      printInt (msgPktHdr.destZone);
-      newLine ();
+      printString("Type 2+ dest zone: ");
+      printInt(msgPktHdr.destZone);
+      newLine();
 #endif
       /* FSC-0048 rev. 2 */
 
-      if (msgPktHdr.origPoint && (msgPktHdr.origNet == 0xffff))
-      {
+      if (msgPktHdr.origPoint && msgPktHdr.origNet == 0xffff)
          msgPktHdr.origNet = msgPktHdr.auxNet;
-      }
 
       globVars.packetSrcNode.zone   = msgPktHdr.origZone;
       globVars.packetSrcNode.net    = msgPktHdr.origNet;
@@ -192,8 +201,9 @@ s16 openPktRd(char *pktName, s16 secure)
    {
       /* Detect FSC-0045 */
 
-      if ((((FSC45pktHdrType*)&msgPktHdr)->packetType == 2) &&
-          (((FSC45pktHdrType*)&msgPktHdr)->subVersion == 2))
+      if (  ((FSC45pktHdrType*)&msgPktHdr)->packetType == 2
+         && ((FSC45pktHdrType*)&msgPktHdr)->subVersion == 2
+         )
       {
          globVars.remoteCapability = -1;
 
@@ -204,13 +214,12 @@ s16 openPktRd(char *pktName, s16 secure)
                  (((FSC45pktHdrType*)&msgPktHdr)->destNode  != config.akaList[globVars.packetDestAka].nodeNum.node) ||
                  ((((FSC45pktHdrType*)&msgPktHdr)->destPoint != config.akaList[globVars.packetDestAka].nodeNum.point) &&
                   (config.akaList[globVars.packetDestAka].nodeNum.point != 0))))
-         {
             globVars.packetDestAka++;
-         }
+
 #ifdef DEBUG
-         printString ("FSC-0045 dest AKA: ");
-         printInt (globVars.packetDestAka);
-         newLine ();
+         printString("FSC-0045 dest AKA: ");
+         printInt(globVars.packetDestAka);
+         newLine();
 #endif
          globVars.packetSrcNode.zone  = ((FSC45pktHdrType*)&msgPktHdr)->origZone;
          globVars.packetSrcNode.net   = ((FSC45pktHdrType*)&msgPktHdr)->origNet;
@@ -231,9 +240,8 @@ s16 openPktRd(char *pktName, s16 secure)
                   (msgPktHdr.destNode != config.akaList[globVars.packetDestAka].nodeNum.node)) &&
                  ((msgPktHdr.destNet  != config.akaList[globVars.packetDestAka].fakeNet) ||
                   (msgPktHdr.destNode != config.akaList[globVars.packetDestAka].nodeNum.point))))
-         {
             globVars.packetDestAka++;
-         }
+
 #ifdef DEBUG
          printString ("Type 2 dest AKA: ");
          printInt (globVars.packetDestAka);
@@ -250,45 +258,49 @@ s16 openPktRd(char *pktName, s16 secure)
       }
    }
 
-   node4d (&globVars.packetSrcNode);
-   node4d (&globVars.packetDestNode);
+   node4d(&globVars.packetSrcNode);
+   node4d(&globVars.packetDestNode);
 
    if (globVars.packetDestAka == MAX_AKAS)
    {
-      if (config.mailOptions.checkPktDest && (!secure))
+      if (config.mailOptions.checkPktDest && !secure)
       {
          close(pktHandle);
-         strcpy (tempStr, pktName);
-         strcpy (tempStr+strlen(tempStr)-3, "DST");
-         rename (pktName, tempStr);
-         return (2); /* Destination address not found */
+         strcpy(stpcpy(tempStr, pktName) - 3, "DST");
+         rename(pktName, tempStr);
+         logEntry("Packet is addressed to another node --> packet is renamed to .DST", LOG_ALWAYS, 0);
+
+         return 2;  // Destination address not found
       }
+      logEntry("Packet is addressed to another node!", LOG_ALWAYS, 0);
       globVars.packetDestAka = 0;
    }
 
    nodeInfoPtr = getNodeInfo(&globVars.packetSrcNode);
 
    globVars.password = 0;
-   if (*msgPktHdr.password) globVars.password++;
+   if (*msgPktHdr.password)
+      globVars.password++;
 
-   if ((!nodeInfoPtr->options.ignorePwd) && (!secure))
+   if (!nodeInfoPtr->options.ignorePwd && !secure)
    {
-      strncpy (password, msgPktHdr.password, 8);
+      strncpy(password, msgPktHdr.password, 8);
       password[8] = 0;
-      strupr (password);
+      strupr(password);
       if (*nodeInfoPtr->packetPwd != 0)
       {
-         if (strcmp (nodeInfoPtr->packetPwd, password) != 0)
+         if (strcmp(nodeInfoPtr->packetPwd, password) != 0)
          {
             close(pktHandle);
-            sprintf (tempStr, "Received password \"%s\" from node %s, expected \"%s\"",
+            sprintf(tempStr, "Received password \"%s\" from node %s, expected \"%s\"",
                               password, nodeStr(&globVars.packetSrcNode), nodeInfoPtr->packetPwd);
-            logEntry (tempStr, LOG_ALWAYS, 0);
-            strcpy (tempStr, pktName);
-            strcpy (tempStr+strlen(tempStr)-3, "SEC");
-            rename (pktName, tempStr);
+            logEntry(tempStr, LOG_ALWAYS, 0);
+            strcpy(tempStr, pktName);
+            strcpy(tempStr+strlen(tempStr)-3, "SEC");
+            rename(pktName, tempStr);
+            logEntry("Packet password security violation --> packet is renamed to .SEC", LOG_ALWAYS, 0);
 
-            return 3; /* Password security violation */
+            return 3;  // Password security violation
          }
          else
             globVars.password++;

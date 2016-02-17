@@ -62,18 +62,17 @@ char *insertLine(char *pos, const char *line)
 u16  nodeStrIndex = 0;
 char nodeNameStr[2][24];
 
-char *nodeStr(nodeNumType *nodeNum)
+const char *nodeStr(const nodeNumType *nodeNum)
 {
-  char *tempPtr;
+  char *tempPtr = nodeNameStr[nodeStrIndex = 1 - nodeStrIndex];
 
-  tempPtr = nodeNameStr[nodeStrIndex = !nodeStrIndex];
   if (nodeNum->zone != 0)
     tempPtr += sprintf(tempPtr, "%u:", nodeNum->zone);
 
-  tempPtr += sprintf(tempPtr, "%u/%u", nodeNum->net, nodeNum->node);
-
   if (nodeNum->point != 0)
-    sprintf(tempPtr, ".%u", nodeNum->point);
+    sprintf(tempPtr, "%u/%u.%u", nodeNum->net, nodeNum->node, nodeNum->point);
+  else
+    sprintf(tempPtr, "%u/%u"   , nodeNum->net, nodeNum->node);
 
   return nodeNameStr[nodeStrIndex];
 }

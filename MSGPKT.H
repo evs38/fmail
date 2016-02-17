@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -25,78 +25,77 @@
 
 typedef struct
 {
-   u16       origNode,
-             destNode,
-	     year,
-	     month,
-	     day,
-	     hour,
-             minute,
-	     second,
-	     baud,
-	     packetType,
-	     origNet,
-	     destNet;
-  uchar      prodCodeLo,
-	     serialNoMajor;
-  uchar      password [8];
-  u16        origZoneQ,
-	     destZoneQ,
-	     auxNet,
-	     cwValid;
-  uchar      prodCodeHi,
-	     serialNoMinor;
-  u16        capWord,
-	     origZone,
-	     destZone,
-	     origPoint,
-	     destPoint;
-  uchar      prodData[4];  } pktHdrType;
+   u16  origNode
+      , destNode
+      , year
+      , month
+      , day
+      , hour
+      , minute
+      , second
+      , baud
+      , packetType
+      , origNet
+      , destNet;
+  uchar prodCodeLo
+      , serialNoMajor;
+  uchar password[8];
+  u16   origZoneQ
+      , destZoneQ
+      , auxNet
+      , cwValid;
+  uchar prodCodeHi
+      , serialNoMinor;
+  u16   capWord
+      , origZone
+      , destZone
+      , origPoint
+      , destPoint;
+  uchar prodData[4];
 
-
+} pktHdrType;
+//---------------------------------------------------------------------------
 typedef struct
 {
-   u16   origNode
-       , destNode
-       , origPoint
-       , destPoint;
-   uchar reserved[8];
-   u16   subVersion
-       , packetType
-       , origNet
-       , destNet;
-   uchar prodCode
-       , revisionLevel;
-   uchar password [8];
-   u16   origZone
-       , destZone;
-   uchar origDomain[8]
-       , destDomain[8];
-   uchar prodData[4];
+  u16   origNode
+      , destNode
+      , origPoint
+      , destPoint;
+  uchar reserved[8];
+  u16   subVersion
+      , packetType
+      , origNet
+      , destNet;
+  uchar prodCode
+      , revisionLevel;
+  uchar password [8];
+  u16   origZone
+      , destZone;
+  uchar origDomain[8]
+      , destDomain[8];
+  uchar prodData[4];
+
 } FSC45pktHdrType;
-
-
-/*       0       2     Originating node number
-         2       2     Destination node number
-         4       2   * Originating point number
-         6       2   * Destination point number
-         8       8     Reserved, must be zero
-        16       2     Packet sub-version (2)
-        18       2     Packet version (2)
-        20       2     Originating network
-        22       2     Destination network
-        24       1     Product code
-        25       1     Product revision level
-        26       8     Password
-        34       2   * Originating zone
-        36       2   * Destination zone
-        38       8   * Originating domain
-        46       8   * Destination domain
-        54       4     Product specific data
-        58     ---     Start of first packed message
-
-                     * Field only guaranteed accurate in a type 2.2 header
-*/
+//---------------------------------------------------------------------------
+//   0       2     Originating node number
+//   2       2     Destination node number
+//   4       2   * Originating point number
+//   6       2   * Destination point number
+//   8       8     Reserved, must be zero
+//  16       2     Packet sub-version (2)
+//  18       2     Packet version (2)
+//  20       2     Originating network
+//  22       2     Destination network
+//  24       1     Product code
+//  25       1     Product revision level
+//  26       8     Password
+//  34       2   * Originating zone
+//  36       2   * Destination zone
+//  38       8   * Originating domain
+//  46       8   * Destination domain
+//  54       4     Product specific data
+//  58     ---     Start of first packed message
+//               * Field only guaranteed accurate in a type 2.2 header
 //---------------------------------------------------------------------------
 
 void initPkt  (void);
@@ -119,4 +118,3 @@ s16  closeNetPktWr    (nodeFileRecType *nfInfoRec);
 
 //---------------------------------------------------------------------------
 #endif  // msgpktH
-

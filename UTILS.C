@@ -327,34 +327,6 @@ u32 fileLength(int handle)
   return (u32)fl;
 }
 //---------------------------------------------------------------------------
-s16 matchAka(nodeNumType *node, char useAka)
-{
-  s16      srcAka = -1;
-  u16      valid = 6;
-  u16      count;
-
-  if ( useAka && useAka <= MAX_AKAS && config.akaList[useAka-1].nodeNum.zone )
-    return(useAka-1);
-
-  while ((valid > 0) && (srcAka == -1))
-  {
-    count = 0;
-    while ((count < MAX_AKAS) && (srcAka == -1))
-    {
-      if ((config.akaList[count].nodeNum.zone != 0) &&
-         (memcmp (node, &config.akaList[count].nodeNum, valid) == 0))
-        srcAka = count;
-
-      count++;
-    }
-    valid -= 2;
-  }
-  if (srcAka == -1)
-    return (0);
-
-  return (srcAka);
-}
-//---------------------------------------------------------------------------
 void touch(const char *path, const char *filename, const char *t)
 {
   tempStrType tempStr;
@@ -366,6 +338,53 @@ void touch(const char *path, const char *filename, const char *t)
     write(tempHandle, t, strlen(t));
     close(tempHandle);
   }
+}
+//---------------------------------------------------------------------------
+// retMain: set to none 0 if you want the main aka returned in case of
+// out of bounds request
+//
+const nodeNumType *getAkaNodeNum(int aka, int retmain)
+{
+  if (aka < 0 || aka >= MAX_AKAS)
+    return retmain ? &config.akaList[0].nodeNum : NULL;
+
+  return &config.akaList[aka].nodeNum;
+}
+//---------------------------------------------------------------------------
+// retMain: set to none 0 if you want the main aka returned in case of
+// out of bounds request
+//
+const char *getAkaStr(int aka, int retMain)
+{
+  static const char *nullnode = "0:0/0.0";
+  const nodeNumType *node = getAkaNodeNum(aka, retMain);
+
+  return NULL == node ? nullnode : nodeStr(node);
+}
+//---------------------------------------------------------------------------
+int matchAka(nodeNumType *node, int useAka)
+{
+  int i
+    , srcAka = -1
+    , valid  = 6;
+
+  if (useAka > 0 && useAka <= MAX_AKAS && config.akaList[useAka - 1].nodeNum.zone)
+    return useAka - 1;
+
+  do
+  {
+    for (i = 0; i < MAX_AKAS; i++)
+      if (memcmp(node, &config.akaList[i].nodeNum, valid) == 0)
+      {
+        srcAka = i;
+        break;
+      }
+
+    valid -= 2;
+  }
+  while (valid > 0 && srcAka < 0);
+
+  return srcAka >=0 ? srcAka : 0;
 }
 //---------------------------------------------------------------------------
 s16 emptyText(char *text)
@@ -646,16 +665,14 @@ char *srchar(char *string, s16 t, s16 c)
 extern u16  nodeStrIndex;
 extern char nodeNameStr[2][24];
 
-char *nodeStrZ(nodeNumType *nodeNum)
+const char *nodeStrZ(const nodeNumType *nodeNum)
 {
-  char *tempPtr;
+  char *tempPtr = nodeNameStr[nodeStrIndex = 1 - nodeStrIndex];
 
-  tempPtr = nodeNameStr[nodeStrIndex = !nodeStrIndex];
   if (nodeNum->zone != 0)
     tempPtr += sprintf(tempPtr, "%u:", nodeNum->zone);
 
-  sprintf(tempPtr, "%u/%u.%u", nodeNum->net,
-                               nodeNum->node, nodeNum->point);
+  sprintf(tempPtr, "%u/%u.%u", nodeNum->net, nodeNum->node, nodeNum->point);
 
   return nodeNameStr[nodeStrIndex];
 }
@@ -1006,29 +1023,34 @@ static s16 addSeenByNode (u16 net, u16 node,
          return (0);
    return (1);
 }
-
-
-
-
-
-
-s16 getLocalAka (nodeNumType *node)
+//---------------------------------------------------------------------------
+int getLocalAkaNum(nodeNumType *node)
 {
-   s16 count = 0;
+  int i = 0;
 
-   while ((count < MAX_AKAS) &&
-          ((config.akaList[count].nodeNum.zone == 0) ||
-           (memcmp (&(node->net),
-                    &(config.akaList[count].nodeNum.net),
-                    sizeof(nodeNumType)-2) != 0)))
-   {  count++;
-   }
-   return (count==MAX_AKAS ? -1 : count);
+  while (  i < MAX_AKAS
+        && memcmp(node, &config.akaList[i].nodeNum, sizeof(nodeNumType)) != 0
+        )
+    i++;
+
+  return i < MAX_AKAS ? i : -1;
 }
+//---------------------------------------------------------------------------
+int getLocalAka(nodeNumType *node)
+{
+  int i = 0;
 
+  while (  i < MAX_AKAS
+        && (  config.akaList[i].nodeNum.zone == 0
+           || memcmp(&(node->net), &(config.akaList[i].nodeNum.net), sizeof(nodeNumType) - 2) != 0
+           )
+        )
+    i++;
 
-
-s16 isLocalPoint (nodeNumType *node)
+  return i < MAX_AKAS ? i : -1;
+}
+//---------------------------------------------------------------------------
+s16 isLocalPoint(nodeNumType *node)
 {
    u16 count;
 
@@ -1041,12 +1063,11 @@ s16 isLocalPoint (nodeNumType *node)
    {
       count++;
    }
-   return (count==MAX_AKAS ? 0 : 1);
+   return count == MAX_AKAS ? 0 : 1;
 }
 
 
-
-s16 node2d (nodeNumType *node)
+s16 node2d(nodeNumType *node)
 {
    u16 count;
 
@@ -1072,8 +1093,7 @@ s16 node2d (nodeNumType *node)
 }
 
 
-
-void make2d (internalMsgType *message)
+void make2d(internalMsgType *message)
 {
    char     *helpPtr;
 
@@ -1100,130 +1120,94 @@ void make2d (internalMsgType *message)
       removeLine (helpPtr);
    }
 }
-
-
-
-s16 node4d (nodeNumType *node)
+//---------------------------------------------------------------------------
+s16 node4d(nodeNumType *node)
 {
-   u16 count;
+   u16 count = 0;
 
-   count = 0;
-   while ((count < MAX_AKAS) &&
+   while (count < MAX_AKAS &&
           ((config.akaList[count].nodeNum.zone == 0) ||
            (node->net != config.akaList[count].fakeNet) ||
            (node->point != 0)))
-   {
       count++;
-   }
+
    if (count < MAX_AKAS)
    {
       node->point = node->node;
-      memcpy (node, &config.akaList[count].nodeNum, 6);
+      memcpy(node, &config.akaList[count].nodeNum, 6);
 
-      return (count);
+      return count;
    }
-   return (-1);
+   return -1;
 }
-
-
-
-void point4d (internalMsgType *message)
+//---------------------------------------------------------------------------
+void point4d(internalMsgType *message)
 {
-   char        *helpPtr;
+   char       *helpPtr;
    tempStrType tempStr;
 
-   /* 4d source */
+   // 4d source
 
-   if ((helpPtr = findCLStr (message->text, "\1FMPT")) != NULL)
+   if ((helpPtr = findCLStr(message->text, "\1FMPT")) != NULL)
    {
-      message->srcNode.point = atoi (helpPtr+5);
-      removeLine (helpPtr);
+      message->srcNode.point = atoi(helpPtr + 5);
+      removeLine(helpPtr);
    }
-   node4d (&message->srcNode);
+   node4d(&message->srcNode);
    if (message->srcNode.point != 0)
    {
-      sprintf (tempStr, "\1FMPT %u\r", message->srcNode.point);
-      insertLine (message->text, tempStr);
+      sprintf(tempStr, "\1FMPT %u\r", message->srcNode.point);
+      insertLine(message->text, tempStr);
    }
 
-   /* 4d destination */
+   // 4d destination
 
-   if ((helpPtr = findCLStr (message->text, "\1TOPT")) != NULL)
+   if ((helpPtr = findCLStr(message->text, "\1TOPT")) != NULL)
    {
-      message->destNode.point = atoi (helpPtr+5);
-      removeLine (helpPtr);
+      message->destNode.point = atoi(helpPtr + 5);
+      removeLine(helpPtr);
    }
-   node4d (&message->destNode);
+   node4d(&message->destNode);
    if (message->destNode.point != 0)
    {
-      sprintf (tempStr, "\1TOPT %u\r", message->destNode.point);
-      insertLine (message->text, tempStr);
+      sprintf(tempStr, "\1TOPT %u\r", message->destNode.point);
+      insertLine(message->text, tempStr);
    }
 }
-
-
-
-void make4d (internalMsgType *message)
+//---------------------------------------------------------------------------
+void make4d(internalMsgType *message)
 {
-   char        *helpPtr;
+   char       *helpPtr;
    nodeNumType tempNode;
 
    message->srcNode.zone  = config.akaList[0].nodeNum.zone;
    message->destNode.zone = config.akaList[0].nodeNum.zone;
 
-   if ((helpPtr = findCLStr (message->text, "\x1MSGID: ")) != NULL)
+   if ((helpPtr = findCLStr(message->text, "\x1MSGID: ")) != NULL)
    {
-      memset (&tempNode, 0, sizeof(nodeNumType));
-      if ( sscanf (helpPtr+=8, "%hu:%hu/%hu", &tempNode.zone, &tempNode.net,
-                                              &tempNode.node) == 3 )
+      memset(&tempNode, 0, sizeof(nodeNumType));
+      if (sscanf(helpPtr += 8, "%hu:%hu/%hu", &tempNode.zone, &tempNode.net, &tempNode.node) == 3)
       {
          message->srcNode.zone  = tempNode.zone;
          message->destNode.zone = tempNode.zone;
       }
    }
 
-   if ((helpPtr = findCLStr (message->text, "\x1INTL ")) != NULL)
+   if ((helpPtr = findCLStr(message->text, "\x1INTL ")) != NULL)
    {
-      memset (&tempNode, 0, sizeof(nodeNumType));
-      if ( sscanf (helpPtr+=6, "%hu:%hu/%hu", &tempNode.zone, &tempNode.net,
-                                              &tempNode.node) == 3 )
+      memset(&tempNode, 0, sizeof(nodeNumType));
+      if (sscanf(helpPtr += 6, "%hu:%hu/%hu", &tempNode.zone, &tempNode.net, &tempNode.node) == 3)
       {
-         if (tempNode.zone &&
-             (*(s32*)&tempNode.net == *(s32*)&message->destNode.net))
-         {
+         if (tempNode.zone && (*(s32*)&tempNode.net == *(s32*)&message->destNode.net))
             message->destNode.zone = tempNode.zone;
-         }
 
-         memset (&tempNode, 0, sizeof(nodeNumType));
-         if ( sscanf (strchr(helpPtr, ' '), "%hu:%hu/%hu", &tempNode.zone, &tempNode.net,
-                                                           &tempNode.node) == 3 )
-         {
-            if (tempNode.zone &&
-                (*(s32*)&tempNode.net == *(s32*)&message->srcNode.net))
-            {
+         memset(&tempNode, 0, sizeof(nodeNumType));
+         if (sscanf(strchr(helpPtr, ' '), "%hu:%hu/%hu", &tempNode.zone, &tempNode.net, &tempNode.node) == 3)
+            if (tempNode.zone && (*(s32*)&tempNode.net == *(s32*)&message->srcNode.net))
                message->srcNode.zone = tempNode.zone;
-            }
-         }
       }
    }
-   point4d (message);
-}
-//---------------------------------------------------------------------------
-s16 getLocalAkaNum (nodeNumType *node)
-{
-   u16 count = 0;
-
-   while ((count < MAX_AKAS) &&
-          (memcmp (node, &config.akaList[count].nodeNum,
-                   sizeof(nodeNumType)) != 0))
-   {
-      count++;
-   }
-   if (count < MAX_AKAS)
-   {
-      return (count);
-   }
-   return (-1);
+   point4d(message);
 }
 //---------------------------------------------------------------------------
 int comparSeenBy(const void* p1, const void* p2)
@@ -1278,22 +1262,12 @@ void addPathSeenBy (char *msgText, char *seenBy, char *tinySeen, char *path,
    /* Remove fake-net from seen-by */
 
    if (seenByCount != 0)
-   {
       for (count = 0; count < MAX_AKAS; count++)
-      {
          if (config.akaList[count].nodeNum.zone != 0)
-         {
             for (count2 = 0; count2 < seenByCount; count2++)
-            {
                if (config.akaList[count].fakeNet == (*seenByArray)[count2].net)
-               {
                   memcpy (&((*seenByArray)[count2]), &((*seenByArray)[count2+1]),
                           ((--seenByCount)-count2)*sizeof(psRecType));
-               }
-            }
-         }
-      }
-   }
 
   // Sort seen-by list
 
@@ -1409,7 +1383,7 @@ void addVia(char *msgText, u16 aka, const char *func)
       SYSTEMTIME st;
       GetSystemTime(&st);
       sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s(%s) %s\r"
-                     , nodeStr(&config.akaList[aka].nodeNum)
+                     , getAkaStr(aka, 1)
                      , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds
                      , TOOLSTR, func, Version()
              );
@@ -1417,7 +1391,7 @@ void addVia(char *msgText, u16 aka, const char *func)
       struct tm *tmPtr;
       tmPtr = gmtime(&startTime);
       sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s(%s) %s\r"
-                     , nodeStr(&config.akaList[aka].nodeNum)
+                     , getAkaStr(aka, 1)
                      , tmPtr->tm_year + 1900, tmPtr->tm_mon + 1, tmPtr->tm_mday
                      , tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec
                      , TOOLSTR, func, Version()
