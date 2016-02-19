@@ -31,6 +31,8 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 
 #include <conio.h>
 #include <ctype.h>
+#include <dir.h>      // getcwd()
+#include <dirent.h>   // opendir()
 #include <dos.h>
 #include <fcntl.h>
 #include <io.h>
@@ -63,6 +65,7 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include "pack.h"
 #include "pp_date.h"
 #include "sorthb.h"
+#include "spec.h"
 #include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
@@ -339,7 +342,7 @@ u16 getAreaCode(char *msgText)
     *helpPtr = 0;
 
   if (*echoName == 0)
-    printf("Message has no valid area tag ");
+    putStr("Message has no valid area tag ");
   else
   {
     low = 0;
@@ -372,9 +375,9 @@ u16 getAreaCode(char *msgText)
         return low;
 
       if (echoAreaList[low].options.local)
-        printf("Area is local: ");
+        putStr("Area is local: ");
       else
-        printf("Area is not active: ");
+        putStr("Area is not active: ");
       printf("%s ", echoName);
     }
     else
@@ -446,7 +449,8 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 {
   tempStrType        pktStr
                    , tempStr;
-  char              *helpPtr;
+  char              *helpPtr
+                  , *dirStr;
   echoToNodeType     tempEchoToNode;
   s16                echoToNodeCount
                    , areaIndex
@@ -454,450 +458,458 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
   int                i
                    , localAkaNum;
   u16                pktMsgCount;
-  struct _finddata_t fdPkt;
-  long               fdHandle
-                   , fdDone;
+  DIR               *dir;
+  struct dirent     *ent;
   char               prodCodeStr[20];
 
   if (secure && *config.securePath == 0)
     secure = 0;
 
-  secure++;
-
   do
   {
-    strcpy(stpcpy(pktStr, (secure == 2) ? config.securePath : secure ? config.inPath : ".\\"), "*.pkt");
-    fdHandle = _findfirst(pktStr, &fdPkt);
-
-    if (fdHandle != -1) // do not remove !
+    dirStr = secure ? config.securePath : config.inPath;
+#ifdef _DEBUG
     {
-      fdDone = 0;
-      while (!fdDone && !diskError && !breakPressed)
+      tempStrType cwd;
+      getcwd(cwd, dTEMPSTRLEN);
+      sprintf(tempStr, "DEBUG: secure:%d, cwd:%s, scanning:%s", secure, cwd, dirStr);
+      logEntry(tempStr, LOG_DEBUG, 0);
+    }
+#endif
+
+    if ((dir = opendir(dirStr)) != NULL)
+    {
+      while ((ent = readdir(dir)) != NULL && !diskError && !breakPressed)
       {
-        if ((fdPkt.attrib & _A_RDONLY) == 0)
+        if (!match_spec("*.pkt", ent->d_name))
+          continue;
+
+        strcpy(stpcpy(pktStr, dirStr), ent->d_name);
+
+        if (access(pktStr, 06) != 0)  // Check for read and write access
         {
-          newLine();
+          sprintf(tempStr, "Not sufficient access rights on: %s (\"%s\")", pktStr, strerror(errno));
+          logEntry(tempStr, LOG_ALWAYS, 2);
+          continue;
+        }
 
-          strcpy(stpcpy(pktStr, (secure == 2) ? config.securePath : secure ? config.inPath : ".\\"), fdPkt.name);
+        newLine();
 
-          if (0 == openPktRd(pktStr, secure == 2))
+        if (0 == openPktRd(pktStr, secure))
+        {
+          helpPtr = NULL;
+          i = 0;
+          while (ftscprod[i].prodcode != 0xFFFF)
           {
-            helpPtr = NULL;
-            i = 0;
-            while (ftscprod[i].prodcode != 0xFFFF)
+            if (ftscprod[i].prodcode == globVars.remoteProdCode)
             {
-              if (ftscprod[i].prodcode == globVars.remoteProdCode)
-              {
-                helpPtr = ftscprod[i].prodname;
-                break;
-              }
-              ++i;
+              helpPtr = ftscprod[i].prodname;
+              break;
             }
-            if (helpPtr == NULL)
+            ++i;
+          }
+          if (helpPtr == NULL)
+          {
+            sprintf(prodCodeStr, "Program id %04hX", globVars.remoteProdCode);
+            helpPtr = prodCodeStr;
+          }
+          sprintf(tempStr, "Processing %s from %s to %s", ent->d_name, nodeStr(&globVars.packetSrcNode), nodeStr(&globVars.packetDestNode));
+          logEntry(tempStr, LOG_PKTINFO, 0);
+
+          if ((globVars.remoteCapability & 1) == 1)
+            sprintf(tempStr, "Pkt info: %s %u.%02u, Type 2+, %ld, %04u-%02u-%02u %02u:%02u:%02u%s%s",
+                     helpPtr, globVars.versionHi, globVars.versionLo,
+                     globVars.packetSize,
+                     globVars.year, globVars.month, globVars.day,
+                     globVars.hour, globVars.min, globVars.sec,
+                     globVars.password?", Pwd":"", (globVars.password==2)?", Sec":"");
+          else
+            sprintf(tempStr, "Pkt info: %s, Type %s, %ld, %04u-%02u-%02u %02u:%02u:%02u%s%s",
+                     helpPtr,
+                     globVars.remoteCapability == 0xffff ? "2.2" :"2.0",
+                     globVars.packetSize,
+                     globVars.year, globVars.month, globVars.day,
+                     globVars.hour, globVars.min, globVars.sec,
+                     globVars.password?", Pwd":"", (globVars.password==2)?", Sec":"");
+          logEntry(tempStr, LOG_XPKTINFO, 0);
+
+          pktMsgCount = 0;
+
+          while (!readPkt(message) && !diskError && !breakPressed)
+          {
+            printf("\rPkt message %d "dARROW" ", ++pktMsgCount);
+
+            areaIndex = getAreaCode(message->text);
+
+            // Personal Mail Check
+
+            if (areaIndex == NETMSG) // for getLocalAka, moved here from case NETMSG statement
             {
-              sprintf(prodCodeStr, "Program id %04hX", globVars.remoteProdCode);
-              helpPtr = prodCodeStr;
+              make4d(message);
+              localAkaNum = getLocalAka(&message->destNode);
+              addVia(message->text, globVars.packetDestAka, "Toss");  // Add Toss Via here before any writeMsg()
             }
-            sprintf(tempStr, "Processing %s from %s to %s", fdPkt.name, nodeStr(&globVars.packetSrcNode), nodeStr(&globVars.packetDestNode));
-            logEntry(tempStr, LOG_PKTINFO, 0);
 
-            if ((globVars.remoteCapability & 1) == 1)
-              sprintf(tempStr, "Pkt info: %s %u.%02u, Type 2+, %ld, %04u-%02u-%02u %02u:%02u:%02u%s%s",
-                       helpPtr, globVars.versionHi, globVars.versionLo,
-                       globVars.packetSize,
-                       globVars.year, globVars.month, globVars.day,
-                       globVars.hour, globVars.min, globVars.sec,
-                       globVars.password?", Pwd":"", (globVars.password==2)?", Sec":"");
-            else
-              sprintf(tempStr, "Pkt info: %s, Type %s, %ld, %04u-%02u-%02u %02u:%02u:%02u%s%s",
-                       helpPtr,
-                       globVars.remoteCapability == 0xffff ? "2.2" :"2.0",
-                       globVars.packetSize,
-                       globVars.year, globVars.month, globVars.day,
-                       globVars.hour, globVars.min, globVars.sec,
-                       globVars.password?", Pwd":"", (globVars.password==2)?", Sec":"");
-            logEntry(tempStr, LOG_XPKTINFO, 0);
-
-            pktMsgCount = 0;
-
-            while (!readPkt(message) && !diskError && !breakPressed)
+            if (*config.topic1 || *config.topic2)
             {
-              printf("\rPkt message %d "dARROW" ", ++pktMsgCount);
-
-              areaIndex = getAreaCode(message->text);
-
-              // Personal Mail Check
-
-              if (areaIndex == NETMSG) // for getLocalAka, moved here from case NETMSG statement
+              strcpy(tempStr, message->subject);
+              strupr(tempStr);
+            }
+            if (  (  *config.pmailPath
+                  && (  areaIndex != NETMSG
+                     || (  config.mailOptions.persNetmail
+                        && localAkaNum >= 0
+                        )
+                     )
+                  )
+               && (  stricmp(message->toUserName, config.sysopName) == 0
+                  || (  *config.topic1
+                     && strstr(tempStr, config.topic1) != NULL
+                     )
+                  || (  *config.topic2
+                     && strstr(tempStr, config.topic2) != NULL
+                     )
+                  || foundToUserName(message->toUserName)
+                  )
+               )
+            {
+              if (areaIndex == NETMSG)
               {
-                make4d(message);
-                localAkaNum = getLocalAka(&message->destNode);
-                addVia(message->text, globVars.packetDestAka, "Toss");  // Add Toss Via here before any writeMsg()
+                sprintf(tempStr, "AREA: Netmail  SOURCE: %s\r", nodeStr(&message->srcNode));
+                insertLine(message->text, tempStr);
               }
+              if (areaIndex == BADMSG)
+                insertLine(message->text, "AREA: Bad Messages\r");
 
-              if (*config.topic1 || *config.topic2)
-              {
-                strcpy(tempStr, message->subject);
-                strupr(tempStr);
-              }
-              if (  (  *config.pmailPath
-                    && (  areaIndex != NETMSG
-                       || (  config.mailOptions.persNetmail
-                          && localAkaNum >= 0
-                          )
-                       )
-                    )
-                 && (  stricmp(message->toUserName, config.sysopName) == 0
-                    || (  *config.topic1
-                       && strstr(tempStr, config.topic1) != NULL
-                       )
-                    || (  *config.topic2
-                       && strstr(tempStr, config.topic2) != NULL
-                       )
-                    || foundToUserName(message->toUserName)
-                    )
-                 )
-              {
-                if (areaIndex == NETMSG)
+              writeMsg(message, PERMSG, 0);
+              if (areaIndex == NETMSG || areaIndex == BADMSG)
+                removeLine(message->text);
+            }
+
+            switch (areaIndex)
+            {
+              case NETMSG:
+                putStr("NETMAIL");
+
+                message->attribute &= PRIVATE     | FILE_ATT |
+                                      RET_REC_REQ |
+                                      IS_RET_REC  | AUDIT_REQ;
+
+                areaFixRep = 0;
+
+                if (localAkaNum >= 0 && !noAreaFix && toAreaFix(message->toUserName))
                 {
-                  sprintf(tempStr, "AREA: Netmail  SOURCE: %s\r", nodeStr(&message->srcNode));
-                  insertLine(message->text, tempStr);
+                  if (  config.mgrOptions.keepRequest
+                     || findCLiStr(message->text, "%NOTE") != NULL)
+                  {
+                    message->attribute |= RECEIVED;
+                    writeMsg(message, NETMSG, 1);
+                  }
+                  putchar(' ');
+                  areaFixRep = !areaFix(message);
                 }
-                if (areaIndex == BADMSG)
-                  insertLine(message->text, "AREA: Bad Messages\r");
-
-                writeMsg(message, PERMSG, 0);
-                if (areaIndex == NETMSG || areaIndex == BADMSG)
-                  removeLine(message->text);
-              }
-
-              switch (areaIndex)
-              {
-                case NETMSG:
-                  printf("NETMAIL");
-
-                  message->attribute &= PRIVATE     | FILE_ATT |
-                                        RET_REC_REQ |
-                                        IS_RET_REC  | AUDIT_REQ;
-
-                  areaFixRep = 0;
-
-                  if (localAkaNum >= 0 && !noAreaFix && toAreaFix(message->toUserName))
-                  {
-                    if (  config.mgrOptions.keepRequest
-                       || findCLiStr(message->text, "%NOTE") != NULL)
-                    {
-                      message->attribute |= RECEIVED;
-                      writeMsg(message, NETMSG, 1);
-                    }
-                    putchar(' ');
-                    areaFixRep = !areaFix(message);
-                  }
-                  if (!areaFixRep)
-                  {
-                    // re-route to point
-                    if (localAkaNum >= 0)
-                    {
-                      i = 0;
-                      while (i < nodeCount)
-                      {
-                        if ((nodeInfo[i]->options.routeToPoint) &&
-                            (isLocalPoint(&(nodeInfo[i]->node))) &&
-                            (memcmp(&(nodeInfo[i]->node), &message->destNode, 6) == 0) &&
-                            (stricmp(nodeInfo[i]->sysopName, message->toUserName) == 0))
-                        {
-                          sprintf(tempStr,"\1TOPT %u\r", message->destNode.point = nodeInfo[i]->node.point);
-                          insertLine(message->text, tempStr);
-                          i = nodeCount;
-                          localAkaNum = getLocalAka(&message->destNode);
-                        }
-                        else
-                          i++;
-                      }
-                    }
-                    if (localAkaNum >= 0)
-                    {
-                      if (  stricmp(message->toUserName, "SysOp") == 0
-                         || stricmp(message->toUserName, config.sysopName) == 0
-                         )
-                      {
-                        strcpy(message->toUserName, config.sysopName);
-                        globVars.perNetCount++;
-                      }
-                    }
-                    else
-                    {
-                      if (secure == 2 && getLocalAka(&message->srcNode) >= 0)
-                      {
-                        printf(" (local secure)");
-                        message->attribute |= LOCAL | KILLSENT;
-                      }
-                      else
-                      {
-                        printf(" (in transit)");
-                        message->attribute |= IN_TRANSIT | KILLSENT;
-                      }
-                      if (!(getNodeInfo(&message->destNode)->capability & PKT_TYPE_2PLUS)
-                         && isLocalPoint(&message->destNode))
-                        make2d (message);
-                    }
-                    if ((message->attribute & FILE_ATT) && (message->attribute & IN_TRANSIT)
-                       && (strchr(message->subject, '*') != 0 || strchr(message->subject, '?') != 0))
-                    {
-                      insertLine(message->text, "\1FLAGS LOK\r");
-                      writeMsg(message, NETMSG, 2);
-                    }
-                    else
-                      writeMsg(message, NETMSG, 0);
-                  }
-                  break;
-
-                case BADMSG:
-                  printf(dARROW" Bad message");
-                  tossBad(message);
-                  break;
-
-                default:
-                  printf(echoAreaList[areaIndex].areaName);
-
-                  // Security Check
-
-                  if (secure != 2)
+                if (!areaFixRep)
+                {
+                  // re-route to point
+                  if (localAkaNum >= 0)
                   {
                     i = 0;
-                    while ((i < forwNodeCount) &&
-                           ((!ETN_WRITEACCESS(echoToNode[areaIndex][ETN_INDEX(i)], i)) ||
-                            (memcmp (&(nodeFileInfo[i]->destNode4d.net),
-                                     &(globVars.packetSrcNode.net),
-                                     sizeof(nodeNumType)-2) != 0)))
-                      i++;
-
-                    if ((i == forwNodeCount &&
-                         echoAreaList[areaIndex].options.security) ||
-                        (i < forwNodeCount &&
-                         echoAreaList[areaIndex].writeLevel >
-                         nodeFileInfo[i]->nodePtr->writeLevel))
+                    while (i < nodeCount)
                     {
-                      if (i == forwNodeCount)
-                        sprintf(tempStr, "\1FMAIL BAD: %s is not connected to this area (%s)\r", nodeStr(&globVars.packetSrcNode), badTimeStr());
-                      else
-                        sprintf(tempStr, "\1FMAIL BAD: %s has no write access to area (%s)\r", nodeStr(&nodeFileInfo[i]->destNode4d), badTimeStr());
-
-                      insertLineN(message->text, tempStr, 1);
-
-                      for (i = 0; i < forwNodeCount; i++)
+                      if ((nodeInfo[i]->options.routeToPoint) &&
+                          (isLocalPoint(&(nodeInfo[i]->node))) &&
+                          (memcmp(&(nodeInfo[i]->node), &message->destNode, 6) == 0) &&
+                          (stricmp(nodeInfo[i]->sysopName, message->toUserName) == 0))
                       {
-                        if (memcmp(&nodeFileInfo[i]->destNode4d.net, &globVars.packetSrcNode.net, 6) == 0)
-                        {
-                          nodeFileInfo[i]->fromNodeSec++;
-                          i = -1;
-                          break;
-                        }
+                        sprintf(tempStr,"\1TOPT %u\r", message->destNode.point = nodeInfo[i]->node.point);
+                        insertLine(message->text, tempStr);
+                        i = nodeCount;
+                        localAkaNum = getLocalAka(&message->destNode);
                       }
-                      if (i != -1)
-                        ++globVars.fromNoExpSec;
-                      printf(" Security violation "dARROW" Bad message");
-                      tossBad(message);
-                      break;
+                      else
+                        i++;
                     }
                   }
-
-                  if (oldMsgTime)  // Only check for old messages if set
+                  if (localAkaNum >= 0)
                   {
-                    struct tm tm;
-                    time_t msgTime;
-
-                    // Calculate message time
-                    tm.tm_year = message->year  - 1900;
-                    tm.tm_mon  = message->month - 1;
-                    tm.tm_mday = message->day;
-                    tm.tm_hour = message->hours;
-                    tm.tm_min  = message->minutes;
-                    tm.tm_sec  = message->seconds;
-                    msgTime = mktime(&tm);
-
-                    if (msgTime < oldMsgTime)
+                    if (  stricmp(message->toUserName, "SysOp") == 0
+                       || stricmp(message->toUserName, config.sysopName) == 0
+                       )
                     {
-                      sprintf(tempStr, "\1FMAIL BAD: message too old (%s)\r", badTimeStr());
-                      insertLineN(message->text, tempStr, 1);
-                      printf(" "dARROW" Old message");
-                      tossBad(message);
-                      break;
+                      strcpy(message->toUserName, config.sysopName);
+                      globVars.perNetCount++;
                     }
                   }
-
-                  if (checkDup(message, echoAreaList[areaIndex].areaNameCRC))
+                  else
                   {
+                    if (secure && getLocalAka(&message->srcNode) >= 0)
+                    {
+                      putStr(" (local secure)");
+                      message->attribute |= LOCAL | KILLSENT;
+                    }
+                    else
+                    {
+                      putStr(" (in transit)");
+                      message->attribute |= IN_TRANSIT | KILLSENT;
+                    }
+                    if (!(getNodeInfo(&message->destNode)->capability & PKT_TYPE_2PLUS)
+                       && isLocalPoint(&message->destNode))
+                      make2d (message);
+                  }
+                  if ((message->attribute & FILE_ATT) && (message->attribute & IN_TRANSIT)
+                     && (strchr(message->subject, '*') != 0 || strchr(message->subject, '?') != 0))
+                  {
+                    insertLine(message->text, "\1FLAGS LOK\r");
+                    writeMsg(message, NETMSG, 2);
+                  }
+                  else
+                    writeMsg(message, NETMSG, 0);
+                }
+                break;
+
+              case BADMSG:
+                putStr(dARROW" Bad message");
+                tossBad(message);
+                break;
+
+              default:
+                putStr(echoAreaList[areaIndex].areaName);
+
+                // Security checks
+                if (!secure)
+                {
+                  i = 0;
+                  while ((i < forwNodeCount) &&
+                         ((!ETN_WRITEACCESS(echoToNode[areaIndex][ETN_INDEX(i)], i)) ||
+                          (memcmp (&(nodeFileInfo[i]->destNode4d.net),
+                                   &(globVars.packetSrcNode.net),
+                                   sizeof(nodeNumType)-2) != 0)))
+                    i++;
+
+                  if ((i == forwNodeCount &&
+                       echoAreaList[areaIndex].options.security) ||
+                      (i < forwNodeCount &&
+                       echoAreaList[areaIndex].writeLevel >
+                       nodeFileInfo[i]->nodePtr->writeLevel))
+                  {
+                    if (i == forwNodeCount)
+                      sprintf(tempStr, "\1FMAIL BAD: %s is not connected to this area (%s)\r", nodeStr(&globVars.packetSrcNode), badTimeStr());
+                    else
+                      sprintf(tempStr, "\1FMAIL BAD: %s has no write access to area (%s)\r", nodeStr(&nodeFileInfo[i]->destNode4d), badTimeStr());
+
+                    insertLineN(message->text, tempStr, 1);
+
                     for (i = 0; i < forwNodeCount; i++)
                     {
                       if (memcmp(&nodeFileInfo[i]->destNode4d.net, &globVars.packetSrcNode.net, 6) == 0)
                       {
-                        nodeFileInfo[i]->fromNodeDup++;
+                        nodeFileInfo[i]->fromNodeSec++;
                         i = -1;
                         break;
                       }
                     }
                     if (i != -1)
-                      ++globVars.fromNoExpDup;
-                    printf(" "dARROW" Duplicate message");
-                    if (writeBBS(message, config.dupBoard, 1))
-                      diskError = DERR_WRHDUP;
-
-                    echoAreaList[areaIndex].dupCount++;
-                    globVars.dupCount++;
+                      ++globVars.fromNoExpSec;
+                    putStr(" Security violation "dARROW" Bad message");
+                    tossBad(message);
                     break;
                   }
+                }
 
-                  echoAreaList[areaIndex].msgCount++;
-                  globVars.echoCount++;
+                if (oldMsgTime)  // Only check for old messages if set
+                {
+                  struct tm tm;
+                  time_t msgTime;
 
-                  if (echoAreaList[areaIndex].options.allowPrivate)
-                    message->attribute &= PRIVATE;
-                  else
-                    message->attribute = 0;
+                  // Calculate message time
+                  tm.tm_year = message->year  - 1900;
+                  tm.tm_mon  = message->month - 1;
+                  tm.tm_mday = message->day;
+                  tm.tm_hour = message->hours;
+                  tm.tm_min  = message->minutes;
+                  tm.tm_sec  = message->seconds;
+                  msgTime = mktime(&tm);
 
-                  memcpy(tempEchoToNode, echoToNode[areaIndex], sizeof(echoToNodeType));
-                  echoToNodeCount = echoAreaList[areaIndex].echoToNodeCount;
-
-                  for (i = 0; i < forwNodeCount; i++)
+                  if (msgTime < oldMsgTime)
                   {
-                    if (memcmp( &nodeFileInfo[i]->destNode4d.net
-                              , &globVars.packetSrcNode.net, 6) == 0)
-                    {
-                      if (ETN_ANYACCESS(tempEchoToNode[ETN_INDEX(i)], i))
-                      {
-                        tempEchoToNode[ETN_INDEX(i)] &= ETN_RESET(i);
-                        echoToNodeCount--;
-                      }
-                    }
+                    sprintf(tempStr, "\1FMAIL BAD: message too old (%s)\r", badTimeStr());
+                    insertLineN(message->text, tempStr, 1);
+                    putStr(" "dARROW" Old message");
+                    tossBad(message);
+                    break;
                   }
+                }
+
+                if (checkDup(message, echoAreaList[areaIndex].areaNameCRC))
+                {
                   for (i = 0; i < forwNodeCount; i++)
                   {
-                    if (memcmp( &nodeFileInfo[i]->destNode4d.net
-                              , &globVars.packetSrcNode.net, 6) == 0)
+                    if (memcmp(&nodeFileInfo[i]->destNode4d.net, &globVars.packetSrcNode.net, 6) == 0)
                     {
-                      nodeFileInfo[i]->fromNodeMsg++;
+                      nodeFileInfo[i]->fromNodeDup++;
                       i = -1;
                       break;
                     }
                   }
                   if (i != -1)
-                    ++globVars.fromNoExpMsg;
+                    ++globVars.fromNoExpDup;
+                  putStr(" "dARROW" Duplicate message");
+                  if (writeBBS(message, config.dupBoard, 1))
+                    diskError = DERR_WRHDUP;
 
-                  if (echoToNodeCount)
-                  {
-                    addPathSeenBy(message->text, message->normSeen, message->tinySeen, message->normPath, tempEchoToNode, areaIndex);
-
-                    if (writeEchoPkt(message, echoAreaList[areaIndex].options.tinySeenBy, tempEchoToNode))
-                      diskError = DERR_WRPKTE;
-                  }
-                  else
-                  {
-                    helpPtr = message->text;
-                    while ((helpPtr = findCLStr(helpPtr, "SEEN-BY: ")) != NULL)
-                    {
-                      if (echoAreaList[areaIndex].options.impSeenBy)
-                      {
-                        if (echoAreaList[areaIndex].JAMdirPtr == NULL)
-                        {
-                          memmove(helpPtr+1, helpPtr, strlen(helpPtr) + 1);
-                          *helpPtr = 1;
-                        }
-                        helpPtr += 8;
-                      }
-                      else
-                        removeLine(helpPtr);
-                    }
-                  }
-
-                  if (echoAreaList[areaIndex].JAMdirPtr == NULL)
-                  {
-                    // Hudson toss
-                    if (writeBBS(message, echoAreaList[areaIndex].board, echoAreaList[areaIndex].options.impSeenBy))
-                      diskError = DERR_WRHECHO;
-                  }
-                  else
-                  {
-                    // JAM toss
-                    if (echoAreaList[areaIndex].options.impSeenBy)
-                      strcat(message->text, message->normSeen);
-
-                    strcat(message->text, message->normPath);
-
-                    if (echoAreaList[areaIndex].JAMdirPtr != NULL)
-                    {
-                      // Skip AREA tag
-
-                      if (strncmp(message->text, "AREA:", 5) == 0)
-                      {
-                        if (*(helpPtr = strchr (message->text, '\r') + 1) == '\n')
-                          helpPtr++;
-                        memmove(message->text, helpPtr, strlen(helpPtr) + 1);
-                      }
-
-                      if (config.mbOptions.removeRe)
-                        strcpy(message->subject, removeRe(message->subject));
-
-                      // write here
-                      if (!jam_writemsg(echoAreaList[areaIndex].JAMdirPtr, message, 0))
-                      {
-                        newLine();
-                        logEntry("Can't write JAM message", LOG_ALWAYS, 0);
-                        diskError = DERR_WRJECHO;
-                        break;
-                      }
-                      globVars.jamCountV++;
-                    }
-                  }
+                  echoAreaList[areaIndex].dupCount++;
+                  globVars.dupCount++;
                   break;
-              }
-              if (config.allowedNumNetmail != 0 && globVars.netCount >= config.allowedNumNetmail)
-              {
-                mailBomb++;
-                breakPressed++;
-              }
-            }
-            closePktRd();
-
-            freePktHandles();
-
-            newLine();
-            if (mailBomb)
-            {
-              strcpy(tempStr, pktStr);
-              strcpy(strchr(tempStr, '.'), ".mlb");
-              rename(pktStr, tempStr);
-              unlink(pktStr);
-              sprintf(tempStr, "Max # net msgs per packet exceeded in packet from %s", nodeStr(&globVars.packetSrcNode));
-              logEntry(tempStr, LOG_ALWAYS, 0);
-              sprintf(tempStr, "Packet %s has been renamed to .mlb", pktStr);
-              logEntry(tempStr, LOG_ALWAYS, 0);
-            }
-            else
-            {
-              if (!diskError && !breakPressed && ((validate1BBS() || validateEchoPktWr()) == 0))
-              {
-                validate2BBS(0);
-                validateMsg();
-                validateDups();
-                unlink(pktStr);
-                for (i = 0; i < echoCount; i++)
-                {
-                  echoAreaList[i].msgCountV = echoAreaList[i].msgCount;
-                  echoAreaList[i].dupCountV = echoAreaList[i].dupCount;
                 }
-              }
-              else if (!diskError && !breakPressed)
-                diskError = DERR_VAL;
+
+                echoAreaList[areaIndex].msgCount++;
+                globVars.echoCount++;
+
+                if (echoAreaList[areaIndex].options.allowPrivate)
+                  message->attribute &= PRIVATE;
+                else
+                  message->attribute = 0;
+
+                memcpy(tempEchoToNode, echoToNode[areaIndex], sizeof(echoToNodeType));
+                echoToNodeCount = echoAreaList[areaIndex].echoToNodeCount;
+
+                for (i = 0; i < forwNodeCount; i++)
+                {
+                  if (memcmp( &nodeFileInfo[i]->destNode4d.net
+                            , &globVars.packetSrcNode.net, 6) == 0)
+                  {
+                    if (ETN_ANYACCESS(tempEchoToNode[ETN_INDEX(i)], i))
+                    {
+                      tempEchoToNode[ETN_INDEX(i)] &= ETN_RESET(i);
+                      echoToNodeCount--;
+                    }
+                  }
+                }
+                for (i = 0; i < forwNodeCount; i++)
+                {
+                  if (memcmp( &nodeFileInfo[i]->destNode4d.net
+                            , &globVars.packetSrcNode.net, 6) == 0)
+                  {
+                    nodeFileInfo[i]->fromNodeMsg++;
+                    i = -1;
+                    break;
+                  }
+                }
+                if (i != -1)
+                  ++globVars.fromNoExpMsg;
+
+                if (echoToNodeCount)
+                {
+                  addPathSeenBy(message, tempEchoToNode, areaIndex);
+
+                  if (writeEchoPkt(message, echoAreaList[areaIndex].options, tempEchoToNode))
+                    diskError = DERR_WRPKTE;
+                }
+                else
+                {
+                  helpPtr = message->text;
+                  while ((helpPtr = findCLStr(helpPtr, "SEEN-BY: ")) != NULL)
+                  {
+                    if (echoAreaList[areaIndex].options.impSeenBy)
+                    {
+                      if (echoAreaList[areaIndex].JAMdirPtr == NULL)
+                      {
+                        memmove(helpPtr+1, helpPtr, strlen(helpPtr) + 1);
+                        *helpPtr = 1;
+                      }
+                      helpPtr += 8;
+                    }
+                    else
+                      removeLine(helpPtr);
+                  }
+                }
+
+                if (echoAreaList[areaIndex].JAMdirPtr == NULL)
+                {
+                  // Hudson toss
+                  if (writeBBS(message, echoAreaList[areaIndex].board, echoAreaList[areaIndex].options.impSeenBy))
+                    diskError = DERR_WRHECHO;
+                }
+                else
+                {
+                  // JAM toss
+                  if (echoAreaList[areaIndex].options.impSeenBy)
+                    strcat(message->text, message->normSeen);
+
+                  strcat(message->text, message->normPath);
+
+                  if (echoAreaList[areaIndex].JAMdirPtr != NULL)
+                  {
+                    // Skip AREA tag
+
+                    if (strncmp(message->text, "AREA:", 5) == 0)
+                    {
+                      if (*(helpPtr = strchr (message->text, '\r') + 1) == '\n')
+                        helpPtr++;
+                      memmove(message->text, helpPtr, strlen(helpPtr) + 1);
+                    }
+
+                    if (config.mbOptions.removeRe)
+                      strcpy(message->subject, removeRe(message->subject));
+
+                    // write here
+                    if (!jam_writemsg(echoAreaList[areaIndex].JAMdirPtr, message, 0))
+                    {
+                      newLine();
+                      logEntry("Can't write JAM message", LOG_ALWAYS, 0);
+                      diskError = DERR_WRJECHO;
+                      break;
+                    }
+                    globVars.jamCountV++;
+                  }
+                }
+                break;
+            }
+            if (config.allowedNumNetmail != 0 && globVars.netCount >= config.allowedNumNetmail)
+            {
+              mailBomb++;
+              breakPressed++;
             }
           }
+          closePktRd();
+
+          freePktHandles();
+
+          newLine();
+          if (mailBomb)
+          {
+            strcpy(tempStr, pktStr);
+            strcpy(strchr(tempStr, '.'), ".mlb");
+            rename(pktStr, tempStr);
+            unlink(pktStr);
+            sprintf(tempStr, "Max # net msgs per packet exceeded in packet from %s", nodeStr(&globVars.packetSrcNode));
+            logEntry(tempStr, LOG_ALWAYS, 0);
+            sprintf(tempStr, "Packet %s has been renamed to .mlb", pktStr);
+            logEntry(tempStr, LOG_ALWAYS, 0);
+          }
+          else
+          {
+            if (!diskError && !breakPressed && ((validate1BBS() || validateEchoPktWr()) == 0))
+            {
+              validate2BBS(0);
+              validateMsg();
+              validateDups();
+              unlink(pktStr);
+              for (i = 0; i < echoCount; i++)
+              {
+                echoAreaList[i].msgCountV = echoAreaList[i].msgCount;
+                echoAreaList[i].dupCountV = echoAreaList[i].dupCount;
+              }
+            }
+            else if (!diskError && !breakPressed)
+              diskError = DERR_VAL;
+          }
         }
-        fdDone = _findnext(fdHandle, &fdPkt);
       }
       if (!mailBomb)
         newLine();
 
-      _findclose(fdHandle);
+      closedir(dir);
     }
   }
   while (!diskError && !breakPressed && secure--);  // do .. while
@@ -906,12 +918,6 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
   return diskError;
 }
-//---------------------------------------------------------------------------
-struct bt
-{
-  struct _finddata_t fd;
-  struct bt         *nextb;
-};
 //---------------------------------------------------------------------------
 void Toss(int argc, char *argv[])
 {
@@ -923,9 +929,8 @@ void Toss(int argc, char *argv[])
               , *bundlePtr2
               , *bundlePtr3
               ;
-  struct _finddata_t fdMsg;
-  long           fdHandle
-               , fdDone;
+  DIR           *dir;
+  struct dirent *ent;
   s16            count;
   s16            temp;
 
@@ -987,45 +992,57 @@ void Toss(int argc, char *argv[])
 
     diskError = processPkt(1, (u16)(switches & SW_A));
 
-    dayNum = 0;
     bundlePtr = NULL;
-    while (dayNum < 7 && !diskError && !breakPressed)
+    if ((dir = opendir(config.inPath)) != NULL)
     {
-      sprintf(tempStr, "%s*.%.2s?", config.inPath, dayName[dayNum++]);
-
-      if ((fdHandle = _findfirst(tempStr, &fdMsg)) != -1)
+      while ((ent = readdir(dir)) != NULL && !diskError && !breakPressed)
       {
-        fdDone = 0;
-        while (!fdDone && !diskError && !breakPressed)
+        for (dayNum = 0; dayNum < 7 && !diskError && !breakPressed; dayNum++)
         {
-          if ((fdMsg.attrib & _A_RDONLY) == 0)
-          {
-            bundlePtr3 = bundlePtr;
-            bundlePtr2 = NULL;
-            while (bundlePtr3 != NULL && (bundlePtr3->fd.time_write < fdMsg.time_write))
-            {
-              bundlePtr2 = bundlePtr3;
-              bundlePtr3 = bundlePtr3->nextb;
-            }
-            if ((bundlePtr3 = (struct bt*)malloc(sizeof(struct bt))) == NULL)
-              logEntry("Not enough memory available", LOG_ALWAYS, 2);
+          struct stat statbuf;
+          tempStrType pattern;
 
-            bundlePtr3->fd = fdMsg;
-            if (bundlePtr2 == NULL)
-            {
-              bundlePtr3->nextb = bundlePtr;
-              bundlePtr = bundlePtr3;
-            }
-            else
-            {
-              bundlePtr3->nextb = bundlePtr2->nextb;
-              bundlePtr2->nextb = bundlePtr3;
-            }
+          sprintf(pattern, "*.%.2s?", dayName[dayNum]);
+          if (!match_spec(pattern, ent->d_name))
+            continue;
+
+          strcpy(stpcpy(tempStr, config.inPath), ent->d_name);
+
+          if (  stat(tempStr, &statbuf) != 0
+             || (statbuf.st_mode & (S_IWRITE | S_IREAD)) != (S_IWRITE | S_IREAD))
+          {
+            tempStrType errStr;
+            sprintf(errStr, "Not sufficient rights on: %s", tempStr);
+            logEntry(errStr, LOG_ALWAYS, 2);
+            continue;
           }
-          fdDone = _findnext(fdHandle, &fdMsg);
+
+          bundlePtr3 = bundlePtr;
+          bundlePtr2 = NULL;
+          while (bundlePtr3 != NULL && (bundlePtr3->mtime < statbuf.st_mtime))
+          {
+            bundlePtr2 = bundlePtr3;
+            bundlePtr3 = bundlePtr3->nextb;
+          }
+          if ((bundlePtr3 = (struct bt*)malloc(sizeof(struct bt))) == NULL)
+            logEntry("Not enough memory available", LOG_ALWAYS, 2);
+
+          strcpy(bundlePtr3->fname, ent->d_name);
+          bundlePtr3->mtime = statbuf.st_mtime;
+          bundlePtr3->size  = statbuf.st_size;
+          if (bundlePtr2 == NULL)
+          {
+            bundlePtr3->nextb = bundlePtr;
+            bundlePtr = bundlePtr3;
+          }
+          else
+          {
+            bundlePtr3->nextb = bundlePtr2->nextb;
+            bundlePtr2->nextb = bundlePtr3;
+          }
         }
-        _findclose(fdHandle);
       }
+      closedir(dir);
     }
     if (bundlePtr == NULL)
       newLine();
@@ -1034,8 +1051,7 @@ void Toss(int argc, char *argv[])
       do
       {
         newLine();
-        strcpy(stpcpy(tempStr, config.inPath), bundlePtr->fd.name);
-        unpackArc(tempStr, &bundlePtr->fd);
+        unpackArc(bundlePtr);
         ScanNewBCL();
         diskError = processPkt(0, (u16)(switches & SW_A));
         bundlePtr2 = bundlePtr;
@@ -1387,13 +1403,9 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
     sprintf(tempStr, "AREA:%s\r", echoAreaList[count].areaName);
     insertLine(message->text, tempStr);
 
-    addPathSeenBy( message->text
-                 , message->normSeen
-                 , message->tinySeen
-                 , message->normPath
-                 , tempEchoToNode, count);
+    addPathSeenBy(message, tempEchoToNode, count);
 
-    if (writeEchoPkt(message, echoAreaList[count].options.tinySeenBy, tempEchoToNode))
+    if (writeEchoPkt(message, echoAreaList[count].options, tempEchoToNode))
       return 1;
 
     if ((boardNum && updateCurrHdrBBS(message)) || validateEchoPktWr())
@@ -1700,15 +1712,15 @@ void Scan(int argc, char *argv[])
 //---------------------------------------------------------------------------
 void Import(int argc, char *argv[])
 {
-  s32           switches;
-  s16           count;
-  s16           boardNum;
-  s16           temp;
-  tempStrType   tempStr;
-  char         *helpPtr;
-  s32           msgNum;
-  struct _finddata_t fdMsg;
-  long               fdHandle;
+  s32            switches;
+  s16            count;
+  s16            boardNum;
+  s16            temp;
+  tempStrType    tempStr;
+  char          *helpPtr;
+  s32            msgNum;
+  DIR           *dir;
+  struct dirent *ent;
 
   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
   {
@@ -1736,26 +1748,26 @@ void Import(int argc, char *argv[])
 
   puts("Importing netmail messages\n");
 
-  strcpy(tempStr, config.netPath);
-  strcat(tempStr, "*.msg");
-
   count = 0;
-  fdHandle = _findfirst(tempStr, &fdMsg);
 
-  if (fdHandle != -1)
+  if ((dir = opendir(config.netPath)) != NULL)
   {
-    do
+    while ((ent = readdir(dir)) != NULL)
     {
-      msgNum = strtoul(fdMsg.name, &helpPtr, 10);
+      if (!match_spec("*.msg", ent->d_name))
+        continue;
+
+      msgNum = strtoul(ent->d_name, &helpPtr, 10);
 
       if (  msgNum != 0
          && *helpPtr == '.'
-         && (!(fdMsg.attrib & FA_SPEC))  // No special attributes
+//       && (!(fdMsg.attrib & FA_SPEC))  // No special attributes (Laat deze test maar achterwege, readMsg komt er vanzelf achter)
          && !readMsg(message, msgNum)
          )
       {
         if (stricmp(message->toUserName, "SysOp") == 0)
           strcpy(message->toUserName, config.sysopName);
+
         if ( getLocalAkaNum (&message->destNode) != -1 &&
              strnicmp(message->toUserName,"ALLFIX",6) != 0 &&
              strnicmp(message->toUserName,"FILEFIX",7) != 0 &&
@@ -1784,7 +1796,7 @@ void Import(int argc, char *argv[])
               diskError = DERR_WRHECHO;
             else
             {
-              strcpy(stpcpy(tempStr, config.netPath), fdMsg.name);
+              strcpy(stpcpy(tempStr, config.netPath), ent->d_name);
               if (unlink(tempStr) == 0 && !diskError)
               {
                 if (validate1BBS())
@@ -1804,9 +1816,8 @@ void Import(int argc, char *argv[])
         }
       }
     }
-    while (!_findnext(fdHandle, &fdMsg));
 
-    _findclose(fdHandle);
+    closedir(dir);
   }
 
   if (count)
@@ -2078,7 +2089,7 @@ void myexit(void)
 {
 #pragma exit myexit
 #ifdef _DEBUG0
-  printf("\nPress any key to continue... ");
+  putStr("\nPress any key to continue... ");
   getch();
   newLine();
 #endif

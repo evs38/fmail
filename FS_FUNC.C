@@ -1324,11 +1324,13 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
                      "Allow rescans for this area");
    addItem(areaMenu, NUM_INT, "# Days rcvd", 37, &tempInfo.daysRcvd, 3, 999,
                      "Delete received messages older than a number of days (1-999, 0 = no maximum)");
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Tiny PATH", 0, &tempInfo.options, BIT7, 0,
+                     "Remove all PATHs except of your own system (should normally NOT be used)");
    addItem(areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
    addItem(areaMenu, echoOnly(editType, ENUM_INT), "Origin AKA", 0, &addressToggle, 0, MAX_AKAS,
                      "Address used for origin line and as packet origin address");
    if ( !(editType & EDIT_ECHO_DEFAULT) )
-          addItem (areaMenu, DATE|DISPLAY, "LastScanned", 47, &tempInfo.lastMsgScanDat, 0, 0,
+     addItem (areaMenu, DATE|DISPLAY, "LastScanned", 47, &tempInfo.lastMsgScanDat, 0, 0,
                       "Last time a message was scanned from this area");
    addItem (areaMenu, echoOnly(editType,FUNC_PAR), "Other AKAs", 0, &multiAkaSelectRec, 0, 4,
                       "AKAs added to SEEN-BY lines");

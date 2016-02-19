@@ -98,23 +98,25 @@ typedef struct
 //               * Field only guaranteed accurate in a type 2.2 header
 //---------------------------------------------------------------------------
 
-void initPkt  (void);
-void deInitPkt(void);
+void  initPkt          (void);
+void  deInitPkt        (void);
 
-s16  openPktRd (char *fileName, s16 secure);
-s16  readPkt   (internalMsgType *message);
-void closePktRd(void);
+s16   openPktRd        (char *fileName, s16 secure);
+s16   readPkt          (internalMsgType *message);
+void  closePktRd       (void);
 
-s16  closeLuPkt       (void);
-fhandle openP         (const char *pathname, int access, u16 mode);
-fhandle fsopenP       (const char *pathname, int access, u16 mode);
+s16   closeLuPkt       (void);
+fhandle openP          (const char *pathname, int access, u16 mode);
+fhandle fsopenP        (const char *pathname, int access, u16 mode);
 
-s16  writeEchoPkt     (internalMsgType *message, s16 tinySeenByArea, echoToNodeType echoToNode);
-void freePktHandles   (void);
-s16  validateEchoPktWr(void);
-s16  closeEchoPktWr   (void);
-s16  writeNetPktValid (internalMsgType *message, nodeFileRecType *nfInfoRec);
-s16  closeNetPktWr    (nodeFileRecType *nfInfoRec);
+char *setSeenByPath    ( internalMsgType *msg, char *txtEnd
+                       , areaOptionsType areaOptions, nodeOptionsType nodeOptions);
+s16   writeEchoPkt     (internalMsgType *message, areaOptionsType areaOptions, echoToNodeType echoToNode);
+void  freePktHandles   (void);
+s16   validateEchoPktWr(void);
+s16   closeEchoPktWr   (void);
+s16   writeNetPktValid (internalMsgType *message, nodeFileRecType *nfInfoRec);
+s16   closeNetPktWr    (nodeFileRecType *nfInfoRec);
 
 //---------------------------------------------------------------------------
 #endif  // msgpktH

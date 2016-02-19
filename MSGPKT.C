@@ -143,11 +143,10 @@ s16 openPktRd(char *pktName, s16 secure)
 
    globVars.remoteProdCode = (u16)msgPktHdr.prodCodeLo;
 
-   /* Capability word */
+   // Capability word
 
    srcCapability = msgPktHdr.cwValid;
-   srcCapability = ((srcCapability >> 8) | (((char)srcCapability) << 8)) &
-                   0x7fff;
+   srcCapability = ((srcCapability >> 8) | ((char)srcCapability) << 8) & 0x7fff;
    if (srcCapability != (msgPktHdr.capWord & 0x7fff))
       srcCapability = 0;
 
@@ -157,7 +156,7 @@ s16 openPktRd(char *pktName, s16 secure)
                            || msgPktHdr.prodCodeLo == 0x45
       )
    {
-      /* 4-d info */
+      // 4-d info
 
       globVars.remoteCapability = srcCapability;
 
@@ -173,12 +172,11 @@ s16 openPktRd(char *pktName, s16 secure)
                (msgPktHdr.destPoint != 0))))
          globVars.packetDestAka++;
 
-#ifdef DEBUG
-      printString("Type 2+ dest zone: ");
-      printInt(msgPktHdr.destZone);
-      newLine();
+#ifdef _DEBUG0
+      sprintf(tempStr, "Type 2+ dest zone: %d", msgPktHdr.destZone);
+      logEntry(tempStr, LOG_DEBUG, 0);
 #endif
-      /* FSC-0048 rev. 2 */
+      // FSC-0048 rev. 2
 
       if (msgPktHdr.origPoint && msgPktHdr.origNet == 0xffff)
          msgPktHdr.origNet = msgPktHdr.auxNet;
@@ -199,7 +197,7 @@ s16 openPktRd(char *pktName, s16 secure)
    }
    else
    {
-      /* Detect FSC-0045 */
+      // Detect FSC-0045
 
       if (  ((FSC45pktHdrType*)&msgPktHdr)->packetType == 2
          && ((FSC45pktHdrType*)&msgPktHdr)->subVersion == 2
@@ -216,10 +214,9 @@ s16 openPktRd(char *pktName, s16 secure)
                   (config.akaList[globVars.packetDestAka].nodeNum.point != 0))))
             globVars.packetDestAka++;
 
-#ifdef DEBUG
-         printString("FSC-0045 dest AKA: ");
-         printInt(globVars.packetDestAka);
-         newLine();
+#ifdef _DEBUG0
+         sprintf(tempStr, "FSC-0045 dest AKA: %d", globVars.packetDestAka);
+         logEntry(tempStr, LOG_DEBUG, 0);
 #endif
          globVars.packetSrcNode.zone  = ((FSC45pktHdrType*)&msgPktHdr)->origZone;
          globVars.packetSrcNode.net   = ((FSC45pktHdrType*)&msgPktHdr)->origNet;
@@ -232,7 +229,7 @@ s16 openPktRd(char *pktName, s16 secure)
       }
       else
       {
-         /* 2-d / fake-net info */
+         // 2-d / fake-net info
 
          while ((globVars.packetDestAka < MAX_AKAS) &&
                 ((config.akaList[globVars.packetDestAka].nodeNum.zone == 0) ||
@@ -242,10 +239,9 @@ s16 openPktRd(char *pktName, s16 secure)
                   (msgPktHdr.destNode != config.akaList[globVars.packetDestAka].nodeNum.point))))
             globVars.packetDestAka++;
 
-#ifdef DEBUG
-         printString ("Type 2 dest AKA: ");
-         printInt (globVars.packetDestAka);
-         newLine ();
+#ifdef _DEBUG0
+         sprintf(tempStr, "Type 2 dest AKA: %d", globVars.packetDestAka);
+         logEntry(tempStr, LOG_DEBUG, 0);
 #endif
          globVars.packetSrcNode.zone  = 0;
          globVars.packetSrcNode.net   = msgPktHdr.origNet;
@@ -268,11 +264,13 @@ s16 openPktRd(char *pktName, s16 secure)
          close(pktHandle);
          strcpy(stpcpy(tempStr, pktName) - 3, "DST");
          rename(pktName, tempStr);
-         logEntry("Packet is addressed to another node --> packet is renamed to .DST", LOG_ALWAYS, 0);
+         sprintf(tempStr, "Packet is addressed to another node (%s) --> packet is renamed to .DST", nodeStr(&globVars.packetDestNode));
+         logEntry(tempStr, LOG_ALWAYS, 0);
 
          return 2;  // Destination address not found
       }
-      logEntry("Packet is addressed to another node!", LOG_ALWAYS, 0);
+      sprintf(tempStr, "Packet is addressed to another node (%s)!", nodeStr(&globVars.packetDestNode));
+      logEntry(tempStr, LOG_ALWAYS, 0);
       globVars.packetDestAka = 0;
    }
 
@@ -504,6 +502,7 @@ s16 readPkt(internalMsgType *message)
   *message->okDateStr = 0;
   *message->tinySeen  = 0;
   *message->normSeen  = 0;
+  *message->tinyPath  = 0;
   *message->normPath  = 0;
   memset(&message->srcNode, 0, 2 * sizeof(nodeNumType) + PKT_INFO_SIZE);
 
@@ -674,14 +673,28 @@ void RemoveNetKludge(char *text, const char *kludge)
   }
 }
 //---------------------------------------------------------------------------
-s16 writeEchoPkt(internalMsgType *message, s16 tinySeenByArea, echoToNodeType echoToNode)
+char *setSeenByPath( internalMsgType *msg, char *txtEnd
+                   , areaOptionsType areaOptions, nodeOptionsType nodeOptions)
+{
+  if (NULL == txtEnd)
+    txtEnd = strchr(msg->text, 0);
+
+  txtEnd = stpcpy(txtEnd, areaOptions.tinySeenBy || nodeOptions.tinySeenBy
+                                                 ? msg->tinySeen : msg->normSeen);
+  txtEnd = stpcpy(txtEnd, areaOptions.tinyPath   ? msg->tinyPath : msg->normPath);
+
+  return txtEnd;
+}
+//---------------------------------------------------------------------------
+s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNodeType echoToNode)
 {
   s16        count;
   fhandle    pktHandle;
   fnRecType *fnPtr;
   char       dateStr[24];
   char      *ftsPtr;
-  char      *helpPtr, *helpPtr2;
+  char      *helpPtr
+          , *helpPtr2;
   char      *pktBufStart;
   char      *psbStart;
   udef       pktBufLen;
@@ -703,7 +716,7 @@ s16 writeEchoPkt(internalMsgType *message, s16 tinySeenByArea, echoToNodeType ec
 
   *(psbStart++) = '\r';
 
-  for (count = 0; (count < forwNodeCount); count++)
+  for (count = 0; count < forwNodeCount; count++)
   {
     if ( ETN_READACCESS(echoToNode[ETN_INDEX(count)], count) &&
          (nodeFileInfo[count]->nodePtr->options.active ||
@@ -712,11 +725,11 @@ s16 writeEchoPkt(internalMsgType *message, s16 tinySeenByArea, echoToNodeType ec
       if (nodeFileInfo[count]->pktHandle == 0)
       {
         if (*nodeFileInfo[count]->pktFileName == 0)
-           openPktWr (nodeFileInfo[count]);
+           openPktWr(nodeFileInfo[count]);
         else
         {
-          if ((nodeFileInfo[count]->pktHandle = openP(nodeFileInfo[count]->pktFileName, O_WRONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) != -1)
-            lseek (nodeFileInfo[count]->pktHandle, 0, SEEK_END);
+          if ((nodeFileInfo[count]->pktHandle = openP(nodeFileInfo[count]->pktFileName, O_WRONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) != -1)
+            lseek(nodeFileInfo[count]->pktHandle, 0, SEEK_END);
           else
             nodeFileInfo[count]->pktHandle = 0;
         }
@@ -740,12 +753,12 @@ s16 writeEchoPkt(internalMsgType *message, s16 tinySeenByArea, echoToNodeType ec
         strcpy(helpPtr = ftsPtr - strlen(message->dateStr) - 1, message->dateStr);
 
       helpPtr2 = psbStart;
-      if (nodeFileInfo[count]->nodePtr->options.tinySeenBy || tinySeenByArea)
+      if (nodeFileInfo[count]->nodePtr->options.tinySeenBy || areaOptions.tinySeenBy)
         helpPtr2 = stpcpy(helpPtr2, message->tinySeen);
       else
         helpPtr2 = stpcpy(helpPtr2, message->normSeen);
 
-      helpPtr2 = stpcpy(helpPtr2, message->normPath);
+      helpPtr2 = stpcpy(helpPtr2, areaOptions.tinyPath ? message->tinyPath : message->normPath);
 
       if (  config.akaList[nodeFileInfo[count]->srcAka].nodeNum.zone
          && nodeFileInfo[count]->srcAka != nodeFileInfo[count]->requestedAka
@@ -1007,9 +1020,9 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
          {
             nfInfo->pktHandle = 0;
             logEntry ("Cannot open netmail PKT file", LOG_ALWAYS, 0);
-            return (1);
+            return 1;
          }
-         lseek (nfInfo->pktHandle, 0, SEEK_END);
+         lseek(nfInfo->pktHandle, 0, SEEK_END);
       }
    }
 
@@ -1023,8 +1036,7 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
    pmHdr.attribute = message->attribute;
    pmHdr.cost      = message->cost;
 
-   error |= (_write (pktHandle, &pmHdr, sizeof(pmHdrType)) !=
-                                        sizeof(pmHdrType));
+   error |= (_write(pktHandle, &pmHdr, sizeof(pmHdrType)) != sizeof(pmHdrType));
 
    if ((nfInfo->nodePtr->options.fixDate) || (*message->dateStr == 0))
    {
@@ -1034,48 +1046,50 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
                            message->day, months+(message->month-1)*3,
                            message->year%100, message->hours,
                            message->minutes,  message->seconds);
-      len = strlen(message->okDateStr)+1;
-      error |= (_write (pktHandle, message->okDateStr, len) != len);
+      len = strlen(message->okDateStr) + 1;
+      error |= (_write(pktHandle, message->okDateStr, len) != len);
    }
    else
    {
-      len = strlen(message->dateStr)+1;
-      error |= (_write (pktHandle, message->dateStr, len) != len);
+      len = strlen(message->dateStr) + 1;
+      error |= (_write(pktHandle, message->dateStr, len) != len);
    }
 
-   len = strlen(message->toUserName)+1;
-   error |= (_write (pktHandle, message->toUserName, len) != len);
+   len = strlen(message->toUserName) + 1;
+   error |= (_write(pktHandle, message->toUserName, len) != len);
 
-   len = strlen(message->fromUserName)+1;
-   error |= (_write (pktHandle, message->fromUserName, len) != len);
+   len = strlen(message->fromUserName) + 1;
+   error |= (_write(pktHandle, message->fromUserName, len) != len);
 
-   len = strlen(message->subject)+1;
-   error |= (_write (pktHandle, message->subject, len) != len);
+   len = strlen(message->subject) + 1;
+   error |= (_write(pktHandle, message->subject, len) != len);
 
-   len = strlen(message->text)+1;
-   error |= (_write (pktHandle, message->text, len) != len);
+   len = strlen(message->text) + 1;
+   error |= (_write(pktHandle, message->text, len) != len);
 
-   if ((tempLen = filelength (pktHandle)) == -1)
+   if ((tempLen = filelength(pktHandle)) == -1)
    {
       close(pktHandle);
       logEntry ("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
       nfInfo->pktHandle = 0;
-      return (1);
+
+      return 1;
    }
 
-   if ((config.maxPktSize != 0) && (tempLen >= config.maxPktSize*(s32)1000))
+   if (config.maxPktSize != 0 && tempLen >= config.maxPktSize * (s32)1000)
    {
       if (_write(pktHandle, &zero, 2) != 2)
       {
          puts("Cannot write to PKT file.");
          close(pktHandle);
          nfInfo->pktHandle = 0;
+
          return 1;
       }
       close(pktHandle);
       nfInfo->pktHandle = 0;
-      if ((fnPtr = malloc (sizeof(fnRecType))) == NULL)
-               return 1;
+      if ((fnPtr = malloc(sizeof(fnRecType))) == NULL)
+        return 1;
       memset(fnPtr, 0, sizeof(fnRecType));
       strcpy(fnPtr->fileName, nfInfo->pktFileName);
       fnPtr->nextRec = nfInfo->fnList;
@@ -1091,10 +1105,12 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
    if (error)
    {
       logEntry ("ERROR: Cannot write to PKT file", LOG_ALWAYS, 0);
+
       return 1;
    }
    nfInfo->bytesValid = tempLen;
-   return (0);
+
+   return 0;
 }
 //---------------------------------------------------------------------------
 s16 closeNetPktWr(nodeFileRecType *nfInfo)

@@ -443,7 +443,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 #ifdef _DEBUG
   logEntry("Updating", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
-  printf("Updating ");
+  putStr("Updating ");
 
   woJHR = 0;
   rpJHR = d.ibJHR;
@@ -572,7 +572,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   logEntry("Update reply chains", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
 
-  printf("Reply chains ");
+  putStr("Reply chains ");
 
   curMsg = 0;
   woJDX  = 0;
@@ -635,7 +635,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
            , *jamlrw = (JAMLREAD *)d.obJLR;
     u32 msgNumHigh = maxMsg > 0 ? maxMsg - 1 : 0;
 
-    printf("LastRead ");
+    putStr("LastRead ");
 
     for (count = 1; count < maxMsg; count++)
       if (!d.lrBuf[count])
@@ -768,7 +768,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   logEntry("Ready", LOG_DEBUG | LOG_NOSCRN, 0);
 
 #if 0
-  printf("\nPress any key to continue... ");
+  putStr("\nPress any key to continue... ");
   flush();
   getch();
   newLine();
@@ -907,7 +907,7 @@ jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->are
 #ifdef _DEBUG
   logEntry("O Updating", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
-  printf("Updating ");
+  putStr("Updating ");
 
   read(JHRhandle, &headerInfo, sizeof(JAMHDRINFO));
 
@@ -1122,7 +1122,7 @@ jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->are
   logEntry("O Update reply chains", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
 
-  printf("Reply chains ");
+  putStr("Reply chains ");
 
   if ( msgNumNew > MSGIDNUM )
     maxMsg = MSGIDNUM;
@@ -1213,7 +1213,7 @@ jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->are
 #endif
   if ( !JAMerror && JLRhandle != -1 )
   {
-    printf("LastRead ");
+    putStr("LastRead ");
 
     if (!JAMerror)
       for (count = 1; count < LRSIZE; count++)

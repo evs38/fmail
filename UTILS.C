@@ -26,6 +26,7 @@
 #ifdef __DOS
 #include <direct.h>  // _chdrive()
 #endif
+#include <dirent.h>
 #include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -47,12 +48,14 @@
 #include "fjlib.h"
 #include "log.h"
 #include "msgpkt.h"  // for openP
+#include "spec.h"
 #include "version.h"
 
 extern configType config;
 psType *seenByArray   = NULL;
-psType *pathArray     = NULL;
 psType *tinySeenArray = NULL;
+psType *pathArray     = NULL;
+psType *tinyPathArray = NULL;
 
 extern u16 echoCount;
 extern u16 forwNodeCount;
@@ -215,6 +218,23 @@ const char *_searchpath(const char *filename)
   }
 
   return (pathbuf[0] == '\0' ? NULL : pathbuf);
+}
+//---------------------------------------------------------------------------
+int existPattern(const char *dirStr, const char *patStr)
+{
+  DIR           *dir;
+  struct dirent *ent;
+
+  if ((dir = opendir(dirStr)) != NULL)
+  {
+    while ((ent = readdir(dir)) != 0)
+      if (match_spec(patStr, ent->d_name))
+        return 1;
+
+    closedir(dir);
+  }
+
+  return 0;
 }
 //---------------------------------------------------------------------------
 #ifdef __CANUSE64BIT
@@ -408,18 +428,23 @@ s16 emptyText(char *text)
 //---------------------------------------------------------------------------
 void Delete(const char *path, const char *wildCard)
 {
-  s16          doneFile;
-  struct ffblk ffblkFile;
-  tempStrType  tempStr;
-  char        *helpPtr;
+  DIR           *dir;
+  struct dirent *ent;
+  tempStrType    tempStr;
+  char          *helpPtr;
 
   helpPtr = stpcpy(tempStr, path);
-  strcpy(helpPtr, wildCard);
 
-  for (doneFile = findfirst(tempStr, &ffblkFile, 0); !doneFile; doneFile = findnext(&ffblkFile))
+  if ((dir = opendir(path)) != NULL)
   {
-    strcpy(helpPtr, ffblkFile.ff_name);
-    unlink(tempStr);
+    while ((ent = readdir(dir)) != 0)
+      if (match_spec(wildCard, ent->d_name))
+      {
+        strcpy(helpPtr, ent->d_name);
+        unlink(tempStr);
+      }
+
+    closedir(dir);
   }
 }
 //---------------------------------------------------------------------------
@@ -786,17 +811,16 @@ char *insertLineN(char *pos, char *line, u16 num)
    return insertLine(pos, line);
 }
 //---------------------------------------------------------------------------
-static void readPathSeenBy (u16 type, char *msgText, psType *psArray,
-                            u16 *arrayCount)
+static void readPathSeenBy(u16 type, char *msgText, psType *psArray, u16 *arrayCount)
 {
-   char     *searchStr;
-   u16      searchLength;
-   char     *helpPtr1,
-	    *helpPtr2;
-   u16      psNet = 0;
-   s16      skip = 0;
-   u16      helpInt;
-   u16      maxLength;
+   char *searchStr;
+   u16   searchLength;
+   char *helpPtr1,
+      	*helpPtr2;
+   u16   psNet = 0;
+   s16   skip = 0;
+   u16   helpInt;
+   u16   maxLength;
 
    if (type == ECHO_SEENBY)
    {
@@ -814,12 +838,12 @@ static void readPathSeenBy (u16 type, char *msgText, psType *psArray,
    *arrayCount = 0;
 
    helpPtr2 = msgText;
-   if ((helpPtr1 = findCLStr (helpPtr2, " * Origin: ")) != NULL)
+   if ((helpPtr1 = findCLStr(helpPtr2, " * Origin: ")) != NULL)
       helpPtr2 = helpPtr1;
 
-   if ((helpPtr1 = (helpPtr2 = findCLStr (helpPtr2, searchStr))) != NULL)
+   if ((helpPtr1 = (helpPtr2 = findCLStr(helpPtr2, searchStr))) != NULL)
    {
-      while (memcmp (searchStr, helpPtr2, searchLength) == 0)
+      while (memcmp(searchStr, helpPtr2, searchLength) == 0)
       {
 	 helpPtr2 += searchLength;
 	 while (isdigit(*helpPtr2))
@@ -864,14 +888,13 @@ static void readPathSeenBy (u16 type, char *msgText, psType *psArray,
             helpPtr2++;
          }
       }
-      strcpy (helpPtr1, helpPtr2);
+      strcpy(helpPtr1, helpPtr2);
    }
 }
 
 
 
-static void writePathSeenBy (u16 type, char *pathSeen,
-                             psType *psArray, u16 arrayCount)
+static void writePathSeenBy(u16 type, char *pathSeen, psType *psArray, u16 arrayCount)
 {
    char     *helpPtr,
             *helpPtr2,
@@ -992,8 +1015,7 @@ static void writePathSeenBy (u16 type, char *pathSeen,
 
 
 
-static s16 addSeenByNode (u16 net, u16 node,
-                          psType *array, u16 *seenByCount)
+static s16 addSeenByNode(u16 net, u16 node, psType *array, u16 *seenByCount)
 {
    u16 count;
 
@@ -1218,30 +1240,26 @@ int comparSeenBy(const void* p1, const void* p2)
   return ((psRecType*)p1)->net - ((psRecType*)p2)->net;
 }
 //---------------------------------------------------------------------------
-void addPathSeenBy (char *msgText, char *seenBy, char *tinySeen, char *path,
-		    echoToNodeType echoToNode, u16 areaIndex)
+void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaIndex)
 {
-   u16      seenByCount;
-   u16      tinySeenCount = 0;
-   u16      pathCount;
-/* s16      cppError = 0; */
-   u16      count, count2;
-   u32      bitshift;
+   u16          seenByCount;
+   u16          tinySeenCount = 0;
+   u16          tinyPathCount = 0;
+   u16          pathCount;
+   u16          count
+              , count2;
+   u32          bitshift;
    nodeFakeType mainNode;
 
    mainNode = config.akaList[echoAreaList[areaIndex].address];
 
-   if ((mainNode.nodeNum.point != 0) &&
-       (mainNode.fakeNet != 0))
+   if (mainNode.nodeNum.point != 0 && mainNode.fakeNet != 0)
    {
       count2 = 0;
       for (count = 0; count < forwNodeCount; count++)
-      {
-         if ( ETN_ANYACCESS(echoToNode[ETN_INDEX(count)], count))
-         {
+         if (ETN_ANYACCESS(echoToNode[ETN_INDEX(count)], count))
             count2 |= nodeFileInfo[count]->destFake;
-         }
-      }
+
       if (count2 != 0)
       {
          mainNode.nodeNum.net   = mainNode.fakeNet;
@@ -1255,51 +1273,55 @@ void addPathSeenBy (char *msgText, char *seenBy, char *tinySeen, char *path,
       mainNode.fakeNet = 0;
 
 
-   /* SEEN-BY */
+   // SEEN-BY
 
-   readPathSeenBy (ECHO_SEENBY, msgText, seenByArray, &seenByCount);
+   readPathSeenBy(ECHO_SEENBY, msg->text, seenByArray, &seenByCount);
 
-   /* Remove fake-net from seen-by */
+   // Remove fake-net from seen-by
 
    if (seenByCount != 0)
       for (count = 0; count < MAX_AKAS; count++)
          if (config.akaList[count].nodeNum.zone != 0)
             for (count2 = 0; count2 < seenByCount; count2++)
                if (config.akaList[count].fakeNet == (*seenByArray)[count2].net)
-                  memcpy (&((*seenByArray)[count2]), &((*seenByArray)[count2+1]),
-                          ((--seenByCount)-count2)*sizeof(psRecType));
+                  memcpy( &((*seenByArray)[count2])
+                        , &((*seenByArray)[count2 + 1])
+                        , ((--seenByCount) - count2) * sizeof(psRecType));
 
-  // Sort seen-by list
+   // Sort seen-by list
 
-  qsort(seenByArray, seenByCount, sizeof(psRecType), comparSeenBy);
+   qsort(seenByArray, seenByCount, sizeof(psRecType), comparSeenBy);
 
-   /* Add other nodes to SEENBY */
+   // Add other nodes to SEENBY
 
    for (count = 0; count < forwNodeCount; count++)
    {
-      if ( (ETN_ANYACCESS(echoToNode[ETN_INDEX(count)], count)) &&
-           (!nodeFileInfo[count]->destFake) &&
-           (nodeFileInfo[count]->destNode.point == 0))
+      if (  ETN_ANYACCESS(echoToNode[ETN_INDEX(count)], count)
+         && !nodeFileInfo[count]->destFake
+         && nodeFileInfo[count]->destNode.point == 0
+         )
       {
-         /* Assign return value of addSeenByNode to                */
-         /* echoToNode[ETN_INDEX(count)] & ETN_SET(count) when SEEN-BY usage is required */
+         // Assign return value of addSeenByNode to
+         // echoToNode[ETN_INDEX(count)] & ETN_SET(count) when SEEN-BY usage is required
 
-         count2 = addSeenByNode (nodeFileInfo[count]->destNode.net,
-                                 nodeFileInfo[count]->destNode.node,
-                                 seenByArray, &seenByCount);
+         count2 = addSeenByNode( nodeFileInfo[count]->destNode.net
+                               , nodeFileInfo[count]->destNode.node
+                               , seenByArray
+                               , &seenByCount
+                               );
 
-         if (echoAreaList[areaIndex].options.checkSeenBy && (count2 == 0))
-         {
+         if (echoAreaList[areaIndex].options.checkSeenBy && count2 == 0)
             echoToNode[ETN_INDEX(count)] &= ETN_RESET(count);
-         }
 
-         addSeenByNode (nodeFileInfo[count]->destNode.net,
-                        nodeFileInfo[count]->destNode.node,
-                        tinySeenArray, &tinySeenCount);
+         addSeenByNode( nodeFileInfo[count]->destNode.net
+                      , nodeFileInfo[count]->destNode.node
+                      , tinySeenArray
+                      , &tinySeenCount
+                      );
       }
    }
 
-   /* Add other AKAs to SEENBY */
+   // Add other AKAs to SEENBY
 
    if (echoAreaList[areaIndex].alsoSeenBy != 0)
    {
@@ -1311,10 +1333,10 @@ void addPathSeenBy (char *msgText, char *seenBy, char *tinySeen, char *path,
              (config.akaList[count].nodeNum.net   != 0) &&
              (config.akaList[count].nodeNum.point == 0))
          {
-            addSeenByNode (config.akaList[count].nodeNum.net,
+            addSeenByNode(config.akaList[count].nodeNum.net,
                            config.akaList[count].nodeNum.node,
                            seenByArray, &seenByCount);
-            addSeenByNode (config.akaList[count].nodeNum.net,
+            addSeenByNode(config.akaList[count].nodeNum.net,
                            config.akaList[count].nodeNum.node,
                            tinySeenArray, &tinySeenCount);
          }
@@ -1322,50 +1344,36 @@ void addPathSeenBy (char *msgText, char *seenBy, char *tinySeen, char *path,
       }
    }
 
-   /* Conditionally add main area address to SEENBY (PATH?) */
-
-   if ((seenByCount == 0) || (!mainNode.fakeNet))
+   // Conditionally add main area address to SEENBY (PATH?)
+   if (seenByCount == 0 || !mainNode.fakeNet)
    {
-      addSeenByNode (mainNode.nodeNum.net, mainNode.nodeNum.node,
-                     seenByArray, &seenByCount);
-      addSeenByNode (mainNode.nodeNum.net, mainNode.nodeNum.node,
-                     tinySeenArray, &tinySeenCount);
+      addSeenByNode(mainNode.nodeNum.net, mainNode.nodeNum.node, seenByArray, &seenByCount);
+      addSeenByNode(mainNode.nodeNum.net, mainNode.nodeNum.node, tinySeenArray, &tinySeenCount);
    }
 
-   writePathSeenBy (ECHO_SEENBY, seenBy,   seenByArray,   seenByCount);
-   writePathSeenBy (ECHO_SEENBY, tinySeen, tinySeenArray, tinySeenCount);
+   writePathSeenBy(ECHO_SEENBY, msg->normSeen,   seenByArray,   seenByCount);
+   writePathSeenBy(ECHO_SEENBY, msg->tinySeen, tinySeenArray, tinySeenCount);
 
-   /* PATH */
+   // PATH
+   readPathSeenBy(ECHO_PATH, msg->text, pathArray, &pathCount);
 
-   readPathSeenBy (ECHO_PATH, msgText, pathArray, &pathCount);
-
-   /* CPP, add zone/point check */
-/*
-   if (config.mailOptions.checkPath)
+   if (  (!mainNode.nodeNum.point || config.mailOptions.addPointToPath)             // If not a point or if option "Add point to path'
+      && (  pathCount == 0                                                            // Er is nog geen path
+         || (  !mainNode.fakeNet                                                        // Geen fakenet
+            && memcmp(&(*pathArray)[pathCount - 1], &mainNode.nodeNum.net, 4) != 0      // En hij staat er nog niet in als laatste
+            )
+         )
+      )
    {
-      for (count = 0; count < pathCount; count++)
-      {
-         for (count2 = 0; count2 < MAX_AKAS; count2++)
-         {
-            if (*(s32*)&(*pathArray)[count] ==
-                *(s32*)&config.akaList[count2].node.net)
-            {
-               cppError = 1;
-            }
-         }
-      }
+      memcpy(&(*pathArray    )[pathCount++    ].net, &mainNode.nodeNum.net, 4);
+      // todo: Eigen if boom voor tinyPath!
+      memcpy(&(*tinyPathArray)[tinyPathCount++].net, &mainNode.nodeNum.net, 4);
    }
-*/
-   if ( (!mainNode.nodeNum.point || config.mailOptions.addPointToPath) &&
-        ((pathCount == 0) || ((!mainNode.fakeNet) &&
-                            (memcmp (&(*pathArray)[pathCount-1],
-                                     &mainNode.nodeNum.net, 4) != 0))) )
-   {
-      memcpy (&(*pathArray)[pathCount++].net, &mainNode.nodeNum.net, 4);
-   }
-   if ( pathCount )
-      writePathSeenBy (ECHO_PATH, path, pathArray, pathCount);
-/* return cppError; */
+
+   if (pathCount)
+      writePathSeenBy(ECHO_PATH, msg->normPath, pathArray    , pathCount    );
+   if (tinyPathCount)
+      writePathSeenBy(ECHO_PATH, msg->tinyPath, tinyPathArray, tinyPathCount);
 }
 //---------------------------------------------------------------------------
 #ifdef FMAIL

@@ -15,7 +15,7 @@
       OBJ.6\FMailW32\MSGRA.obj OBJ.6\FMailW32\MTASK.obj 
       OBJ.6\FMailW32\NODEINFO.obj OBJ.6\FMailW32\PACK.obj 
       OBJ.6\FMailW32\SENDSMTP.obj OBJ.6\FMailW32\SMTP.obj 
-      OBJ.6\FMailW32\SORTHB.obj OBJ.6\FMailW32\UTILS.obj 
+      OBJ.6\FMailW32\SORTHB.obj OBJ.6\FMailW32\spec.obj OBJ.6\FMailW32\UTILS.obj 
       OBJ.6\FMailW32\Version.obj OBJ.6\FMailW32\UTILS2.obj"/>
     <RESFILES value="FMailW32.res"/>
     <DEFFILE value=""/>
@@ -81,6 +81,7 @@
       <FILE FILENAME="SENDSMTP.C" FORMNAME="" UNITNAME="SENDSMTP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="SMTP.C" FORMNAME="" UNITNAME="SMTP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="SORTHB.C" FORMNAME="" UNITNAME="SORTHB" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="spec.c" FORMNAME="" UNITNAME="spec" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UTILS.C" FORMNAME="" UNITNAME="UTILS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Version.c" FORMNAME="" UNITNAME="Version" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UTILS2.C" FORMNAME="" UNITNAME="UTILS2" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -99,8 +100,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=69
-Release=14
-Build=150
+Release=16
+Build=154
 Debug=1
 PreRelease=1
 Special=0
@@ -112,7 +113,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FMail mail tosser
-FileVersion=1.69.14.150
+FileVersion=1.69.16.154
 InternalName=fmail
 LegalCopyright=Copyright (c) 1991 - 2016 FMail developers
 LegalTrademarks=

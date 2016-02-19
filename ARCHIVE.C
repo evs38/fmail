@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------------
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -345,24 +345,27 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
   return 0;
 }
 // ----------------------------------------------------------------------------
-void unpackArc(char *fullFileName, struct _finddata_t *fdArc)
+void unpackArc(const struct bt *bp)
 {
-  tempStrType tempStr;
+  tempStrType tempStr
+            , fullFileName
+            , arcPath
+            , unpackPathStr
+            , dirStr
+            , pathStr;
   s16 temp;
   char *extPtr;
-  tempStrType arcPath;
-  char pathStr[64];
   char parStr[MAX_PARSIZE];
   char procStr1[64];
   char procStr2[MAX_PARSIZE];
-  tempStrType unpackPathStr;
-  char dirStr[128];
-  struct _finddata_t fdPkt;
   s16 arcType;
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
   u16 memReq;
 #endif
+
   *arcPath = 0;
+  strcpy(stpcpy(fullFileName, config.inPath), bp->fname);
+
   switch (arcType = archiveType(fullFileName))
   {
   case  0:      // ARC
@@ -520,9 +523,9 @@ void unpackArc(char *fullFileName, struct _finddata_t *fdArc)
   sprintf(tempStr, "Decompressing %s (%s)", fullFileName, extPtr);
   logEntry(tempStr, LOG_INBOUND, 0);
   {
-    struct tm *tm = localtime(&fdArc->time_write);
+    struct tm *tm = localtime(&bp->mtime);
     sprintf(tempStr, "Archive info: %ld, %04u-%02u-%02u %02u:%02u:%02u"
-                   , fdArc->size
+                   , bp->size
                    , tm->tm_year + 1900, tm->tm_mon +1, tm->tm_mday
                    , tm->tm_hour, tm->tm_min, tm->tm_sec);
     logEntry(tempStr, LOG_INBOUND, 0);
@@ -553,7 +556,7 @@ void unpackArc(char *fullFileName, struct _finddata_t *fdArc)
     if ((temp = strlen(unpackPathStr)) > 3)
       unpackPathStr[temp - 1] = 0;
 
-    getcwd(dirStr, 128);
+    getcwd(dirStr, dTEMPSTRLEN);
     ChDir(unpackPathStr);
     *unpackPathStr = 0;
   }
@@ -607,9 +610,7 @@ void unpackArc(char *fullFileName, struct _finddata_t *fdArc)
     }
   }
 
-  strcpy(stpcpy(tempStr, config.inPath), "*.pkt");
-  strcpy(stpcpy(dirStr , config.inPath), "*.bcl");
-  if (_findfirst(tempStr, &fdPkt) == -1 && _findfirst(dirStr, &fdPkt) == -1)
+  if (!existPattern(config.inPath, "*.pkt") && !existPattern(config.inPath, "*.bcl"))
   {
     sprintf(tempStr, "No PKT or BCL file(s) found after un%sing file %s", extPtr, fullFileName);
     logEntry(tempStr, LOG_ALWAYS, 0);

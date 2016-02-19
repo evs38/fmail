@@ -140,7 +140,7 @@ typedef struct
   unsigned allowPrivate: 1; /* Bit  4 */
   unsigned impSeenBy   : 1; /* Bit  5 */
   unsigned checkSeenBy : 1; /* Bit  6 */
-  unsigned             : 1; /* Bit  7 */
+  unsigned tinyPath    : 1; /* Bit  7 */
   unsigned local       : 1; /* Bit  8 */
   unsigned disconnected: 1; /* Bit  9 */
   unsigned _reserved   : 1; /* Bit 10 */

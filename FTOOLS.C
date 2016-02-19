@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -2071,7 +2071,7 @@ void myexit(void)
   }
 
 #ifdef _DEBUG0
-  printf("\nPress any key to continue... ");
+  putStr("\nPress any key to continue... ");
   getch();
   newLine();
 #endif

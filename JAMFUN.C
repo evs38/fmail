@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -299,71 +299,71 @@ u16 jam_getnextidx(u32 jam_code, JAMIDXREC *jam_idxrec)
                 return 0;
         return 1;
 }
+//---------------------------------------------------------------------------
+u16 jam_getsubfields(u32 jam_code, char *jam_subfields, u32 jam_subfieldlen, internalMsgType *message)
+{
+  u16  loID;
+//u16  hiID;
+  udef index;
+  u32  datlen;
+  char tempstr1[_JAM_MAXSUBLEN]
+     , tempstr2[_JAM_MAXSUBLEN + 32];
 
+  dummy = jam_code;
 
+  index = 0;
+  while ( index + 8 < jam_subfieldlen )
+  {
+    loID = *(u16*)(jam_subfields+index);
+    index += 2;
+//  hiID = *(u16*)(jam_subfields+index);
+    index += 2;
+    datlen = *(u32*)(jam_subfields+index);
+    index += 4;
 
-u16 jam_getsubfields(u32 jam_code, char *jam_subfields, u32 jam_subfieldlen,
-                                                        internalMsgType *message)
-{  u16  loID;
-//      u16  hiID;
-        udef index;
-        u32  datlen;
-        char tempstr1[_JAM_MAXSUBLEN], tempstr2[_JAM_MAXSUBLEN+32];
-
-        dummy = jam_code;
-
-        index = 0;
-        while ( index + 8 < jam_subfieldlen )
-        {  loID = *(u16*)(jam_subfields+index);
-                index += 2;
-//              hiID = *(u16*)(jam_subfields+index);
-                index += 2;
-                datlen = *(u32*)(jam_subfields+index);
-                index += 4;
-
-                if ( datlen < _JAM_MAXSUBLEN && index + datlen <= jam_subfieldlen )
-                switch ( loID )
-                {
-                        case JAMSFLD_OADDRESS :
-                                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
-                                                tempstr1[(udef)datlen] = 0;
-                                                sscanf(tempstr1, "%u:%u/%u.%u", &message->srcNode.zone, &message->srcNode.net, &message->srcNode.node, &message->srcNode.point);
-                                                break;
-                        case JAMSFLD_DADDRESS :
-                                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
-                                                tempstr1[(udef)datlen] = 0;
-                                                sscanf(tempstr1, "%u:%u/%u.%u", &message->destNode.zone, &message->destNode.net, &message->destNode.node, &message->destNode.point);
-                                                break;
-                        case JAMSFLD_SENDERNAME :
-                                                strncpy(message->fromUserName, jam_subfields+index, min((udef)datlen, sizeof(message->fromUserName)-1));
-                                                message->fromUserName[(udef)datlen] = 0;
-                                                break;
-                        case JAMSFLD_RECVRNAME :
-                                                strncpy(message->toUserName, jam_subfields+index, min((udef)datlen, sizeof(message->toUserName)-1));
-                                                message->toUserName[(udef)datlen] = 0;
-                                                break;
-                        case JAMSFLD_MSGID :
-                                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
-                                                tempstr1[(udef)datlen] = 0;
-                                                sprintf(tempstr2, "\1MSGID: %s\r", tempstr1);
-                                                insertLine(message->text, tempstr2);
-                                                break;
-                        case JAMSFLD_REPLYID :
-                                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
-                                                tempstr1[(udef)datlen] = 0;
-                                                sprintf(tempstr2, "\1REPLY: %s\r", tempstr1);
-                                                insertLine(message->text, tempstr2);
-                                                break;
-                        case JAMSFLD_SUBJECT :
-                                                strncpy(message->subject, jam_subfields+index, min((udef)datlen, sizeof(message->subject)-1));
-                                                message->subject[(udef)datlen] = 0;
-                                                break;
-                        case JAMSFLD_PID :
-                                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
-                                                tempstr1[(udef)datlen] = 0;
-                                                sprintf(tempstr2, "\1PID: %s\r", tempstr1);
-                                                insertLine(message->text, tempstr2);
-                                                break;
+    if (datlen < _JAM_MAXSUBLEN && index + datlen <= jam_subfieldlen)
+      switch (loID)
+      {
+        case JAMSFLD_OADDRESS :
+                                strncpy(tempstr1, jam_subfields + index, (udef)datlen);
+                                tempstr1[(udef)datlen] = 0;
+                                sscanf(tempstr1, "%u:%u/%u.%u", &message->srcNode.zone, &message->srcNode.net, &message->srcNode.node, &message->srcNode.point);
+                                break;
+        case JAMSFLD_DADDRESS :
+                                strncpy(tempstr1, jam_subfields + index, (udef)datlen);
+                                tempstr1[(udef)datlen] = 0;
+                                sscanf(tempstr1, "%u:%u/%u.%u", &message->destNode.zone, &message->destNode.net, &message->destNode.node, &message->destNode.point);
+                                break;
+        case JAMSFLD_SENDERNAME :
+                                strncpy(message->fromUserName, jam_subfields+index, min((udef)datlen, sizeof(message->fromUserName) - 1));
+                                message->fromUserName[(udef)datlen] = 0;
+                                break;
+        case JAMSFLD_RECVRNAME :
+                                strncpy(message->toUserName, jam_subfields+index, min((udef)datlen, sizeof(message->toUserName) - 1));
+                                message->toUserName[(udef)datlen] = 0;
+                                break;
+        case JAMSFLD_MSGID :
+                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
+                                tempstr1[(udef)datlen] = 0;
+                                sprintf(tempstr2, "\1MSGID: %s\r", tempstr1);
+                                insertLine(message->text, tempstr2);
+                                break;
+        case JAMSFLD_REPLYID :
+                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
+                                tempstr1[(udef)datlen] = 0;
+                                sprintf(tempstr2, "\1REPLY: %s\r", tempstr1);
+                                insertLine(message->text, tempstr2);
+                                break;
+        case JAMSFLD_SUBJECT :
+                                strncpy(message->subject, jam_subfields+index, min((udef)datlen, sizeof(message->subject)-1));
+                                message->subject[(udef)datlen] = 0;
+                                break;
+        case JAMSFLD_PID :
+                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
+                                tempstr1[(udef)datlen] = 0;
+                                sprintf(tempstr2, "\1PID: %s\r", tempstr1);
+                                insertLine(message->text, tempstr2);
+                                break;
 //#define JAMSFLD_TRACE       8
 //#define JAMSFLD_ENCLFILE    9
 //#define JAMSFLD_ENCLFWALIAS 10
@@ -371,39 +371,38 @@ u16 jam_getsubfields(u32 jam_code, char *jam_subfields, u32 jam_subfieldlen,
 //#define JAMSFLD_ENCLFILEWC  12
 //#define JAMSFLD_ENCLINDFILE 13
 //#define JAMSFLD_EMBINDAT    1000
-                        case JAMSFLD_FTSKLUDGE :
-                                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
-                                                tempstr1[(udef)datlen] = 0;
-                                                sprintf(tempstr2, "\1%s\r", tempstr1);
-                                                insertLine(message->text, tempstr2);
-                                                break;
-                        case JAMSFLD_SEENBY2D :
-                                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
-                                                tempstr1[(udef)datlen] = 0;
-                                                sprintf(tempstr2, "SEEN-BY: %s\r", tempstr1);
-                                                strcat(message->text, tempstr2);
-                                                break;
-                        case JAMSFLD_PATH2D:
-                                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
-                                                tempstr1[(udef)datlen] = 0;
-                                                sprintf(tempstr2, "\1PATH: %s\r", tempstr1);
-                                                strcat(message->text, tempstr2);
-                                                break;
-                        case JAMSFLD_FLAGS :
-                                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
-                                                tempstr1[(udef)datlen] = 0;
-                                                sprintf(tempstr2, "\1FLAGS %s\r", tempstr1);
-                                                insertLine(message->text, tempstr2);
-                                                break;
+        case JAMSFLD_FTSKLUDGE :
+                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
+                                tempstr1[(udef)datlen] = 0;
+                                sprintf(tempstr2, "\1%s\r", tempstr1);
+                                insertLine(message->text, tempstr2);
+                                break;
+        case JAMSFLD_SEENBY2D :
+                                strncpy(tempstr1, jam_subfields + index, (udef)datlen);
+                                tempstr1[(udef)datlen] = 0;
+                                sprintf(tempstr2, "SEEN-BY: %s\r", tempstr1);
+                                strcat(message->text, tempstr2);
+                                break;
+        case JAMSFLD_PATH2D:
+                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
+                                tempstr1[(udef)datlen] = 0;
+                                sprintf(tempstr2, "\1PATH: %s\r", tempstr1);
+                                strcat(message->text, tempstr2);
+                                break;
+        case JAMSFLD_FLAGS :
+                                strncpy(tempstr1, jam_subfields+index, (udef)datlen);
+                                tempstr1[(udef)datlen] = 0;
+                                sprintf(tempstr2, "\1FLAGS %s\r", tempstr1);
+                                insertLine(message->text, tempstr2);
+                                break;
 //#define JAMSFLD_TZUTCINFO   2004
 //#define JAMSFLD_UNKNOWN     0xffff
-                }
-                index += (udef)datlen;
-        }
-        return 1;
+      }
+      index += (udef)datlen;
+  }
+  return 1;
 }
-
-
+//---------------------------------------------------------------------------
 
 u16 jam_fields[21] =
         {       JAMSFLD_OADDRESS,

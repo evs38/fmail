@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -994,36 +994,33 @@ static s16 processMsg(u16 areaIndex)
 
    if (echoToNodeCount)
    {
-      addPathSeenBy(message->text,
-                    message->normSeen,
-                    message->tinySeen,
-                    message->normPath,
-                    tempEchoToNode,
-                    areaIndex);
+      addPathSeenBy(message, tempEchoToNode, areaIndex);
 
-      if ( writeEchoPkt(message,
-                        echoAreaList[areaIndex].options.tinySeenBy,
-                        tempEchoToNode) )
+      if (writeEchoPkt(message, echoAreaList[areaIndex].options, tempEchoToNode))
          diskError = DERR_WRPKTE;
    }
    else
-   {  helpPtr = message->text;
+   {
+      helpPtr = message->text;
       while ((helpPtr = findCLStr (helpPtr, "SEEN-BY: ")) != NULL)
       {
          if ( echoAreaList[areaIndex].options.impSeenBy )
-         {  if ( echoAreaList[areaIndex].JAMdirPtr == NULL )
-            {  memmove (helpPtr+1, helpPtr, strlen(helpPtr)+1);
+         {
+            if ( echoAreaList[areaIndex].JAMdirPtr == NULL )
+            {
+               memmove (helpPtr+1, helpPtr, strlen(helpPtr)+1);
                *helpPtr = 1;
             }
             helpPtr += 8;
          }
-	 else
-	    removeLine (helpPtr);
+         else
+	      removeLine (helpPtr);
       }
    }
    if ( echoAreaList[areaIndex].JAMdirPtr == NULL )
    /* Hudson toss */
-   {  lseek(msgIdxHandle, 0, SEEK_END);
+   {
+      lseek(msgIdxHandle, 0, SEEK_END);
       lseek(msgToIdxHandle, 0, SEEK_END);
       lseek(msgHdrHandle, 0, SEEK_END);
       lseek(msgTxtHandle, 0, SEEK_END);
@@ -1419,16 +1416,15 @@ s16 updateCurrHdrBBS (internalMsgType *message)
    u16           deletedFlag = -1;
    tempStrType   tempStr;
 
-   if (lockMB ())
-   {
-      return (1);
-   }
+   if (lockMB())
+      return 1;
+
    recNum = lseek (msgHdrHandle, -(long)(sizeof(msgHdrRec)), SEEK_CUR) /
             (u32)sizeof(msgHdrRec);
    if (_read (msgHdrHandle, &msgRa, sizeof(msgHdrRec)) != sizeof(msgHdrRec))
    {
-      unlockMB ();
-      return (1);
+      unlockMB();
+      return 1;
    }
    /* Local bit is not removed since 0.36a, RA_NET_OUT bit is now removed */
    msgRa.MsgAttr &= ~(RA_ECHO_OUT|RA_NET_OUT);
@@ -1444,9 +1440,8 @@ s16 updateCurrHdrBBS (internalMsgType *message)
          strcat (tempStr, "MSGIDX."MBEXTN);
 
          if ((tempHandle = openP(tempStr, O_RDWR|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1)
-         {
             logEntry ("Can't open message base files for update", LOG_ALWAYS, 1);
-         }
+
          lseek (tempHandle, recNum*(u32)sizeof(msgIdxRec), SEEK_SET);
          write (tempHandle, &deletedFlag, 2);
          close (tempHandle);
@@ -1455,9 +1450,8 @@ s16 updateCurrHdrBBS (internalMsgType *message)
          strcat (tempStr, "MSGTOIDX."MBEXTN);
 
          if ((tempHandle = openP(tempStr, O_RDWR|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1)
-         {
             logEntry ("Can't open message base files for update", LOG_ALWAYS, 1);
-         }
+
          lseek (tempHandle, recNum*(u32)sizeof(msgToIdxRec), SEEK_SET);
          write (tempHandle, "\x0b* Deleted *", 12);
          close (tempHandle);
@@ -1493,26 +1487,26 @@ s16 updateCurrHdrBBS (internalMsgType *message)
            validate1BBS() )
 //          (write (msgTxtHandle, msgTxtBuf, txtBufCount << 8) != (txtBufCount << 8)))
       {
-         unlockMB ();
-         return (1);
+         unlockMB();
+         return 1;
       }
       validate2BBS(1);
    }
 
-   lseek (msgHdrHandle, -(long)sizeof(msgHdrRec), SEEK_CUR);
-   if (_write (msgHdrHandle, &msgRa, sizeof(msgHdrRec)) != sizeof(msgHdrRec))
+   lseek(msgHdrHandle, -(long)sizeof(msgHdrRec), SEEK_CUR);
+   if (_write(msgHdrHandle, &msgRa, sizeof(msgHdrRec)) != sizeof(msgHdrRec))
    {
-      lseek (msgHdrHandle, 0, SEEK_CUR);
-      unlockMB ();
-      return (1);
+      lseek(msgHdrHandle, 0, SEEK_CUR);
+      unlockMB();
+      return 1;
    }
 
-   lseek (msgHdrHandle, 0, SEEK_CUR);
+   lseek(msgHdrHandle, 0, SEEK_CUR);
 
    globVars.mbCountV++;
 
-   unlockMB ();
-   return (0);
+   unlockMB();
+   return 0;
 }
 //---------------------------------------------------------------------------
 #if 0
@@ -1528,134 +1522,126 @@ void closeBBSRd ()
 //---------------------------------------------------------------------------
 s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle msgHandle1, fhandle msgHandle2)
 {
-   fhandle         origMsgHdrHandle,
-                   origMsgTxtHandle;
-   fhandle         tempHandle;
-   u16             count;
-   tempStrType     tempStr;
-   msgIdxRec       msgIdxBuf[256];
-   u16             msgIdxBufCount;
-   nodeFileRecType nfInfo;
+  fhandle         origMsgHdrHandle
+                , origMsgTxtHandle;
+  fhandle         tempHandle;
+  u16             count;
+  tempStrType     tempStr;
+  msgIdxRec       msgIdxBuf[256];
+  u16             msgIdxBufCount;
+  nodeFileRecType nfInfo;
 #ifndef GOLDBASE
-   u16             index;
+  u16             index;
 #else
-   u32             index;
+  u32             index;
 #endif
-   u16             echoIndex;
-   u16             msgsFound = 0;
-   s16             msgCount;
+  u16             echoIndex;
+  u16             msgsFound = 0;
+  s16             msgCount;
 
-   echoIndex = 0;
-   while ((echoIndex < echoCount) &&
-          (strcmp (echoAreaList[echoIndex].areaName, areaName) != 0))
-   {
-      echoIndex++;
-   }
-   if (echoIndex == echoCount)
-   {
-      return (-1);
-   }
-   if (echoAreaList[echoIndex].board == 0 && echoAreaList[echoIndex].JAMdirPtr == NULL )
-   {
-      sprintf (tempStr, "Can't rescan pass-through area %s", echoAreaList[echoIndex].areaName);
-      mgrLogEntry (tempStr);
-      strcat (tempStr, "\r");
-      write (msgHandle1, tempStr, strlen(tempStr));
-      write (msgHandle2, tempStr, strlen(tempStr));
-      return (0);
-   }
+  echoIndex = 0;
+  while (echoIndex < echoCount && strcmp(echoAreaList[echoIndex].areaName, areaName) != 0)
+    echoIndex++;
 
-   if ( echoAreaList[echoIndex].JAMdirPtr != NULL )
-   {
-      msgsFound = (u16)jam_rescan(echoIndex, maxRescan, nodeInfo, message);
-      goto next;
-   }
+  if (echoIndex == echoCount)
+    return -1;
 
-   origMsgHdrHandle = msgHdrHandle;
-   origMsgTxtHandle = msgTxtHandle;
+  if (echoAreaList[echoIndex].board == 0 && echoAreaList[echoIndex].JAMdirPtr == NULL)
+  {
+    sprintf(tempStr, "Can't rescan pass-through area %s", echoAreaList[echoIndex].areaName);
+    mgrLogEntry(tempStr);
+    strcat(tempStr, "\r");
+    write(msgHandle1, tempStr, strlen(tempStr));
+    write(msgHandle2, tempStr, strlen(tempStr));
+    return 0;
+  }
 
-   strcpy (tempStr, config.bbsPath);
-   strcat (tempStr, "MSGINFO."MBEXTN);
-   if (((tempHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1) ||
+  if (echoAreaList[echoIndex].JAMdirPtr != NULL)
+    msgsFound = (u16)jam_rescan(echoIndex, maxRescan, nodeInfo, message);
+  else
+  {
+    origMsgHdrHandle = msgHdrHandle;
+    origMsgTxtHandle = msgTxtHandle;
+
+    strcpy(tempStr, config.bbsPath);
+    strcat(tempStr, "MSGINFO."MBEXTN);
+    if (((tempHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1) ||
        (lseek(tempHandle, 4+(echoAreaList[echoIndex].board*2), SEEK_SET) == -1) ||
        (read(tempHandle, &msgCount, 2) != 2)  ||
        (close(tempHandle) == -1))
-   {
-      return (-1);
-   }
-   strcpy (tempStr, config.bbsPath);
-   strcat (tempStr, "MSGHDR."MBEXTN);
-   if ((msgHdrHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1)
-   {
-      return (-1);
-   }
-   strcpy (tempStr, config.bbsPath);
-   strcat (tempStr, "MSGTXT."MBEXTN);
-   if ((msgTxtHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1)
-   {
-      return (-1);
-   }
-   strcpy (tempStr, config.bbsPath);
-   strcat (tempStr, "MSGIDX."MBEXTN);
-   if ((tempHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1)
-   {
-      return (-1);
-   }
+      return -1;
 
-   printf("Scanning for messages in area %s...\n", echoAreaList[echoIndex].areaName);
-   sprintf(tempStr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, nodeStr(&config.akaList[echoAreaList[echoIndex].address].nodeNum));
-   makeNFInfo(&nfInfo, echoAreaList[echoIndex].address, &nodeInfo->node);
+    strcpy(tempStr, config.bbsPath);
+    strcat(tempStr, "MSGHDR."MBEXTN);
+    if ((msgHdrHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
+      return -1;
 
-   index = 0;
-   while ((msgIdxBufCount = (read(tempHandle, msgIdxBuf, 256*sizeof(msgIdxRec))/3)) != 0)
-   {
+    strcpy(tempStr, config.bbsPath);
+    strcat(tempStr, "MSGTXT."MBEXTN);
+    if ((msgTxtHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
+      return (-1);
+
+    strcpy(tempStr, config.bbsPath);
+    strcat(tempStr, "MSGIDX."MBEXTN);
+    if ((tempHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
+      return (-1);
+
+    printf("Scanning for messages in area %s...\n", echoAreaList[echoIndex].areaName);
+    sprintf(tempStr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, getAkaStr(echoAreaList[echoIndex].address, 1));
+    makeNFInfo(&nfInfo, echoAreaList[echoIndex].address, &nodeInfo->node);
+
+    index = 0;
+    while ((msgIdxBufCount = (read(tempHandle, msgIdxBuf, 256 * sizeof(msgIdxRec)) / 3)) != 0)
+    {
       returnTimeSlice(0);
 
-      for ( count = 0; count < msgIdxBufCount; count++ )
+      for (count = 0; count < msgIdxBufCount; count++)
       {
-         if ( msgIdxBuf[count].Board == echoAreaList[echoIndex].board &&
-#ifndef GOLDBASE
-              msgIdxBuf[count].MsgNum != MAXU16 )
-#else
-              msgIdxBuf[count].MsgNum != MAXU32 )
-#endif
+         if (  msgIdxBuf[count].Board == echoAreaList[echoIndex].board
+            #ifndef GOLDBASE
+            && msgIdxBuf[count].MsgNum != MAXU16
+            #else
+            && msgIdxBuf[count].MsgNum != MAXU32
+            #endif
+            )
          {
-            if ( (msgCount <= maxRescan) &&
-                 (scanBBS (index, message, 1) == echoAreaList[echoIndex].board) )
-	    {
-               insertLine(message->text, tempStr);
-               addPathSeenBy(message->text, message->normSeen, message->tinySeen, message->normPath,
-                             echoToNode[echoIndex], echoIndex);
-               strcat(message->text, message->normSeen);
-               strcat(message->text, message->normPath);
-               message->srcNode  = config.akaList[echoAreaList[echoIndex].address].nodeNum;
-	       message->destNode = nodeInfo->node;
-               writeNetPktValid (message, &nfInfo);
-               msgsFound++;
-	    }
+            if (  msgCount <= maxRescan
+               && scanBBS(index, message, 1) == echoAreaList[echoIndex].board
+               )
+            {
+              insertLine(message->text, tempStr);
+              addPathSeenBy(message, echoToNode[echoIndex], echoIndex);
+              // todo: vervang door setSeenByPath()
+              strcat(message->text, echoAreaList[echoIndex].options.tinySeenBy ? message->tinySeen : message->normSeen);
+              strcat(message->text, echoAreaList[echoIndex].options.tinyPath   ? message->tinyPath : message->normPath);
+              message->srcNode  = *getAkaNodeNum(echoAreaList[echoIndex].address, 1);
+              message->destNode = nodeInfo->node;
+              writeNetPktValid(message, &nfInfo);
+              msgsFound++;
+            }
             msgCount--;
-	 }
-         index++;
+        }
+        index++;
       }
-   }
-   newLine();
-   closeNetPktWr(&nfInfo);
+    }
+    newLine();
+    closeNetPktWr(&nfInfo);
 
-   close(msgHdrHandle);
-   close(msgTxtHandle);
-   close(tempHandle);
+    close(msgHdrHandle);
+    close(msgTxtHandle);
+    close(tempHandle);
 
-   msgHdrHandle = origMsgHdrHandle;
-   msgTxtHandle = origMsgTxtHandle;
+    msgHdrHandle = origMsgHdrHandle;
+    msgTxtHandle = origMsgTxtHandle;
+  }
 
-next:
-   putchar('\r');
-   sprintf(tempStr, "Rescanned %u messages in area %s", msgsFound, echoAreaList[echoIndex].areaName);
-   mgrLogEntry(tempStr);
-   strcat(tempStr, "\r");
-   write(msgHandle1, tempStr, strlen(tempStr));
-   write(msgHandle2, tempStr, strlen(tempStr));
+  putchar('\r');
+  sprintf(tempStr, "Rescanned %u messages in area %s", msgsFound, echoAreaList[echoIndex].areaName);
+  mgrLogEntry(tempStr);
+  strcat(tempStr, "\r");
+  write(msgHandle1, tempStr, strlen(tempStr));
+  write(msgHandle2, tempStr, strlen(tempStr));
 
-   return msgsFound;
+  return msgsFound;
 }
 //---------------------------------------------------------------------------

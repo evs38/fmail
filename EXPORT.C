@@ -564,7 +564,9 @@ s16 listAreaConfig (void)
                          "           R - Rescan allowed\n"
                          "           U - Use SEEN-BYs\n"
                          "           T - Tiny SEEN-BYs\n"
-                         "           I - Import SEEN-BYs\n");
+                         "           I - Import SEEN-BYs\n"
+                         "           Y - Tiny PATH\n"
+              );
 
 
       for (count1 = 0; count1 < areaInfoCount; count1++)
@@ -596,7 +598,7 @@ s16 listAreaConfig (void)
          else
             fprintf (textFile, "%u\n", areaInfo[count1]->boardNumRA);
 
-         fprintf (textFile, "Switches    : %c%c%c%c%c%c%c%c %c%c\n",
+         fprintf (textFile, "Switches    : %c%c%c%c%c%c%c%c%c %c%c\n",
                   areaInfo[count1]->options.active       ? 'A':'-',
                   areaInfo[count1]->options.local        ? 'L':'-',
                   areaInfo[count1]->options.security     ? 'S':'-',
@@ -605,6 +607,7 @@ s16 listAreaConfig (void)
                   areaInfo[count1]->options.checkSeenBy  ? 'U':'-',
                   areaInfo[count1]->options.tinySeenBy   ? 'T':'-',
                   areaInfo[count1]->options.impSeenBy    ? 'I':'-',
+                  areaInfo[count1]->options.tinyPath     ? 'Y':'-',
                   areaInfo[count1]->options.arrivalDate  ? 'D':'-',
                   areaInfo[count1]->options.sysopRead    ? 'N':'-');
 
@@ -759,17 +762,18 @@ s16 listNodeConfig (void)
    openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf);
    nodeInfoCount = nodeHeader->totalRecords;
 
-   fprintf (textFile, "\n%s  -  Node configuration  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
+   fprintf(textFile, "\n%s  -  Node configuration  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
-   fprintf (textFile, "Switches:  A - Active\n"
-                      "           P - Pack netmail\n"
-                      "           R - Route point\n"
-                      "           F - Forward requests\n"
-                      "           N - Notify\n"
-                      "           M - Remote maintenance\n"
-                      "           S - Allow rescan\n"
-                      "           D - Reformat date\n"
-                      "           T - Tiny SEEN-BY\n");
+   fprintf(textFile, "Switches:  A - Active\n"
+                     "           P - Pack netmail\n"
+                     "           R - Route point\n"
+                     "           F - Forward requests\n"
+                     "           N - Notify\n"
+                     "           M - Remote maintenance\n"
+                     "           S - Allow rescan\n"
+                     "           D - Reformat date\n"
+                     "           T - Tiny SEEN-BY\n"
+          );
 
    for (count = 0; count < nodeInfoCount; count++)
    {
@@ -800,64 +804,65 @@ s16 listNodeConfig (void)
       fprintf (textFile, "\nArchiver         : ");
       switch (nodeBuf->archiver)
       {
-         case 0  : fprintf (textFile, "ARC");
+         case 0  : fprintf(textFile, "ARC");
                    break;
-         case 1  : fprintf (textFile, "ZIP");
+         case 1  : fprintf(textFile, "ZIP");
                    break;
-         case 2  : fprintf (textFile, "LZH");
+         case 2  : fprintf(textFile, "LZH");
                    break;
-         case 3  : fprintf (textFile, "PAK");
+         case 3  : fprintf(textFile, "PAK");
                    break;
-         case 4  : fprintf (textFile, "ZOO");
+         case 4  : fprintf(textFile, "ZOO");
                    break;
-         case 5  : fprintf (textFile, "ARJ");
+         case 5  : fprintf(textFile, "ARJ");
                    break;
-         case 6  : fprintf (textFile, "SQZ");
+         case 6  : fprintf(textFile, "SQZ");
                    break;
-         case 8  : fprintf (textFile, "UC2");
+         case 8  : fprintf(textFile, "UC2");
                    break;
-         case 9  : fprintf (textFile, "RAR");
+         case 9  : fprintf(textFile, "RAR");
                    break;
-         case 10 : fprintf (textFile, "JAR");
+         case 10 : fprintf(textFile, "JAR");
                    break;
-         case 0xFF:fprintf (textFile, "None");
+         case 0xFF:fprintf(textFile, "None");
                    break;
-         default : fprintf (textFile, "** unknown **");
+         default : fprintf(textFile, "** unknown **");
                    break;
       }
       fprintf (textFile, "\nFile Att status  : ");
       switch (nodeBuf->outStatus)
       {
-         case 0  : fprintf (textFile, "None");
+         case 0  : fprintf(textFile, "None");
                    break;
-         case 1  : fprintf (textFile, "Hold");
+         case 1  : fprintf(textFile, "Hold");
                    break;
-         case 2  : fprintf (textFile, "Crash");
+         case 2  : fprintf(textFile, "Crash");
                    break;
-         case 3  : fprintf (textFile, "Hold/Direct");
+         case 3  : fprintf(textFile, "Hold/Direct");
                    break;
-         case 4  : fprintf (textFile, "Crash/Direct");
+         case 4  : fprintf(textFile, "Crash/Direct");
                    break;
-         case 5  : fprintf (textFile, "Direct");
+         case 5  : fprintf(textFile, "Direct");
                    break;
-         default : fprintf (textFile, "** unknown **");
+         default : fprintf(textFile, "** unknown **");
                    break;
       }
 
-      fprintf (textFile, "\nSwitches         : %c%c%c%c%c%c%c%c%c\n",
-                         nodeBuf->options.active      ? 'A':'-',
-                         nodeBuf->options.packNetmail ? 'P':'-',
-                         nodeBuf->options.routeToPoint? 'R':'-',
-                         nodeBuf->options.forwardReq  ? 'F':'-',
-                         nodeBuf->options.notify      ? 'N':'-',
-                         nodeBuf->options.remMaint    ? 'M':'-',
-                         nodeBuf->options.allowRescan ? 'S':'-',
-                         nodeBuf->options.fixDate     ? 'D':'-',
-                         nodeBuf->options.tinySeenBy  ? 'T':'-');
+      fprintf(textFile, "\nSwitches         : %c%c%c%c%c%c%c%c%c\n"
+                      , nodeBuf->options.active      ? 'A':'-'
+                      , nodeBuf->options.packNetmail ? 'P':'-'
+                      , nodeBuf->options.routeToPoint? 'R':'-'
+                      , nodeBuf->options.forwardReq  ? 'F':'-'
+                      , nodeBuf->options.notify      ? 'N':'-'
+                      , nodeBuf->options.remMaint    ? 'M':'-'
+                      , nodeBuf->options.allowRescan ? 'S':'-'
+                      , nodeBuf->options.fixDate     ? 'D':'-'
+                      , nodeBuf->options.tinySeenBy  ? 'T':'-'
+             );
 
-      fprintf (textFile, "AreaMgr password : %s\n", nodeBuf->password);
-      fprintf (textFile, "Packet password  : %s\n", nodeBuf->packetPwd);
-      fprintf (textFile, "ÈÍ Ignore pwd   : %s\n", nodeBuf->options.ignorePwd ? "Yes":"No");
+      fprintf(textFile, "AreaMgr password : %s\n", nodeBuf->password);
+      fprintf(textFile, "Packet password  : %s\n", nodeBuf->packetPwd);
+      fprintf(textFile, "ÈÍ Ignore pwd   : %s\n", nodeBuf->options.ignorePwd ? "Yes":"No");
    }
    if (nodeInfoCount == 0)
    {

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -171,7 +171,7 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
     return 0;
 
   printf("Scanning for messages in area %s...\n", echoAreaList[echoIndex].areaName);
-  sprintf(tempstr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, nodeStr(&config.akaList[echoAreaList[echoIndex].address].nodeNum));
+  sprintf(tempstr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, getAkaStr(echoAreaList[echoIndex].address, 1));
   makeNFInfo(&nfInfo, echoAreaList[echoIndex].address, &nodeInfo->node);
   count = jam_hdrinforec->ActiveMsgs;
   found = jam_getidx(jam_code, &jam_idxrec, 0);
@@ -193,7 +193,10 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
           removeLfSr(message->text);
           jam_getsubfields(jam_code, jam_subfields, jam_msghdrrec.SubfieldLen, message);
           insertLine(message->text, tempstr);
-          message->srcNode  = config.akaList[echoAreaList[echoIndex].address].nodeNum;
+//          addPathSeenBy(message, echoToNode[echoIndex], echoIndex);  // todo!
+//          strcat(message->text, echoAreaList[areaIndex].options.tinySeenBy ? message->tinySeen : message->normSeen);
+//          strcat(message->text, echoAreaList[areaIndex].options.tinyPath   ? message->tinyPath : message->normPath);
+          message->srcNode  = *getAkaNodeNum(echoAreaList[echoIndex].address, 1);
           message->destNode = nodeInfo->node;
           writeNetPktValid(message, &nfInfo);
           msgCount++;

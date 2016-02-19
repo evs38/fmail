@@ -81,6 +81,7 @@ extern internalMsgType *message;
 extern psType *seenByArray;
 extern psType *tinySeenArray;
 extern psType *pathArray;
+extern psType *tinyPathArray;
 
 fhandle fmLockHandle;
 
@@ -328,10 +329,11 @@ void initFMail(const char *s, s32 switches)
 
   initLog(s, switches);
 
-  if (  NULL == (message       = malloc(INTMSG_SIZE)                      )
-     || NULL == (seenByArray   = malloc(sizeof(psRecType) * MAX_MSGSEENBY))
-     || NULL == (tinySeenArray = malloc(sizeof(psRecType) * MAX_MSGTINY)  )
-     || NULL == (pathArray     = malloc(sizeof(psRecType) * MAX_MSGPATH)  )
+  if (  NULL == (message       = malloc(INTMSG_SIZE                          ))
+     || NULL == (seenByArray   = malloc(sizeof(psRecType) * MAX_MSGSEENBY    ))
+     || NULL == (tinySeenArray = malloc(sizeof(psRecType) * MAX_MSGTINYSEENBY))
+     || NULL == (pathArray     = malloc(sizeof(psRecType) * MAX_MSGPATH      ))
+     || NULL == (tinyPathArray = malloc(sizeof(psRecType) * MAX_MSGTINYPATH  ))
      )
     logEntry("Not enough memory to initialize FMail", LOG_ALWAYS, 2);
 
@@ -374,5 +376,6 @@ void deinitFMail(void)
   freeNull(seenByArray  );
   freeNull(tinySeenArray);
   freeNull(pathArray    );
+  freeNull(tinyPathArray);
 }
 //---------------------------------------------------------------------------

@@ -165,7 +165,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       goto exit2;
    }
 
-   printf("Scanning messages... ");
+   putStr("Scanning messages... ");
    bufCount = HDR_BUFSIZE;
    for (count = 0; count < newTotalMsgBBS; count++)
    {
@@ -301,7 +301,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
    if (config.mbOptions.updateChains)
    {
-      printf("Updating reply-chains in memory... ");
+      putStr("Updating reply-chains in memory... ");
       memset(areaSubjChain, 0xff, sizeof (areaSubjChain));
       for (count = 0; count < newTotalMsgBBS; count++)
       {
@@ -343,7 +343,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
    if (config.mbOptions.sortNew)
    {
-      printf("Writing MsgHdr."MBEXTN" and index files... ");
+      putStr("Writing MsgHdr."MBEXTN" and index files... ");
 
       if (  ((msgIdxHandle   = open(expandName("MSGIDX"  , 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
          || ((msgToIdxHandle = open(expandName("MSGTOIDX", 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
@@ -451,7 +451,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
    }
    else
    {
-      printf("Updating MsgHdr."MBEXTN"...");
+      putStr("Updating MsgHdr."MBEXTN"...");
 
       strcpy(tempStr1, expandName("MSGHDR", 0));
 

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -292,7 +292,7 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
       writeLogLine(logHandle, tempStr);
 
     close(logHandle);
-    printf(tempStr);
+    putStr(tempStr);
 
     unlink(expandName("MSGHDR.$$$"));
     unlink(expandName("MSGIDX.$$$"));
