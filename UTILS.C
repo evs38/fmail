@@ -72,10 +72,10 @@ extern char *version;
 int moveFile(const char *oldName, const char *newName)
 {
   fhandle      h1
-            , h2;
+             , h2;
   char        *buf;
   size_t       count
-            , size;
+             , size;
   struct ftime ftm;
 
   if (rename(oldName, newName))
@@ -108,27 +108,29 @@ int moveFile(const char *oldName, const char *newName)
   return 0;
 }
 //---------------------------------------------------------------------------
+int dirExist(const char *dir)
+{
+  DIR *d = opendir(dir);
+  if (d)
+  {
+    closedir(d);
+    return 1;
+  }
+
+  return 0;
+}
+//---------------------------------------------------------------------------
 s16 existDir(const char *dir, const char *descr)
 {
-	struct ffblk tempBlk;
-	char     tempStr[MAXDIR];
-  pathType dirStr;
+  tempStrType tempStr;
 
-  strcpy(dirStr, dir);
-  *(dirStr + strlen(dirStr) - 1) = 0;
+  if (dirExist(dir))
+    return 1;
 
-  if (!(*dirStr &&
-        ((dirStr[1] != ':') || !getcurdir(dirStr[0]-'@', tempStr)) &&
-        ((strlen(dirStr) == 2) ||
-         ((!findfirst(dirStr, &tempBlk, FA_DIREC)) &&
-          (tempBlk.ff_attrib & FA_DIREC)))))
-  {
-    sprintf(tempStr, "The %s directory does not exist", descr);
-  	logEntry(tempStr, LOG_ALWAYS, 0);
+  sprintf(tempStr, "The %s [%s] directory does not exist", descr, dir);
+  logEntry(tempStr, LOG_ALWAYS, 0);
 
-    return 0;
-  }
-  return 1;
+  return 0;
 }
 //---------------------------------------------------------------------------
 int ChDir(const char *path)
@@ -220,21 +222,23 @@ const char *_searchpath(const char *filename)
   return (pathbuf[0] == '\0' ? NULL : pathbuf);
 }
 //---------------------------------------------------------------------------
-int existPattern(const char *dirStr, const char *patStr)
+// Return 0 if pattern doesn't exist in path
+//
+int existPattern(const char *path, const char *pattern)
 {
   DIR           *dir;
-  struct dirent *ent;
+  struct dirent *ent = NULL;
 
-  if ((dir = opendir(dirStr)) != NULL)
+  if ((dir = opendir(path)) != NULL)
   {
-    while ((ent = readdir(dir)) != 0)
-      if (match_spec(patStr, ent->d_name))
-        return 1;
+    while ((ent = readdir(dir)) != NULL)
+      if (match_spec(pattern, ent->d_name))
+        break;
 
     closedir(dir);
   }
 
-  return 0;
+  return ent != NULL;
 }
 //---------------------------------------------------------------------------
 #ifdef __CANUSE64BIT
@@ -347,6 +351,16 @@ u32 fileLength(int handle)
   return (u32)fl;
 }
 //---------------------------------------------------------------------------
+off_t fileSize(const char *filename)
+{
+  struct stat st;
+
+  if (stat(filename, &st) == 0)
+    return st.st_size;
+
+  return -1;
+}
+//---------------------------------------------------------------------------
 void touch(const char *path, const char *filename, const char *t)
 {
   tempStrType tempStr;
@@ -437,7 +451,7 @@ void Delete(const char *path, const char *wildCard)
 
   if ((dir = opendir(path)) != NULL)
   {
-    while ((ent = readdir(dir)) != 0)
+    while ((ent = readdir(dir)) != NULL)
       if (match_spec(wildCard, ent->d_name))
       {
         strcpy(helpPtr, ent->d_name);
@@ -1412,64 +1426,65 @@ void addVia(char *msgText, u16 aka, const char *func)
 //---------------------------------------------------------------------------
 char *makeName(char *path, char *name)
 {
-   static tempStrType tempStr;
-   char  *helpPtr;
-   struct ffblk tempBlk;
-   udef   len;
-   u16	  count;
+  static tempStrType tempStr;
+  char  *helpPtr;
+  udef   len;
+  u16    count;
 
-   len = strlen(name);
-   helpPtr = stpcpy(tempStr, path);
-   strcpy(helpPtr, name);
+  len = strlen(name);
+  helpPtr = stpcpy(tempStr, path);
+  strcpy(helpPtr, name);
 
-   if (fileSys(path))
-     return tempStr;
+  if (fileSys(path))
+    return tempStr;
 
-   if ( len > 8 )
-   {
-     helpPtr[8] = 0;
-     len = 8;
-   }
-   while ((helpPtr = strchr(helpPtr, '.')) != NULL)
-   {
-     strcpy(helpPtr, helpPtr+1);
-     len--;
-   }
+  name = helpPtr;
+  if (len > 8)
+  {
+    helpPtr[8] = 0;
+    len = 8;
+  }
+  while ((helpPtr = strchr(helpPtr, '.')) != NULL)
+  {
+    strcpy(helpPtr, helpPtr + 1);
+    len--;
+  }
 
-   helpPtr = strchr(tempStr, 0);
-   count = 0;
-   while ( count < echoCount &&
-           (echoAreaList[count].JAMdirPtr == NULL ||
-            stricmp(tempStr, echoAreaList[count].JAMdirPtr) != 0) )
-   {
-     count++;
-   }
-   if (count < echoCount)
-   {
-      if ( len >= 8 )
-	       --helpPtr;
-      if ( len >= 7 )
-	       --helpPtr;
+  helpPtr = strchr(tempStr, 0);
+  count = 0;
+  while (  count < echoCount
+        && (  echoAreaList[count].JAMdirPtr == NULL
+           || stricmp(tempStr, echoAreaList[count].JAMdirPtr) != 0
+           )
+        )
+    count++;
 
-      if ( *helpPtr == '\\' || *(helpPtr+1) == '\\' )
-         return "";
+  if (count < echoCount)
+  {
+    if ( len >= 8 )
+      --helpPtr;
+    if ( len >= 7 )
+      --helpPtr;
 
-      *helpPtr = '`';
-      *(helpPtr+1) = '0';
-      strcpy(helpPtr+2, ".*");
-      do
-      {  if ( (*(helpPtr+1))++ == '9' )
-            return "";
-      }
-      while ( !findfirst(tempStr, &tempBlk, 0) );
-      helpPtr += 2;
+    if (*helpPtr == '\\' || *(helpPtr + 1) == '\\')
+      return "";
+
+    *helpPtr = '`';
+    *(helpPtr + 1) = '0';
+    strcpy(helpPtr + 2, ".*");
+    do
+    {
+      if ((*(helpPtr + 1))++ == '9')
+        return "";
+    }
+    while (existPattern(path, name));
+    helpPtr += 2;
   }
   *helpPtr = 0;
 
   return tempStr;
 }
-
-
+//---------------------------------------------------------------------------
 long fmseek(int handle, long offset, int fromwhere, int code)
 {
    if ( fromwhere == SEEK_SET && offset < 0 )

@@ -728,7 +728,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   if (compareResult)
   {
     // Must be done after cleanup. Files need to be closed
-    logEntry("Create debug files", LOG_DEBUG, 0);
+    logEntry("DEBUG: Create trace files", LOG_DEBUG, 0);
     sprintf(tempStr, "%s-%d", mbPath, startTime);
     if (0 == mkdir(tempStr))
     {
@@ -738,7 +738,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
         an++;
       else
         an = mbPath;
-//    sprintf(nmbp, "%s\\%s", tempStr, an);
+
       strcpy(stpcpy(stpcpy(nmbp, tempStr), "\\"), an);
 
       CopyFile(expJAMname(mbPath, EXT_HDR), expJAMname(nmbp, EXT_HDR), 0);

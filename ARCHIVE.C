@@ -24,6 +24,7 @@
 #include <alloc.h>
 #endif  // __BORLANDC__
 #include <dir.h>
+#include <dirent.h>    // opendir()
 #include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -36,7 +37,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #ifdef __MINGW32__
-#include <windef.h>  // min() max()
+#include <windef.h>    // min() max()
 #endif // __MINGW32__
 
 #include "archive.h"
@@ -48,6 +49,7 @@
 #include "msgmsg.h"
 #include "msgpkt.h"
 #include "nodeinfo.h"
+#include "spec.h"
 #include "stpcpy.h"
 #include "utils.h"
 
@@ -637,25 +639,25 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   u16           count;
   tempStrType   archiveStr;
   char         *archivePtr
-             , *fnPtr;
-  char         *extPtr;
+             , *fnPtr
+             , *extPtr;
   s16           oldArc = -1;
   u16           maxArc
               , okArc;
   u8            archiver = 0xFF;
   char          nodeName[32];
-  struct _finddata_t fd;
-  long          fdHandle;
+  DIR           *dir;
+  struct dirent *ent;
   tempStrType   arcPath
               , tempStr
               , pktName
               , semaName;
   char         *helpPtr
+              ,*helpPtr2
               , pathStr [64]
               , parStr  [MAX_PARSIZE]
               , procStr1[64]
               , procStr2[MAX_PARSIZE];
-//s16           doneArc;
   fhandle       tempHandle
               , semaHandle = -1;
   s32           arcSize;
@@ -667,7 +669,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #endif
 
 #ifdef _DEBUG
-  sprintf(tempStr, "[packArc Debug] file %s  %s -> %s  outStatus:%d", qqqName, nodeStr(srcNode), nodeStr(destNode), nodeInfo->outStatus);
+  sprintf(tempStr, "DEBUG packArc: file %s  %s -> %s  outStatus:%d", qqqName, nodeStr(srcNode), nodeStr(destNode), nodeInfo->outStatus);
   logEntry(tempStr, LOG_DEBUG, 0);
 #endif
 
@@ -722,17 +724,16 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   // Check/create semaphore's for different mailers
   if (config.mailer == dMT_FrontDoor)
   {
-    count = sprintf(semaName, "%s%08lx.`FM", config.semaphorePath, crc32(nodeStr(destNode))) - 2;
+    helpPtr = stpcpy(semaName, config.semaphorePath);
+    count = sprintf(helpPtr, "%08lx.`FM", crc32(nodeStr(destNode))) - 2;
     unlink(semaName);
-    *(u16 *)(semaName + count) = '*';
-    if ((fdHandle = _findfirst(semaName, &fd)) != -1)
+    *(u16 *)(helpPtr + count) = '*';
+    if (existPattern(config.semaphorePath, helpPtr))
       return handleNoCompress(pktName, qqqName, destNode);
-
-    _findclose(fdHandle);
 
     if (config.mailOptions.createSema)
     {
-      strcpy(semaName + count, "FM");
+      strcpy(helpPtr + count, "FM");
       if ((semaHandle = openP(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
         return handleNoCompress(pktName, qqqName, destNode);
     }
@@ -741,16 +742,15 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   {
     if (config.mailer == dMT_InterMail)
     {
-      sprintf(semaName, "%sX%07lX.FM", config.semaphorePath, crc32len((char *)destNode, 8) / 16);
+      helpPtr2 = stpcpy(semaName, config.semaphorePath);
+      sprintf(semaName, "X%07lX.FM", crc32len((char *)destNode, 8) / 16);
       helpPtr = strrchr(semaName, '.');
       *helpPtr = *(helpPtr - 1);
       *(helpPtr - 1) = '.';
       unlink(semaName);
       *(u16 *)(helpPtr + 1) = '*';
-      if ((fdHandle = _findfirst(semaName, &fd)) != -1)
+      if (existPattern(config.semaphorePath, helpPtr2))
         return handleNoCompress(pktName, qqqName, destNode);
-
-      _findclose(fdHandle);
 
       if (config.mailOptions.createSema)
       {
@@ -839,12 +839,12 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
                || !(nodeInfo->capability & PKT_TYPE_2PLUS))
               && (srcNode->point == 0)
               && (destNode->point == 0)))
-        extPtr = archivePtr + sprintf(archivePtr, "%04hX%04hX"                // Keep archive name uppercase, because an external archiver might change it to uppercase
+        extPtr = archivePtr + sprintf( archivePtr, "%04hX%04hX"                // Keep archive name uppercase, because an external archiver might change it to uppercase
                                      , (*srcNode).net  - (*destNode).net
                                      , (*srcNode).node - (*destNode).node);
       else
       {
-        sprintf(nodeName, "%hu:%hu/%hu.%hu", destNode->zone
+        sprintf( nodeName, "%hu:%hu/%hu.%hu", destNode->zone
                , config.akaList[0].nodeNum.point + destNode->net
                , destNode->node - config.akaList[0].nodeNum.net
                , config.akaList[0].nodeNum.node  + destNode->point);
@@ -856,32 +856,40 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
       // Search for existing archive files
       maxArc = '0' - 1;
       okArc = 0;
-      fdHandle = _findfirst(archiveStr, &fd);
 
-      if (fdHandle != -1)
+      *(archivePtr - 1) = 0;
+      dir = opendir(archiveStr);
+      *(archivePtr - 1) = '\\';
+      if (dir != NULL)
       {
-        do
-        {
-          maxArc = max(fd.name[11], maxArc);
-          if ((config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
-              && ((fd.size > 0)
-                  && ((config.maxBundleSize == 0)
-                      || ((fd.size >> 10) < config.maxBundleSize))))
-            okArc = max(fd.name[11], okArc);
-          if (fd.size == 0
-             && ( (!config.mailOptions.extNames && fd.name[11] == '9')
-                || (config.mailOptions.extNames && fd.name[11] == 'Z')
-                )
-             )
+        while ((ent = readdir(dir)) != NULL)
+          if (match_spec(archivePtr, ent->d_name))
           {
-            extPtr[3] = fd.name[11];
-            unlink(archiveStr);
+            char ep3 = extPtr[3] = ent->d_name[11];
+            off_t fsize = fileSize(archiveStr);
+
+            maxArc = max(ep3, maxArc);
+            if (  (config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
+               && (  fsize > 0
+                  && (  config.maxBundleSize == 0
+                     || (fsize >> 10) < config.maxBundleSize
+                     )
+                  )
+               )
+              okArc = max(ep3, okArc);
+
+            if (fsize == 0
+               && ( (!config.mailOptions.extNames && ep3 == '9')
+                  || (config.mailOptions.extNames && ep3 == 'Z')
+                  )
+               )
+              unlink(archiveStr);
+
+            extPtr[3] = '?';  // Needed for match_spec()
           }
-        } while (_findnext(fdHandle, &fd) == 0);
 
-        _findclose(fdHandle);
+        closedir(dir);
       }
-
 
       fnPtr = archivePtr;
       for (count = 0; count < fAttCount; count++)
@@ -1198,21 +1206,28 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     {
       strcpy(tempStr, archiveStr);
       if (destNode->point)
-        archivePtr += sprintf(archivePtr, "%08hx", destNode->point);
+        extPtr = archivePtr + sprintf(archivePtr, "%08hx", destNode->point);
       else
-        archivePtr += sprintf(archivePtr, "%04hx%04hx", destNode->net, destNode->node);
+        extPtr = archivePtr + sprintf(archivePtr, "%04hx%04hx", destNode->net, destNode->node);
 
-      strcpy(archivePtr, ".?lo");
-      if ((fdHandle = _findfirst(archiveStr, &fd)) == -1)
-        sprintf(archivePtr, ".%clo"
+      strcpy(extPtr, ".?lo");
+
+      ent = NULL;
+      if ((dir = opendir(config.outPath)) != NULL)
+      {
+        while ((ent = readdir(dir)) != NULL)
+          if (match_spec(archivePtr, ent->d_name))
+          {
+            strcpy(extPtr, strchr(ent->d_name, '.'));
+            break;
+          }
+        closedir(dir);
+      }
+      if (ent == NULL)
+        sprintf(  extPtr, ".%clo"
                ,  nodeInfo->outStatus == 1  ? 'h'
                : (nodeInfo->outStatus == 2) ? 'c'
                : (nodeInfo->outStatus >= 3 && nodeInfo->outStatus <= 5) ? 'c' : 'f');
-      else
-      {
-        _findclose(fdHandle);
-        strcpy(archivePtr, strchr(fd.name, '.'));
-      }
 
       if ((tempHandle = openP(archiveStr, O_RDWR | O_CREAT | O_APPEND | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
       {
@@ -1280,30 +1295,34 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 //
 void retryArc(void)
 {
-  tempStrType tempStr;
-  nodeNumType srcNode
-            , destNode;
-  pktHdrType msgPktHdr;
-  fhandle pktHandle;
-  s16 donePkt = 0;
-  struct _finddata_t fd;
-  long fdHandle;
-  nodeNumType destNode4d;
+  tempStrType    tempStr;
+  nodeNumType    srcNode
+               , destNode;
+  pktHdrType     msgPktHdr;
+  fhandle        pktHandle;
+  // s16 donePkt = 0;
+  // struct _finddata_t fd;
+  // long fdHandle;
+  DIR           *dir;
+  struct dirent *ent;
+  nodeNumType    destNode4d;
+  int            logged = 0;
 
   strcpy(tempStr, config.outPath);
   strcat(tempStr, "*.qqq");
 
-  fdHandle = _findfirst(tempStr, &fd);
-
-  if (fdHandle != -1)
+  if ((dir = opendir(config.outPath)) != NULL)
   {
-    logEntry("Retrying to compress outgoing mailpacket(s)", LOG_OUTBOUND, 0);
-
-    while (!donePkt && !breakPressed)
-    {
-      if (!(fd.attrib & FA_SPEC))
+    while ((ent = readdir(dir)) != NULL && !breakPressed)
+      if (match_spec("*.qqq", ent->d_name))
       {
-        strcpy(stpcpy(tempStr, config.outPath), fd.name);
+        if (!logged)
+        {
+          logEntry("Retrying to compress outgoing mailpacket(s)", LOG_OUTBOUND, 0);
+          logged = 1;
+        }
+
+        strcpy(stpcpy(tempStr, config.outPath), ent->d_name);
 
         if ( (pktHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1
            && _read(pktHandle, &msgPktHdr, sizeof(pktHdrType)) == sizeof(pktHdrType)
@@ -1325,9 +1344,9 @@ void retryArc(void)
           packArc(tempStr, &srcNode, &destNode, getNodeInfo(&destNode4d));
         }
       }
-      donePkt = _findnext(fdHandle, &fd);
-    }
+
     newLine();
+    closedir(dir);
   }
 }
 // ----------------------------------------------------------------------------

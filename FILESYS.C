@@ -175,16 +175,18 @@ int fileSys(const char *path)
       return 0;
 #ifdef  __FMAILX__
    if ( !intbuf1p )
-   {  u32 tmp;
+   {
+      u32 tmp;
       if ( (tmp = GlobalDosAlloc(320)) == 0 )
-	 return 0;
+        return 0;
       intbuf1p = (void *)(tmp << 16);
       intbuf1r = (void *)(tmp & 0xffff0000L);
    }
    if ( !intbuf2p )
-   {  u32 tmp;
+   {
+      u32 tmp;
       if ( (tmp = GlobalDosAlloc(320)) == 0 )
-	 return 0;
+        return 0;
       intbuf2p = (void *)(tmp << 16);
       intbuf2r = (void *)(tmp & 0xffff0000L);
    }
@@ -279,6 +281,7 @@ int fsclose(int handle)
   return close(handle);
 }
 //---------------------------------------------------------------------------
+#ifndef FMAIL
 int fsmkdir(const char *path, u16 lfn)
 {
 #ifdef __32BIT__
@@ -468,4 +471,5 @@ int fsrename(const char *oldname, const char *newname, u16 lfn)
    return 0;
 #endif
 }
+#endif
 //---------------------------------------------------------------------------

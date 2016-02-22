@@ -22,6 +22,7 @@
 
 #include <ctype.h>
 #include <dir.h>
+#include <dirent.h>    // opendir()
 #include <dos.h>
 #include <fcntl.h>
 #include <io.h>
@@ -39,6 +40,7 @@
 #include "msgmsg.h"
 #include "msgpkt.h"
 #include "nodeinfo.h"
+#include "spec.h"
 #include "utils.h"
 
 
@@ -63,7 +65,7 @@ typedef netRecType netListType[MAXNETREC];
 extern configType       config;
 extern internalMsgType *message;
 extern globVarsType     globVars;
-extern char	            configPath[128];
+extern char             configPath[128];
 
 static s16              errorDisplay=0;
 static u16              netIndex;
@@ -289,7 +291,8 @@ s16 pack(s16 argc, char *argv[], s32 switches)
                 , count2;
   tempStrType     tempStr;
   char           *helpPtr;
-  struct ffblk    ffblkMsg;
+  DIR            *dir;
+  struct dirent  *ent;
   fhandle         fileHandle;
   packType       *pack;
   nodeFileRecType nodeFileInfo;
@@ -317,50 +320,53 @@ s16 pack(s16 argc, char *argv[], s32 switches)
 
   netIndex = 0;
 
-  strcpy(stpcpy(tempStr, config.netPath), "*.msg");
-
-  doneMsg = findfirst(tempStr, &ffblkMsg, 0);
-
-  while (!doneMsg)
+  if ((dir = opendir(config.netPath)) != NULL)
   {
-    msgNum = strtoul(ffblkMsg.ff_name, &helpPtr, 10);
-
-    if ((msgNum != 0) && (netIndex < MAXNETREC) &&
-        (*helpPtr == '.') &&
-        (!(ffblkMsg.ff_attrib & FA_SPEC)) &&
-        (readMsg(message, msgNum) == 0) &&
-        (message->attribute & (IN_TRANSIT | LOCAL)) &&
-        !(message->attribute & FILE_ATT))
+    while ((ent = readdir(dir)) != NULL)
     {
-      count = 0;
-      while (count < MAX_AKAS
-            && (  (config.akaList[count].nodeNum.zone == 0)
-               || (memcmp(&config.akaList[count].nodeNum, &message->destNode, sizeof(nodeNumType)) != 0)
-               )
-            )
-        count++;
-
-      if (count == MAX_AKAS)
+      if (match_spec("*.msg", ent->d_name))
       {
-        low  = 0;
-        high = netIndex;
-        while (low < high)
-        {
-          mid = (low + high) >> 1;
-          if (msgNum > (*netList)[mid].msgNum)
-            low  = mid + 1;
-          else
-            high = mid;
-        }
-        memmove(&((*netList)[low + 1]), &((*netList)[low]), (netIndex++ - low) * sizeof(netRecType));
+        msgNum = strtoul(ent->d_name, &helpPtr, 10);
 
-        (*netList)[low].msgNum    = msgNum;
-        (*netList)[low].destNode  = message->destNode;
-        (*netList)[low].attribute = message->attribute;
-        (*netList)[low].flags     = getFlags(message->text);
+        if (  msgNum != 0
+           && netIndex < MAXNETREC
+           && *helpPtr == '.'
+           && readMsg(message, msgNum) == 0
+           && (message->attribute & (IN_TRANSIT | LOCAL))
+           && !(message->attribute & FILE_ATT)
+           )
+        {
+          count = 0;
+          while (count < MAX_AKAS
+                && (  (config.akaList[count].nodeNum.zone == 0)
+                   || (memcmp(&config.akaList[count].nodeNum, &message->destNode, sizeof(nodeNumType)) != 0)
+                   )
+                )
+            count++;
+
+          if (count == MAX_AKAS)
+          {
+            low  = 0;
+            high = netIndex;
+            while (low < high)
+            {
+              mid = (low + high) >> 1;
+              if (msgNum > (*netList)[mid].msgNum)
+                low  = mid + 1;
+              else
+                high = mid;
+            }
+            memmove(&((*netList)[low + 1]), &((*netList)[low]), (netIndex++ - low) * sizeof(netRecType));
+
+            (*netList)[low].msgNum    = msgNum;
+            (*netList)[low].destNode  = message->destNode;
+            (*netList)[low].attribute = message->attribute;
+            (*netList)[low].flags     = getFlags(message->text);
+          }
+        }
       }
     }
-    doneMsg = findnext(&ffblkMsg);
+    closedir(dir);
   }
 
   if (argc > 2)

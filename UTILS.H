@@ -73,11 +73,13 @@ u64         diskFree64     (const char *path);
 #endif
 u32         diskFree       (const char *path);
 int         moveFile       (const char *oldName, const char *newName);
+int         dirExist       (const char *dir);
 s16         existDir       (const char *dir, const char *descr);
 int         ChDir          (const char *path);
 const char *_searchpath    (const char *filename);
-int         existPattern   (const char *dirStr, const char *patStr);
+int         existPattern   (const char *path, const char *pattern);
 u32         fileLength     (int handle);
+off_t       fileSize       (const char *filename);
 const nodeNumType *getAkaNodeNum(int aka, int retMain);
 const char *getAkaStr      (int aka, int retMain);
 int         matchAka       (nodeNumType *node, int useAka);

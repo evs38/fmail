@@ -999,7 +999,7 @@ void Toss(int argc, char *argv[])
       {
         for (dayNum = 0; dayNum < 7 && !diskError && !breakPressed; dayNum++)
         {
-          struct stat statbuf;
+          struct stat st;
           tempStrType pattern;
 
           sprintf(pattern, "*.%.2s?", dayName[dayNum]);
@@ -1008,8 +1008,8 @@ void Toss(int argc, char *argv[])
 
           strcpy(stpcpy(tempStr, config.inPath), ent->d_name);
 
-          if (  stat(tempStr, &statbuf) != 0
-             || (statbuf.st_mode & (S_IWRITE | S_IREAD)) != (S_IWRITE | S_IREAD))
+          if (  stat(tempStr, &st) != 0
+             || (st.st_mode & (S_IWRITE | S_IREAD)) != (S_IWRITE | S_IREAD))
           {
             tempStrType errStr;
             sprintf(errStr, "Not sufficient rights on: %s", tempStr);
@@ -1019,7 +1019,7 @@ void Toss(int argc, char *argv[])
 
           bundlePtr3 = bundlePtr;
           bundlePtr2 = NULL;
-          while (bundlePtr3 != NULL && (bundlePtr3->mtime < statbuf.st_mtime))
+          while (bundlePtr3 != NULL && (bundlePtr3->mtime < st.st_mtime))
           {
             bundlePtr2 = bundlePtr3;
             bundlePtr3 = bundlePtr3->nextb;
@@ -1028,8 +1028,8 @@ void Toss(int argc, char *argv[])
             logEntry("Not enough memory available", LOG_ALWAYS, 2);
 
           strcpy(bundlePtr3->fname, ent->d_name);
-          bundlePtr3->mtime = statbuf.st_mtime;
-          bundlePtr3->size  = statbuf.st_size;
+          bundlePtr3->mtime = st.st_mtime;
+          bundlePtr3->size  = st.st_size;
           if (bundlePtr2 == NULL)
           {
             bundlePtr3->nextb = bundlePtr;

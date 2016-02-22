@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,6 +21,7 @@
 //
 //---------------------------------------------------------------------------
 
+#include <dirent.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
@@ -39,6 +40,7 @@
 #include "msgpkt.h"
 #include "mtask.h"
 #include "nodeinfo.h"
+#include "spec.h"
 #include "utils.h"
 #include "version.h"
 
@@ -120,7 +122,7 @@ udef process_bcl(char *fileName)
   u16         index;
   nodeNumType tempNode;
 
-  sprintf (tempStr, "%s%s", config.inPath, fileName);
+  sprintf(tempStr, "%s%s", config.inPath, fileName);
   if ( (handle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1
      || read(handle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header)
      )
@@ -183,23 +185,19 @@ void ChkAutoBCL(void)
 //---------------------------------------------------------------------------
 udef ScanNewBCL(void)
 {
-  tempStrType  tempStr;
-  struct _finddata_t fd;
-  long fh;
-  udef count = 0;
+  udef           count = 0;
+  DIR           *dir;
+  struct dirent *ent;
 
   logEntry("Scan for received BCL files", LOG_DEBUG, 0);
 
-  sprintf(tempStr, "%s*.BCL", config.inPath);
-  fh = _findfirst(tempStr, &fd);
-  if (fh != -1)
+  if ((dir = opendir(config.inPath)) != NULL)
   {
-    do
-    {
-      count += process_bcl(fd.name);
-    }
-    while (0 == _findnext(fh, &fd));
-    _findclose(fh);
+    while ((ent = readdir(dir)) != NULL)
+      if (match_spec("*.bcl", ent->d_name))
+        count += process_bcl(ent->d_name);
+
+    closedir(dir);
   }
   if (count)
     newLine();
