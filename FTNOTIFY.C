@@ -63,17 +63,18 @@ static wildCards;
 
 s16 packValid (nodeNumType *node, char *packedNodes)
 {
-   tempStrType tempStr;
-   char        *helpPtr, *helpPtr2;
-   char        *stringNode;
+   tempStrType tempStr
+            ,  stringNode;
+   char       *helpPtr
+            , *helpPtr2
+            ,  nodeTempStr[32];
    u16         count;
-   char        nodeTempStr[32];
-
 
    wildCards = 0;
-   if (packedNodes == NULL) return (0);
+   if (packedNodes == NULL)
+    return 0;
 
-   strcpy (tempStr, packedNodes);
+   strcpy(tempStr, packedNodes);
    helpPtr = strtok (tempStr, " ");
 
    *nodeTempStr = 0;
@@ -97,28 +98,20 @@ s16 packValid (nodeNumType *node, char *packedNodes)
             if (*(helpPtr)!='.')
             {
                if ((helpPtr2=strchr(nodeTempStr,'/'))!=NULL)
-               {
                   strcpy (helpPtr2+1,helpPtr);
-               }
                else
-               {
                   logEntry("Bad node on command line",LOG_ALWAYS,4);
-               }
             }
             else
             {
                if ((helpPtr2=strchr(nodeTempStr,'.'))!=NULL)
-               {
-                  strcpy (helpPtr2,helpPtr);
-               }
+                  strcpy(helpPtr2,helpPtr);
                else
-               {
-                  strcat (nodeTempStr,helpPtr);
-               }
+                  strcat(nodeTempStr,helpPtr);
             }
          }
       }
-      stringNode = nodeStr(node);
+      strcpy(stringNode, nodeStr(node));
 
       for (count = 0; count < (u16)strlen(nodeTempStr); count++)
       {
@@ -126,31 +119,25 @@ s16 packValid (nodeNumType *node, char *packedNodes)
          {
             wildCards = 1;
             if (isdigit(stringNode[count]))
-            {
-               stringNode[count]='?';
-            }
+               stringNode[count] = '?';
          }
-         if (nodeTempStr[count]=='*')
+         if (nodeTempStr[count] == '*')
          {
             wildCards = 1;
             if (nodeTempStr[count+1] != 0)
-            {
                logEntry ("Asterisk only allowed as last character of node number", LOG_ALWAYS, 4);
-            }
+
             nodeTempStr[count] = 0;
             stringNode[count] = 0;
-            if (count && (nodeTempStr[count-1] == '.') &&
-                         (stringNode[count-1] == 0))
-            {
-               nodeTempStr[count-1] = 0;
-            }
+            if (count && nodeTempStr[count - 1] == '.' && stringNode[count - 1] == 0)
+               nodeTempStr[count - 1] = 0;
+
             break;
          }
       }
-      if (strcmp (stringNode, nodeTempStr) == 0)
-      {
-         return (1);
-      }
+      if (strcmp(stringNode, nodeTempStr) == 0)
+         return 1;
+
 /* geen impliciete wildcard voor points
       if ((helpPtr = strchr(stringNode, '.')) != NULL)
       {
@@ -161,9 +148,9 @@ s16 packValid (nodeNumType *node, char *packedNodes)
          }
       }
 */
-      helpPtr = strtok (NULL, " ");
+      helpPtr = strtok(NULL, " ");
    }
-   return (0);
+   return 0;
 }
 
 

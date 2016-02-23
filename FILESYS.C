@@ -281,7 +281,7 @@ int fsclose(int handle)
   return close(handle);
 }
 //---------------------------------------------------------------------------
-#ifndef FMAIL
+#if !defined(FMAIL) && !defined(FTOOLS)
 int fsmkdir(const char *path, u16 lfn)
 {
 #ifdef __32BIT__

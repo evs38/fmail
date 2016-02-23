@@ -329,9 +329,10 @@ u32 diskFree(const char *path)
 #ifdef __CANUSE64BIT
   dfs = (u64)dtable.df_avail * (u64)dtable.df_bsec * (u64)dtable.df_sclus;
 
-  sprintf(tempStr, "Disk %s free: %s", path, fmtU64(dfs));
-
-	logEntry(tempStr, LOG_ALWAYS, 0);
+#ifdef _DEBUG
+  sprintf(tempStr, "DEBUG: Disk %s free: %s", path, fmtU64(dfs));
+  logEntry(tempStr, LOG_DEBUG, 0);
+#endif
 
   if (dfs > (uint64_t)UINT32_MAX)
     return UINT32_MAX;
@@ -702,7 +703,7 @@ char *srchar(char *string, s16 t, s16 c)
 }
 //---------------------------------------------------------------------------
 extern u16  nodeStrIndex;
-extern char nodeNameStr[2][24];
+extern char nodeNameStr[2][24];  // 65535:65535/65535.65535  4 * 5 + 3 + 1 = 24
 
 const char *nodeStrZ(const nodeNumType *nodeNum)
 {

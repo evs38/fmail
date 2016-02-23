@@ -23,6 +23,7 @@
 
 #include <ctype.h>
 #include <dir.h>
+#include <dirent.h>
 #include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -43,6 +44,7 @@
 #include "log.h"
 #include "msgmsg.h"
 #include "msgra.h"
+#include "spec.h"
 #include "utils.h"
 #include "version.h"
 
@@ -67,17 +69,17 @@ void addInfo(internalMsgType *message, s16 isNetmail)
 //---------------------------------------------------------------------------
 s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16 capability, u16 outStatus)
 {
-  fhandle     msgHandle;
-  u16         len;
-  tempStrType tempStr;
-  char        *helpPtr;
-  s32         highMsgNum;
-  u16         count;
-  msgMsgType  msgMsg;
-  s16         doneMsg;
-  struct ffblk ffblkMsg;
-  struct date  dateRec;
-  struct time  timeRec;
+  fhandle        msgHandle;
+  u16            len
+               , count;
+  tempStrType    tempStr;
+  char          *helpPtr;
+  s32            highMsgNum;
+  msgMsgType     msgMsg;
+  struct date    dateRec;
+  struct time    timeRec;
+  DIR           *dir;
+  struct dirent *ent;
 
   srcAka = matchAka(destNode, srcAka+1);
 
@@ -155,13 +157,17 @@ s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16
       highMsgNum = 0;
     close(msgHandle);
   }
-  strcpy(helpPtr, "*.msg");
-  doneMsg = findfirst(tempStr, &ffblkMsg, FA_RDONLY | FA_HIDDEN | FA_SYSTEM | FA_DIREC);
+  *helpPtr = 0;
 
-  while (!doneMsg)
+  if ((dir = opendir(tempStr)) != NULL)
   {
-    highMsgNum = max(highMsgNum, atol(ffblkMsg.ff_name));
-    doneMsg = findnext(&ffblkMsg);
+    while ((ent = readdir(dir)) != NULL)
+      if (match_spec("*.msg", ent->d_name))
+      {
+        long mn = atol(ent->d_name);
+        highMsgNum = max(highMsgNum, mn);
+      }
+    closedir(dir);
   }
 
   // Try to open file

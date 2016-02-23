@@ -28,6 +28,7 @@
 #endif
 #include <ctype.h>
 #include <dir.h>
+#include <dirent.h>
 #include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -55,6 +56,7 @@
 #include "msgmsg.h"
 #include "mtask.h"
 #include "pp_date.h"
+#include "spec.h"
 #include "sorthb.h"
 #include "utils.h"
 #include "version.h"
@@ -320,14 +322,14 @@ int cdecl main(int argc, char *argv[])
   u16 areaSubjChain[256];
 
   u16         *msgRenumBuf;
-  s16 doneSearch;
-  struct ffblk ffblkMsg;
   u16 msgNum;
   u16 low, mid, high;
   s16 isNetmail;
   internalMsgType *message;
   u16 srcAka;
   time_t time1, time2, time2a;
+  DIR           *dir;
+  struct dirent *ent;
 
 #ifndef GOLDBASE
   u16 e;
@@ -1923,7 +1925,7 @@ nextarea:
                   {
                     helpPtr2 = stpcpy(tempStr2, config.rcvdPath);
                     helpPtr3 = stpcpy(tempStr3, config.rcvdPath);
-                      logEntry("Processing received messages directory", LOG_ALWAYS, 0);
+                    logEntry("Processing received messages directory", LOG_ALWAYS, 0);
                   }
                   else
                     if (stricmp(argv[c], "-pmail") == 0)
@@ -1943,28 +1945,33 @@ nextarea:
                 if (switches & SW_N)
                 {
                   bufCount = 0;
-                  strcpy(helpPtr2, "*.msg");
-                  doneSearch = findfirst(tempStr2, &ffblkMsg, 0);
-                  while ((bufCount < 0x8ff8) && !doneSearch)
+                  *helpPtr2 = 0;
+                  if ((dir = opendir(tempStr2)) != NULL)
                   {
-                    msgNum = (u16)strtoul(ffblkMsg.ff_name, &helpPtr, 10);
-                    if ((msgNum != 0) && (*helpPtr == '.'))
+                    while ((bufCount < 0x8ff8) && (ent = readdir(dir)) != NULL)
                     {
-                      low = 0;
-                      high = bufCount;
-                      while (low < high)
+                      if (!match_spec("*.msg", ent->d_name))
+                        continue;
+
+                      msgNum = (u16)strtoul(ent->d_name, &helpPtr, 10);
+                      if (msgNum != 0 && *helpPtr == '.')
                       {
-                        mid = (low + high) >> 1;
-                        if (msgNum > msgRenumBuf[mid])
-                          low = mid + 1;
-                        else
-                          high = mid;
+                        low = 0;
+                        high = bufCount;
+                        while (low < high)
+                        {
+                          mid = (low + high) >> 1;
+                          if (msgNum > msgRenumBuf[mid])
+                            low = mid + 1;
+                          else
+                            high = mid;
+                        }
+                        memmove(&msgRenumBuf[low + 1], &msgRenumBuf[low], (bufCount - low) << 1);
+                        msgRenumBuf[low] = msgNum;
+                        bufCount++;
                       }
-                      memmove(&msgRenumBuf[low + 1], &msgRenumBuf[low], (bufCount - low) << 1);
-                      msgRenumBuf[low] = msgNum;
-                      bufCount++;
                     }
-                    doneSearch = findnext(&ffblkMsg);
+                    closedir(dir);
                   }
                   ddd = 0;
                   for (count = 0; count < bufCount; count++)

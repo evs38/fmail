@@ -34,7 +34,7 @@
 #include "fmail.h"
 
 #include "ftlog.h"
-#include "areainfo.h" /* needed for utils.h */
+#include "areainfo.h" // needed for utils.h
 #include "utils.h"
 #include "crc.h"
 #include "hudson.h"
@@ -50,63 +50,51 @@ fhandle msgIdxHandle;
 fhandle lockHandle;
 
 
+//---------------------------------------------------------------------------
 char *expandNameH(char *fileName)
 {
    static tempStrType expandStr;
 
-   strcpy (expandStr, config.bbsPath);
-   strcat (expandStr, fileName);
-   strcat (expandStr, "."MBEXTN);
-   return (expandStr);
+   strcpy(stpcpy(stpcpy(expandStr, config.bbsPath), fileName), "."MBEXTN);
+
+   return expandStr;
 }
-
-
-
-s16 testMBUnlockNow (void)
+//---------------------------------------------------------------------------
+s16 testMBUnlockNow(void)
 {
-   static s16 time, date;
-   tempStrType tempStr;
-   struct ffblk ffblkMBU;
-   s16 unlock = 0;
+  static time_t mtime;
+  tempStrType tempStr;
+  struct stat st;
+  s16 unlock = 0;
 
-   if (config.mbOptions.mbSharing)
-   {
-      strcpy (tempStr, config.bbsPath);
-      strcat (tempStr, "MBUNLOCK.NOW");
-      if (findfirst (tempStr, &ffblkMBU, 0))
-      {
-         time = 0;
-         date = 0;
-      }
-      else
-      {
-         unlock = ((time != ffblkMBU.ff_ftime) || (date != ffblkMBU.ff_fdate));
-         time = ffblkMBU.ff_ftime;
-         date = ffblkMBU.ff_fdate;
-      }
-   }
-   return (unlock);
+  if (config.mbOptions.mbSharing)
+  {
+    strcpy(stpcpy(tempStr, config.bbsPath), "MBUNLOCK.NOW");
+
+    if (stat(tempStr, &st) != 0)
+      mtime = 0;
+    else
+    {
+      unlock = mtime != st.st_mtime;
+      mtime = st.st_mtime;
+    }
+  }
+  return unlock;
 }
-
-
-
-void setMBUnlockNow (void)
+//---------------------------------------------------------------------------
+void setMBUnlockNow(void)
 {
-   tempStrType tempStr;
+  tempStrType tempStr;
 
-   if (config.mbOptions.mbSharing)
-   {
-      strcpy (tempStr, config.bbsPath);
-      strcat (tempStr, "MBUNLOCK.NOW");
-      close (open(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE));
-      testMBUnlockNow ();
-   }
+  if (config.mbOptions.mbSharing)
+  {
+    strcpy(stpcpy(tempStr, config.bbsPath), "MBUNLOCK.NOW");
+    close(open(tempStr, O_RDWR | O_CREAT | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE));
+    testMBUnlockNow();
+  }
 }
-
-
-
-
-s16 lockMB (void)
+//---------------------------------------------------------------------------
+s16 lockMB(void)
 {
    tempStrType tempStr;
    time_t      time1,
