@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -49,107 +49,9 @@ fhandle msgIdxHandle;
 
 fhandle lockHandle;
 
-
+#include "hudson_shared.c"
 //---------------------------------------------------------------------------
-char *expandNameH(char *fileName)
-{
-   static tempStrType expandStr;
-
-   strcpy(stpcpy(stpcpy(expandStr, config.bbsPath), fileName), "."MBEXTN);
-
-   return expandStr;
-}
-//---------------------------------------------------------------------------
-s16 testMBUnlockNow(void)
-{
-  static time_t mtime;
-  tempStrType tempStr;
-  struct stat st;
-  s16 unlock = 0;
-
-  if (config.mbOptions.mbSharing)
-  {
-    strcpy(stpcpy(tempStr, config.bbsPath), "MBUNLOCK.NOW");
-
-    if (stat(tempStr, &st) != 0)
-      mtime = 0;
-    else
-    {
-      unlock = mtime != st.st_mtime;
-      mtime = st.st_mtime;
-    }
-  }
-  return unlock;
-}
-//---------------------------------------------------------------------------
-void setMBUnlockNow(void)
-{
-  tempStrType tempStr;
-
-  if (config.mbOptions.mbSharing)
-  {
-    strcpy(stpcpy(tempStr, config.bbsPath), "MBUNLOCK.NOW");
-    close(open(tempStr, O_RDWR | O_CREAT | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE));
-    testMBUnlockNow();
-  }
-}
-//---------------------------------------------------------------------------
-s16 lockMB(void)
-{
-   tempStrType tempStr;
-   time_t      time1,
-               time2;
-
-   strcpy (tempStr, config.bbsPath);
-   strcat (tempStr, "MSGINFO."MBEXTN);
-
-   if ((lockHandle = open(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                                   S_IREAD|S_IWRITE)) == -1)
-   {
-      logEntry ("Can't open file MsgInfo."MBEXTN" for output", LOG_ALWAYS, 0);
-      return (1);
-   }
-
-   testMBUnlockNow ();
-   if ((lock (lockHandle, sizeof(infoRecType) + 1, 1) == -1) &&
-       (_doserrno == 0x21))
-   {
-      puts("Retrying to lock the message base\n");
-      setMBUnlockNow();
-      time(&time1);
-
-      do
-      {
-         time (&time2);
-         _doserrno = 0;
-      }
-      while ((lock (lockHandle, sizeof(infoRecType) + 1, 1) == -1) &&
-             (_doserrno == 0x21) &&
-             (time2-time1 < 15));
-      if (_doserrno == 0x21)
-      {
-         logEntry("Can't lock the message base for update", LOG_ALWAYS, 0);
-         close(lockHandle);
-         return 1;
-      }
-   }
-   return 0;
-}
-
-
-
-void unlockMB (void)
-{
-   if (config.mbOptions.mbSharing)
-   {
-      unlock (lockHandle, sizeof(infoRecType) + 1, 1);
-   }
-   close (lockHandle);
-}
-
-
-
-void openBBSWr ()
+void openBBSWr(void)
 {
    if ((msgHdrHandle = open(expandNameH("MSGHDR"),
                             O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
@@ -183,9 +85,7 @@ void openBBSWr ()
    }
    lseek (msgIdxHandle, 0, SEEK_END);
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 {
    msgHdrRec   msgRa;
@@ -219,7 +119,7 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 		msgRa.SeeAlsoNum = 0;
 		msgRa.TRead      = 0;
 		msgRa.NetAttr    = 0;
-    msgRa.StartRec   = 
+    msgRa.StartRec   =
     msgTxtRecNum     = (u16)(filelength(msgTxtHandle) >> 8);
 		msgRa.Board      = boardNum;
     msgHdrRecNum = (u16)(filelength(msgHdrHandle)/sizeof(msgHdrRec));
@@ -341,23 +241,21 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
       infoRec.TotalActive++;
 
       if ((lseek(msgInfoHandle, 0, SEEK_SET) == -1) ||
-          (write (msgInfoHandle, &infoRec, sizeof(infoRecType)) == -1))
-      {
-         logEntry ("Can't open file MsgInfo."MBEXTN" for output", LOG_ALWAYS, 1);
-      }
-      close (msgInfoHandle);
+          (write(msgInfoHandle, &infoRec, sizeof(infoRecType)) == -1))
+         logEntry("Can't open file MsgInfo."MBEXTN" for output", LOG_ALWAYS, 1);
+
+      close(msgInfoHandle);
 
       unlockMB();
   }
-    return (0);
+  return 0;
 }
-
-
-
-void closeBBS (void)
+//---------------------------------------------------------------------------
+void closeBBS(void)
 {
-   close (msgHdrHandle);
-   close (msgTxtHandle);
-   close (msgIdxHandle);
-   close (msgToIdxHandle);
+   close(msgHdrHandle);
+   close(msgTxtHandle);
+   close(msgIdxHandle);
+   close(msgToIdxHandle);
 }
+//---------------------------------------------------------------------------

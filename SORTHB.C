@@ -36,8 +36,8 @@
 #include "areainfo.h"
 #include "crc.h"
 #include "log.h"
-#include "msgpkt.h"    // expandName()
-#include "msgra.h"
+#include "msgpkt.h"
+#include "msgra.h"    // expandName()
 #include "mtask.h"
 #include "sorthb.h"
 #include "utils.h"
@@ -100,7 +100,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
                                ((config.ftBufSize==2) ? 5 : 7))));
 #endif
 
-   if ((msgHdrHandle = open(expandName("MSGHDR", 0), O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+   if ((msgHdrHandle = open(expandNameHudson("MSGHDR", 0), O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) == -1)
    {
       puts("Can't open MsgHdr."MBEXTN" for update.");
       return;
@@ -345,8 +345,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
    {
       putStr("Writing MsgHdr."MBEXTN" and index files... ");
 
-      if (  ((msgIdxHandle   = open(expandName("MSGIDX"  , 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
-         || ((msgToIdxHandle = open(expandName("MSGTOIDX", 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if (  ((msgIdxHandle   = open(expandNameHudson("MSGIDX"  , 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+         || ((msgToIdxHandle = open(expandNameHudson("MSGTOIDX", 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
          )
       {
          close(msgIdxHandle);
@@ -354,7 +354,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
          logEntry("Can't create sorted/linked message files", LOG_ALWAYS, 0);
          goto exit1;
       }
-      strcpy(tempStr1, expandName("MSGHDR", 0));
+      strcpy(tempStr1, expandNameHudson("MSGHDR", 0));
       strcpy(stpcpy(tempStr2, config.bbsPath), "MSGHDR.ZZZ");
       strcpy(stpcpy(tempStr3, config.bbsPath), "MSGHDR.!!!");
 
@@ -453,7 +453,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
    {
       putStr("Updating MsgHdr."MBEXTN"...");
 
-      strcpy(tempStr1, expandName("MSGHDR", 0));
+      strcpy(tempStr1, expandNameHudson("MSGHDR", 0));
 
       if (  ((msgHdrHandle = open(tempStr1, O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1)
          || ((oldHdrHandle = open(tempStr1, O_RDONLY | O_BINARY          , S_IREAD | S_IWRITE)) == -1)

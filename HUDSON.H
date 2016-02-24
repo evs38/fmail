@@ -1,50 +1,54 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
+#ifndef hudsonH
+#define hudsonH
 
 #define CS_SECURITY 0xc6cad720L
 
-/* Msg Attributes:
-
-      Bit 0: Deleted
-      Bit 1: Unmoved Outgoing Net Message
-      Bit 2: Is a Net Mail Message
-      Bit 3: Private
-      Bit 4: Received
-      Bit 5: Unmoved Outgoing Echo Message
-      Bit 6: Local Bit
-      Bit 7: [ Reserved ]
-
-   Net Attributes:
-
-      Bit 0: Kill Message after it's been sent
-      Bit 1: Sent OK
-      Bit 2: File(s) Attached
-      Bit 3: Crash Priority
-      Bit 4: Request Receipt
-      Bit 5: Audit Request
-      Bit 6: Is a Return Receipt
-      Bit 7: [ Reserved ]
-
-*/
+//---------------------------------------------------------------------------
+// Msg Attributes:
+//
+//    Bit 0: Deleted
+//    Bit 1: Unmoved Outgoing Net Message
+//    Bit 2: Is a Net Mail Message
+//    Bit 3: Private
+//    Bit 4: Received
+//    Bit 5: Unmoved Outgoing Echo Message
+//    Bit 6: Local Bit
+//    Bit 7: [ Reserved ]
+//
+// Net Attributes:
+//
+//    Bit 0: Kill Message after it's been sent
+//    Bit 1: Sent OK
+//    Bit 2: File(s) Attached
+//    Bit 3: Crash Priority
+//    Bit 4: Request Receipt
+//    Bit 5: Audit Request
+//    Bit 6: Is a Return Receipt
+//    Bit 7: [ Reserved ]
+//
 
 #define RA_DELETED      1
 #define RA_NET_OUT      2
@@ -53,7 +57,7 @@
 #define RA_RECEIVED    16
 #define RA_ECHO_OUT    32
 #define RA_LOCAL       64
-#define QBBS_GROUPMSG 128 /* QBBS-only Groupmail? */
+#define QBBS_GROUPMSG 128  // QBBS-only Groupmail?
 
 #define RA_KILLSENT     1
 #define RA_SENT         2
@@ -66,18 +70,22 @@
 
 
 typedef struct
-{  uchar wtLength;
-   uchar WhoTo[35];   } msgToIdxRec;
+{
+  uchar wtLength;
+  uchar WhoTo[35];
+} msgToIdxRec;
 
 typedef struct
 {
    uchar txtLength;
-   uchar txtStr[255]; } msgTxtRec;
+   uchar txtStr[255];
+} msgTxtRec;
 
 #ifdef GOLDBASE
 
 typedef struct
-{  u32           MsgNum,
+{
+  u32           MsgNum,
 		 ReplyTo,
                  SeeAlsoNum;
    u16           TRead;
@@ -102,26 +110,32 @@ typedef struct
    uchar         wfLength;
    schar         WhoFrom[35];
    uchar         sjLength;
-   schar         Subj[56]; /* 72 - 16 */
+   schar         Subj[56];    // 72 - 16
    u32           subjCrc;
    u32           wrTime;
    s32           recTime;
-   u32           checkSum;    } msgHdrRec;
+   u32           checkSum;
+} msgHdrRec;
 
 typedef struct
-{  u32   MsgNum;
-   u16   Board;   } msgIdxRec;
+{
+  u32   MsgNum;
+  u16   Board;
+} msgIdxRec;
 
 typedef struct
-  { u32  LowMsg,
-         HighMsg,
-         TotalActive;
-    u16  ActiveMsgs[200]; } infoRecType;
+{
+  u32  LowMsg,
+       HighMsg,
+       TotalActive;
+  u16  ActiveMsgs[200];
+} infoRecType;
 
 #else
 
 typedef struct
-{  u16           MsgNum,
+{
+  u16           MsgNum,
                  ReplyTo,
                  SeeAlsoNum,
                  TRead,
@@ -146,27 +160,31 @@ typedef struct
    uchar         wfLength;
    schar         WhoFrom[35];
    uchar         sjLength;
-   schar         Subj[56]; /* 72 - 16 */
+   schar         Subj[56];    // 72 - 16
    u32           subjCrc;
    u32           wrTime;
    s32           recTime;
-   u32           checkSum;    } msgHdrRec;
+   u32           checkSum;
+} msgHdrRec;
 
 typedef struct
-{  u16   MsgNum;
-   uchar Board;   } msgIdxRec;
+{
+  u16   MsgNum;
+  uchar Board;
+} msgIdxRec;
 
 typedef struct
-  { u16  LowMsg,
-         HighMsg,
-         TotalActive,
-         ActiveMsgs[200]; } infoRecType;
+{
+  u16  LowMsg,
+       HighMsg,
+       TotalActive,
+       ActiveMsgs[200];
+} infoRecType;
 
 #endif
 
-void openBBSWr (void);
+void openBBSWr(void);
+void closeBBS(void);
+s16  writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail);
 
-s16 writeBBS (internalMsgType *message, u16 boardNum, s16 isNetmail);
-
-void closeBBS (void);
-
+#endif  // hudsonH

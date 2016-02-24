@@ -37,9 +37,9 @@
 #include "utils.h"
 
 
-extern cookedEchoType    *echoAreaList;
-
+extern cookedEchoType *echoAreaList;
 extern char jam_subfields[_JAM_MAXSUBLENTOT];
+extern echoToNodePtrType echoToNode[MAX_AREAS];
 
 //---------------------------------------------------------------------------
 u32 jam_scan(u16 echoIndex, u32 jam_msgnum, u16 scanOne, internalMsgType *message)
@@ -152,6 +152,7 @@ u32 jam_update(u16 echoIndex, u32 jam_msgnum, internalMsgType *message)
    }
    jam_freelock(jam_code);
    jam_close(jam_code);
+
    return 1;
 }
 //---------------------------------------------------------------------------
@@ -193,9 +194,8 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
           removeLfSr(message->text);
           jam_getsubfields(jam_code, jam_subfields, jam_msghdrrec.SubfieldLen, message);
           insertLine(message->text, tempstr);
-//          addPathSeenBy(message, echoToNode[echoIndex], echoIndex);  // todo!
-//          strcat(message->text, echoAreaList[areaIndex].options.tinySeenBy ? message->tinySeen : message->normSeen);
-//          strcat(message->text, echoAreaList[areaIndex].options.tinyPath   ? message->tinyPath : message->normPath);
+          addPathSeenBy(message, echoToNode[echoIndex], echoIndex);
+          setSeenByPath(message, NULL, echoAreaList[echoIndex].options, nodeInfo->options);
           message->srcNode  = *getAkaNodeNum(echoAreaList[echoIndex].address, 1);
           message->destNode = nodeInfo->node;
           writeNetPktValid(message, &nfInfo);

@@ -834,9 +834,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                 {
                   // JAM toss
                   if (echoAreaList[areaIndex].options.impSeenBy)
-                    strcat(message->text, message->normSeen);
-
-                  strcat(message->text, message->normPath);
+                    strcpy(stpcpy(strchr(message->text, 0), message->normSeen), message->normPath);
 
                   if (echoAreaList[areaIndex].JAMdirPtr != NULL)
                   {
@@ -846,6 +844,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                     {
                       if (*(helpPtr = strchr (message->text, '\r') + 1) == '\n')
                         helpPtr++;
+
                       memmove(message->text, helpPtr, strlen(helpPtr) + 1);
                     }
 

@@ -1372,16 +1372,15 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
    // PATH
    readPathSeenBy(ECHO_PATH, msg->text, pathArray, &pathCount);
 
-   if (  (!mainNode.nodeNum.point || config.mailOptions.addPointToPath)             // If not a point or if option "Add point to path'
-      && (  pathCount == 0                                                            // Er is nog geen path
+   if (!mainNode.nodeNum.point || config.mailOptions.addPointToPath)             // If not a point or if option "Add point to path'
+   {
+      if (  pathCount == 0                                                            // Er is nog geen path
          || (  !mainNode.fakeNet                                                        // Geen fakenet
             && memcmp(&(*pathArray)[pathCount - 1], &mainNode.nodeNum.net, 4) != 0      // En hij staat er nog niet in als laatste
             )
          )
-      )
-   {
-      memcpy(&(*pathArray    )[pathCount++    ].net, &mainNode.nodeNum.net, 4);
-      // todo: Eigen if boom voor tinyPath!
+        memcpy(&(*pathArray    )[pathCount++    ].net, &mainNode.nodeNum.net, 4);
+
       memcpy(&(*tinyPathArray)[tinyPathCount++].net, &mainNode.nodeNum.net, 4);
    }
 

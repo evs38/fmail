@@ -752,13 +752,7 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
       else
         strcpy(helpPtr = ftsPtr - strlen(message->dateStr) - 1, message->dateStr);
 
-      helpPtr2 = psbStart;
-      if (nodeFileInfo[count]->nodePtr->options.tinySeenBy || areaOptions.tinySeenBy)
-        helpPtr2 = stpcpy(helpPtr2, message->tinySeen);
-      else
-        helpPtr2 = stpcpy(helpPtr2, message->normSeen);
-
-      helpPtr2 = stpcpy(helpPtr2, areaOptions.tinyPath ? message->tinyPath : message->normPath);
+      helpPtr2 = setSeenByPath(message, psbStart, areaOptions, nodeFileInfo[count]->nodePtr->options);
 
       if (  config.akaList[nodeFileInfo[count]->srcAka].nodeNum.zone
          && nodeFileInfo[count]->srcAka != nodeFileInfo[count]->requestedAka
@@ -788,7 +782,7 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
 
       nodeFileInfo[count]->totalMsgs++;
 
-      if (config.maxPktSize != 0 && filelength(pktHandle) >= config.maxPktSize*(s32)1000)
+      if (config.maxPktSize != 0 && filelength(pktHandle) >= config.maxPktSize * (s32)1000)
       {
         if (_write(pktHandle, &zero, 2) != 2)
         {
@@ -1224,7 +1218,7 @@ fhandle fsopenP(const char *pathname, int access, u16 mode)
     if (errno != EMFILE || closeLuPkt())
     {
       if (  !no_msg && no_log == 1
-         && ((config.logInfo & LOG_OPENERR) || (config.logInfo & LOG_ALWAYS ))
+         && ((config.logInfo & LOG_OPENERR) || (config.logInfo & LOG_ALWAYS))
          )
       {
         tempStrType tempStr;

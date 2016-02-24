@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -48,25 +48,22 @@
 struct orgLineListType
 {
   struct orgLineListType *next;
-  char originLine[ORGLINE_LEN];
+  char   originLine[ORGLINE_LEN];
 };
 
 static struct orgLineListType *orgLineListPtr = NULL;
 
-u16      echoCount;
-u16      forwNodeCount = 0;
+u16 echoCount;
+u16 forwNodeCount = 0;
 
-cookedEchoType    *echoAreaList;
+cookedEchoType   *echoAreaList;
 echoToNodePtrType echoToNode[MAX_AREAS];
 nodeFileType      nodeFileInfo;
 
-extern time_t startTime;
-
-extern configType   config;
-
+extern time_t           startTime;
+extern configType       config;
 extern internalMsgType *message;
-
-extern u16 status;
+extern u16              status;
 
 //---------------------------------------------------------------------------
 s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
@@ -74,10 +71,10 @@ s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
    tempStrType tempStr;
    s16         errorDisplay = 0;
 
-   memset (nfInfo, 0, sizeof(nodeFileRecType));
+   memset(nfInfo, 0, sizeof(nodeFileRecType));
 
    nfInfo->destNode = nfInfo->destNode4d = *destNode;
-   nfInfo->nodePtr  = getNodeInfo (destNode);
+   nfInfo->nodePtr  = getNodeInfo(destNode);
    nfInfo->requestedAka = srcAka;
 
    if (nfInfo->nodePtr->useAka && nfInfo->nodePtr->useAka <= MAX_AKAS &&
@@ -172,8 +169,8 @@ void initAreaInfo(void)
       {
         error = 1;
         sprintf(tempStr, "ERROR: Origin address of area %s (AKA %u) is not defined",
-			  areaBuf->areaName,
-			  areaBuf->address);
+        areaBuf->areaName,
+        areaBuf->address);
         logEntry(tempStr, LOG_ALWAYS, 0);
         errorDisplay++;
       }
@@ -198,11 +195,10 @@ void initAreaInfo(void)
 
       if (*areaBuf->msgBasePath)
       {
-	 if ((echoAreaList[echoCount].JAMdirPtr = (char*)malloc(strlen(areaBuf->msgBasePath)+1)) == NULL)
-	 {
-	    logEntry ("Not enough memory available", LOG_ALWAYS, 2);
-	 }
-	 strcpy (echoAreaList[echoCount].JAMdirPtr, areaBuf->msgBasePath);
+        if ((echoAreaList[echoCount].JAMdirPtr = (char*)malloc(strlen(areaBuf->msgBasePath)+1)) == NULL)
+          logEntry ("Not enough memory available", LOG_ALWAYS, 2);
+
+        strcpy (echoAreaList[echoCount].JAMdirPtr, areaBuf->msgBasePath);
       }
 
       echoAreaList[echoCount].writeLevel  = areaBuf->writeLevel;

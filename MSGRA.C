@@ -93,20 +93,11 @@ extern char    *months;
 extern u16      echoCount;
 extern char    *version;
 
-//---------------------------------------------------------------------------
-char *expandName(char *fileName, u16 orgName)
-{
-  static tempStrType expandStr;
-
-  strcpy( stpcpy(stpcpy(expandStr, config.bbsPath), fileName)
-        , config.mbOptions.mbSharing && !orgName ? "."MBEXTB : "."MBEXTN);
-
-  return expandStr;
-}
+#include "hudson_shared.c"
 //---------------------------------------------------------------------------
 void initBBS(void)
 {
-  off_t fsize = fileSize(expandName("MSGHDR", 0));
+  off_t fsize = fileSize(expandNameHudson("MSGHDR", 0));
 
   if (fsize >= 0)
 #ifdef GOLDBASE
@@ -118,7 +109,7 @@ void initBBS(void)
     globVars.origTotalMsgBBS = 0;
 
   if (  config.mbOptions.mbSharing
-     && (fsize = fileSize(expandName("MSGTXT", 1))) >= 0
+     && (fsize = fileSize(expandNameHudson("MSGTXT", 1))) >= 0
      )
 #ifdef GOLDBASE
     globVars.baseTotalTxtRecs = fsize / 256;
@@ -148,97 +139,6 @@ void initBBS(void)
 #endif
 }
 //---------------------------------------------------------------------------
-s16 testMBUnlockNow(void)
-{
-  static time_t mtime;
-  tempStrType tempStr;
-  struct stat st;
-  s16 unlock = 0;
-
-  if (config.mbOptions.mbSharing)
-  {
-    strcpy(stpcpy(tempStr, config.bbsPath), "MBUNLOCK.NOW");
-
-    if (stat(tempStr, &st) != 0)
-      mtime = 0;
-    else
-    {
-      unlock = mtime != st.st_mtime;
-      mtime = st.st_mtime;
-    }
-  }
-  return unlock;
-}
-//---------------------------------------------------------------------------
-void setMBUnlockNow(void)
-{
-  tempStrType tempStr;
-
-  if (config.mbOptions.mbSharing)
-  {
-    strcpy(stpcpy(tempStr, config.bbsPath), "MBUNLOCK.NOW");
-    close(openP(tempStr, O_RDWR | O_CREAT | O_DENYNONE, S_IREAD | S_IWRITE));
-    testMBUnlockNow();
-  }
-}
-//---------------------------------------------------------------------------
-s16 lockMB(void)
-{
-   tempStrType tempStr;
-   time_t      time1,
-               time2;
-
-// memset(&infoRec, 0, sizeof (infoRec));
-
-   strcpy(stpcpy(tempStr, config.bbsPath), "MSGINFO."MBEXTN);
-
-   if ((lockHandle = openP(tempStr, O_RDWR | O_CREAT | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
-   {
-      logEntry("Can't open file MsgInfo."MBEXTN" for output", LOG_ALWAYS, 0);
-      return 1;
-   }
-
-   if (config.mbOptions.mbSharing)
-   {
-      testMBUnlockNow();
-      if (  lock(lockHandle, sizeof(infoRecType) + 1, 1) == -1
-         && _doserrno == 0x21
-         )
-      {
-         puts("Retrying to lock the message base\n");
-         setMBUnlockNow();
-
-         time(&time1);
-
-         do
-         {
-            time(&time2);
-            _doserrno = 0;
-         }
-         while (  lock(lockHandle, sizeof(infoRecType) + 1, 1) == -1
-               && _doserrno == 0x21
-               && (time2 - time1 < 15)
-               );
-
-         if (_doserrno == 0x21)
-         {
-            logEntry("Can't lock the message base for update", LOG_ALWAYS, 0);
-            close(lockHandle);
-            return 1;
-         }
-      }
-   }
-   return 0;
-}
-//---------------------------------------------------------------------------
-void unlockMB(void)
-{
-  if (config.mbOptions.mbSharing)
-    unlock(lockHandle, sizeof(infoRecType) + 1, 1);
-
-  close(lockHandle);
-}
-//---------------------------------------------------------------------------
 s16 multiUpdate(void)
 {
    fhandle  srcTxtHandle;
@@ -266,7 +166,7 @@ s16 multiUpdate(void)
    msgToIdxRec *toIdxBuf;
    infoRecType newInfoRec;
 
-   if (config.mbOptions.mbSharing && access(expandName("MSGHDR", 0), 0) == 0)
+   if (config.mbOptions.mbSharing && access(expandNameHudson("MSGHDR", 0), 0) == 0)
    {
       logEntry("Updating actual message base files...", LOG_MSGBASE, 0);
       newLine();
@@ -281,7 +181,7 @@ s16 multiUpdate(void)
 
       msgNumOffset = newInfoRec.HighMsg;
 
-      if ((srcHdrHandle = openP(expandName("MSGHDR", 0),
+      if ((srcHdrHandle = openP(expandNameHudson("MSGHDR", 0),
                              O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
                              S_IREAD|S_IWRITE)) == -1)
       {
@@ -291,7 +191,7 @@ s16 multiUpdate(void)
          return 1;
       }
 
-      if ((srcTxtHandle = openP(expandName("MSGTXT", 0),
+      if ((srcTxtHandle = openP(expandNameHudson("MSGTXT", 0),
                                 O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
                                 S_IREAD|S_IWRITE)) == -1)
       {
@@ -302,10 +202,9 @@ s16 multiUpdate(void)
          return 1;
       }
 
-      strcpy (tempStr, config.bbsPath);
-      helpPtr = strchr (tempStr, 0);
+      helpPtr = stpcpy(tempStr, config.bbsPath);
 
-      strcpy (helpPtr, "MSGHDR."MBEXTN);
+      strcpy(helpPtr, "MSGHDR."MBEXTN);
       if ((destHdrHandle = openP(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
                                           S_IREAD|S_IWRITE)) == -1)
       {
@@ -317,7 +216,7 @@ s16 multiUpdate(void)
          return 1;
       }
 
-      strcpy (helpPtr, "MSGIDX."MBEXTN);
+      strcpy(helpPtr, "MSGIDX."MBEXTN);
       if ((destIdxHandle = openP(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
                                           S_IREAD|S_IWRITE)) == -1)
       {
@@ -329,7 +228,7 @@ s16 multiUpdate(void)
          newLine();
          return 1;
       }
-      strcpy (helpPtr, "MSGTOIDX."MBEXTN);
+      strcpy(helpPtr, "MSGTOIDX."MBEXTN);
       if ((destToIdxHandle = openP(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
                                             S_IREAD|S_IWRITE)) == -1)
       {
@@ -343,7 +242,7 @@ s16 multiUpdate(void)
          return 1;
       }
 
-      strcpy (helpPtr, "MSGTXT."MBEXTN);
+      strcpy(helpPtr, "MSGTXT."MBEXTN);
       if ((destTxtHandle = openP(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
                                           S_IREAD|S_IWRITE)) == -1)
       {
@@ -359,8 +258,7 @@ s16 multiUpdate(void)
       }
 
 #ifndef GOLDBASE
-      if (filelength(srcTxtHandle)+filelength(destTxtHandle) >= 0x1000000L)
-//    if (filelength(srcTxtHandle)+filelength(destTxtHandle) >= 0x10000000000L)
+      if (filelength(srcTxtHandle) + filelength(destTxtHandle) >= 0x1000000L)
       {
          logEntry("Maximum message base size has been reached (text size)", LOG_ALWAYS, 0);
          sprintf(tempStr, "- new txt size: %lu, orig txt size: %lu", filelength(srcTxtHandle), filelength(destTxtHandle));
@@ -382,7 +280,7 @@ s16 multiUpdate(void)
       msgHdrOffset = filelength(destHdrHandle) / sizeof(msgHdrRec);
       msgTxtOffset = filelength(destTxtHandle) >> 8;
 #endif
-      if ((txtBuf = malloc (TXT_BUFSIZE*256)) == NULL)
+      if ((txtBuf = malloc(TXT_BUFSIZE*256)) == NULL)
       {
          close(destTxtHandle);
          close(destToIdxHandle);
@@ -463,9 +361,9 @@ s16 multiUpdate(void)
             idxBuf[count].Board  = hdrBuf[count].Board;
          }
 #ifdef GOLDBASE
-         if ( (s32)hdrBuf[count-1].MsgNum < 0 )
+         if ((s32)hdrBuf[count - 1].MsgNum < 0)
 #else
-         if ( (s16)hdrBuf[count-1].MsgNum < 0 )
+         if ((s16)hdrBuf[count - 1].MsgNum < 0)
 #endif
          {
             logEntry("Highest allowed message number has been reached", LOG_ALWAYS, 0);
@@ -547,7 +445,7 @@ static void readMsgInfo(u16 orgName)
 {
    fhandle msgInfoHandle;
 
-   if ( ((msgInfoHandle = openP(expandName("MSGINFO", orgName),
+   if ( ((msgInfoHandle = openP(expandNameHudson("MSGINFO", orgName),
                                 O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
                                 S_IREAD|S_IWRITE)) == -1) ||
         read (msgInfoHandle, &infoRec, sizeof(infoRecType)) != sizeof(infoRecType) )
@@ -562,7 +460,7 @@ static void writeMsgInfo(u16 orgName)
 {
    fhandle msgInfoHandle;
 
-   if ( ((msgInfoHandle = openP(expandName("MSGINFO", orgName),
+   if ( ((msgInfoHandle = openP(expandNameHudson("MSGINFO", orgName),
                                 O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
                                 S_IREAD|S_IWRITE)) == -1) ||
         write (msgInfoHandle, &infoRecValid, sizeof(infoRecType)) == -1 )
@@ -581,28 +479,28 @@ void openBBSWr(u16 orgName)
        ((msgTxtBuf   = malloc (TXT_BUFSIZE*256)) == NULL))
       logEntry ("Not enough memory to allocate message base file buffers", LOG_ALWAYS, 2);
 
-   if ((msgHdrHandle = openP(expandName("MSGHDR", orgName),
+   if ((msgHdrHandle = openP(expandNameHudson("MSGHDR", orgName),
                              O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
                              S_IREAD|S_IWRITE)) == -1)
       logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgHdrHandle, 0, SEEK_END);
 
-   if ((msgTxtHandle = openP(expandName("MSGTXT", orgName),
+   if ((msgTxtHandle = openP(expandNameHudson("MSGTXT", orgName),
                              O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
                              S_IREAD|S_IWRITE)) == -1)
       logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgTxtHandle, 0, SEEK_END);
 
-   if ((msgToIdxHandle = openP(expandName("MSGTOIDX", orgName),
+   if ((msgToIdxHandle = openP(expandNameHudson("MSGTOIDX", orgName),
                                O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
                                S_IREAD|S_IWRITE)) == -1)
       logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgToIdxHandle, 0, SEEK_END);
 
-   if ((msgIdxHandle = openP(expandName("MSGIDX", orgName),
+   if ((msgIdxHandle = openP(expandNameHudson("MSGIDX", orgName),
                              O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
                              S_IREAD|S_IWRITE)) == -1)
       logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
@@ -729,7 +627,10 @@ s16 writeBBS (internalMsgType *message, u16 boardNum, u16 impSeenBy)
          infoRec.LowMsg = msgRa.MsgNum;
 
       if (!impSeenBy)
-         *message->normSeen = 0;
+      {
+        *message->normSeen = 0;
+        *message->normPath = 0;
+      }
 
       if (writeText(message->text, message->normSeen, message->normPath,
                      (boardNum != config.badBoard) && (boardNum != config.dupBoard),
@@ -819,7 +720,7 @@ s16 writeBBS (internalMsgType *message, u16 boardNum, u16 impSeenBy)
    return 0;
 }
 //---------------------------------------------------------------------------
-s16 validate1BBS (void)
+s16 validate1BBS(void)
 {
    s16 error = 0;
 
@@ -887,13 +788,12 @@ extern  nodeFileType    nodeFileInfo;
 
 static s16 processMsg(u16 areaIndex)
 {
-   u16         count;
-   u16         diskError = 0;
+   u16            count = 0;
+   u16            diskError = 0;
    echoToNodeType tempEchoToNode;
-   s16          echoToNodeCount;
-   char         *helpPtr;
+   s16            echoToNodeCount;
+   char          *helpPtr;
 
-   count = 0;
    while ((count < forwNodeCount) &&
           ((!ETN_WRITEACCESS(echoToNode[areaIndex][ETN_INDEX(count)], count)) ||
            (memcmp(&(nodeFileInfo[count]->destNode4d.net),
@@ -921,8 +821,6 @@ static s16 processMsg(u16 areaIndex)
 
       puts(dARROW" Duplicate message");
       writeBBS (message, config.dupBoard, 1);
-//      if ( writeBBS (message, config.dupBoard, 1) )
-//         diskError = DERR_WRHDUP;
       echoAreaList[areaIndex].dupCount++;
       globVars.dupCount++;
       return -1;
@@ -936,23 +834,21 @@ static s16 processMsg(u16 areaIndex)
    else
       message->attribute = 0;
 
-   memcpy (tempEchoToNode, echoToNode[areaIndex], sizeof(echoToNodeType));
+   memcpy(tempEchoToNode, echoToNode[areaIndex], sizeof(echoToNodeType));
    echoToNodeCount = echoAreaList[areaIndex].echoToNodeCount;
 
    for (count = 0; count < forwNodeCount; count++)
    {
-      if (memcmp (&nodeFileInfo[count]->destNode4d.net,
+      if (memcmp(&nodeFileInfo[count]->destNode4d.net,
       	          &globVars.packetSrcNode.net, 6) == 0)
       {
          if ( ETN_ANYACCESS(tempEchoToNode[ETN_INDEX(count)], count) )
          {
-       	    tempEchoToNode[ETN_INDEX(count)] &= ETN_RESET(count);
-	    echoToNodeCount--;
-	 }
-	 if (nodeFileInfo[count]->srcAka == globVars.packetDestAka)
-	 {
-	    nodeFileInfo[count]->fromNodeMsg++;
-	 }
+           tempEchoToNode[ETN_INDEX(count)] &= ETN_RESET(count);
+           echoToNodeCount--;
+         }
+         if (nodeFileInfo[count]->srcAka == globVars.packetDestAka)
+           nodeFileInfo[count]->fromNodeMsg++;
       }
    }
    while ( (helpPtr = findCLStr(message->text, "\1FMAIL BAD")) != NULL )
@@ -972,63 +868,62 @@ static s16 processMsg(u16 areaIndex)
    else
    {
       helpPtr = message->text;
-      while ((helpPtr = findCLStr (helpPtr, "SEEN-BY: ")) != NULL)
+      while ((helpPtr = findCLStr(helpPtr, "SEEN-BY: ")) != NULL)
       {
-         if ( echoAreaList[areaIndex].options.impSeenBy )
+         if (echoAreaList[areaIndex].options.impSeenBy)
          {
-            if ( echoAreaList[areaIndex].JAMdirPtr == NULL )
+            if (echoAreaList[areaIndex].JAMdirPtr == NULL)
             {
-               memmove (helpPtr+1, helpPtr, strlen(helpPtr)+1);
+               memmove(helpPtr + 1, helpPtr, strlen(helpPtr) + 1);
                *helpPtr = 1;
             }
             helpPtr += 8;
          }
          else
-	      removeLine (helpPtr);
+           removeLine(helpPtr);
       }
    }
-   if ( echoAreaList[areaIndex].JAMdirPtr == NULL )
-   /* Hudson toss */
+   if (echoAreaList[areaIndex].JAMdirPtr == NULL)
    {
+   // Hudson toss
       lseek(msgIdxHandle, 0, SEEK_END);
       lseek(msgToIdxHandle, 0, SEEK_END);
       lseek(msgHdrHandle, 0, SEEK_END);
       lseek(msgTxtHandle, 0, SEEK_END);
-      if ( writeBBS(message, echoAreaList[areaIndex].board,
-                    echoAreaList[areaIndex].options.impSeenBy) )
-         diskError = DERR_WRHECHO;
+      if (writeBBS(message, echoAreaList[areaIndex].board, echoAreaList[areaIndex].options.impSeenBy))
+        diskError = DERR_WRHECHO;
    }
    else
-   /* JAM toss */
-   {  if ( echoAreaList[areaIndex].options.impSeenBy )
-      {
-         strcat(message->text, message->normSeen);
-      }
-      strcat(message->text, message->normPath);
+   {
+   // JAM toss
+      if (echoAreaList[areaIndex].options.impSeenBy)
+        strcpy(stpcpy(strchr(message->text, 0), message->normSeen), message->normPath);
+
       if (echoAreaList[areaIndex].JAMdirPtr != NULL)
       {
-      /* Skip AREA tag */
+      // Skip AREA tag
          if (strncmp (message->text, "AREA:", 5) == 0)
-         {  if (*(helpPtr = strchr (message->text, '\r') + 1) == '\n')
+         {
+            if (*(helpPtr = strchr (message->text, '\r') + 1) == '\n')
       	      helpPtr++;
-	    memmove(message->text,helpPtr,strlen(helpPtr)+1);
-	 }
+
+            memmove(message->text,helpPtr,strlen(helpPtr)+1);
+         }
          if (config.mbOptions.removeRe)
-	 {
-	    strcpy (message->subject, removeRe(message->subject));
-	 }
-         /* write here */
-         if ( !jam_writemsg(echoAreaList[areaIndex].JAMdirPtr, message, 0) )
-	 {
-	    newLine();
-	    logEntry ("Can't write JAM message", LOG_ALWAYS, 0);
-            diskError = DERR_WRJECHO;
-	 }
-	 globVars.jamCountV++;
+            strcpy(message->subject, removeRe(message->subject));
+         // write here
+         if (!jam_writemsg(echoAreaList[areaIndex].JAMdirPtr, message, 0))
+         {
+           newLine();
+           logEntry ("Can't write JAM message", LOG_ALWAYS, 0);
+           diskError = DERR_WRJECHO;
+         }
+         globVars.jamCountV++;
       }
    }
-   if ( diskError )
+   if (diskError)
       return 2;
+
    return 1;
 }
 //---------------------------------------------------------------------------
@@ -1129,25 +1024,25 @@ deleteMsg:
 void closeBBSWr(u16 orgName)
 {
 
-   lseek  (msgHdrHandle, 0, SEEK_SET);
-   chsize (msgHdrHandle, raHdrRecValid*(u32)sizeof(msgHdrRec));
-   close  (msgHdrHandle);
-   free   (msgHdrBuf);
+   lseek (msgHdrHandle, 0, SEEK_SET);
+   chsize(msgHdrHandle, raHdrRecValid*(u32)sizeof(msgHdrRec));
+   close (msgHdrHandle);
+   free  (msgHdrBuf);
 
-   lseek  (msgToIdxHandle, 0, SEEK_SET);
-   chsize (msgToIdxHandle, raHdrRecValid*(u32)sizeof(msgToIdxRec));
-   close  (msgToIdxHandle);
-   free   (msgToIdxBuf);
+   lseek (msgToIdxHandle, 0, SEEK_SET);
+   chsize(msgToIdxHandle, raHdrRecValid*(u32)sizeof(msgToIdxRec));
+   close (msgToIdxHandle);
+   free  (msgToIdxBuf);
 
-   lseek  (msgIdxHandle, 0, SEEK_SET);
-   chsize (msgIdxHandle, raHdrRecValid*(u32)sizeof(msgIdxRec));
-   close  (msgIdxHandle);
-   free   (msgIdxBuf);
+   lseek (msgIdxHandle, 0, SEEK_SET);
+   chsize(msgIdxHandle, raHdrRecValid*(u32)sizeof(msgIdxRec));
+   close (msgIdxHandle);
+   free  (msgIdxBuf);
 
-   lseek  (msgTxtHandle, 0, SEEK_SET);
-   chsize (msgTxtHandle, ((u32)raTxtRecValid) << 8);
-   close  (msgTxtHandle);
-   free   (msgTxtBuf);
+   lseek (msgTxtHandle, 0, SEEK_SET);
+   chsize(msgTxtHandle, ((u32)raTxtRecValid) << 8);
+   close (msgTxtHandle);
+   free  (msgTxtBuf);
 
    writeMsgInfo(orgName);
 }
@@ -1479,17 +1374,6 @@ s16 updateCurrHdrBBS (internalMsgType *message)
    return 0;
 }
 //---------------------------------------------------------------------------
-#if 0
-void closeBBSRd ()
-{
-   close (msgHdrHandle);
-   close (msgTxtHandle);
-
-   free (msgHdrBuf);
-   free (msgTxtBuf);
-}
-#endif
-//---------------------------------------------------------------------------
 s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle msgHandle1, fhandle msgHandle2)
 {
   fhandle         origMsgHdrHandle
@@ -1568,11 +1452,11 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
       for (count = 0; count < msgIdxBufCount; count++)
       {
          if (  msgIdxBuf[count].Board == echoAreaList[echoIndex].board
-            #ifndef GOLDBASE
+      #ifndef GOLDBASE
             && msgIdxBuf[count].MsgNum != MAXU16
-            #else
+      #else
             && msgIdxBuf[count].MsgNum != MAXU32
-            #endif
+      #endif
             )
          {
             if (  msgCount <= maxRescan
@@ -1581,9 +1465,7 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
             {
               insertLine(message->text, tempStr);
               addPathSeenBy(message, echoToNode[echoIndex], echoIndex);
-              // todo: vervang door setSeenByPath()
-              strcat(message->text, echoAreaList[echoIndex].options.tinySeenBy ? message->tinySeen : message->normSeen);
-              strcat(message->text, echoAreaList[echoIndex].options.tinyPath   ? message->tinyPath : message->normPath);
+              setSeenByPath(message, NULL, echoAreaList[echoIndex].options, nodeInfo->options);
               message->srcNode  = *getAkaNodeNum(echoAreaList[echoIndex].address, 1);
               message->destNode = nodeInfo->node;
               writeNetPktValid(message, &nfInfo);

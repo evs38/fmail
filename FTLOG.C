@@ -80,11 +80,11 @@ char *expandName(char *fileName)
 {
   static tempStrType tempStr[2];
   static tempIndex = 0;
+  char *ts = tempStr[tempIndex = 1 - tempIndex];
 
-  strcpy(tempStr[tempIndex = 1 - tempIndex], config.bbsPath);
-  strcat(tempStr[tempIndex], fileName);
+  strcpy(stpcpy(ts, config.bbsPath), fileName);
 
-  return tempStr[tempIndex];
+  return ts;
 }
 //---------------------------------------------------------------------------
 void writeLogLine(fhandle logHandle, const char *s)

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -276,10 +276,12 @@ int fsopen(const char *path, int access, unsigned mode, u16 lfn)
 #endif
 }
 //---------------------------------------------------------------------------
+#if 0
 int fsclose(int handle)
 {
   return close(handle);
 }
+#endif
 //---------------------------------------------------------------------------
 #if !defined(FMAIL) && !defined(FTOOLS)
 int fsmkdir(const char *path, u16 lfn)
