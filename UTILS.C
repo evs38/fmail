@@ -133,20 +133,6 @@ s16 existDir(const char *dir, const char *descr)
   return 0;
 }
 //---------------------------------------------------------------------------
-int ChDir(const char *path)
-{
-#ifdef __DOS  // todo: Use correct define
-  if (path[1] == ':')
-  {
-    char drive = toupper(path[0]);
-    if (drive >= 'A' && drive <= 'Z')
-      if (0 != _chdrive(drive - 'A' + 1))
-        return -1;
-  }
-#endif
-  return chdir(path);
-}
-//---------------------------------------------------------------------------
 // Usage           char *searchpath(const char *filename);
 //
 // Description     searchpath searches for the file 'filename' in the

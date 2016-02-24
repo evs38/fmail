@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include <ctype.h>
+#include <direct.h>  // _chdrive()
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -144,4 +145,17 @@ void MakeJamAreaPath(rawEchoType *echo)
   }
 }
 //---------------------------------------------------------------------------
-
+int ChDir(const char *path)
+{
+#if defined(__MSDOS__) && !defined(__WIN32__)
+  if (path[1] == ':')
+  {
+    char drive = toupper(path[0]);
+    if (drive >= 'A' && drive <= 'Z')
+      if (0 != _chdrive(drive - 'A' + 1))
+        return -1;
+  }
+#endif
+  return chdir(path);
+}
+//---------------------------------------------------------------------------

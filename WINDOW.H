@@ -392,7 +392,7 @@ void fillRectangle(char ch, u16 sx, u16 sy,
                              u16 mAttr);
 
 nodeNumType getNodeNum(char *title, u16 sx, u16 sy, u16 aka);
-char *nodeStr(nodeNumType *nodeNum);
+const char *nodeStr(const nodeNumType *nodeNum);
 char *getSourceFileName(char *title);
 char *getDestFileName(char *title);
 void displayMessage(char *msg);

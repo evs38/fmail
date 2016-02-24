@@ -21,6 +21,19 @@
 //
 //---------------------------------------------------------------------------
 
+#ifdef __WIN32__
+#pragma message "Compiling in 32 bit mode"
+#endif
+
+#ifdef _Windows
+#pragma message "Compiling for Windows"
+#endif
+
+#ifdef __MSDOS__
+#pragma message "__MSDOS__ is defined"
+#endif
+
+
 #ifdef __OS2__
 #define INCL_DOSPROCESS
 #include <os2.h>

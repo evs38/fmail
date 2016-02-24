@@ -67,7 +67,7 @@
 #include "jam.h"
 #include "mtask.h"
 #include "os.h"
-#include "util.h"
+#include "utils.h"
 
 #include "nodeinfo.h"
 #include "areainfo.h"

@@ -387,8 +387,8 @@ u16 editNM(s16 editType, u16 setdef)
    char         addressText[MAX_AKAS+1][34];
    char         tempStr[24];
    char         ch;
-   char        *helpPtr1
-             , *helpPtr2;
+   char        *helpPtr1;
+   const char  *helpPtr2;
 
    groupsSelect.numPtr = (u16*)&tempInfoN.groups;
    groupsSelect.f      = askGroups;

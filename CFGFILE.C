@@ -113,7 +113,7 @@ static configFileInfoType fileData[MAX_CFG_FILES] =
 };
 //---------------------------------------------------------------------------
 
-static configFileInfoType cfiArr[MAX_CFG_FILES] = { 0 };
+static configFileInfoType cfiArr[MAX_CFG_FILES] = {{ 0 }};
 
 extern char configPath[128];  // Path to directory with FMail config files
 

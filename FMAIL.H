@@ -74,8 +74,6 @@
    #define MBBOARDS 200
 #endif
 
-#define dARROW "->"
-
 #define PRODUCTCODE_HIGH  0x00
 #define PRODUCTCODE_LOW   0x81  // ftscprod
 
@@ -331,8 +329,12 @@ u16 getAreaCode(char *msgText);
     (n1.point >  n2.point)))     \
 )
 
+#ifndef FSETUP
+#define dARROW "->"
+
 #define newLine()  putchar('\n')
 #define putStr(S)  fputs(S, stdout)
+#endif
 
 u16 foundToUserName(const char *toUserName);
 
@@ -349,7 +351,7 @@ struct bt
 {
   char       fname[MAXFILE];
   time_t     mtime;
-  off_t      size;
+  long       size;
   struct bt *nextb;
 };
 //---------------------------------------------------------------------------

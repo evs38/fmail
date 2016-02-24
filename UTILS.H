@@ -79,7 +79,7 @@ int         ChDir          (const char *path);
 const char *_searchpath    (const char *filename);
 int         existPattern   (const char *path, const char *pattern);
 u32         fileLength     (int handle);
-off_t       fileSize       (const char *filename);
+long        fileSize       (const char *filename);
 const nodeNumType *getAkaNodeNum(int aka, int retMain);
 const char *getAkaStr      (int aka, int retMain);
 int         matchAka       (nodeNumType *node, int useAka);
