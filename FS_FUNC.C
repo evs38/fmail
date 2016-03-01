@@ -1303,7 +1303,7 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
                      "Group of areas to which this area belongs (A-Z)");
    addItem(areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Use SeenBy", 0, &tempInfo.options, BIT6, 0,
-                     "Use SEEN-BYs for duplicate prevention (normally NOT necessary)");
+                     "Use SEEN-BYs for duplicate prevention (Should normally be on)");
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Security    ", 18, &tempInfo.options, BIT2, 0,
                      "Check origin of incoming mailbundles");
    addItem(areaMenu, NUM_INT, "# Messages ", 37, &tempInfo.msgs, 4, 9999,
@@ -1311,21 +1311,21 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    addItem(areaMenu, BOOL_INT, "Arrival date", 56, &tempInfo.options, BIT14, 0,
                      "Use the date that a message arrived on your system when deleting messages");
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Tiny SeenBy", 0, &tempInfo.options, BIT1, 0,
-                     "Remove all SEEN-BYs except of your own downlinks (should normally NOT be used)");
+                     "Remove all SEEN-BYs except of your own links (should normally NOT be used)");
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Private     ", 18, &tempInfo.options, BIT4, 0,
                      "Allow private (privileged) messages");
    addItem(areaMenu, NUM_INT, "# Days old ", 37, &tempInfo.days, 3, 999,
                      "Delete messages older than a number of days (1-999, 0 = no maximum)");
    addItem(areaMenu, BOOL_INT, "Keep SysOp  ", 56, &tempInfo.options, BIT15, 0,
                      "Do not remove messages that have not been read by the SysOp (user #1)");
-   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Imp. SeenBy", 0, &tempInfo.options, BIT5, 0,
-                     "Import SEEN-BYs into the message base");
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Tiny Path", 0, &tempInfo.options, BIT7, 0,
+                     "Remove all PATHs except of your own system (should normally NOT be used)");
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT_REV), "Allow rescan", 18, &tempInfo.options, BIT3, 0,
                      "Allow rescans for this area");
    addItem(areaMenu, NUM_INT, "# Days rcvd", 37, &tempInfo.daysRcvd, 3, 999,
                      "Delete received messages older than a number of days (1-999, 0 = no maximum)");
-   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Tiny PATH", 0, &tempInfo.options, BIT7, 0,
-                     "Remove all PATHs except of your own system (should normally NOT be used)");
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Imp. SB/Pth", 0, &tempInfo.options, BIT5, 0,
+                     "Import SEEN-BYs and PATH lines into the message base");
    addItem(areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
    addItem(areaMenu, echoOnly(editType, ENUM_INT), "Origin AKA", 0, &addressToggle, 0, MAX_AKAS,
                      "Address used for origin line and as packet origin address");

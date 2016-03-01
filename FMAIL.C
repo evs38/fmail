@@ -328,7 +328,7 @@ u16 getAreaCode(char *msgText)
     return NETMSG;
 
   if (*msgText == 1)
-    strcpy(msgText, msgText+1);
+    strcpy(msgText, msgText + 1);
 
   helpPtr = msgText+5;
   while (*helpPtr == ' ')
@@ -402,22 +402,6 @@ u16 getAreaCode(char *msgText)
   return BADMSG;
 }
 //---------------------------------------------------------------------------
-void tossBad(internalMsgType *message)
-{
-  tempStrType tempStr;
-
-  sprintf(tempStr, "\1FMAIL DEST: %s\r", nodeStr(&globVars.packetDestNode));
-  insertLineN(message->text, tempStr, 1);
-
-  sprintf(tempStr, "\1FMAIL SRC: %s\r", nodeStr(&globVars.packetSrcNode));
-  insertLineN(message->text, tempStr, 1);
-
-  if (writeBBS(message, config.badBoard, 1))
-    diskError = DERR_WRHBAD;
-
-  globVars.badCount++;
-}
-//---------------------------------------------------------------------------
 const char *badTimeStr(void)
 {
   static char tStr[32];
@@ -441,6 +425,28 @@ const char *badTimeStr(void)
 #endif // __WIN32__
 
   return tStr;
+}
+//---------------------------------------------------------------------------
+void tossBad(internalMsgType *message, const char *badStr)
+{
+  tempStrType tempStr;
+
+  sprintf(tempStr, "\1FMAIL DEST: %s\r", nodeStr(&globVars.packetDestNode));
+  insertLineN(message->text, tempStr, 1);
+
+  sprintf(tempStr, "\1FMAIL SRC: %s\r", nodeStr(&globVars.packetSrcNode));
+  insertLineN(message->text, tempStr, 1);
+
+  if (NULL != badStr)
+  {
+    sprintf(tempStr, "\1FMAIL BAD: %s (%s)\r", badStr, badTimeStr());
+    insertLineN(message->text, tempStr, 1);
+  }
+
+  if (writeBBS(message, config.badBoard, 1))
+    diskError = DERR_WRHBAD;
+
+  globVars.badCount++;
 }
 //---------------------------------------------------------------------------
 time_t oldMsgTime = 0;
@@ -669,7 +675,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
               case BADMSG:
                 putStr(dARROW" Bad message");
-                tossBad(message);
+                tossBad(message, "Area not in configuration");
                 break;
 
               default:
@@ -693,25 +699,23 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                        nodeFileInfo[i]->nodePtr->writeLevel))
                   {
                     if (i == forwNodeCount)
-                      sprintf(tempStr, "\1FMAIL BAD: %s is not connected to this area (%s)\r", nodeStr(&globVars.packetSrcNode), badTimeStr());
+                      sprintf(tempStr, "%s is not connected to this area", nodeStr(&globVars.packetSrcNode));
                     else
-                      sprintf(tempStr, "\1FMAIL BAD: %s has no write access to area (%s)\r", nodeStr(&nodeFileInfo[i]->destNode4d), badTimeStr());
-
-                    insertLineN(message->text, tempStr, 1);
+                      sprintf(tempStr, "%s has no write access to area", nodeStr(&nodeFileInfo[i]->destNode4d));
 
                     for (i = 0; i < forwNodeCount; i++)
-                    {
                       if (memcmp(&nodeFileInfo[i]->destNode4d.net, &globVars.packetSrcNode.net, 6) == 0)
                       {
                         nodeFileInfo[i]->fromNodeSec++;
                         i = -1;
                         break;
                       }
-                    }
+
                     if (i != -1)
                       ++globVars.fromNoExpSec;
+
                     putStr(" Security violation "dARROW" Bad message");
-                    tossBad(message);
+                    tossBad(message, tempStr);
                     break;
                   }
                 }
@@ -732,10 +736,8 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
                   if (msgTime < oldMsgTime)
                   {
-                    sprintf(tempStr, "\1FMAIL BAD: message too old (%s)\r", badTimeStr());
-                    insertLineN(message->text, tempStr, 1);
                     putStr(" "dARROW" Old message");
-                    tossBad(message);
+                    tossBad(message, "Message too old");
                     break;
                   }
                 }

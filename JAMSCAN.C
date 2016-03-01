@@ -31,6 +31,7 @@
 
 #include "areainfo.h"
 #include "config.h"
+#include "log.h"
 #include "msgmsg.h"
 #include "msgpkt.h"
 #include "mtask.h"
@@ -162,7 +163,7 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   JAMHDRINFO     *jam_hdrinforec;
   JAMHDR          jam_msghdrrec;
   JAMIDXREC       jam_idxrec;
-  tempStrType     tempstr;
+  tempStrType     tempStr;
   u32             msgCount = 0;
   u32             count;
   nodeFileRecType nfInfo;
@@ -171,8 +172,9 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   if (!(jam_code = jam_open(echoAreaList[echoIndex].JAMdirPtr, &jam_hdrinforec)))
     return 0;
 
-  printf("Scanning for messages in area %s...\n", echoAreaList[echoIndex].areaName);
-  sprintf(tempstr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, getAkaStr(echoAreaList[echoIndex].address, 1));
+  sprintf(tempStr,"Scanning for messages in JAM area: %s", echoAreaList[echoIndex].areaName);
+  logEntry(tempStr, LOG_ALWAYS, 0);
+  sprintf(tempStr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, getAkaStr(echoAreaList[echoIndex].address, 1));
   makeNFInfo(&nfInfo, echoAreaList[echoIndex].address, &nodeInfo->node);
   count = jam_hdrinforec->ActiveMsgs;
   found = jam_getidx(jam_code, &jam_idxrec, 0);
@@ -181,7 +183,7 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   {
     if (jam_idxrec.HdrOffset != MAXU32)
     {
-      returnTimeSlice(0);
+      // returnTimeSlice(0);
       if (count-- <= maxRescan)
       {
         memset(message, 0, INTMSG_SIZE);
@@ -193,7 +195,7 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
           jam_gettxt(jam_code, jam_msghdrrec.TxtOffset, jam_msghdrrec.TxtLen, message->text);
           removeLfSr(message->text);
           jam_getsubfields(jam_code, jam_subfields, jam_msghdrrec.SubfieldLen, message);
-          insertLine(message->text, tempstr);
+          insertLine(message->text, tempStr);
           addPathSeenBy(message, echoToNode[echoIndex], echoIndex);
           setSeenByPath(message, NULL, echoAreaList[echoIndex].options, nodeInfo->options);
           message->srcNode  = *getAkaNodeNum(echoAreaList[echoIndex].address, 1);

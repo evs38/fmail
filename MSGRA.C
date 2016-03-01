@@ -54,9 +54,9 @@ extern time_t            startTime;
 extern cookedEchoType   *echoAreaList;
 extern echoToNodePtrType echoToNode[MAX_AREAS];
 
-extern internalMsgType  *message;      /* rescan */
-extern cookedEchoType   *echoAreaList; /* rescan */
-extern u16               echoCount;     /* rescan */
+extern internalMsgType  *message;       // rescan
+extern cookedEchoType   *echoAreaList;  // rescan
+extern u16               echoCount;     // rescan
 
 u16             crcCount;
 #ifdef GOLDBASE
@@ -1094,37 +1094,21 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
    msgHdrRec   msgRa;
    msgTxtRec   txtRa;
    s16         count;
-   char        *helpPtr;
+   char       *helpPtr;
    tempStrType tempStr;
    u16         temp;
 
 // returnTimeSlice(0);
 
-   if (lseek (msgHdrHandle, index * (u32)sizeof(msgHdrRec), SEEK_SET) == -1)
-   {
-      return (0);
-   }
+   if (lseek(msgHdrHandle, index * (u32)sizeof(msgHdrRec), SEEK_SET) == -1)
+      return 0;
 
-   if ((temp = _read (msgHdrHandle, &msgRa, sizeof(msgHdrRec))) != sizeof(msgHdrRec))
+   if ((temp = _read(msgHdrHandle, &msgRa, sizeof(msgHdrRec))) != sizeof(msgHdrRec))
    {
       if (eof(msgHdrHandle) != 1)
-         logEntry ("Can't read MsgHdr."MBEXTN, LOG_ALWAYS, 0);
-      return (0);
+         logEntry("Can't read MsgHdr."MBEXTN, LOG_ALWAYS, 0);
+      return 0;
    }
-#if 0
-   if (rescan != 2)
-   {
-      gotoTab (1);
-      printChar ('(');
-#ifdef GOLDBASE
-      printLong(msgRa.MsgNum);
-#else
-      printInt(msgRa.MsgNum);
-#endif
-      printString (") ");
-      updateCurrLine();
-   }
-#endif
 
    if ((((((msgRa.MsgAttr & RA_ECHO_OUT) && (!isNetmailBoard(msgRa.Board))) ||
           ((msgRa.MsgAttr & RA_NET_OUT ) && (isNetmailBoard(msgRa.Board)))) &&
@@ -1134,26 +1118,26 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
       if ((u32)msgRa.NumRecs > ((u32)((u32)TEXT_SIZE - 2048) >> 8))
       {
          putchar('\r');
-         sprintf (tempStr, "Message too big: message #%u in board #%u "dARROW" Skipped",
+         sprintf(tempStr, "Message too big: message #%u in board #%u "dARROW" Skipped",
                            msgRa.MsgNum, (u16)msgRa.Board);
-         logEntry (tempStr, LOG_ALWAYS, 0);
-         return (-1);
+         logEntry(tempStr, LOG_ALWAYS, 0);
+         return -1;
       }
 
-      memset (message, 0, INTMSG_SIZE);
-      strncpy (message->fromUserName, msgRa.WhoFrom, msgRa.wfLength);
-      strncpy (message->toUserName,   msgRa.WhoTo,   msgRa.wtLength);
-      strncpy (message->subject,      msgRa.Subj,    msgRa.sjLength);
+      memset(message, 0, INTMSG_SIZE);
+      strncpy(message->fromUserName, msgRa.WhoFrom, msgRa.wfLength);
+      strncpy(message->toUserName,   msgRa.WhoTo,   msgRa.wtLength);
+      strncpy(message->subject,      msgRa.Subj,    msgRa.sjLength);
 
-      if (scanDate (&msgRa.ptLength,
-                    &message->year, &message->month, &message->day,
-                    &message->hours, &message->minutes) != 0)
+      if (scanDate(&msgRa.ptLength,
+                   &message->year, &message->month, &message->day,
+                   &message->hours, &message->minutes) != 0)
       {
          putchar('\r');
-         sprintf (tempStr, "Bad date in message base: message #%u in board #%u "dARROW" Skipped",
+         sprintf(tempStr, "Bad date in message base: message #%u in board #%u "dARROW" Skipped",
                            msgRa.MsgNum, msgRa.Board);
-         logEntry (tempStr, LOG_MSGBASE, 0);
-         return (-1);
+         logEntry(tempStr, LOG_MSGBASE, 0);
+         return -1;
       }
 
       if (message->year >= 100)
@@ -1188,16 +1172,16 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
 
       helpPtr = message->text;
 
-      lseek (msgTxtHandle, ((u32)msgRa.StartRec) << 8, SEEK_SET);
+      lseek(msgTxtHandle, ((u32)msgRa.StartRec) << 8, SEEK_SET);
 
       for (count = 0; count < msgRa.NumRecs; count++)
       {
-         if (_read (msgTxtHandle, &txtRa, 256) != 256)
+         if (_read(msgTxtHandle, &txtRa, 256) != 256)
          {
             puts("\nError reading MsgTxt."MBEXTN".");
             return 0;
          }
-         strncpy (helpPtr, txtRa.txtStr, txtRa.txtLength);
+         strncpy(helpPtr, txtRa.txtStr, txtRa.txtLength);
          helpPtr += txtRa.txtLength;
       }
 
@@ -1243,36 +1227,33 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
          }
          point4d (message);
 
-         for ( count = 0; count < MAX_NETAKAS; count++ )
-         {  if ( config.netmailBoard[count] == msgRa.Board )
-            {  if ( !memcmp(&message->destNode, &config.akaList[count].nodeNum, sizeof(nodeNumType)) )
+         for (count = 0; count < MAX_NETAKAS; count++)
+            if (config.netmailBoard[count] == msgRa.Board)
+            {
+               if (!memcmp(&message->destNode, &config.akaList[count].nodeNum, sizeof(nodeNumType)))
                   return -1;
                break;
             }
-         }
       }
       else
       {
          if (rescan != 2)
          {
             helpPtr = message->text;
-            while ((helpPtr = findCLStr (helpPtr, "\1SEEN-BY")) != NULL)
-            {
+            while ((helpPtr = findCLStr(helpPtr, "\1SEEN-BY")) != NULL)
                removeLine (helpPtr);
-            }
+
             helpPtr = message->text;
-            while ((helpPtr = findCLStr (helpPtr, "\1PATH")) != NULL)
-            {
-               removeLine (helpPtr);
-            }
+            while ((helpPtr = findCLStr(helpPtr, "\1PATH")) != NULL)
+               removeLine(helpPtr);
          }
       }
-      return (msgRa.Board);
+      return msgRa.Board;
    }
-   return (-1);
+   return -1;
 }
 //---------------------------------------------------------------------------
-s16 updateCurrHdrBBS (internalMsgType *message)
+s16 updateCurrHdrBBS(internalMsgType *message)
 {
    msgHdrRec     msgRa;
    infoRecType   msgInfo;
@@ -1407,6 +1388,7 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
     strcat(tempStr, "\r");
     write(msgHandle1, tempStr, strlen(tempStr));
     write(msgHandle2, tempStr, strlen(tempStr));
+
     return 0;
   }
 
@@ -1440,14 +1422,15 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
     if ((tempHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
       return (-1);
 
-    printf("Scanning for messages in area %s...\n", echoAreaList[echoIndex].areaName);
+    sprintf(tempStr, "Scanning for messages in HUDSON area: %s", echoAreaList[echoIndex].areaName);
+    logEntry(tempStr, LOG_ALWAYS, 0);
     sprintf(tempStr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, getAkaStr(echoAreaList[echoIndex].address, 1));
     makeNFInfo(&nfInfo, echoAreaList[echoIndex].address, &nodeInfo->node);
 
     index = 0;
     while ((msgIdxBufCount = (read(tempHandle, msgIdxBuf, 256 * sizeof(msgIdxRec)) / 3)) != 0)
     {
-      returnTimeSlice(0);
+      // returnTimeSlice(0);
 
       for (count = 0; count < msgIdxBufCount; count++)
       {

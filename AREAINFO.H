@@ -93,8 +93,8 @@ typedef struct
   tempStrType   pktFileName;
   s16           pktHandle;
   u16           fromNodeSec
-            	, fromNodeDup
-            	, fromNodeMsg;
+              , fromNodeDup
+              , fromNodeMsg;
   u16           totalMsgs;
 
 } nodeFileRecType;

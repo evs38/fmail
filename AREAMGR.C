@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -591,24 +591,23 @@ s16 areaMgr(void)
             if ( editAM (DISPLAY_ECHO_WINDOW, 0, NULL) )
 	       return (1);
 
-	    printString ("**** Empty ****", 28, 7,
-	    		 windowLook.datafg, windowLook.background, MONO_HIGH);
+	    printString("**** Empty ****", 28, 7, windowLook.datafg, windowLook.background, MONO_HIGH);
 
-	    printString ("F1 ", 0, 24, BROWN, BLACK, MONO_NORM);
-	    printString ("Edit  ", 3, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString ("F3 ", 9, 24, BROWN, BLACK, MONO_NORM);
-	    printString ("Global  ", 12, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString ("F4 ", 20, 24, BROWN, BLACK, MONO_NORM);
-	    printString ("Groups  ", 23, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString ("F5 ", 31, 24, BROWN, BLACK, MONO_NORM);
-	    printString ("Browse  ", 34, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString ("F6 ", 42, 24, BROWN, BLACK, MONO_HIGH);
-	    printString ("Copy  ", 45, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString ("Ins ", 51, 24, YELLOW, BLACK, MONO_HIGH);
-	    printString ("Insert  ", 55, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-	    printString ("Del ", 63, 24, BROWN, BLACK, MONO_NORM);
-	    printString ("Delete    ", 67, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString ("\x1b \x1a", 77, 24, BROWN, BLACK, MONO_NORM);
+	    printString("F1 ", 0, 24, BROWN, BLACK, MONO_NORM);
+	    printString("Edit  ", 3, 24, MAGENTA, BLACK, MONO_NORM);
+	    printString("F3 ", 9, 24, BROWN, BLACK, MONO_NORM);
+	    printString("Global  ", 12, 24, MAGENTA, BLACK, MONO_NORM);
+	    printString("F4 ", 20, 24, BROWN, BLACK, MONO_NORM);
+	    printString("Groups  ", 23, 24, MAGENTA, BLACK, MONO_NORM);
+	    printString("F5 ", 31, 24, BROWN, BLACK, MONO_NORM);
+	    printString("Browse  ", 34, 24, MAGENTA, BLACK, MONO_NORM);
+	    printString("F6 ", 42, 24, BROWN, BLACK, MONO_HIGH);
+	    printString("Copy  ", 45, 24, MAGENTA, BLACK, MONO_NORM);
+	    printString("Ins ", 51, 24, YELLOW, BLACK, MONO_HIGH);
+	    printString("Insert  ", 55, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+	    printString("Del ", 63, 24, BROWN, BLACK, MONO_NORM);
+	    printString("Delete    ", 67, 24, MAGENTA, BLACK, MONO_NORM);
+	    printString("\x1b \x1a", 77, 24, BROWN, BLACK, MONO_NORM);
 	 }
 	 else
 	 {
@@ -656,18 +655,18 @@ s16 areaMgr(void)
 		     if (index == areaInfoCount)
 		     {
 		        sprintf(tempStr, "No areas found in group %c.", '@'+groupSelectMask);
-			displayMessage(tempStr);
-			groupSelectMask = 0;
-			index = 0;
-		     }
-		  }
+            displayMessage(tempStr);
+            groupSelectMask = 0;
+            index = 0;
+               }
+            }
 	       }
 	    }
 	    groupSearch = 0;
-	    sprintf (tempStr, " %*u/%u ", areaInfoCount < 10 ? 1 :
+	    sprintf(tempStr, " %*u/%u ", areaInfoCount < 10 ? 1 :
                                           areaInfoCount < 100 ? 2 : 3,
                                           index+1, areaInfoCount);
-	    printString (tempStr, /*areaMenu->xWidth*/75-strlen(tempStr)+1, /*areaMenu->yWidth*/17+4, YELLOW, LIGHTGRAY, MONO_HIGH);
+	    printString(tempStr, /*areaMenu->xWidth*/75-strlen(tempStr)+1, /*areaMenu->yWidth*/17+5, YELLOW, LIGHTGRAY, MONO_HIGH);
 
 //          tempInfo = *areaInfo[index];
             getRec(CFG_ECHOAREAS, index);
@@ -710,14 +709,12 @@ s16 areaMgr(void)
 	 }
 	 if (groupSelectMask)
 	 {
-	    sprintf(tempStr, " Group %c ", '@'+groupSelectMask);
-	    printString(tempStr, 3, 21,
-	    		windowLook.titlefg, windowLook.background, MONO_HIGH);
-	    printString("ÍÍÍ", 12, 21, windowLook.actvborderfg, windowLook.background, MONO_HIGH);
+	    sprintf(tempStr, " Group %c ", '@' + groupSelectMask);
+	    printString(tempStr,  3, 22, windowLook.titlefg     , windowLook.background, MONO_HIGH);
+	    printString("ÄÄÄ"  , 12, 22, windowLook.actvborderfg, windowLook.background, MONO_HIGH);
 	 }
 	 else
-	    printString(" All groups ", 3, 21,
-	          	windowLook.titlefg, windowLook.background, MONO_HIGH);
+	    printString(" All groups ", 3, 22, windowLook.titlefg, windowLook.background, MONO_HIGH);
 
 	 if (badEchoCount)
 	    ch = _K_INS_;
