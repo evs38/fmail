@@ -12,4 +12,15 @@ static inline char *stpcpy(char *dst, const char *src)
 }
 
 #endif
+
+#pragma warn -8060
+
+__inline static char *stpncpy(char *dst, const char *src, int n)
+{
+  while (n-- > 0  && (*dst = *src))
+    ++dst, ++src;
+
+  return dst;
+}
+
 #endif

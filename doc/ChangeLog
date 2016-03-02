@@ -1,3 +1,21 @@
+2016-03-02  1.69.18.171-Beta
+  * removeRe() use memmove instead of strcpy because src and dst overlap.
+  * removeLine() use memmove instead of strcpy because src and dst overlap.
+  * fix 'Imp. SB/Pth' option when there are no forward links for a tossed message (still needs testing).
+
+2016-03-01  1.69.17.167-Beta
+  * Use SeenBy, Tiny Path, Imp. SeenBy -> Imp. SB/Pth, Cosmetic fixes in FSetup.
+  * 'FMAIL BAD:' kludges first.
+  * New: 'FMAIL BAD: Area not in configuration' kludge.
+
+2016-03-01  1.69.16.166-Beta
+  * 'Tiny Path' option.
+  * Changed 'Imp. SeenBy' to 'Imp. SB/Pth' option.
+  * No longer scans current dir as alternative to configured inbound dir.
+  * Use opendir() posix function instead of findfirst() Borland function in about 25 places.
+  * Fixed scanning of OUTBOUND.* directories for removing old mailbundles in case of BSO outbound.
+    '*' Now only aplies to a 3 or 4 character hex string.
+
 2016-02-17  1.69.15.152-Beta
   * util.c: Added functions for safer aka string retrieval.
   * Use pkt header destination node number for Via kludge on received netmails.

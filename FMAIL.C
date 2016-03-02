@@ -809,21 +809,31 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                 }
                 else
                 {
-                  helpPtr = message->text;
-                  while ((helpPtr = findCLStr(helpPtr, "SEEN-BY: ")) != NULL)
+#ifdef _DEBUG
+                  logEntry("DEBUG processPkt: echoToNodeCount == 0 SEEN-BY & PATH processing", LOG_DEBUG, 0);
+#endif
+                  if (!echoAreaList[areaIndex].options.impSeenBy)
                   {
-                    if (echoAreaList[areaIndex].options.impSeenBy)
-                    {
-                      if (echoAreaList[areaIndex].JAMdirPtr == NULL)
-                      {
-                        memmove(helpPtr+1, helpPtr, strlen(helpPtr) + 1);
-                        *helpPtr = 1;
-                      }
-                      helpPtr += 8;
-                    }
-                    else
+                    helpPtr = message->text;
+                    while ((helpPtr = findCLStr(helpPtr, "SEEN-BY: ")) != NULL)
+                      removeLine(helpPtr);
+
+                    helpPtr = message->text;
+                    while ((helpPtr = findCLStr(helpPtr, "\1PATH: ")) != NULL)
                       removeLine(helpPtr);
                   }
+                  else
+                    // If not a JAM area make the seen-by lines kludge lines
+                    if (echoAreaList[areaIndex].JAMdirPtr == NULL)
+                    {
+                      helpPtr = message->text;
+                      while ((helpPtr = findCLStr(helpPtr, "SEEN-BY: ")) != NULL)
+                      {
+                        memmove(helpPtr + 1, helpPtr, strlen(helpPtr) + 1);
+                        *helpPtr = 1;
+                        helpPtr += 10;
+                      }
+                    }
                 }
 
                 if (echoAreaList[areaIndex].JAMdirPtr == NULL)
@@ -838,31 +848,22 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                   if (echoAreaList[areaIndex].options.impSeenBy)
                     strcpy(stpcpy(strchr(message->text, 0), message->normSeen), message->normPath);
 
-                  if (echoAreaList[areaIndex].JAMdirPtr != NULL)
+                  // Skip AREA tag
+                  if (strncmp(message->text, "AREA:", 5) == 0)
+                    removeLine(message->text);
+
+                  if (config.mbOptions.removeRe)
+                    removeRe(message->subject);
+
+                  // write here
+                  if (!jam_writemsg(echoAreaList[areaIndex].JAMdirPtr, message, 0))
                   {
-                    // Skip AREA tag
-
-                    if (strncmp(message->text, "AREA:", 5) == 0)
-                    {
-                      if (*(helpPtr = strchr (message->text, '\r') + 1) == '\n')
-                        helpPtr++;
-
-                      memmove(message->text, helpPtr, strlen(helpPtr) + 1);
-                    }
-
-                    if (config.mbOptions.removeRe)
-                      strcpy(message->subject, removeRe(message->subject));
-
-                    // write here
-                    if (!jam_writemsg(echoAreaList[areaIndex].JAMdirPtr, message, 0))
-                    {
-                      newLine();
-                      logEntry("Can't write JAM message", LOG_ALWAYS, 0);
-                      diskError = DERR_WRJECHO;
-                      break;
-                    }
-                    globVars.jamCountV++;
+                    newLine();
+                    logEntry("Can't write JAM message", LOG_ALWAYS, 0);
+                    diskError = DERR_WRJECHO;
+                    break;
                   }
+                  globVars.jamCountV++;
                 }
                 break;
             }

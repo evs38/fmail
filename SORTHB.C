@@ -190,7 +190,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
          {
             strncpy(tempStr1, msgHdrBuf[bufCount].Subj, temp = min(72, msgHdrBuf[bufCount].sjLength));
             tempStr1[temp] = 0;
-            strcpy(tempStr1, removeRe(tempStr1));
+            removeRe(tempStr1);
 
             sli_subjectCrcHi[count] = (u16)((code = crc32alpha(tempStr1)) >> 16);
             sli_subjectCrcLo[count] = (u16)code;

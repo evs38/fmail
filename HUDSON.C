@@ -202,6 +202,9 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
          close (mailBBSHandle);
       }
 
+      if (config.mbOptions.removeRe)
+         removeRe(message->subject);
+
       msgRa.wtLength = strlen(message->toUserName);
       strncpy (msgRa.WhoTo, message->toUserName, 35);
       msgRa.wfLength = strlen(message->fromUserName);
@@ -211,13 +214,9 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 
       if ((msgRa.sjLength) <= 56)
       {
-         msgRa.subjCrc    = crc32alpha(config.mbOptions.removeRe?
-                                       message->subject:removeRe(message->subject));
-
+         msgRa.subjCrc    = crc32alpha(message->subject);
          msgRa.wrTime     = msgRa.recTime = startTime;
-
          time(&msgRa.recTime);
-
          msgRa.checkSum = CS_SECURITY ^ msgRa.subjCrc
                                       ^ msgRa.wrTime
                                       ^ msgRa.recTime;
@@ -226,15 +225,12 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
       msgIdx.MsgNum = msgRa.MsgNum;
       msgIdx.Board  = msgRa.Board;
 
-      if ((_write (msgHdrHandle, &msgRa,
-                                 sizeof(msgHdrRec)) != sizeof(msgHdrRec)) ||
-          (_write (msgIdxHandle, &msgIdx,
-                                 sizeof(msgIdxRec)) != sizeof(msgIdxRec)) ||
-          (_write (msgToIdxHandle, &msgRa.wtLength,
-                                   sizeof(msgToIdxRec)) != sizeof(msgToIdxRec)))
+      if ((_write(msgHdrHandle, &msgRa , sizeof(msgHdrRec)) != sizeof(msgHdrRec)) ||
+          (_write(msgIdxHandle, &msgIdx, sizeof(msgIdxRec)) != sizeof(msgIdxRec)) ||
+          (_write(msgToIdxHandle, &msgRa.wtLength, sizeof(msgToIdxRec)) != sizeof(msgToIdxRec)))
       {
          unlockMB();
-         return (1);
+         return 1;
       }
 
       infoRec.ActiveMsgs[msgRa.Board-1]++;

@@ -560,26 +560,27 @@ u32 uniqueID(void)
   return config.lastUniqueID = lastID;
 }
 //---------------------------------------------------------------------------
-char *removeRe(char *string)
+char *removeRe(char *str)
 {
   s16 update;
+  char *tstr = str;
 
   do
   {
     update = 0;
-    if (!strnicmp(string, "RE:", 3) || !strnicmp (string, "(R)", 3))
+    if (!strnicmp(tstr, "RE:", 3) || !strnicmp(tstr, "(R)", 3))
     {
-      string += 3;
+      tstr += 3;
       update++;
     }
-    while (*string == ' ')
+    while (*tstr == ' ')
     {
-      string++;
+      tstr++;
       update++;
     }
   } while (update);
 
-  return string;
+  return memmove(str, tstr, strlen(tstr) + 1);
 }
 //---------------------------------------------------------------------------
 void removeLfSr(char *msgText)
@@ -787,10 +788,10 @@ void removeLine(char *s)
     *s = 0;
   else
   {
-    if (*(helpPtr + 1) == 0x0a)
+    if (*(++helpPtr) == 0x0a)
       helpPtr++;
 
-    strcpy(s, helpPtr + 1);
+    memmove(s, helpPtr, strlen(helpPtr) + 1);
   }
 }
 //---------------------------------------------------------------------------

@@ -668,7 +668,7 @@ s16 writeBBS (internalMsgType *message, u16 boardNum, u16 impSeenBy)
       }
 
       if (config.mbOptions.removeRe)
-         strcpy (message->subject, removeRe(message->subject));
+         removeRe(message->subject);
 
       msgRa.wtLength = strlen(message->toUserName);
       strncpy (msgRa.WhoTo, message->toUserName, 35);
@@ -679,8 +679,7 @@ s16 writeBBS (internalMsgType *message, u16 boardNum, u16 impSeenBy)
 
       if ((msgRa.sjLength) <= 56)
       {
-         msgRa.subjCrc    = crc32alpha(config.mbOptions.removeRe?
-                                       message->subject:removeRe(message->subject));
+         msgRa.subjCrc    = crc32alpha(message->subject);
 
          msgRa.wrTime     = checkDate (message->year,  message->month,   message->day,
                                        message->hours, message->minutes, message->seconds);
@@ -864,38 +863,48 @@ static s16 processMsg(u16 areaIndex)
 
       if (writeEchoPkt(message, echoAreaList[areaIndex].options, tempEchoToNode))
          diskError = DERR_WRPKTE;
-   }
-   else
-   {
+  }
+  else
+  {
+#ifdef _DEBUG
+    logEntry("DEBUG processMsg: echoToNodeCount == 0 SEEN-BY & PATH processing", LOG_DEBUG, 0);
+#endif
+    if (!echoAreaList[areaIndex].options.impSeenBy)
+    {
       helpPtr = message->text;
       while ((helpPtr = findCLStr(helpPtr, "SEEN-BY: ")) != NULL)
+        removeLine(helpPtr);
+
+      helpPtr = message->text;
+      while ((helpPtr = findCLStr(helpPtr, "\1PATH: ")) != NULL)
+        removeLine(helpPtr);
+    }
+    else
+      // If not a JAM area make the seen-by lines kludge lines
+      if (echoAreaList[areaIndex].JAMdirPtr == NULL)
       {
-         if (echoAreaList[areaIndex].options.impSeenBy)
-         {
-            if (echoAreaList[areaIndex].JAMdirPtr == NULL)
-            {
-               memmove(helpPtr + 1, helpPtr, strlen(helpPtr) + 1);
-               *helpPtr = 1;
-            }
-            helpPtr += 8;
-         }
-         else
-           removeLine(helpPtr);
+        helpPtr = message->text;
+        while ((helpPtr = findCLStr(helpPtr, "SEEN-BY: ")) != NULL)
+        {
+          memmove(helpPtr + 1, helpPtr, strlen(helpPtr) + 1);
+          *helpPtr = 1;
+          helpPtr += 10;
+        }
       }
-   }
-   if (echoAreaList[areaIndex].JAMdirPtr == NULL)
-   {
-   // Hudson toss
-      lseek(msgIdxHandle, 0, SEEK_END);
-      lseek(msgToIdxHandle, 0, SEEK_END);
-      lseek(msgHdrHandle, 0, SEEK_END);
-      lseek(msgTxtHandle, 0, SEEK_END);
-      if (writeBBS(message, echoAreaList[areaIndex].board, echoAreaList[areaIndex].options.impSeenBy))
-        diskError = DERR_WRHECHO;
-   }
-   else
-   {
-   // JAM toss
+  }
+  if (echoAreaList[areaIndex].JAMdirPtr == NULL)
+  {
+  // Hudson toss
+    lseek(msgIdxHandle, 0, SEEK_END);
+    lseek(msgToIdxHandle, 0, SEEK_END);
+    lseek(msgHdrHandle, 0, SEEK_END);
+    lseek(msgTxtHandle, 0, SEEK_END);
+    if (writeBBS(message, echoAreaList[areaIndex].board, echoAreaList[areaIndex].options.impSeenBy))
+      diskError = DERR_WRHECHO;
+  }
+  else
+  {
+  // JAM toss
       if (echoAreaList[areaIndex].options.impSeenBy)
         strcpy(stpcpy(strchr(message->text, 0), message->normSeen), message->normPath);
 
@@ -910,7 +919,7 @@ static s16 processMsg(u16 areaIndex)
             memmove(message->text,helpPtr,strlen(helpPtr)+1);
          }
          if (config.mbOptions.removeRe)
-            strcpy(message->subject, removeRe(message->subject));
+            removeRe(message->subject);
          // write here
          if (!jam_writemsg(echoAreaList[areaIndex].JAMdirPtr, message, 0))
          {
