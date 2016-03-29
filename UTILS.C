@@ -361,6 +361,18 @@ void touch(const char *path, const char *filename, const char *t)
   }
 }
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
+const char *strError(int errn)
+{
+  const static char *unknownStr = "Unknown error";
+
+  if (errn >= 0 && errn < _sys_nerr)
+    return _sys_errlist[errn];
+
+  return unknownStr;
+}
+#endif
+//---------------------------------------------------------------------------
 // retMain: set to none 0 if you want the main aka returned in case of
 // out of bounds request
 //
@@ -1387,7 +1399,7 @@ void addVia(char *msgText, u16 aka, const char *func)
       *(helpPtr++) = '\r';
 
     {
-#ifdef __WIN32__
+#if defined(__WIN32__)
       SYSTEMTIME st;
       GetSystemTime(&st);
       sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s(%s) %s\r"
@@ -1395,7 +1407,26 @@ void addVia(char *msgText, u16 aka, const char *func)
                      , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds
                      , TOOLSTR, func, Version()
              );
-#else // __WIN32__
+#elif defined(linux)
+      struct timeval tv;
+      struct tm *tm;
+
+      if (  0 != gettimeofday(&tv, NULL)
+         || NULL == (tm = gmtime(&tv.tv_sec))
+         )
+        sprintf(helpPtr, "\x1Via %s @00000000.000000 %s(%s) %s\r"
+                       , getAkaStr(aka, 1)
+                       , TOOLSTR, func, Version()
+               );
+      else
+        sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s(%s) %s\r"
+                       , getAkaStr(aka, 1)
+                       , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
+                       , tm->tm_hour, tm->tm_min, tm->tm_sec
+                       , tv.tv_usec / 1000
+                       , TOOLSTR, func, Version()
+               );
+#else
       struct tm *tmPtr;
       tmPtr = gmtime(&startTime);
       sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s(%s) %s\r"
@@ -1404,7 +1435,7 @@ void addVia(char *msgText, u16 aka, const char *func)
                      , tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec
                      , TOOLSTR, func, Version()
              );
-#endif // __WIN32__
+#endif
     }
   }
 }

@@ -244,11 +244,6 @@ void initMsg(s16 noAreaFix)
   nodeNumType    origNode
                , destNode;
 
-#if 1
-  s16          doneMsg;
-  struct ffblk ffblkMsg;
-#endif
-
   puts("Scanning netmail directory...\n");
 
   Delete(config.netPath, "*."MBEXTB);
@@ -257,7 +252,7 @@ void initMsg(s16 noAreaFix)
 
   // Check netmail dir for areafix and file attach messages
 
-  memset (fAttInfo, 0, sizeof(fAttInfo));
+  memset(fAttInfo, 0, sizeof(fAttInfo));
 
   fPtr = stpcpy(fileNameStr, config.netPath);
 
@@ -284,24 +279,20 @@ void initMsg(s16 noAreaFix)
             count = _read(msgMsgHandle, textStr, 255);
             close(msgMsgHandle);
 
-            if (config.mailOptions.killEmptyNetmail &&
-                (!(msgMsg.attribute & (LOCAL|IN_TRANSIT| /* FILE_ATT|FILE_REQ|FILE_UPD_REQ| */
-                                       RET_REC_REQ|IS_RET_REC|AUDIT_REQ))) &&
-                (count < 255) &&
-                emptyText(textStr) &&
-                !unlink(fileNameStr))
+            if (  config.mailOptions.killEmptyNetmail
+               && !(msgMsg.attribute & (LOCAL | IN_TRANSIT | RET_REC_REQ | IS_RET_REC | AUDIT_REQ))
+               && count < 255
+               && emptyText(textStr)
+               && !unlink(fileNameStr)
+               )
             {
-              sprintf(tempStr, "Killing empty netmail message #%u", msgNum);
+              sprintf(tempStr, "Killing empty netmail message #%u, from: %s to: %s", msgNum, msgMsg.fromUserName, msgMsg.toUserName);
               logEntry(tempStr, LOG_SENTRCVD, 0);
               messagesMoved = 1;
             }
             else
             {
-              if ((*config.sentPath) && (msgMsg.attribute & SENT))
-                /*              (!(msgMsg.attribute & (ORPHAN|IN_TRANSIT|FILE_ATT|FILE_REQ|
-                 		          RET_REC_REQ|IS_RET_REC|AUDIT_REQ|
-                 		          FILE_UPD_REQ))))
-                */
+              if (*config.sentPath && (msgMsg.attribute & SENT))
                 moveMsg(fileNameStr, config.sentPath);
               else
               {
@@ -461,29 +452,40 @@ void initMsg(s16 noAreaFix)
 
   if (config.mailer == 3 || config.mailer == 5)  // Binkley/Xenia
   {
-    char *dirPtr = ".";
+    tempStrType dirStr;
     int bl;
 
-    helpPtr = stpcpy(tempStr, config.outPath);
+    helpPtr = stpcpy(dirStr, config.outPath);
     *--helpPtr = 0;  // remove trailing '\'
 
     // Split dir and file
-    if ((fPtr = strrchr(tempStr, '\\')) == NULL)
-      fPtr = tempStr;
+    if ((fPtr = strrchr(dirStr, '\\')) == NULL)
+    {
+      strcpy(tempStr, dirStr);
+      strcpy(dirStr, ".\\");
+    }
     else
     {
-      dirPtr = tempStr;
-      *fPtr++ = 0;
+      strcpy(tempStr, ++fPtr);
+      *fPtr = 0;
     }
 
-    if ((helpPtr = strrchr(fPtr, '.')) != NULL)
+    if ((helpPtr = strrchr(tempStr, '.')) != NULL)
       *helpPtr = 0;
 
-    bl = strlen(fPtr);
+    bl = strlen(tempStr);
+
+#ifdef _DEBUG
+    {
+      tempStrType dbStr;
+      sprintf(dbStr, "DEBUG initMsg: %s, %s", dirStr, tempStr);
+      logEntry(dbStr, LOG_DEBUG, 0);
+    }
+#endif
 
     subRemTrunc(config.outPath);
 
-    if ((dir = opendir(dirPtr)) != 0)
+    if ((dir = opendir(dirStr)) != 0)
     {
       while ((ent = readdir(dir)) != NULL)
       {
@@ -498,14 +500,20 @@ void initMsg(s16 noAreaFix)
            || !isxdigit(dn[bl + 2])
            || !isxdigit(dn[bl + 3])
            || (l == bl + 5 && !isxdigit(dn[bl + 4]))
-           || strnicmp(dn, fPtr, bl) != 0
+           || strnicmp(dn, tempStr, bl) != 0
            )
           continue;
 
-        sprintf(fileNameStr, "%s\\%s\\", dirPtr, dn);
+        sprintf(fileNameStr, "%s%s\\", dirStr, dn);
         subRemTrunc(fileNameStr);
       }
       closedir(dir);
+    }
+    else
+    {
+      tempStrType errStr;
+      sprintf(errStr, "*** Error opendir on: %s [%s]", dirStr, strError(errno));
+      logEntry(errStr, LOG_ALWAYS, 0);
     }
   }
   else
@@ -606,13 +614,13 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
     return (-1);
   }
 
-  _read (msgMsgHandle, message->text, TEXT_SIZE);
+  _read(msgMsgHandle, message->text, TEXT_SIZE);
   close(msgMsgHandle);
 
-  strcpy  (message->fromUserName, msgMsg.fromUserName);
-  strcpy  (message->toUserName,   msgMsg.toUserName);
-  strcpy  (message->subject,      msgMsg.subject);
-  strncpy (message->dateStr,      msgMsg.dateTime, 19);
+  strcpy (message->fromUserName, msgMsg.fromUserName);
+  strcpy (message->toUserName,   msgMsg.toUserName);
+  strcpy (message->subject,      msgMsg.subject);
+  strncpy(message->dateStr,      msgMsg.dateTime, 19);
 
   helpPtr = message->dateStr;
   message->seconds = 0;
@@ -679,7 +687,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
   message->destNode.net  = msgMsg.destNet;
   message->destNode.node = msgMsg.destNode;
 
-  make4d (message);
+  make4d(message);
 
   // re-route to point
   if (getLocalAka(&message->destNode) >= 0)

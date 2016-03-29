@@ -191,7 +191,7 @@ int writefile(fhandle h, char *obuf, int os, char *buf, int s)
      )
   {
     tempStrType tstr;
-    sprintf(tstr, "*** Problem writing JAM base file (your fucked!) [%s]", strerror(errno));
+    sprintf(tstr, "*** Problem writing JAM base file (your fucked!) [%s]", strError(errno));
     logEntry(tstr, LOG_ALWAYS, 2);
     return 1;
   }
@@ -373,20 +373,19 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   JAMHDRINFO   *headerInfo;
   JAMIDXREC    *indexRec;
   JAMHDR       *headerRec;
-  const char   *mbPath;
+  const char   *mbPath = areaPtr->msgBasePath;
 
 #ifdef _DEBUG
   int compareResult = 0;
+  int debug = access(expJAMname(mbPath, "no_debug"), 0);
 
-  if (JAMmaintOld(areaPtr, switches, name))
+  if (debug && JAMmaintOld(areaPtr, switches, name))
     return -1;
 #endif
 
   sprintf(tempStr, "Processing JAM area: %s", areaPtr->areaName);
   logEntry(tempStr, LOG_INBOUND | LOG_NOSCRN, 0);
   printf("%s... ", tempStr);
-
-  mbPath = areaPtr->msgBasePath;
 
   if (  (d.hJHR = fsopen(expJAMname(mbPath, EXT_HDR), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
      || (d.hJDT = fsopen(expJAMname(mbPath, EXT_TXT), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
@@ -688,7 +687,6 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   }
   else
   {
-#ifdef _DEBUG
 #ifdef MAKEBACKUP
     logEntry("Write backup data", LOG_DEBUG | LOG_NOSCRN, 0);
     // Write (unchanged) input buffers to backup files
@@ -697,19 +695,23 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
     writedata(expJAMname(mbPath, "#"BASE_EXT_TXT), d.ibJDT, sizeJDT);
     writedata(expJAMname(mbPath, "#"BASE_EXT_HDR), d.ibJHR, sizeJHR);
 #endif
-    compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_HDR), d.obJHR, highJHR);
-    compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_IDX), d.obJDX, highJDX);
-    compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_TXT), d.obJDT, highJDT);
-    compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_LRD), d.obJLR, sizeJLR);
-
-    if (compareResult)
+#ifdef _DEBUG
+    if (debug)
     {
-      logEntry("Save original data", LOG_DEBUG | LOG_NOSCRN, 0);
-      // save original data.
-      writedata(expJAMname(mbPath, EXT_ORG_LRD), d.ibJLR, sizeJLR);
-      writedata(expJAMname(mbPath, EXT_ORG_IDX), d.ibJDX, sizeJDX);
-      writedata(expJAMname(mbPath, EXT_ORG_TXT), d.ibJDT, sizeJDT);
-      writedata(expJAMname(mbPath, EXT_ORG_HDR), d.ibJHR, sizeJHR);
+      compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_HDR), d.obJHR, highJHR);
+      compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_IDX), d.obJDX, highJDX);
+      compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_TXT), d.obJDT, highJDT);
+      compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_LRD), d.obJLR, sizeJLR);
+
+      if (compareResult)
+      {
+        logEntry("Save original data", LOG_DEBUG | LOG_NOSCRN, 0);
+        // save original data.
+        writedata(expJAMname(mbPath, EXT_ORG_LRD), d.ibJLR, sizeJLR);
+        writedata(expJAMname(mbPath, EXT_ORG_IDX), d.ibJDX, sizeJDX);
+        writedata(expJAMname(mbPath, EXT_ORG_TXT), d.ibJDT, sizeJDT);
+        writedata(expJAMname(mbPath, EXT_ORG_HDR), d.ibJHR, sizeJHR);
+      }
     }
     logEntry("Save data", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
@@ -725,46 +727,48 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   }
   CleanUp(&d);
 #ifdef _DEBUG
-  if (compareResult)
-  {
-    // Must be done after cleanup. Files need to be closed
-    logEntry("DEBUG: Create trace files", LOG_DEBUG, 0);
-    sprintf(tempStr, "%s-%d", mbPath, startTime);
-    if (0 == mkdir(tempStr))
+  if (debug)
+    if (compareResult)
     {
-      tempStrType nmbp;
-      const char *an = strrchr(mbPath, '\\');
-      if (an != NULL)
-        an++;
-      else
-        an = mbPath;
+      // Must be done after cleanup. Files need to be closed
+      logEntry("DEBUG: Create trace files", LOG_DEBUG, 0);
+      sprintf(tempStr, "%s-%d", mbPath, startTime);
+      if (0 == mkdir(tempStr))
+      {
+        tempStrType nmbp;
+        const char *an = strrchr(mbPath, '\\');
+        if (an != NULL)
+          an++;
+        else
+          an = mbPath;
 
-      strcpy(stpcpy(stpcpy(nmbp, tempStr), "\\"), an);
+        strcpy(stpcpy(stpcpy(nmbp, tempStr), "\\"), an);
 
-      CopyFile(expJAMname(mbPath, EXT_HDR), expJAMname(nmbp, EXT_HDR), 0);
-      CopyFile(expJAMname(mbPath, EXT_IDX), expJAMname(nmbp, EXT_IDX), 0);
-      CopyFile(expJAMname(mbPath, EXT_TXT), expJAMname(nmbp, EXT_TXT), 0);
-      CopyFile(expJAMname(mbPath, EXT_LRD), expJAMname(nmbp, EXT_LRD), 0);
+        CopyFile(expJAMname(mbPath, EXT_HDR), expJAMname(nmbp, EXT_HDR), 0);
+        CopyFile(expJAMname(mbPath, EXT_IDX), expJAMname(nmbp, EXT_IDX), 0);
+        CopyFile(expJAMname(mbPath, EXT_TXT), expJAMname(nmbp, EXT_TXT), 0);
+        CopyFile(expJAMname(mbPath, EXT_LRD), expJAMname(nmbp, EXT_LRD), 0);
 
-      MoveFile(expJAMname(mbPath, EXT_ORG_HDR), expJAMname(nmbp, EXT_ORG_HDR));
-      MoveFile(expJAMname(mbPath, EXT_ORG_IDX), expJAMname(nmbp, EXT_ORG_IDX));
-      MoveFile(expJAMname(mbPath, EXT_ORG_TXT), expJAMname(nmbp, EXT_ORG_TXT));
-      MoveFile(expJAMname(mbPath, EXT_ORG_LRD), expJAMname(nmbp, EXT_ORG_LRD));
+        MoveFile(expJAMname(mbPath, EXT_ORG_HDR), expJAMname(nmbp, EXT_ORG_HDR));
+        MoveFile(expJAMname(mbPath, EXT_ORG_IDX), expJAMname(nmbp, EXT_ORG_IDX));
+        MoveFile(expJAMname(mbPath, EXT_ORG_TXT), expJAMname(nmbp, EXT_ORG_TXT));
+        MoveFile(expJAMname(mbPath, EXT_ORG_LRD), expJAMname(nmbp, EXT_ORG_LRD));
 
-      MoveFile(expJAMname(mbPath, EXT_OLD_HDR), expJAMname(nmbp, EXT_OLD_HDR));
-      MoveFile(expJAMname(mbPath, EXT_OLD_IDX), expJAMname(nmbp, EXT_OLD_IDX));
-      MoveFile(expJAMname(mbPath, EXT_OLD_TXT), expJAMname(nmbp, EXT_OLD_TXT));
-      MoveFile(expJAMname(mbPath, EXT_OLD_LRD), expJAMname(nmbp, EXT_OLD_LRD));
+        MoveFile(expJAMname(mbPath, EXT_OLD_HDR), expJAMname(nmbp, EXT_OLD_HDR));
+        MoveFile(expJAMname(mbPath, EXT_OLD_IDX), expJAMname(nmbp, EXT_OLD_IDX));
+        MoveFile(expJAMname(mbPath, EXT_OLD_TXT), expJAMname(nmbp, EXT_OLD_TXT));
+        MoveFile(expJAMname(mbPath, EXT_OLD_LRD), expJAMname(nmbp, EXT_OLD_LRD));
+      }
     }
-  }
-  else
-  {
-    // New files are the same, so they are not needed -> Delete them.
-    DeleteFile(expJAMname(mbPath, EXT_OLD_HDR));
-    DeleteFile(expJAMname(mbPath, EXT_OLD_IDX));
-    DeleteFile(expJAMname(mbPath, EXT_OLD_TXT));
-    DeleteFile(expJAMname(mbPath, EXT_OLD_LRD));
-  }
+    else
+    {
+      // New files are the same, so they are not needed -> Delete them.
+      DeleteFile(expJAMname(mbPath, EXT_OLD_HDR));
+      DeleteFile(expJAMname(mbPath, EXT_OLD_IDX));
+      DeleteFile(expJAMname(mbPath, EXT_OLD_TXT));
+      DeleteFile(expJAMname(mbPath, EXT_OLD_LRD));
+    }
+
   logEntry("Ready", LOG_DEBUG | LOG_NOSCRN, 0);
 
 #if 0

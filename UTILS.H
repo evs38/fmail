@@ -80,12 +80,18 @@ const char *_searchpath    (const char *filename);
 int         existPattern   (const char *path, const char *pattern);
 u32         fileLength     (int handle);
 long        fileSize       (const char *filename);
+void        Delete         (const char *path, const char *wildCard);
+void        touch          (const char *path, const char *filename, const char *t);
+#ifdef __BORLANDC__
+const char *strError       (int errn);
+#else
+#define     strError(errn) strerror(errn)
+#endif
+
 const nodeNumType *getAkaNodeNum(int aka, int retMain);
 const char *getAkaStr      (int aka, int retMain);
 int         matchAka       (nodeNumType *node, int useAka);
-void        touch          (const char *path, const char *filename, const char *t);
 s16         emptyText      (char *text);
-void        Delete         (const char *path, const char *wildCard);
 s32         getSwitch      (int *argc, char *argv[], s32 mask);
 u32         uniqueID       (void);
 char       *removeRe       (char *string);

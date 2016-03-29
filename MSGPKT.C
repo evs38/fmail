@@ -1174,7 +1174,6 @@ fhandle openP(const char *pathname, int access, u16 mode)
 {
   fhandle handle;
   int     errcode;
-  char   *helpPtr;
 
   ++no_log;
   while ((handle = open(pathname, access, mode)) == -1)
@@ -1188,8 +1187,7 @@ fhandle openP(const char *pathname, int access, u16 mode)
          )
       {
         tempStrType tempStr;
-        helpPtr = tempStr + sprintf(tempStr, "Error opening %s: %s", pathname, strerror(errcode));
-        *--helpPtr = 0;  // strerror returns a string with \n as last char (in Borland C)
+        sprintf(tempStr, "Error opening %s: %s", pathname, strError(errcode));
         logEntry(tempStr, LOG_OPENERR, 0);
       }
       --no_log;
@@ -1208,7 +1206,6 @@ fhandle fsopenP(const char *pathname, int access, u16 mode)
 {
   fhandle handle;
   int     errcode;
-  char   *helpPtr;
 
   ++no_log;
   while ((handle = fsopen(pathname, access, mode, 1)) == -1)
@@ -1222,8 +1219,7 @@ fhandle fsopenP(const char *pathname, int access, u16 mode)
          )
       {
         tempStrType tempStr;
-        helpPtr = tempStr + sprintf(tempStr, "Error opening %s: %s", pathname, strerror(errcode));
-        *--helpPtr = 0;  // strerror returns a string with \n as last char (in Borland C)
+        sprintf(tempStr, "Error opening %s: %s", pathname, strError(errcode));
         logEntry(tempStr, LOG_OPENERR, 0);
       }
       --no_log;

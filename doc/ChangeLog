@@ -1,3 +1,11 @@
+2016-03-29  1.69.20.176-Beta
+  * Use own version for strError(), that doesn't give back a string ending in a newline.
+  * JAMmaintOld() function and comparison of results can be switched off per
+    area through a semaphore file with the same name and path of the JAM area
+    with '.no_debug' as file extension.
+  * Better logging of killed empty netmail (includes from and to address).
+  * Bug fix where sometimes old truncated mailbundles weren't removed.
+
 2016-03-02  1.69.18.171-Beta
   * removeRe() use memmove instead of strcpy because src and dst overlap.
   * removeLine() use memmove instead of strcpy because src and dst overlap.

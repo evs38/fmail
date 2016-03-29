@@ -494,7 +494,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
         if (access(pktStr, 06) != 0)  // Check for read and write access
         {
-          sprintf(tempStr, "Not sufficient access rights on: %s (\"%s\")", pktStr, strerror(errno));
+          sprintf(tempStr, "Not sufficient access rights on: %s (\"%s\")", pktStr, strError(errno));
           logEntry(tempStr, LOG_ALWAYS, 2);
           continue;
         }
