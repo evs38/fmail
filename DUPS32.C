@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -69,10 +69,10 @@ u32 *_memint(u32 *p, u32 c, u32 size)
 {
   u32 count = 0;
 
-  while (count < size && p[count] != c )
+  while (count < size && p[count] != c)
     count++;
 
-  if ( count == size )
+  if (count == size)
     return NULL;
 
   return p + count;
@@ -158,18 +158,21 @@ s16 checkDup(internalMsgType *message, u32 areaNameCRC)
       helpPtr += 8;
       if (sscanf (helpPtr, "%hu:%hu/%hu", &dummy, &dummy, &dummy) < 3)
       {
-      /* non-Fido MSGIDs */
-         dupCode = crc32t(helpPtr, '\n');
+         // non-Fido MSGIDs
+         dupCode  = crc32t(helpPtr, '\n');
          nodeCode = crc32t(helpPtr, ' ');
       }
       else
-      {  nodeCode = crc32t(helpPtr, ' ');
+      {
+         nodeCode = crc32t(helpPtr, ' ');
          dupCode = 0;
+
          if ((helpPtr = strchr(helpPtr, ' ')) != NULL)
          {
             while (isxdigit(*(++helpPtr)))
-            {  dupCode = (dupCode<<4) + (*helpPtr <= '9' ?
-                         *helpPtr - '0' : toupper(*helpPtr) - 'A' + 10);
+            {
+               dupCode = (dupCode<<4) + (*helpPtr <= '9'
+                       ? *helpPtr - '0' : toupper(*helpPtr) - 'A' + 10);
             }
             dupCode ^= ((s32)message->fromUserName[0] << 24) ^
                        ((s32)message->toUserName[0]   << 16) ^
@@ -193,19 +196,20 @@ s16 checkDup(internalMsgType *message, u32 areaNameCRC)
                 crc32(message->toUserName)   ^
                 crc32(message->subject)      ^
                 ((s32)message->year  << 20)  ^
-		((s32)message->month << 16)  ^
-		((s32)message->day   << 11)  ^
-		((s32)message->hours <<  6)  ^
-		((s32)message->minutes);
+            		((s32)message->month << 16)  ^
+              	((s32)message->day   << 11)  ^
+            		((s32)message->hours <<  6)  ^
+            		((s32)message->minutes);
 
    group = dupCode & 0xFF;
    dupCode ^= nodeCode ^ areaNameCRC;
 
-   if (memint(&dupBuffer[dupHdr.kRecs*4*group], dupCode, dupHdr.kRecs*4) != NULL)
+   if (memint(&dupBuffer[dupHdr.kRecs * 4 * group], dupCode, dupHdr.kRecs * 4) != NULL)
       return 1;
 
-   dupBuffer[dupHdr.kRecs*4*group+dupHdr.nextDup[group]++] = dupCode;
-   if (dupHdr.nextDup[group] >= dupHdr.kRecs*4)
+   // dupeCode not found add it to dupe database
+   dupBuffer[dupHdr.kRecs * 4 * group + dupHdr.nextDup[group]++] = dupCode;
+   if (dupHdr.nextDup[group] >= dupHdr.kRecs * 4)
       dupHdr.nextDup[group] = 0;
 
    return 0;

@@ -116,7 +116,7 @@ void        make4d         (internalMsgType *message);
 char       *insertLine     (char *pos, const char *line);
 char       *insertLineN    (char *pos, char *line, u16 num);
 void        addPathSeenBy  (internalMsgType *msg, echoToNodeType echoToNode, u16 areaIndex);
-void        addVia         (char *msgText, u16 aka, const char *func);
+void        addVia         (char *msgText, u16 aka, const char *func, int isNetmail);
 s16         scanDate       (unsigned char *datePtr, u16 *year, u16 *month, u16 *day, u16 *hours, u16 *minutes);
 s32         checkDate      (u16 year,  u16 month,  u16 day, u16 hours, u16 minutes, u16 seconds);
 char       *makeName       (char *path, char *name);

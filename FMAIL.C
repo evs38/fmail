@@ -553,7 +553,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
             {
               make4d(message);
               localAkaNum = getLocalAka(&message->destNode);
-              addVia(message->text, globVars.packetDestAka, "Toss");  // Add Toss Via here before any writeMsg()
+              addVia(message->text, globVars.packetDestAka, "Toss", 1);  // Add Toss Via here before any writeMsg()
             }
 
             if (*config.topic1 || *config.topic2)
@@ -745,17 +745,18 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                 if (checkDup(message, echoAreaList[areaIndex].areaNameCRC))
                 {
                   for (i = 0; i < forwNodeCount; i++)
-                  {
                     if (memcmp(&nodeFileInfo[i]->destNode4d.net, &globVars.packetSrcNode.net, 6) == 0)
                     {
                       nodeFileInfo[i]->fromNodeDup++;
                       i = -1;
                       break;
                     }
-                  }
+
                   if (i != -1)
                     ++globVars.fromNoExpDup;
+
                   putStr(" "dARROW" Duplicate message");
+                  addVia(message->text, globVars.packetDestAka, "Toss", 0);
                   if (writeBBS(message, config.dupBoard, 1))
                     diskError = DERR_WRHDUP;
 

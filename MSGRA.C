@@ -807,10 +807,11 @@ static s16 processMsg(u16 areaIndex)
    {
      printf("Security violation for area %s\n", echoAreaList[areaIndex].areaName);
      globVars.badCount++;
+
      return 0;
    }
 
-   if (checkDup (message, echoAreaList[areaIndex].areaNameCRC))
+   if (checkDup(message, echoAreaList[areaIndex].areaNameCRC))
    {
       for (count = 0; count < forwNodeCount; count++)
          if ((nodeFileInfo[count]->srcAka == globVars.packetDestAka) &&
@@ -819,9 +820,11 @@ static s16 processMsg(u16 areaIndex)
             nodeFileInfo[count]->fromNodeDup++;
 
       puts(dARROW" Duplicate message");
-      writeBBS (message, config.dupBoard, 1);
+      addVia(message->text, globVars.packetDestAka, "Toss", 0);
+      writeBBS(message, config.dupBoard, 1);
       echoAreaList[areaIndex].dupCount++;
       globVars.dupCount++;
+
       return -1;
    }
 

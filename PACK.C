@@ -443,7 +443,7 @@ s16 pack(s16 argc, char *argv[], s32 switches)
               )
           count2++;
 
-        addVia(message->text, count2 < MAX_AKAS ? count2 : nodeFileInfo.srcAka, "Pack");
+        addVia(message->text, count2 < MAX_AKAS ? count2 : nodeFileInfo.srcAka, "Pack", 1);
 
         if (writeNetPktValid(message, &nodeFileInfo))
           diskError = DERR_PACK;

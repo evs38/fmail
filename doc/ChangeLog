@@ -1,3 +1,7 @@
+2016-03-30  1.69.21.177-Beta
+  * Add a Via line as regular kludge line to messages tossed to the dupe area.
+    So you know when they were received/processed by FMail.
+
 2016-03-29  1.69.20.176-Beta
   * Use own version for strError(), that doesn't give back a string ending in a newline.
   * JAMmaintOld() function and comparison of results can be switched off per

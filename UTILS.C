@@ -809,20 +809,20 @@ void removeLine(char *s)
 //---------------------------------------------------------------------------
 char *insertLineN(char *pos, char *line, u16 num)
 {
-   char *helpPtr;
+  char *helpPtr;
 
-   while (*pos && num--)
-   {
-      if ((helpPtr = strchr(pos, '\r')) == NULL)
-         pos = strchr(pos, 0);
-      else
-      {
-         pos = helpPtr;
-         while (*pos == '\r' || *pos == '\n')
-            pos++;
-      }
-   }
-   return insertLine(pos, line);
+  while (*pos && num--)
+  {
+    if ((helpPtr = strchr(pos, '\r')) == NULL)
+      pos = strchr(pos, 0);
+    else
+    {
+      pos = helpPtr;
+      while (*pos == '\r' || *pos == '\n')
+        pos++;
+    }
+  }
+  return insertLine(pos, line);
 }
 //---------------------------------------------------------------------------
 static void readPathSeenBy(u16 type, char *msgText, psType *psArray, u16 *arrayCount)
@@ -1389,54 +1389,61 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
 }
 //---------------------------------------------------------------------------
 #ifdef FMAIL
-void addVia(char *msgText, u16 aka, const char *func)
+void addVia(char *msgText, u16 aka, const char *func, int isNetmail)
 {
   char *helpPtr;
+  tempStrType tStr;
 
-  if ((helpPtr = strchr(msgText, 0)) != NULL)
+  if (isNetmail)
   {
-    if (*(helpPtr - 1) != '\r' && (*(helpPtr - 1) != '\n' || *(helpPtr - 2) != '\r'))
-      *(helpPtr++) = '\r';
+    if ((helpPtr = strchr(msgText, 0)) != NULL)
+      if (*(helpPtr - 1) != '\r' && (*(helpPtr - 1) != '\n' || *(helpPtr - 2) != '\r'))
+        *(helpPtr++) = '\r';
+  }
+  else
+    helpPtr = tStr;
 
-    {
+  if (NULL != helpPtr)
+  {
 #if defined(__WIN32__)
-      SYSTEMTIME st;
-      GetSystemTime(&st);
+    SYSTEMTIME st;
+    GetSystemTime(&st);
+    sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s(%s) %s\r"
+                   , getAkaStr(aka, 1)
+                   , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds
+                   , TOOLSTR, func, Version()
+           );
+#elif defined(linux)
+    struct timeval tv;
+    struct tm *tm;
+
+    if (  0 != gettimeofday(&tv, NULL)
+       || NULL == (tm = gmtime(&tv.tv_sec))
+       )
+      sprintf(helpPtr, "\x1Via %s @00000000.000000 %s(%s) %s\r"
+                     , getAkaStr(aka, 1)
+                     , TOOLSTR, func, Version()
+             );
+    else
       sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s(%s) %s\r"
                      , getAkaStr(aka, 1)
-                     , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds
+                     , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
+                     , tm->tm_hour, tm->tm_min, tm->tm_sec
+                     , tv.tv_usec / 1000
                      , TOOLSTR, func, Version()
              );
-#elif defined(linux)
-      struct timeval tv;
-      struct tm *tm;
-
-      if (  0 != gettimeofday(&tv, NULL)
-         || NULL == (tm = gmtime(&tv.tv_sec))
-         )
-        sprintf(helpPtr, "\x1Via %s @00000000.000000 %s(%s) %s\r"
-                       , getAkaStr(aka, 1)
-                       , TOOLSTR, func, Version()
-               );
-      else
-        sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s(%s) %s\r"
-                       , getAkaStr(aka, 1)
-                       , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
-                       , tm->tm_hour, tm->tm_min, tm->tm_sec
-                       , tv.tv_usec / 1000
-                       , TOOLSTR, func, Version()
-               );
 #else
-      struct tm *tmPtr;
-      tmPtr = gmtime(&startTime);
-      sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s(%s) %s\r"
-                     , getAkaStr(aka, 1)
-                     , tmPtr->tm_year + 1900, tmPtr->tm_mon + 1, tmPtr->tm_mday
-                     , tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec
-                     , TOOLSTR, func, Version()
-             );
+    struct tm *tmPtr;
+    tmPtr = gmtime(&startTime);
+    sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s(%s) %s\r"
+                   , getAkaStr(aka, 1)
+                   , tmPtr->tm_year + 1900, tmPtr->tm_mon + 1, tmPtr->tm_mday
+                   , tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec
+                   , TOOLSTR, func, Version()
+           );
 #endif
-    }
+    if (!isNetmail)
+      insertLineN(msgText, tStr, 1);
   }
 }
 #endif
