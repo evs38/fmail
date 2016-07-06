@@ -43,7 +43,7 @@
 #include "version.h"
 #include "window.h"
 
-const char *bar = "อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ";
+const char *bar = "================================================================================";
 
 const char *arcName[12] = {"None", "ARC", "ZIP", "LZH", "PAK", "ZOO", "ARJ", "SQZ", "Custom", "UC2", "RAR", "JAR"};
 #ifndef __FMAILX__
@@ -882,24 +882,26 @@ s16 listNodeConfig (void)
 
 s16 listGeneralConfig (void)
 {
-   FILE     *textFile;
-   char     *fileNamePtr;
-   u16      count, count2;
+   FILE    *textFile;
+   char    *fileNamePtr;
+   u16      count
+          , count2;
    time_t   timer;
    char     numStr[8];
+   int      archiver = config.defaultArc;
 
-   time (&timer);
+   time(&timer);
 
-   fileNamePtr = getDestFileName (" Destination file ");
+   fileNamePtr = getDestFileName(" Destination file ");
    if (*fileNamePtr == 0)
-      return (0);
+      return 0;
 
-   working ();
+   working();
 
    if ((textFile = fopen(fileNamePtr, "wt")) == NULL)
    {
       displayMessage ("Can't open output file");
-      return (0);
+      return 0;
    }
    fprintf (textFile, "\n%s  -  General configuration  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
@@ -1012,10 +1014,15 @@ s16 listGeneralConfig (void)
    fprintf(textFile, "Incoming mail      : %s\n", config.inPath);
    fprintf(textFile, "Outgoing mail      : %s\n\n", config.outPath);
 
-   fprintf(textFile, "Local PKTs         : %s\n", *config.securePath?config.securePath:"Not defined");
-   fprintf(textFile, "Semaphore          : %s\n", *config.semaphorePath?config.semaphorePath:"Not defined");
-   fprintf(textFile, "Sent netmail       : %s\n", *config.sentPath?config.sentPath:"Not defined");
-   fprintf(textFile, "Rcvd netmail       : %s\n", *config.rcvdPath?config.rcvdPath:"Not defined");
+   fprintf(textFile, "Local PKTs         : %s\n", *config.securePath ? config.securePath : "Not defined");
+   fprintf(textFile, "Semaphore          : %s\n", *config.semaphorePath ? config.semaphorePath : "Not defined");
+   fprintf(textFile, "Sent netmail       : %s\n", *config.sentPath ? config.sentPath : "Not defined");
+   fprintf(textFile, "Rcvd netmail       : %s\n", *config.rcvdPath ? config.rcvdPath : "Not defined");
+
+   if (archiver > 10)
+     archiver = 0;
+   else
+     archiver++;
 
    fprintf(textFile, "\nCompression programs (16-bit FMail)\n\n"
 		      "           Default : %s\n"
@@ -1030,18 +1037,18 @@ s16 listGeneralConfig (void)
           "           RAR     : %s\n"
           "           JAR     : %s\n"
           "           -?-     : %s\n",
-		      arcName[config.defaultArc + 1],
-		      *config.arc.programName ? config.arc.programName:"Not defined",
-		      *config.zip.programName ? config.zip.programName:"Not defined",
-		      *config.lzh.programName ? config.lzh.programName:"Not defined",
-		      *config.pak.programName ? config.pak.programName:"Not defined",
-		      *config.zoo.programName ? config.zoo.programName:"Not defined",
-          *config.arj.programName ? config.arj.programName:"Not defined",
-          *config.sqz.programName ? config.sqz.programName:"Not defined",
-          *config.uc2.programName ? config.uc2.programName:"Not defined",
-          *config.rar.programName ? config.rar.programName:"Not defined",
-          *config.jar.programName ? config.jar.programName:"Not defined",
-          *config.customArc.programName ? config.customArc.programName:"Not defined");
+		      arcName[archiver],
+		      *config.arc.programName ? config.arc.programName : "Not defined",
+		      *config.zip.programName ? config.zip.programName : "Not defined",
+		      *config.lzh.programName ? config.lzh.programName : "Not defined",
+		      *config.pak.programName ? config.pak.programName : "Not defined",
+		      *config.zoo.programName ? config.zoo.programName : "Not defined",
+          *config.arj.programName ? config.arj.programName : "Not defined",
+          *config.sqz.programName ? config.sqz.programName : "Not defined",
+          *config.uc2.programName ? config.uc2.programName : "Not defined",
+          *config.rar.programName ? config.rar.programName : "Not defined",
+          *config.jar.programName ? config.jar.programName : "Not defined",
+          *config.customArc.programName ? config.customArc.programName : "Not defined");
 
    fprintf(textFile, "\nCompression programs (32-bit FMail)\n\n"
 		      "           Default : %s\n"
@@ -1056,18 +1063,18 @@ s16 listGeneralConfig (void)
           "           RAR     : %s\n"
           "           JAR     : %s\n"
           "           -?-     : %s\n",
-		      arcName[config.defaultArc + 1],
-          *config.arc.programName ? config.arc32.programName:"Not defined",
-          *config.zip.programName ? config.zip32.programName:"Not defined",
-          *config.lzh.programName ? config.lzh32.programName:"Not defined",
-          *config.pak.programName ? config.pak32.programName:"Not defined",
-          *config.zoo.programName ? config.zoo32.programName:"Not defined",
-          *config.arj.programName ? config.arj32.programName:"Not defined",
-          *config.sqz.programName ? config.sqz32.programName:"Not defined",
-          *config.uc2.programName ? config.uc232.programName:"Not defined",
-          *config.rar.programName ? config.rar32.programName:"Not defined",
-          *config.jar.programName ? config.jar32.programName:"Not defined",
-          *config.customArc.programName ? config.customArc32.programName:"Not defined");
+		      arcName[archiver],
+          *config.arc.programName ? config.arc32.programName : "Not defined",
+          *config.zip.programName ? config.zip32.programName : "Not defined",
+          *config.lzh.programName ? config.lzh32.programName : "Not defined",
+          *config.pak.programName ? config.pak32.programName : "Not defined",
+          *config.zoo.programName ? config.zoo32.programName : "Not defined",
+          *config.arj.programName ? config.arj32.programName : "Not defined",
+          *config.sqz.programName ? config.sqz32.programName : "Not defined",
+          *config.uc2.programName ? config.uc232.programName : "Not defined",
+          *config.rar.programName ? config.rar32.programName : "Not defined",
+          *config.jar.programName ? config.jar32.programName : "Not defined",
+          *config.customArc.programName ? config.customArc32.programName : "Not defined");
 
    fprintf(textFile, "\nDecompression programs (16-bit FMail)\n\n"
 		      "           ARC     : %s\n"
@@ -1117,7 +1124,7 @@ s16 listGeneralConfig (void)
           *config.unJar.programName ? config.unJar32.programName:"Not defined",
           *config.GUS.programName ? config.GUS32.programName:"Not defined");
 
-   fclose (textFile);
-   return (0);
+   fclose(textFile);
+   return 0;
 }
 //---------------------------------------------------------------------------

@@ -811,6 +811,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                 else
                 {
 #ifdef _DEBUG
+                  newLine();
                   logEntry("DEBUG processPkt: echoToNodeCount == 0 SEEN-BY & PATH processing", LOG_DEBUG, 0);
 #endif
                   if (!echoAreaList[areaIndex].options.impSeenBy)

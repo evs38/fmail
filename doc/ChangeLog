@@ -1,3 +1,9 @@
+2016-07-06  1.69.22.178-Beta
+  * FSetupX no longer crashes on the 'List general info' function in the Export menu.
+
+2016-03-31  1.69.22.178-Beta
+  * Log, in a debug compile, when a Via line is added to a message.
+
 2016-03-30  1.69.21.177-Beta
   * Add a Via line as regular kludge line to messages tossed to the dupe area.
     So you know when they were received/processed by FMail.

@@ -143,76 +143,72 @@ void openDup(void)
 //---------------------------------------------------------------------------
 s16 checkDup(internalMsgType *message, u32 areaNameCRC)
 {
-   u32  nodeCode = 0;
-   u32  dupCode = 0;
-   u32  group;
-   char *helpPtr;
-   u16  dummy;
+  u32   nodeCode = 0;
+  u32   dupCode  = 0;
+  u32   group;
+  char *helpPtr;
+  u16   dummy;
 
-   if ( !config.mailOptions.dupDetection || config.kDupRecs == 0 )
-      return 0;
+  if (!config.mailOptions.dupDetection || config.kDupRecs == 0)
+    return 0;
 
-   if ( (!config.mailOptions.ignoreMSGID) &&
-        ((helpPtr = findCLStr(message->text, "\x1MSGID: ")) != NULL) )
-   {
-      helpPtr += 8;
-      if (sscanf (helpPtr, "%hu:%hu/%hu", &dummy, &dummy, &dummy) < 3)
+  if (!config.mailOptions.ignoreMSGID && (helpPtr = findCLStr(message->text, "\x1MSGID: ")) != NULL)
+  {
+    helpPtr += 8;
+    if (sscanf (helpPtr, "%hu:%hu/%hu", &dummy, &dummy, &dummy) < 3)
+    {
+      // non-Fido MSGIDs
+      dupCode  = crc32t(helpPtr, '\n');
+      nodeCode = crc32t(helpPtr, ' ');
+    }
+    else
+    {
+      nodeCode = crc32t(helpPtr, ' ');
+      dupCode = 0;
+
+      if ((helpPtr = strchr(helpPtr, ' ')) != NULL)
       {
-         // non-Fido MSGIDs
-         dupCode  = crc32t(helpPtr, '\n');
-         nodeCode = crc32t(helpPtr, ' ');
+        while (isxdigit(*(++helpPtr)))
+          dupCode = (dupCode << 4) + (*helpPtr <= '9' ? *helpPtr - '0' : toupper(*helpPtr) - 'A' + 10);
+
+        dupCode ^= ((s32)message->fromUserName[0] << 24)
+                 ^ ((s32)message->toUserName[0]   << 16)
+                 ^ ((s32)message->subject[0]      <<  8);
+
+        if (*helpPtr > 0x20)
+          dupCode ^= crc32t(helpPtr, '\n');
       }
-      else
-      {
-         nodeCode = crc32t(helpPtr, ' ');
-         dupCode = 0;
+    }
+  }
 
-         if ((helpPtr = strchr(helpPtr, ' ')) != NULL)
-         {
-            while (isxdigit(*(++helpPtr)))
-            {
-               dupCode = (dupCode<<4) + (*helpPtr <= '9'
-                       ? *helpPtr - '0' : toupper(*helpPtr) - 'A' + 10);
-            }
-            dupCode ^= ((s32)message->fromUserName[0] << 24) ^
-                       ((s32)message->toUserName[0]   << 16) ^
-                       ((s32)message->subject[0]      <<  8);
+  if (  nodeCode == 0
+     && (helpPtr = findCLStr(message->text, " * Origin: ")) != NULL
+     && (helpPtr = srchar(helpPtr+1, '\r', '(')) != NULL
+     )
+    nodeCode = crc32t(helpPtr,')');
 
-            if (*helpPtr > 0x20)
-               dupCode ^= crc32t(helpPtr, '\n');
-         }
-      }
-   }
+  if (dupCode == 0)
+    dupCode = crc32(message->fromUserName)
+            ^ crc32(message->toUserName  )
+            ^ crc32(message->subject     )
+            ^ ((s32)message->year  << 20 )
+            ^ ((s32)message->month << 16 )
+            ^ ((s32)message->day   << 11 )
+            ^ ((s32)message->hours <<  6 )
+            ^ ((s32)message->minutes     );
 
-   if ((nodeCode == 0) &&
-       ((helpPtr = findCLStr(message->text, " * Origin: ")) != NULL) &&
-       ((helpPtr = srchar(helpPtr+1, '\r', '(')) != NULL))
-   {
-      nodeCode = crc32t(helpPtr,')');
-   }
+  group = dupCode & 0xFF;
+  dupCode ^= nodeCode ^ areaNameCRC;
 
-   if (dupCode == 0)
-      dupCode = crc32(message->fromUserName) ^
-                crc32(message->toUserName)   ^
-                crc32(message->subject)      ^
-                ((s32)message->year  << 20)  ^
-            		((s32)message->month << 16)  ^
-              	((s32)message->day   << 11)  ^
-            		((s32)message->hours <<  6)  ^
-            		((s32)message->minutes);
+  if (memint(&dupBuffer[dupHdr.kRecs * 4 * group], dupCode, dupHdr.kRecs * 4) != NULL)
+    return 1;
 
-   group = dupCode & 0xFF;
-   dupCode ^= nodeCode ^ areaNameCRC;
+  // dupeCode not found add it to dupe database
+  dupBuffer[dupHdr.kRecs * 4 * group + dupHdr.nextDup[group]++] = dupCode;
+  if (dupHdr.nextDup[group] >= dupHdr.kRecs * 4)
+    dupHdr.nextDup[group] = 0;
 
-   if (memint(&dupBuffer[dupHdr.kRecs * 4 * group], dupCode, dupHdr.kRecs * 4) != NULL)
-      return 1;
-
-   // dupeCode not found add it to dupe database
-   dupBuffer[dupHdr.kRecs * 4 * group + dupHdr.nextDup[group]++] = dupCode;
-   if (dupHdr.nextDup[group] >= dupHdr.kRecs * 4)
-      dupHdr.nextDup[group] = 0;
-
-   return 0;
+  return 0;
 }
 //---------------------------------------------------------------------------
 void validateDups(void)

@@ -23,7 +23,11 @@
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
-    <PACKAGES value=""/>
+    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi 
+      inetdbxpress.bpi visualclx.bpi dbrtl.bpi bdertl.bpi vcldb.bpi vcldbx.bpi 
+      dsnap.bpi cds.bpi bdecds.bpi teeui.bpi teedb.bpi tee.bpi teeqr.bpi 
+      ibxpress.bpi visualdbclx.bpi inetdb.bpi bcbie.bpi soaprtl.bpi 
+      dbexpress.bpi dbxcds.bpi bcb2kaxserver.bpi adortl.bpi"/>
     <PATHCPP value=".;"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
@@ -100,8 +104,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=69
-Release=21
-Build=177
+Release=22
+Build=178
 Debug=1
 PreRelease=1
 Special=0
@@ -113,7 +117,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FMail mail tosser
-FileVersion=1.69.21.177
+FileVersion=1.69.22.178
 InternalName=fmail
 LegalCopyright=Copyright (c) 1991 - 2016 FMail developers
 LegalTrademarks=

@@ -1413,6 +1413,14 @@ void addVia(char *msgText, u16 aka, const char *func, int isNetmail)
                    , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds
                    , TOOLSTR, func, Version()
            );
+#ifdef _DEBUG
+    {
+      tempStrType tStr;
+      sprintf( tStr, "DEBUG addVia: %04u%02u%02u.%02u%02u%02u.%03u.UTC %s"
+             , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, isNetmail ? "net" : "echo");
+      logEntry(tStr, LOG_DEBUG, 0);
+    }
+#endif
 #elif defined(linux)
     struct timeval tv;
     struct tm *tm;
