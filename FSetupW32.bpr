@@ -81,27 +81,25 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=69
 Release=22
-Build=3
+Build=6
 Debug=1
 PreRelease=1
-Special=1
+Special=0
 Private=0
 DLL=0
-Locale=1033
+Locale=1043
 CodePage=1252
 
 [Version Info Keys]
-CompanyName=
-FileDescription=
-FileVersion=1.69.22.3
-InternalName=
-LegalCopyright=
+CompanyName=FMail GPL
+FileDescription=FMail mail tosser Setup program
+FileVersion=1.69.22.6
+InternalName=fsetup
+LegalCopyright=Copyright (c) 1991 - 2016 FMail developers
 LegalTrademarks=
-OriginalFilename=
-ProductName=
-ProductVersion=1.69.22
-Comments=
-SpecialBuild=
+OriginalFilename=FSetupW32.exe
+ProductName=FMail
+ProductVersion=1.69
 
 [Excluded Packages]
 C:\Program Files\Borland\CBuilder6\Bin\dclstd60.bpl=Borland Standard Components
