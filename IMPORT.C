@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -127,7 +127,7 @@ static int askFMArExist(u16 *echoCount)
    int          ch;
    u16          count;
    struct ffblk testBlk;
-   headerType	*areaHeader;
+   headerType  *areaHeader;
    rawEchoType  *areaBuf;
    tempStrType  tempStr;
 
@@ -656,17 +656,20 @@ ret0:       releaseNodes(nodeCount);
 
 s16 importGechoAr(void)
 {
-   fhandle     fileHandle;
-   char        tempStr[256];
-   char        echoNumCheck[MBBOARDS];
-   u16         count,
-	       low, mid, high;
-   u16         echoCount;
-   u16         skiparname = 0, clearboard = 0;
-   u32	       index;
-   size_t      recsize;
+   fhandle      fileHandle;
+   tempStrType  tempStr;
+   char         echoNumCheck[MBBOARDS];
+   u16          count
+              , low
+              , mid
+              , high;
+   u16          echoCount;
+   u16          skiparname = 0
+              , clearboard = 0;
+   u32          index;
+   int          recsize;
    rawEchoType *echoAreaRec;
-   nodeNumType tempNode;
+   nodeNumType  tempNode;
    AREAFILE_HDR gechoArHdrRec;
    AREAFILE_GE  gechoArRec;
    CONNECTION   gechoArExportRec[MAXCONNECTIONS];
@@ -696,11 +699,11 @@ s16 importGechoAr(void)
    }
    recsize = min(gechoArHdrRec.recsize, sizeof(AREAFILE_GE));
    index = 0;
-   while ( lseek(fileHandle,(u32)gechoArHdrRec.hdrsize+index*((u32)gechoArHdrRec.recsize+(u32)gechoArHdrRec.maxconnections*(u32)sizeof(CONNECTION)), SEEK_SET) !=(u32)-1L &&
-	   read(fileHandle, &gechoArRec, recsize) == recsize &&
-	   lseek(fileHandle, (u32)gechoArHdrRec.hdrsize+(u32)gechoArHdrRec.recsize+index++*((u32)gechoArHdrRec.recsize+(u32)gechoArHdrRec.maxconnections*(u32)sizeof(CONNECTION)), SEEK_SET) != (u32)-1L &&
-	   read(fileHandle, &gechoArExportRec, gechoArHdrRec.maxconnections * sizeof(CONNECTION)) ==
-					       gechoArHdrRec.maxconnections * sizeof(CONNECTION) )
+   while (  lseek(fileHandle, (u32)gechoArHdrRec.hdrsize + index * ((u32)gechoArHdrRec.recsize + (u32)gechoArHdrRec.maxconnections * (u32)sizeof(CONNECTION)), SEEK_SET) != -1L
+         && read(fileHandle, &gechoArRec, recsize) == recsize
+         && lseek(fileHandle, (u32)gechoArHdrRec.hdrsize+(u32)gechoArHdrRec.recsize+index++*((u32)gechoArHdrRec.recsize+(u32)gechoArHdrRec.maxconnections*(u32)sizeof(CONNECTION)), SEEK_SET) != -1L
+         && read(fileHandle, &gechoArExportRec, gechoArHdrRec.maxconnections * sizeof(CONNECTION)) == (int)(gechoArHdrRec.maxconnections * sizeof(CONNECTION))
+         )
    {  if ( !(gechoArRec.options & REMOVED) )
       {  if ( echoCount == MAX_AREAS )
 	 {  displayMessage("Too many areas listed in GEcho Area file");
@@ -1223,15 +1226,16 @@ ret0:    releaseNodes(nodeCount);
 s16 importRAInfo(void)
 {
    fhandle        RAHandle;
-   u16            count = 0,
-                  echoCount = 0,
-                  raCount, setBoardCode;
+   u16            count = 0
+                , echoCount = 0
+                , raCount
+                , setBoardCode;
    s16            notFound;
    tempStrType    tempStr;
    messageRaType  messageRaRec;
    messageRa2Type messageRa2Rec;
-   headerType	  *areaHeader;
-   rawEchoType    *areaBuf;
+   headerType    *areaHeader;
+   rawEchoType   *areaBuf;
 
    if ( config.bbsProgram != BBS_RA1X && config.bbsProgram != BBS_RA20 &&
         config.bbsProgram != BBS_RA25 && config.bbsProgram != BBS_ELEB )
@@ -1289,9 +1293,9 @@ s16 importRAInfo(void)
          {  ++raCount;
             if ( (areaBuf->board >= 1 && areaBuf->board <= MBBOARDS &&
                   ((config.bbsProgram == BBS_RA20 &&
-		    areaBuf->board == tell(RAHandle)/sizeof(messageRa2Rec)) ||
+                    (size_t)areaBuf->board == tell(RAHandle) / sizeof(messageRa2Rec)) ||
                    ((config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB) &&
-		    areaBuf->board == messageRa2Rec.areanum))) ||
+                    areaBuf->board == messageRa2Rec.areanum))) ||
                  (*areaBuf->msgBasePath &&
 //#pragma message ("NIEUW ipv ^^^!!!")
 // NIEUW:        (areaBuf->board == BOARDTYPEJAM &&

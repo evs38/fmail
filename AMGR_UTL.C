@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -286,15 +286,15 @@ Page Up  Page Down  Insert  Delete  Home First  End Last  R/o  W/o  Lock  ^V    
 
 s16 areasList (s16 currentElem, char groupSelectMask)
 {
-   static   s16 useComment = -1;
-   u16      elemCount = 0;
-   u16      count;
-   u16      windowBase = 0;
-   s16      ch = 0;
-   tempStrType    tempStr;
+   static          s16 useComment = -1;
+   u16             elemCount = 0;
+   u16             count;
+   u16             windowBase = 0;
+   s16             ch = 0;
+   tempStrType     tempStr;
    areaInfoPtrArr *areaInfoTwo;
-   areaInfoPtr    areaInfoHelpPtr;
-   u16            low, mid, high;
+   areaInfoPtr     areaInfoHelpPtr;
+   u16             low, mid, high;
    void           *testPtr;
 
    if ((areaInfoTwo = malloc(sizeof(areaInfoPtrArr))) == NULL)
@@ -376,42 +376,31 @@ s16 areasList (s16 currentElem, char groupSelectMask)
       }
       for (count = 0; count < MAX_AL_WINSIZE; count++)
       {
-         if (windowBase+count < elemCount)
+         if (windowBase + count < elemCount)
          {
-            if (useComment &&
-                *(*areaInfoTwo)[windowBase+count]->comment)
-            {
-               sprintf (tempStr, " %-50.50s %c",
-                        (*areaInfoTwo)[windowBase+count]->comment,
-                        getGroupChar((*areaInfoTwo)[windowBase+count]->group));
-            }
+            if (useComment && *(*areaInfoTwo)[windowBase+count]->comment)
+               sprintf( tempStr, " %-50.50s %c"
+                      , (*areaInfoTwo)[windowBase + count]->comment
+                      , getGroupChar((*areaInfoTwo)[windowBase + count]->group)
+                      );
             else
-            {
-               sprintf (tempStr, " %-50.50s %c",
-                        (*areaInfoTwo)[windowBase+count]->areaName,
-                        getGroupChar((*areaInfoTwo)[windowBase+count]->group));
-            }
+               sprintf( tempStr, " %-50.50s %c"
+                      , (*areaInfoTwo)[windowBase + count]->areaName
+                      , getGroupChar((*areaInfoTwo)[windowBase + count]->group)
+                      );
          }
          else
-            *tempStr = 0;
+           *tempStr = 0;
 
          if ((elemCount != 0) && (windowBase+count == currentElem))
-         {
-            printStringFill (tempStr, ' ', 54, 17, 8+count,
-                             YELLOW, BLACK, MONO_INV);
-         }
+           printStringFill(tempStr, ' ', 54, 17, 8+count, YELLOW, BLACK, MONO_INV);
          else
-         {
-            printStringFill (tempStr, ' ', 54, 17, 8+count,
-                             BLUE, CYAN, MONO_NORM);
-         }
+           printStringFill (tempStr, ' ', 54, 17, 8+count, BLUE, CYAN, MONO_NORM);
       }
       if (elemCount == 0)
-      {
-         printString ("Empty", 46, 12, CYAN, BLUE, MONO_NORM);
-      }
+        printString ("Empty", 46, 12, CYAN, BLUE, MONO_NORM);
 
-      ch=readKbd();
+      ch = readKbd();
       switch (ch)
       {
          case _K_PGUP_ :

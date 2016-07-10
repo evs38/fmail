@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -32,7 +32,6 @@
 #ifdef __MSDOS__
 #pragma message "__MSDOS__ is defined"
 #endif
-
 
 #ifdef __OS2__
 #define INCL_DOSPROCESS
@@ -75,14 +74,14 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 extern  u16 allowConversion;
 
 #ifdef __32BIT__
-#define WaitForKey kbhit()
-#define GetKey     getch()
+#define WaitForKey() kbhit()
+#define GetKey()     getch()
 #else
-#define WaitForKey bioskey(0)
-#define GetKey     bioskey(1)
+#define WaitForKey() bioskey(0)
+#define GetKey()     bioskey(1)
 #endif
 
-#ifndef __FMAILX__
+#if !(defined(__FMAILX__) || defined(__32BIT) || defined(__WIN32__))
 extern unsigned cdecl _stklen = 16384;
 #endif
 
@@ -143,39 +142,38 @@ struct  COUNTRY
 
 int cdecl main(int argc, char *argv[])
 {
-  s16      ch;
-  menuType *mainMenu;
-  menuType *arcMenu;
-  menuType *arc32Menu;
-  menuType *deArcMenu;
-  menuType *deArc32Menu;
-  menuType *sysMiscMenu;
-  menuType *systemMenu;
-  menuType *logMenu;
-  menuType *miscMenu;
-  menuType *userMenu;
-  menuType *pmailMenu;
-  menuType *pathMenu;
-  menuType *mailMenu;
-  menuType *mbMenu;
-  menuType *internetMenu;
+  s16       ch;
+  menuType *mainMenu     = NULL;
+  menuType *arcMenu      = NULL;
+  menuType *arc32Menu    = NULL;
+  menuType *deArcMenu    = NULL;
+  menuType *deArc32Menu  = NULL;
+  menuType *sysMiscMenu  = NULL;
+  menuType *systemMenu   = NULL;
+  menuType *logMenu      = NULL;
+  menuType *miscMenu     = NULL;
+  menuType *userMenu     = NULL;
+  menuType *pmailMenu    = NULL;
+  menuType *pathMenu     = NULL;
+  menuType *mailMenu     = NULL;
+  menuType *mbMenu       = NULL;
+  menuType *internetMenu = NULL;
+  menuType *mgrMenu      = NULL;
+  menuType *netMenu      = NULL;
+  menuType *address1Menu = NULL;
+  menuType *address2Menu = NULL;
+  menuType *uplMenu      = NULL;
+  menuType *groupMenu    = NULL;
+  menuType *genMenu      = NULL;
+  menuType *warningMenu  = NULL;
+  menuType *autoExpMenu  = NULL;
+  menuType *anImpMenu    = NULL;
+  menuType *impExpMenu   = NULL;
 #ifndef __FMAILX__
 #ifndef __32BIT__
-  menuType *swapMenu;
+  menuType *swapMenu     = NULL;
 #endif
 #endif
-  /* menuType *akaMatchMenu; */
-  menuType *mgrMenu;
-  menuType *netMenu;
-  menuType *address1Menu;
-  menuType *address2Menu;
-  menuType *uplMenu;
-  menuType *groupMenu;
-  menuType *genMenu;
-  menuType *warningMenu;
-  menuType *autoExpMenu;
-  menuType *anImpMenu;
-  menuType *impExpMenu;
   toggleType bbsToggle;
   toggleType logStyleToggle;
   toggleType tearToggle;
@@ -192,9 +190,11 @@ int cdecl main(int argc, char *argv[])
   u16         mode = 0;
   tempStrType configFileName;
   char        versionStr[80];
-  fhandle     tempHandle;
-  tempStrType tempStr, tempStr2;
-  char        *helpPtr;
+  fhandle     tempHandle
+            , fmailLocHandle = -1;
+  tempStrType tempStr
+            , tempStr2;
+  char       *helpPtr;
   u16         count;
   toggleType  mailerToggle;
 
@@ -221,6 +221,7 @@ int cdecl main(int argc, char *argv[])
   country(0, &countryInfo);
 #else
   countryInfo.co_tmsep[0] = ':';
+  countryInfo.co_time = 1;  // 24 hour format
 #endif
 
   for (count = 0; count < MAX_AKAS; count++)
@@ -235,7 +236,7 @@ int cdecl main(int argc, char *argv[])
   boardSelect[MAX_AKAS+2].numPtr = &config.recBoard;
   boardSelect[MAX_AKAS+2].f      = (function)badduprecDisplayAreas;
 
-  if (((helpPtr = getenv("FMAIL")) == NULL) || (*helpPtr == 0))
+  if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0)
   {
     strcpy (configPath, argv[0]);
     *(strrchr(configPath, '\\') + 1) = 0;
@@ -667,11 +668,11 @@ int cdecl main(int argc, char *argv[])
   windowLook.mono_attr    = MONO_NORM;
   windowLook.wAttr        = NO_SAVE; // WB_DOUBLE_H | NO_SAVE;
 
-  if (displayWindow (NULL, 0, 0, 79, 3) != 0)
+  if (displayWindow(NULL, 0, 0, 79, 3) != 0)
   {
-    displayMessage ("Not enough memory available");
-    deInit (5);
-    return(1);
+    displayMessage("Not enough memory available");
+    deInit(5);
+    return 1;
   }
 #ifndef __32BIT__
   if (!color)
@@ -757,63 +758,67 @@ int cdecl main(int argc, char *argv[])
 
   if (_osmajor < 3)
   {
-    displayMessage ("FSetup requires at least DOS 3.0");
-    fillRectangle (' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
-    deInit (5);
-    return (0);
+    displayMessage("FSetup requires at least DOS 3.0");
+    fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
+    deInit(5);
+    return 0;
   }
 
   strcpy(tempStr2, strcpy(tempStr, config.bbsPath));
-  strcat (tempStr, "fmail.loc");
+  strcat(tempStr, "fmail.loc");
   if ((helpPtr = strrchr(tempStr2, '\\')) != NULL)
     *helpPtr = 0;
 
-  if  ((!access(tempStr2, 0)) &&
-       ((tempHandle = open(tempStr, O_WRONLY|O_DENYWRITE|O_BINARY|O_CREAT|O_TRUNC,
-                           S_IREAD|S_IWRITE)) == -1) &&
-       (errno != ENOFILE))
+  if  (  !access(tempStr2, 0)
+      && (fmailLocHandle = open(tempStr, O_WRONLY | O_DENYWRITE | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1
+      && errno != ENOFILE
+      )
   {
-    displayWindow (NULL, 7, 10, 73, 14);
-    printString ("Waiting for another copy of FMail, FTools or FSetup to finish", 10, 12, WHITE, LIGHTGRAY, MONO_HIGH);
+    displayWindow(NULL, 7, 10, 73, 14);
+    printString("Waiting for another copy of FMail, FTools or FSetup to finish", 10, 12, WHITE, LIGHTGRAY, MONO_HIGH);
 
-    time (&time1);
+    time(&time1);
     time2 = time1;
 
     ch = 0;
-    while (((tempHandle = open(tempStr,
-                               O_WRONLY|O_DENYALL|O_BINARY|O_CREAT|O_TRUNC,
-                               S_IREAD|S_IWRITE)) == -1) &&
-           (!config.activTimeOut || time2-time1 < config.activTimeOut) && ((ch = GetKey & 0xff) != 27))
+    while (  (fmailLocHandle = open(tempStr, O_WRONLY | O_DENYALL | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1
+          && (!config.activTimeOut || time2 - time1 < config.activTimeOut)
+          && (ch = GetKey() & 0xff) != 27
+          )
     {
       if (ch != 0 && ch != -1)
-        WaitForKey;
+        WaitForKey();
       else
       {
-        time2a = time2+1;
-        while ( time(&time2) <= time2a )
+        time2a = time2 + 1;
+        while (time(&time2) <= time2a)
           returnTimeSlice(1);
       }
     }
-    if (ch != 0 && ch != -1) WaitForKey;
+    if (ch != 0 && ch != -1)
+      WaitForKey();
 
-    if (tempHandle == -1)
+    if (fmailLocHandle == -1)
     {
       removeWindow();
       if (ch != 27)
-        printStringFill ("Another copy did not finish in time. Exiting...", ' ', 76, 3, 2, WHITE, RED, MONO_HIGH);
-      deInit (5);
+        printStringFill("Another copy did not finish in time. Exiting...", ' ', 76, 3, 2, WHITE, RED, MONO_HIGH);
+      deInit(5);
       return 0;
     }
     removeWindow();
   }
 
-  if ((config.versionMajor != CONFIG_MAJOR) ||
-      (config.versionMinor < 92) ||
-      (config.versionMinor > CONFIG_MINOR))
+  if (  config.versionMajor != CONFIG_MAJOR
+     || config.versionMinor < 92
+     || config.versionMinor > CONFIG_MINOR
+     )
   {
     displayMessage(dCFGFNAME" was not created by FSetup version 0.90/0.92/0.94/0.96");
     fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
     deInit(5);
+    if (fmailLocHandle != -1)
+      close(fmailLocHandle);
     return 0;
   }
 
@@ -849,6 +854,8 @@ int cdecl main(int argc, char *argv[])
   {
     displayMessage("Not enough memory available");
     deInit(5);
+    if (fmailLocHandle != -1)
+      close(fmailLocHandle);
     return 1;
   }
   addItem(warningMenu, DISPLAY,
@@ -864,6 +871,8 @@ int cdecl main(int argc, char *argv[])
   {
     displayMessage("Not enough memory available");
     deInit(5);
+    if (fmailLocHandle != -1)
+      close(fmailLocHandle);
     return 1;
   }
   addItem(autoExpMenu, NEW_WINDOW, "* WARNING *", 0, warningMenu, 6, 3,
@@ -1756,10 +1765,12 @@ int cdecl main(int argc, char *argv[])
   if ((mainMenu = createMenu(" Main ")) == NULL)
   {
 nomem:
-    free (autoExpMenu);
+    free(autoExpMenu);
     displayMessage ("Not enough memory available");
-    deInit (5);
-    return(1);
+    deInit(5);
+    if (fmailLocHandle != -1)
+      close(fmailLocHandle);
+    return 1;
   }
   addItem(mainMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(mainMenu, NEW_WINDOW, "Miscellaneous", 0, miscMenu, 2, 2,
@@ -1782,15 +1793,15 @@ nomem:
 
   do
   {
-    update |= runMenu (mainMenu, 3, 6);
+    update |= runMenu(mainMenu, 3, 6);
     if (update)
-      ch = askBoolean ("Save changes ?", 'Y');
+      ch = askBoolean("Save changes ?", 'Y');
     else
       ch = 'N';
   }
-  while ((ch != 'Y') && (ch != 'N'));
+  while (ch != 'Y' && ch != 'N');
 
-  working ();
+  working();
 
   if (defaultEnumRA)
     echoDefaultsRec.attrRA |= BIT3;
@@ -1863,9 +1874,45 @@ nomem:
       closeConfig(CFG_AREADEF);
     }
   }
-  autoUpdate ();
+  autoUpdate();
 
-  deInit (5);
-  return (0);
+  deInit(5);
+
+  if (mainMenu    ) free(mainMenu    );
+  if (arcMenu     ) free(arcMenu     );
+  if (arc32Menu   ) free(arc32Menu   );
+  if (deArcMenu   ) free(deArcMenu   );
+  if (deArc32Menu ) free(deArc32Menu );
+  if (sysMiscMenu ) free(sysMiscMenu );
+  if (systemMenu  ) free(systemMenu  );
+  if (logMenu     ) free(logMenu     );
+  if (miscMenu    ) free(miscMenu    );
+  if (userMenu    ) free(userMenu    );
+  if (pmailMenu   ) free(pmailMenu   );
+  if (pathMenu    ) free(pathMenu    );
+  if (mailMenu    ) free(mailMenu    );
+  if (mbMenu      ) free(mbMenu      );
+  if (internetMenu) free(internetMenu);
+  if (mgrMenu     ) free(mgrMenu     );
+  if (netMenu     ) free(netMenu     );
+  if (address1Menu) free(address1Menu);
+  if (address2Menu) free(address2Menu);
+  if (uplMenu     ) free(uplMenu     );
+  if (groupMenu   ) free(groupMenu   );
+  if (genMenu     ) free(genMenu     );
+  if (warningMenu ) free(warningMenu );
+  if (autoExpMenu ) free(autoExpMenu );
+  if (anImpMenu   ) free(anImpMenu   );
+  if (impExpMenu  ) free(impExpMenu  );
+#ifndef __FMAILX__
+#ifndef __32BIT__
+  if (swapMenu    ) free(swapMenu    );
+#endif
+#endif
+
+  if (fmailLocHandle != -1)
+    close(fmailLocHandle);
+  return 0;
 }
+//---------------------------------------------------------------------------
 

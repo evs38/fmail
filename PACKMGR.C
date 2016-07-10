@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //  This file is part of FMail.
 //
@@ -71,11 +71,8 @@ void displayPack (packType pack, u16 elemCount,
                           windowLook.background, MONO_NORM);
       }
    }
-   if (elemCount == 0)
-   {
-      printString ("**** Empty ****", 32, 13, windowLook.datafg,
-                                      windowLook.background, MONO_NORM);
-   }
+  if (elemCount == 0)
+    printString("**** Empty ****", 32, 13, windowLook.datafg, windowLook.background, MONO_NORM);
 }
 
 
@@ -116,13 +113,13 @@ s16 packMgr (void)
    printString("Home ", 56, 24, YELLOW, BLACK, MONO_HIGH);
    printString("First  ", 61, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
    printString("End ", 68, 24, YELLOW, BLACK, MONO_HIGH);
-   printString("Last  ", 72, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString("\x18\x19", 78, 24, YELLOW, BLACK, MONO_HIGH);
+   printString("Last ", 72, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+   printString("\x18\x19", 77, 24, YELLOW, BLACK, MONO_HIGH);
 
    while (elemCount < MAX_PACK && *(*pack)[elemCount] != 0)
       elemCount++;
 
-   if (displayWindow(" Pack Manager ", 5, 5, 71, 6+MAX_PS_WINSIZE) != 0)
+   if (displayWindow(" Pack Manager ", 5, 5, 71, 6 + MAX_PS_WINSIZE) != 0)
    {
       free(pack);
       return 0;
@@ -132,11 +129,11 @@ s16 packMgr (void)
    {
       do
       {
-	 displayPack (*pack, elemCount, windowBase, currentElem);
+        displayPack (*pack, elemCount, windowBase, currentElem);
 
-	 ch=readKbd();
-	 switch (ch)
-	 {
+        ch = readKbd();
+        switch (ch)
+        {
             case _K_PGUP_ :
                           if (windowBase >= MAX_PS_WINSIZE-1)       /* PgUp */
 			  {

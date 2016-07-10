@@ -217,26 +217,27 @@ funcParType multiAkaSelectRec;
 rawEchoType tempInfo, updInfo;
 
 //---------------------------------------------------------------------------
-s16 getSetReset (void)
+s16 getSetReset(void)
 {
-   u16 ch;
+  u16 ch;
 
-   if (displayWindow (NULL, 49, 12, 70, 14) != 0) return (0);
-   printString ("(S)et or (R)eset ?", 51, 13,
-                windowLook.promptfg, windowLook.background, MONO_NORM);
+  if (displayWindow (NULL, 49, 12, 70, 14) != 0)
+    return 0;
 
-   do
-   {
-      ch=readKbd();
-      ch = toupper (ch);
-   }
-   while ((ch != 'R') && (ch != 'S') && (ch != _K_ESC_));
+  printString("(S)et or (R)eset ?", 51, 13, windowLook.promptfg, windowLook.background, MONO_NORM);
 
-   removeWindow ();
-   return (ch);
+  do
+  {
+    ch = toupper(readKbd());
+  }
+  while (ch != 'R' && ch != 'S' && ch != _K_ESC_);
+
+  removeWindow();
+
+  return ch;
 }
 //---------------------------------------------------------------------------
-s16 multiAkaSelect (void)
+s16 multiAkaSelect(void)
 {
    u16      update = 0;
    u16      count;
@@ -245,7 +246,7 @@ s16 multiAkaSelect (void)
    char     tempStr[48];
    u16      offset = 0;
 
-   if (displayWindow (" Other AKAs ", 33, 4, 71, 21) != 0) return (0);
+   if (displayWindow(" Other AKAs ", 33, 4, 71, 21) != 0) return (0);
 
    do
    {
@@ -314,11 +315,11 @@ s16 multiAkaSelect (void)
 static void fillAreaInfo(u16 index, rawEchoType *tempInfo)
 {
    memset(areaInfo[index], 0, sizeof(rawEchoTypeX));
-   if ( (areaInfo[index]->areaName = malloc(strlen(tempInfo->areaName)+1)) != NULL )
+   if ( (areaInfo[index]->areaName = malloc(strlen(tempInfo->areaName) + 1)) != NULL )
       strcpy(areaInfo[index]->areaName, tempInfo->areaName);
-   if ( (areaInfo[index]->comment = malloc(strlen(tempInfo->comment)+1)) != NULL )
+   if ( (areaInfo[index]->comment = malloc(strlen(tempInfo->comment) + 1)) != NULL )
       strcpy(areaInfo[index]->comment, tempInfo->comment);
-   if ( (areaInfo[index]->msgBasePath = malloc(strlen(tempInfo->msgBasePath)+1)) != NULL )
+   if ( (areaInfo[index]->msgBasePath = malloc(strlen(tempInfo->msgBasePath) + 1)) != NULL )
       strcpy(areaInfo[index]->msgBasePath, tempInfo->msgBasePath);
    areaInfo[index]->boardNumRA = tempInfo->boardNumRA;
    areaInfo[index]->msgBaseType = tempInfo->msgBaseType;
@@ -337,7 +338,7 @@ static void freeAreaInfo(u16 index)
 //---------------------------------------------------------------------------
 s16 areaMgr(void)
 {
-   u8		*tempPtr; //, *tempPtr2;
+   u8          *tempPtr;
    u16          index = 0;
    u16          pos, idx;
    areaInfoPtr  areaHelpPtr;
@@ -405,7 +406,7 @@ s16 areaMgr(void)
 	    memcpy (tempInfo.originLine, areaInfoOld.originLine, ORGLINE_LEN-1);
             for ( count = 0; count < MAX_FORWARDOLD; count++ )
                tempInfo.forwards[count].nodeNum = areaInfoOld.export[count];
-	    tempInfo.signature  = 'AE';
+	    tempInfo.signature  = MC('A','E');
 	    tempInfo.group      = areaInfoOld.group;
 	    tempInfo.board      = areaInfoOld.board;
 	    tempInfo.address    = areaInfoOld.address;
@@ -607,7 +608,7 @@ s16 areaMgr(void)
 	    printString("Insert  ", 55, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
 	    printString("Del ", 63, 24, BROWN, BLACK, MONO_NORM);
 	    printString("Delete    ", 67, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString("\x1b \x1a", 77, 24, BROWN, BLACK, MONO_NORM);
+	    printString("\x1b\x1a", 77, 24, BROWN, BLACK, MONO_NORM);
 	 }
 	 else
 	 {
@@ -705,7 +706,7 @@ s16 areaMgr(void)
 	    }
 	    printString ("Del ", 63, 24, YELLOW, BLACK, MONO_HIGH);
 	    printString ("Delete    ", 67, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-	    printString ("\x1b \x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
+	    printString ("\x1b\x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
 	 }
 	 if (groupSelectMask)
 	 {

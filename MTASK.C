@@ -36,7 +36,7 @@ void returnTimeSlice(u16 arg)
 #ifdef FMAIL
    if ( !arg && !config.genOptions.timeSliceFM )
       return;
-#elif !defined FSETUP
+#elif !defined(FSETUP)
    if ( !arg && !config.genOptions.timeSliceFT )
       return;
 #else
@@ -60,15 +60,19 @@ void returnTimeSlice(u16 arg)
 
 void returnTimeSlice(u16 arg)
 {
-#ifndef FMAIL
-   if ( !arg || !config.genOptions.timeSliceFT )
-      return;
+#if defined(FTOOLS)
+#define SLEEPTIME 0
+  if (!arg || !config.genOptions.timeSliceFT)
+    return;
+#elif defined(FMAIL)
+#define SLEEPTIME 0
+  if (!arg || !config.genOptions.timeSliceFM)
+    return;
 #else
-   if ( !arg || !config.genOptions.timeSliceFM )
-      return;
+#define SLEEPTIME 10
 #endif
 #ifdef __WIN32__
-  Sleep(0);
+  Sleep(SLEEPTIME);  // milliseconds
 #else
   sleep(1);
 #endif  

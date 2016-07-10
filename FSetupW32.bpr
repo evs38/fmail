@@ -7,24 +7,19 @@
     <OBJFILES value="OBJ.6\FSetupW32\AMGR_UTL.obj OBJ.6\FSetupW32\AREAMGR.obj 
       OBJ.6\FSetupW32\CFGFILE.obj OBJ.6\FSetupW32\CRC.obj 
       OBJ.6\FSetupW32\EXPORT.obj OBJ.6\FSetupW32\FILESYS.obj 
-      OBJ.6\FSetupW32\FS_BCL.obj OBJ.6\FSetupW32\FS_FUNC.obj 
-      OBJ.6\FSetupW32\FS_UTIL.obj OBJ.6\FSetupW32\FSETUP.obj 
-      OBJ.6\FSetupW32\IMPORT.obj OBJ.6\FSetupW32\MTASK.obj 
+      OBJ.6\FSetupW32\FS_FUNC.obj OBJ.6\FSetupW32\FS_UTIL.obj 
+      OBJ.6\FSetupW32\FSETUP.obj OBJ.6\FSetupW32\IMPORT.obj 
+      OBJ.6\FSetupW32\ispathch.obj OBJ.6\FSetupW32\MTASK.obj 
       OBJ.6\FSetupW32\NODEMGR.obj OBJ.6\FSetupW32\PACKMGR.obj 
-      OBJ.6\FSetupW32\STRISTR.obj OBJ.6\FSetupW32\totalsec.obj 
-      OBJ.6\FSetupW32\UPDATE.obj OBJ.6\FSetupW32\UPLINK.obj 
-      OBJ.6\FSetupW32\WINDOW.obj"/>
+      OBJ.6\FSetupW32\UPDATE.obj OBJ.6\FSetupW32\UTILS2.obj 
+      OBJ.6\FSetupW32\Version.obj OBJ.6\FSetupW32\WINDOW.obj"/>
     <RESFILES value="FSetupW32.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
-    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi 
-      inetdbxpress.bpi visualclx.bpi dbrtl.bpi bdertl.bpi vcldb.bpi vcldbx.bpi 
-      dsnap.bpi cds.bpi bdecds.bpi teeui.bpi teedb.bpi tee.bpi teeqr.bpi 
-      ibxpress.bpi visualdbclx.bpi inetdb.bpi bcbie.bpi soaprtl.bpi 
-      dbexpress.bpi dbxcds.bpi bcb2kaxserver.bpi adortl.bpi"/>
+    <PACKAGES value=""/>
     <PATHCPP value=".;"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
@@ -32,7 +27,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG;FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__"/>
+    <USERDEFINES value="FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FSetupW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -41,10 +36,10 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -Vx -Ve -C -X- -r- -a1 -6 -b -d -k -y -v -vi- -tWC -tWM- -c"/>
+    <CFLAG1 value="-Od -Vx -Ve -C -X- -r- -a1 -6 -b -k -y -v -vi- -tWC -tWM- -c"/>
     <PFLAGS value="-N2OBJ.6\FSetupW32 -N0OBJ.6\FSetupW32 -$YD -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zd"/>
+    <AFLAGS value="/mx /w2 /zi"/>
     <LFLAGS value="-IOBJ.6\FSetupW32 -D&quot;&quot; -ap -Tpe -x -Gn -v"/>
     <OTHERFILES value=""/>
   </OPTIONS>
@@ -63,18 +58,17 @@
       <FILE FILENAME="CRC.C" FORMNAME="" UNITNAME="CRC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="EXPORT.C" FORMNAME="" UNITNAME="EXPORT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="FILESYS.C" FORMNAME="" UNITNAME="FILESYS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="FS_BCL.C" FORMNAME="" UNITNAME="FS_BCL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="FS_FUNC.C" FORMNAME="" UNITNAME="FS_FUNC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="FS_UTIL.C" FORMNAME="" UNITNAME="FS_UTIL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="FSETUP.C" FORMNAME="" UNITNAME="FSETUP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="IMPORT.C" FORMNAME="" UNITNAME="IMPORT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ispathch.c" FORMNAME="" UNITNAME="ispathch" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="MTASK.C" FORMNAME="" UNITNAME="MTASK" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="NODEMGR.C" FORMNAME="" UNITNAME="NODEMGR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="PACKMGR.C" FORMNAME="" UNITNAME="PACKMGR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="STRISTR.C" FORMNAME="" UNITNAME="STRISTR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="totalsec.c" FORMNAME="" UNITNAME="totalsec" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UPDATE.C" FORMNAME="" UNITNAME="UPDATE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="UPLINK.C" FORMNAME="" UNITNAME="UPLINK" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UTILS2.C" FORMNAME="" UNITNAME="UTILS2" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Version.c" FORMNAME="" UNITNAME="Version" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="WINDOW.C" FORMNAME="" UNITNAME="WINDOW" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
@@ -85,12 +79,12 @@
 IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
-MinorVer=64
-Release=0
-Build=0
-Debug=0
-PreRelease=0
-Special=0
+MinorVer=69
+Release=22
+Build=3
+Debug=1
+PreRelease=1
+Special=1
 Private=0
 DLL=0
 Locale=1033
@@ -99,14 +93,40 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=
 FileDescription=
-FileVersion=1.64.0.0
+FileVersion=1.69.22.3
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=
-ProductVersion=1.0.0.0
+ProductVersion=1.69.22
 Comments=
+SpecialBuild=
+
+[Excluded Packages]
+C:\Program Files\Borland\CBuilder6\Bin\dclstd60.bpl=Borland Standard Components
+C:\Program Files\Borland\CBuilder6\Bin\dclnet60.bpl=Borland Internet Components
+c:\program files\borland\cbuilder6\Bin\dcl31w60.bpl=Delphi 1.0 Compatibility Components
+c:\program files\borland\cbuilder6\Bin\applet60.bpl=Borland Control Panel Applet Package
+C:\Program Files\Borland\CBuilder6\Bin\dclclxstd60.bpl=Borland CLX Standard Components
+C:\Program Files\Borland\CBuilder6\Bin\dbx60.bpl=Borland SQL Explorer UI Package
+C:\Program Files\Borland\CBuilder6\Bin\dcldb60.bpl=Borland Database Components
+c:\program files\borland\cbuilder6\Bin\dclbde60.bpl=Borland BDE DB Components
+c:\program files\borland\cbuilder6\Bin\dclcds60.bpl=Borland Base Cached ClientDataset Component
+C:\Program Files\Borland\CBuilder6\Bin\dclmid60.bpl=Borland MyBase DataAccess Components
+c:\program files\borland\cbuilder6\Bin\dclbdecds60.bpl=Borland Local BDE ClientDataset Components
+c:\program files\borland\cbuilder6\Bin\dcltee60.bpl=TeeChart Components
+c:\program files\borland\cbuilder6\Bin\dcltqr60.bpl=TeeChart for QuickReport Components
+c:\program files\borland\cbuilder6\Bin\dclib60.bpl=InterBase Data Access Components
+c:\program files\borland\cbuilder6\Bin\dclclxdb60.bpl=Borland CLX Database Components
+c:\program files\borland\cbuilder6\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
+c:\program files\borland\cbuilder6\Bin\bcbie60.bpl=Borland C++Builder Internet Explorer 5 Components Package
+c:\program files\borland\cbuilder6\Bin\dclsoap60.bpl=Borland SOAP Components
+c:\program files\borland\cbuilder6\Bin\dcldbx60.bpl=Borland dbExpress Components
+c:\program files\borland\cbuilder6\Bin\dcldbxcds60.bpl=Borland Local DBX ClientDataset Components
+c:\program files\borland\cbuilder6\Bin\bcb2kaxserver60.bpl=Borland C++Builder COM Server Components Sample Package
+c:\program files\borland\cbuilder6\Bin\dclado60.bpl=Borland ADO DB Components
+c:\program files\borland\cbuilder6\Bin\dclact60.bpl=Borland ActionBar Components
 
 [HistoryLists\hlIncludePath]
 Count=1
@@ -121,10 +141,11 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=3
-Item0=_DEBUG;FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
-Item1=_DEBUG;FSETUP;PENTIUMPRO;__FMAILX__
-Item2=_DEBUG
+Count=4
+Item0=FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__;_DEBUG
+Item1=_DEBUG;FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
+Item2=_DEBUG;FSETUP;PENTIUMPRO;__FMAILX__
+Item3=_DEBUG
 
 [HistoryLists\hlIntOutputDir]
 Count=1

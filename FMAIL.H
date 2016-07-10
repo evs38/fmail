@@ -329,6 +329,9 @@ u16 getAreaCode(char *msgText);
     (n1.point >  n2.point)))     \
 )
 
+// Use macro for Multi-character character constants, to prevent compiler warnings
+#define MC(c1, c2) (((c1) << 8) | (c2))
+
 #ifndef FSETUP
 #define dARROW "->"
 

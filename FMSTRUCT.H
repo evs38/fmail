@@ -44,7 +44,7 @@
 
 // **** Modify the type definitions below if necessary for your compiler ****
 
-#define fhandle signed int
+#define fhandle int
 #define u8    unsigned char
 #define uchar unsigned char
 #define schar char
@@ -546,14 +546,14 @@ typedef char areaNameType[ECHONAME_LEN];
 
 typedef struct
 {
-  unsigned tossedTo     : 1;  /* BIT 0 */
-  unsigned              : 15; /* BIT 1-15 */
+  unsigned tossedTo     : 1;   // BIT 0
+  unsigned              : 15;  // BIT 1-15
 } areaStatType;
 
 typedef struct
 {
-  u16             signature; /* contains "AE" for echo areas in FMAIL.AR and */
-          /* "AD" for default settings in FMAIL.ARD       */
+  u16             signature;   // contains "AE" for echo areas in FMAIL.AR and
+                               // "AD" for default settings in FMAIL.ARD
   u16             writeLevel;
   areaNameType    areaName;
   char            comment[COMMENT_LEN];
@@ -565,11 +565,10 @@ typedef struct
   char            originLine[ORGLINE_LEN];
   u16             address;
   u32             group;
-  u16             _alsoSeenBy; /* obsolete: see the 32-bit alsoSeenBy below */
+  u16             _alsoSeenBy;  // obsolete: see the 32-bit alsoSeenBy below
   u16             msgs;
   u16             days;
   u16             daysRcvd;
-  /* old startposition of export[MAX_FORWARD] */
   u16             readSecRA;
   uchar           flagsRdRA[4];
   uchar           flagsRdNotRA[4];

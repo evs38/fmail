@@ -386,8 +386,7 @@ typedef struct
   word hdrsize;         /* sizeof(AREAFILE_HDR) */
   word recsize;         /* sizeof(AREAFILE_GE) */
   word maxconnections;  /* Maximum number of entries in connections list */
-}
-AREAFILE_HDR;
+} AREAFILE_HDR;
 
 /* --- AREAFILE.GE record */
 

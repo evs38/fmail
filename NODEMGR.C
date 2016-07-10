@@ -617,7 +617,7 @@ void noMem(u16 selAreas, u16 selAreas2)
     free(listDataArray2[--selAreas2].desc);
 }
 //---------------------------------------------------------------------------
-s16 nodeMgr (void)
+s16 nodeMgr(void)
 {
    u16             index = 0;
    nodeNumType     tempNode;
@@ -646,19 +646,19 @@ s16 nodeMgr (void)
 
       for (count = 0; count < nodeInfoCount; count++)
       {
-         if ( (nodeInfo[count] = malloc(sizeof(nodeInfoType))) == NULL )
+         if ((nodeInfo[count] = malloc(sizeof(nodeInfoType))) == NULL)
          {
             displayMessage("Not enough memory available");
             nodeInfoCount = 0;
             break;
          }
          getRec(CFG_NODES, count);
-         memcpy (nodeInfo[count], nodeBuf, sizeof(nodeInfoType));
-         nodeInfo[count]->password[16] = 0;
-         nodeInfo[count]->packetPwd[8] = 0;
+         memcpy(nodeInfo[count], nodeBuf, sizeof(nodeInfoType));
+         nodeInfo[count]->password [16] = 0;
+         nodeInfo[count]->packetPwd[ 8] = 0;
          nodeInfo[count]->sysopName[35] = 0;
       }
-      closeConfig (CFG_NODES);
+      closeConfig(CFG_NODES);
    }
    else
    {
@@ -684,7 +684,7 @@ s16 nodeMgr (void)
                break;
             }
             memset(nodeInfo[nodeInfoCount], 0, sizeof(nodeInfoType));
-            nodeInfo[nodeInfoCount]->signature  = 'NO';
+            nodeInfo[nodeInfoCount]->signature  = MC('N','O');
             nodeInfo[nodeInfoCount]->node       = nodeInfoOld.node;
             nodeInfo[nodeInfoCount]->viaNode    = nodeInfoOld.viaNode;
             nodeInfo[nodeInfoCount]->capability = nodeInfoOld.capability;
@@ -692,18 +692,18 @@ s16 nodeMgr (void)
             nodeInfo[nodeInfoCount]->archiver   = nodeInfoOld.archiver;
             nodeInfo[nodeInfoCount]->groups     = nodeInfoOld.groups;
             nodeInfo[nodeInfoCount]->outStatus  = nodeInfoOld.outStatus;
-            memcpy (nodeInfo[nodeInfoCount]->sysopName,   nodeInfoOld.sysopName,35);
-            memcpy (nodeInfo[nodeInfoCount]->password,    nodeInfoOld.password, 17);
-            memcpy (nodeInfo[nodeInfoCount++]->packetPwd, nodeInfoOld.packetPwd, 9);
+            memcpy(nodeInfo[nodeInfoCount]->sysopName,   nodeInfoOld.sysopName,35);
+            memcpy(nodeInfo[nodeInfoCount]->password,    nodeInfoOld.password, 17);
+            memcpy(nodeInfo[nodeInfoCount++]->packetPwd, nodeInfoOld.packetPwd, 9);
          }
 
          close(nodeInfoHandle);
-         if ( nodeInfoCount )
+         if (nodeInfoCount)
             update++;
       }
    }
 
-   memset (&tempInfoN, 0, sizeof(nodeInfoType));
+   memset(&tempInfoN, 0, sizeof(nodeInfoType));
 
    if (editNM(DISPLAY_NODE_WINDOW, 0))
       return 1;
@@ -719,8 +719,7 @@ s16 nodeMgr (void)
             removeWindow();
             if (editNM(DISPLAY_NODE_WINDOW, 0))
                return 1;
-            printString ("**** Empty ****", 17, 6, windowLook.datafg,
-                          windowLook.background, MONO_HIGH);
+            printString ("**** Empty ****", 17, 6, windowLook.datafg, windowLook.background, MONO_HIGH);
 
             printString ("F1 ", 0, 24, BROWN, BLACK, MONO_NORM);
             printString ("Edit  ", 3, 24, MAGENTA, BLACK, MONO_NORM);
@@ -736,7 +735,7 @@ s16 nodeMgr (void)
             printString ("Areas     ", 54, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
             printString ("Ins ", 64, 24, YELLOW, BLACK, MONO_HIGH);
             printString ("Del      ", 68, 24, BROWN, BLACK, MONO_NORM);
-            printString ("\x1b \x1a", 77, 24, BROWN, BLACK, MONO_NORM);
+            printString ("\x1b\x1a", 77, 24, BROWN, BLACK, MONO_NORM);
          }
          else
          {
@@ -760,21 +759,23 @@ s16 nodeMgr (void)
             printString ("F5 ", 31, 24, YELLOW, BLACK, MONO_HIGH);
             printString ("Browse  ", 34, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
             if (nodeInfoCount >= MAX_NODES)
-            {  printString ("F6 ", 42, 24, BROWN, BLACK, MONO_HIGH);
-               printString ("Copy  ", 45, 24, MAGENTA, BLACK, MONO_NORM);
+            {
+              printString ("F6 ", 42, 24, BROWN, BLACK, MONO_HIGH);
+              printString ("Copy  ", 45, 24, MAGENTA, BLACK, MONO_NORM);
             }
             else
-            {  printString ("F6 ", 42, 24, YELLOW, BLACK, MONO_HIGH);
-               printString ("Copy  ", 45, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+            {
+              printString ("F6 ", 42, 24, YELLOW, BLACK, MONO_HIGH);
+              printString ("Copy  ", 45, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
             }
             printString ("F8 ", 51, 24, YELLOW, BLACK, MONO_HIGH);
             printString ("Areas     ", 54, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
             if (nodeInfoCount >= MAX_NODES)
-               printString ("Ins ", 64, 24, BROWN, BLACK, MONO_NORM);
+              printString ("Ins ", 64, 24, BROWN, BLACK, MONO_NORM);
             else
-               printString ("Ins ", 64, 24, YELLOW, BLACK, MONO_HIGH);
+              printString ("Ins ", 64, 24, YELLOW, BLACK, MONO_HIGH);
             printString ("Del      ", 68, 24, YELLOW, BLACK, MONO_HIGH);
-            printString ("\x1b \x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
+            printString ("\x1b\x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
          }
 
          ch=readKbd();
@@ -1014,7 +1015,7 @@ s16 nodeMgr (void)
                      tempInfoN.capability     = PKT_TYPE_2PLUS;
                      tempInfoN.archiver       = config.defaultArc;
                   }
-                  tempInfoN.signature = 'ND';
+                  tempInfoN.signature = MC('N','D');
                   pos = index;
                   do
                   {
