@@ -3,17 +3,17 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="FSetupW32.exe"/>
-    <OBJFILES value="OBJ.6\FSetupW32\AMGR_UTL.obj OBJ.6\FSetupW32\AREAMGR.obj 
-      OBJ.6\FSetupW32\CFGFILE.obj OBJ.6\FSetupW32\CRC.obj 
-      OBJ.6\FSetupW32\EXPORT.obj OBJ.6\FSetupW32\FILESYS.obj 
-      OBJ.6\FSetupW32\FS_FUNC.obj OBJ.6\FSetupW32\FS_UTIL.obj 
-      OBJ.6\FSetupW32\FSETUP.obj OBJ.6\FSetupW32\IMPORT.obj 
-      OBJ.6\FSetupW32\ispathch.obj OBJ.6\FSetupW32\MTASK.obj 
-      OBJ.6\FSetupW32\NODEMGR.obj OBJ.6\FSetupW32\PACKMGR.obj 
-      OBJ.6\FSetupW32\UPDATE.obj OBJ.6\FSetupW32\UTILS2.obj 
-      OBJ.6\FSetupW32\Version.obj OBJ.6\FSetupW32\WINDOW.obj"/>
-    <RESFILES value="FSetupW32.res"/>
+    <PROJECT value="FConfigW32.exe"/>
+    <OBJFILES value="OBJ.6\FConfigW32\AMGR_UTL.obj OBJ.6\FConfigW32\AREAMGR.obj 
+      OBJ.6\FConfigW32\CFGFILE.obj OBJ.6\FConfigW32\CRC.obj 
+      OBJ.6\FConfigW32\EXPORT.obj OBJ.6\FConfigW32\FILESYS.obj 
+      OBJ.6\FConfigW32\FS_FUNC.obj OBJ.6\FConfigW32\FS_UTIL.obj 
+      OBJ.6\FConfigW32\FSETUP.obj OBJ.6\FConfigW32\IMPORT.obj 
+      OBJ.6\FConfigW32\ispathch.obj OBJ.6\FConfigW32\MTASK.obj 
+      OBJ.6\FConfigW32\NODEMGR.obj OBJ.6\FConfigW32\PACKMGR.obj 
+      OBJ.6\FConfigW32\UPDATE.obj OBJ.6\FConfigW32\UTILS2.obj 
+      OBJ.6\FConfigW32\Version.obj OBJ.6\FConfigW32\WINDOW.obj"/>
+    <RESFILES value="FConfigW32.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value=""/>
@@ -27,20 +27,20 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__;_DEBUG"/>
+    <USERDEFINES value="FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
-    <MAINSOURCE value="FSetupW32.bpf"/>
+    <MAINSOURCE value="FConfigW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
     <LIBPATH value="$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -Vx -Ve -C -X- -r- -a1 -6 -b -k -y -v -vi- -tWC -tWM- -c"/>
-    <PFLAGS value="-N2OBJ.6\FSetupW32 -N0OBJ.6\FSetupW32 -$YD -$W -$O- -$A8 -v -JPHNE -M"/>
+    <CFLAG1 value="-O2 -Vx -Ve -C -X- -a1 -6 -b -d -k- -vi -tWC -tWM- -c"/>
+    <PFLAGS value="-N2OBJ.6\FConfigW32 -N0OBJ.6\FConfigW32 -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-IOBJ.6\FSetupW32 -D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-IOBJ.6\FConfigW32 -D&quot;&quot; -ap -Tpe -x -Gn"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -50,8 +50,8 @@
     <OTHERFILES value=""/>
   </LINKER>
   <FILELIST>
-      <FILE FILENAME="FSetupW32.res" FORMNAME="" UNITNAME="FSetupW32.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="FSetupW32.bpf" FORMNAME="" UNITNAME="FSetupW32" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FConfigW32.res" FORMNAME="" UNITNAME="FConfigW32.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FConfigW32.bpf" FORMNAME="" UNITNAME="FConfigW32" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="AMGR_UTL.C" FORMNAME="" UNITNAME="AMGR_UTL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="AREAMGR.C" FORMNAME="" UNITNAME="AREAMGR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="CFGFILE.C" FORMNAME="" UNITNAME="CFGFILE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -81,23 +81,23 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=69
 Release=22
-Build=6
-Debug=1
+Build=9
+Debug=0
 PreRelease=1
 Special=0
 Private=0
 DLL=0
-Locale=1043
+Locale=1033
 CodePage=1252
 
 [Version Info Keys]
 CompanyName=FMail GPL
-FileDescription=FMail mail tosser Setup program
-FileVersion=1.69.22.6
-InternalName=fsetup
+FileDescription=FMail mail tosser configuration program
+FileVersion=1.69.22.9
+InternalName=FConfig
 LegalCopyright=Copyright (c) 1991 - 2016 FMail developers
 LegalTrademarks=
-OriginalFilename=FSetupW32.exe
+OriginalFilename=FConfigW32.exe
 ProductName=FMail
 ProductVersion=1.69
 
@@ -139,15 +139,16 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=4
-Item0=FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__;_DEBUG
-Item1=_DEBUG;FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
-Item2=_DEBUG;FSETUP;PENTIUMPRO;__FMAILX__
-Item3=_DEBUG
+Count=5
+Item0=FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
+Item1=FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__;_DEBUG
+Item2=_DEBUG;FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
+Item3=_DEBUG;FSETUP;PENTIUMPRO;__FMAILX__
+Item4=_DEBUG
 
 [HistoryLists\hlIntOutputDir]
 Count=1
-Item0=OBJ.6\FSetupW32
+Item0=OBJ.6\FConfigW32
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

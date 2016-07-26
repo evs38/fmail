@@ -207,9 +207,8 @@ u16            am__cp;
 
 extern windowLookType windowLook;
 extern configType     config;
-extern char configPath[128];
-/*extern s32           pow2[32];*/
-u16                   *boardPtr;
+extern char           configPath[128];
+u16                  *boardPtr;
 
 char boardCodeInfo[512];
 
@@ -308,8 +307,9 @@ s16 multiAkaSelect(void)
    }
    while (ch != _K_ESC_);
 
-   removeWindow ();
-   return (update);
+   removeWindow();
+
+   return update;
 }
 //---------------------------------------------------------------------------
 static void fillAreaInfo(u16 index, rawEchoType *tempInfo)
@@ -389,9 +389,10 @@ s16 areaMgr(void)
       else
       {
          if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
-         {  displayMessage("Can't convert old Areas file");
-	    close (areaInfoHandle);
-	    return (0);
+         {
+           displayMessage("Can't convert old Areas file");
+           close(areaInfoHandle);
+           return 0;
          }
          lseek (areaInfoHandle, 0, SEEK_SET);
 	 areaInfoCount = 0;
@@ -457,33 +458,37 @@ s16 areaMgr(void)
    {
       getRec(CFG_ECHOAREAS, count);
 #if 0
-      if ( areaBuf->board > MBBOARDS )
-	 areaBuf->board = 0;
+      if (areaBuf->board > MBBOARDS)
+        areaBuf->board = 0;
 
       if (areaBuf->board || (!areaBuf->boardNumRA) ||
-	  (boardCodeInfo[(areaBuf->boardNumRA-1)>>3] & (1<<((areaBuf->boardNumRA-1)&7))))
-	 areaBuf->boardNumRA = 0;
+          (boardCodeInfo[(areaBuf->boardNumRA-1)>>3] & (1<<((areaBuf->boardNumRA-1)&7))))
+        areaBuf->boardNumRA = 0;
       else
-	 boardCodeInfo[(areaBuf->boardNumRA-1)>>3] |= (1<<((areaBuf->boardNumRA-1)&7));
+        boardCodeInfo[(areaBuf->boardNumRA-1)>>3] |= (1<<((areaBuf->boardNumRA-1)&7));
 #endif
       // EXPORT ADDRESS SORT ORDER CHECK!!!
       ch = 0;
       do
-      {  findOk = 0;
-	 count2 = 0;
-	 while ( count2 < config.maxForward - 1 && areaBuf->forwards[count2+1].nodeNum.zone )
-         {  if ( nodegreater(areaBuf->forwards[count2].nodeNum, areaBuf->forwards[count2+1].nodeNum) )
-	    {  findOk = 1;
-	       tempNodeX = areaBuf->forwards[count2];
-	       areaBuf->forwards[count2] = areaBuf->forwards[count2+1];
-	       areaBuf->forwards[count2+1] = tempNodeX;
-               ch = 1;
-	    }
-	    ++count2;
-	 }
+      {
+        findOk = 0;
+        count2 = 0;
+        while (count2 < config.maxForward - 1 && areaBuf->forwards[count2+1].nodeNum.zone)
+        {
+          if (nodegreater(areaBuf->forwards[count2].nodeNum, areaBuf->forwards[count2+1].nodeNum))
+          {
+            findOk = 1;
+            tempNodeX = areaBuf->forwards[count2];
+            areaBuf->forwards[count2] = areaBuf->forwards[count2+1];
+            areaBuf->forwards[count2+1] = tempNodeX;
+            ch = 1;
+          }
+          ++count2;
+        }
       }
-      while ( findOk );
-      if ( ch )
+      while (findOk);
+
+      if (ch)
          putRec(CFG_ECHOAREAS, count);
 
       areaBuf->comment[COMMENT_LEN-1] = 0;
@@ -494,18 +499,21 @@ s16 areaMgr(void)
 
       /* 32 AKAs alsoSeenBy */
       if ( !areaBuf->alsoSeenBy && areaBuf->_alsoSeenBy )
-      {  areaBuf->alsoSeenBy = areaBuf->_alsoSeenBy;
-	 areaBuf->_alsoSeenBy = 0;
+      {
+        areaBuf->alsoSeenBy = areaBuf->_alsoSeenBy;
+        areaBuf->_alsoSeenBy = 0;
       }
 
       /* fixes problems reported by Darr Hoag with Global functions Amgr */
       count2 = 0;
       while ( count2 < MAX_FORWARD )
-      {  if ( !areaBuf->forwards[count2].nodeNum.zone )
-	 {   memset(&areaBuf->forwards[count2], 0, (MAX_FORWARD-count2)*sizeof(nodeNumXType));
-	     break;
-	 }
-	 ++count2;
+      {
+        if ( !areaBuf->forwards[count2].nodeNum.zone )
+        {
+          memset(&areaBuf->forwards[count2], 0, (MAX_FORWARD-count2)*sizeof(nodeNumXType));
+          break;
+        }
+        ++count2;
       }
 
       if ( areaBuf->_internalUse != 'Y' )
@@ -1090,33 +1098,24 @@ s16 areaMgr(void)
             }
          }
       }
-      while ((ch != _K_ESC_) && (ch != _K_F7_) && (ch != _K_F10_));
-//    if ( ch == _K_F7_ || ch == _K_F10_ )
-//       ch = 'Y';
-//    else
-//       if (update)
-//          ch = askBoolean ("Save changes in area setup ?", 'Y');
-//       else
-//          ch = 0;
+      while (ch != _K_ESC_ && ch != _K_F7_ && ch != _K_F10_);
    }
-// while (ch == _K_ESC_);
 
    closeConfig(CFG_ECHOAREAS);
 
-   removeWindow ();
+   removeWindow();
 
-//   if (ch == 'Y')
-   if ( update )
+   if (update)
    {
-      working ();
+      working();
 
       /* remove old style config file */
       if (*areaInfoPath) unlink (areaInfoPath);
 
       if (openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
       {
-	 headerType areaHeader2;
-	 fhandle    fml102handle;
+         headerType areaHeader2;
+         fhandle    fml102handle;
          nodeNumType *nodeNumBuf;
 
          if ( (nodeNumBuf = malloc(MAX_FORWARDOLD * sizeof(nodeNumType))) == NULL )
@@ -1173,11 +1172,6 @@ error:
    {  freeAreaInfo(count);
       free (areaInfo[count]);
    }
-
-// free (gSwMenu);
-// free (gMnMenu);
-// free (gNdMenu);
-// free (aglMenu);
 
    return update;
 }

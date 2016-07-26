@@ -40,31 +40,29 @@
 #include "fs_util.h"
 #include "window.h"
 
-
+//---------------------------------------------------------------------------
 #define MAX_NS_WINSIZE 9
-
 #define MAX_AL_WINSIZE 15
-
 
 extern configType     config;
 
 extern windowLookType windowLook;
-extern rawEchoType tempInfo;
+extern rawEchoType    tempInfo;
 
 extern areaInfoPtrArr areaInfo;
 extern u16            areaInfoCount;
 
-
-s16 nodeScroll (void)
+//---------------------------------------------------------------------------
+s16 nodeScroll(void)
 {
-   u16      update = 0;
-   u16      elemCount = 0;
-   u16      count;
-   u16      windowBase = 0;
-   u16      currentElem = 0;
-   s16      ch;
-   char     tempStr[35];
-   nodeNumType tempNode;
+  u16         update = 0;
+  u16         elemCount = 0;
+  u16         count;
+  u16         windowBase = 0;
+  u16         currentElem = 0;
+  s16         ch;
+  char        tempStr[35];
+  nodeNumType tempNode;
 
 /*
 0         1         2         3         4         5         6         7         8
@@ -72,82 +70,75 @@ s16 nodeScroll (void)
 Page Up   Page Down   Ins Insert   Del Delete   Home First   End Last    ^   V  |
 Page Up  Page Down  Insert  Delete  Home First  End Last  R/o  W/o  Lock  ^V    |
 */
-   printString("Page Up   "    ,  0, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("Page Down  "   ,  9, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("Ins"           , 20, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("ert  "         , 23, 24, LIGHTMAGENTA, BLACK, MONO_HIGH);
-   printString("Del "          , 28, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("ete  "         , 31, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString("Home "         , 36, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("First  "       , 41, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString("End "          , 48, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("Last  "        , 52, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString("R"             , 58, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("/o  "          , 59, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString("W"             , 63, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("/o  "          , 64, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString("L"             , 68, 24, YELLOW      , BLACK, MONO_NORM);
-   printString("ock  "         , 69, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString("\x18\x19    "  , 74, 24, YELLOW      , BLACK, MONO_NORM);
+  printString("Page Up   " ,  0, 24, YELLOW      , BLACK, MONO_NORM);
+  printString("Page Down  ",  9, 24, YELLOW      , BLACK, MONO_NORM);
+  printString("Ins"        , 20, 24, YELLOW      , BLACK, MONO_NORM);
+  printString("ert  "      , 23, 24, LIGHTMAGENTA, BLACK, MONO_HIGH);
+  printString("Del "       , 28, 24, YELLOW      , BLACK, MONO_NORM);
+  printString("ete  "      , 31, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+  printString("Home "      , 36, 24, YELLOW      , BLACK, MONO_NORM);
+  printString("First  "    , 41, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+  printString("End "       , 48, 24, YELLOW      , BLACK, MONO_NORM);
+  printString("Last  "     , 52, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+  printString("R"          , 58, 24, YELLOW      , BLACK, MONO_NORM);
+  printString("/o  "       , 59, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+  printString("W"          , 63, 24, YELLOW      , BLACK, MONO_NORM);
+  printString("/o  "       , 64, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+  printString("L"          , 68, 24, YELLOW      , BLACK, MONO_NORM);
+  printString("ock  "      , 69, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+  printString("\x18\x19   ", 74, 24, YELLOW      , BLACK, MONO_NORM);
 
-   while ((elemCount < MAX_FORWARD) && (tempInfo.forwards[elemCount].nodeNum.zone != 0))
-   {
-      elemCount++;
-   }
+  while (elemCount < MAX_FORWARD && tempInfo.forwards[elemCount].nodeNum.zone != 0)
+    elemCount++;
 
-   if (displayWindow (" Nodes ", 40, 8, 71, 9+MAX_NS_WINSIZE) != 0)
-   {
-      return (0);
-   }
+  if (displayWindow(" Nodes ", 40, 8, 71, 9 + MAX_NS_WINSIZE) != 0)
+    return 0;
 
-   do
-   {
-      for (count = 0; count < MAX_NS_WINSIZE; count++)
+  do
+  {
+    for (count = 0; count < MAX_NS_WINSIZE; count++)
+    {
+      if (windowBase+count < elemCount)
       {
-         if (windowBase+count < elemCount)
-         {
-            *tempStr = ' ';
-            strcpy(tempStr+1, nodeStr(&tempInfo.forwards[windowBase+count].nodeNum));
-         }
-         else
-            *tempStr = 0;
-
-         if ((elemCount != 0) && (windowBase+count == currentElem))
-         {
-            printStringFill(tempStr, ' ', 25, 41, 9+count,
-                            windowLook.scrollfg,
-                            windowLook.scrollbg, MONO_INV);
-            printStringFill((tempInfo.forwards[windowBase+count].flags.locked) ? "lock":
-                            (tempInfo.forwards[windowBase+count].flags.readOnly) ? "r/o":
-                            (tempInfo.forwards[windowBase+count].flags.writeOnly) ? "w/o":"",
-                            ' ', 5, 66, 9+count,
-                            (tempInfo.forwards[windowBase+count].flags.locked) ? RED :
-                            (tempInfo.forwards[windowBase+count].flags.readOnly) ? YELLOW : LIGHTGREEN,
-                            windowLook.scrollbg, MONO_NORM_BLINK);
-         }
-         else
-         {
-            printStringFill (tempStr, ' ', 25, 41, 9+count,
-                             windowLook.datafg,
-                             windowLook.background, MONO_NORM);
-            printStringFill((tempInfo.forwards[windowBase+count].flags.locked) ? "lock":
-                            (tempInfo.forwards[windowBase+count].flags.readOnly) ? "r/o":
-                            (tempInfo.forwards[windowBase+count].flags.writeOnly) ? "w/o":"",
-                            ' ', 5, 66, 9+count,
-                            (tempInfo.forwards[windowBase+count].flags.locked) ? RED :
-                            (tempInfo.forwards[windowBase+count].flags.readOnly) ? YELLOW : LIGHTGREEN,
-                            windowLook.background, MONO_NORM_BLINK);
-         }
+        *tempStr = ' ';
+        strcpy(tempStr + 1, nodeStr(&tempInfo.forwards[windowBase + count].nodeNum));
       }
-      if (elemCount == 0)
-      {
-         printString ("Empty", 52, 13, windowLook.datafg,
-                                       windowLook.background, MONO_NORM);
-      }
+      else
+        *tempStr = 0;
 
-      ch=readKbd();
-      switch ( ch )
+      if (elemCount != 0 && windowBase+count == currentElem)
       {
+        printStringFill(tempStr, ' ', 25, 41, 9+count,
+                        windowLook.scrollfg,
+                        windowLook.scrollbg, MONO_INV);
+        printStringFill((tempInfo.forwards[windowBase+count].flags.locked) ? "lock":
+                        (tempInfo.forwards[windowBase+count].flags.readOnly) ? "r/o":
+                        (tempInfo.forwards[windowBase+count].flags.writeOnly) ? "w/o":"",
+                        ' ', 5, 66, 9+count,
+                        (tempInfo.forwards[windowBase+count].flags.locked) ? RED :
+                        (tempInfo.forwards[windowBase+count].flags.readOnly) ? YELLOW : LIGHTGREEN,
+                        windowLook.scrollbg, MONO_NORM_BLINK);
+      }
+      else
+      {
+        printStringFill (tempStr, ' ', 25, 41, 9+count,
+                         windowLook.datafg,
+                         windowLook.background, MONO_NORM);
+        printStringFill((tempInfo.forwards[windowBase+count].flags.locked) ? "lock":
+                        (tempInfo.forwards[windowBase+count].flags.readOnly) ? "r/o":
+                        (tempInfo.forwards[windowBase+count].flags.writeOnly) ? "w/o":"",
+                        ' ', 5, 66, 9+count,
+                        (tempInfo.forwards[windowBase+count].flags.locked) ? RED :
+                        (tempInfo.forwards[windowBase+count].flags.readOnly) ? YELLOW : LIGHTGREEN,
+                        windowLook.background, MONO_NORM_BLINK);
+      }
+    }
+    if (elemCount == 0)
+       printString("Empty", 52, 13, windowLook.datafg, windowLook.background, MONO_NORM);
+
+    ch = readKbd();
+    switch (ch)
+    {
          case 'l':
          case 'L':     tempInfo.forwards[currentElem].flags.readOnly = 0;
                        tempInfo.forwards[currentElem].flags.writeOnly = 0;
@@ -186,10 +177,9 @@ Page Up  Page Down  Insert  Delete  Home First  End Last  R/o  W/o  Lock  ^V    
                        else
                        {
                           if (elemCount > MAX_NS_WINSIZE)
-                          {
                              windowBase = elemCount - MAX_NS_WINSIZE;
-                          }
-                          currentElem = elemCount-1;
+
+                          currentElem = elemCount - 1;
                        }
                        break;
          case _K_CPGUP_ :
@@ -198,10 +188,9 @@ Page Up  Page Down  Insert  Delete  Home First  End Last  R/o  W/o  Lock  ^V    
                        break;
          case _K_CPGDN_ :
          case _K_END_: if (elemCount > MAX_NS_WINSIZE)      /* End */
-                       {
                           windowBase = elemCount - MAX_NS_WINSIZE;
-                       }
-                       currentElem = elemCount-1;
+
+                       currentElem = elemCount - 1;
                        break;
          case _K_UP_ : if (currentElem > 0)                 /* Cursor Up */
                        {
@@ -274,17 +263,16 @@ Page Up  Page Down  Insert  Delete  Home First  End Last  R/o  W/o  Lock  ^V    
                              windowBase--;
                        }
                        break;
-      }
-   }
-   while (ch != _K_ESC_);
+    }
+  }
+  while (ch != _K_ESC_);
 
-   removeWindow ();
-   return (update);
+  removeWindow();
+
+  return update;
 }
-
-
-
-s16 areasList (s16 currentElem, char groupSelectMask)
+//---------------------------------------------------------------------------
+s16 areasList(s16 currentElem, char groupSelectMask)
 {
    static          s16 useComment = -1;
    u16             elemCount = 0;
@@ -464,49 +452,42 @@ s16 areasList (s16 currentElem, char groupSelectMask)
                           count = currentElem;
                           do
                           {
-									  if (++count >= elemCount)
-									  {
-										  count = 0;
-									  }
-								  }
-								  while ((count != currentElem) &&
-											(((useComment &&
-												*(*areaInfoTwo)[count]->comment) ?
-                                                                                                *(*areaInfoTwo)[count]->comment :
-												*(*areaInfoTwo)[count]->areaName) != ch));
+        									  if (++count >= elemCount)
+        										  count = 0;
+        								  }
+        								  while ((count != currentElem) &&
+        											(((useComment &&
+        												*(*areaInfoTwo)[count]->comment) ?
+                                 *(*areaInfoTwo)[count]->comment :
+        												*(*areaInfoTwo)[count]->areaName) != ch));
 								  if (count != currentElem)
 								  {
 									  currentElem = count;
 									  if (currentElem < windowBase)
-									  {
 										  windowBase = currentElem;
-									  }
-									  if (currentElem >= windowBase+MAX_AL_WINSIZE)
-									  {
-										  windowBase = currentElem-MAX_AL_WINSIZE+1;
-									  }
+
+									  if (currentElem >= windowBase + MAX_AL_WINSIZE)
+										  windowBase = currentElem - MAX_AL_WINSIZE + 1;
+
 								  }
 							  }
 							  break;
-      }
-      testPtr = (*areaInfoTwo)[currentElem];
-   }
-   while ((ch != _K_ESC_) && (ch != _K_ENTER_));
+    }
+    testPtr = (*areaInfoTwo)[currentElem];
+  }
+  while (ch != _K_ESC_ && ch != _K_ENTER_);
 
-   removeWindow ();
+  removeWindow();
 
-   if (ch == _K_ENTER_)
-   {
-      count = 0;
-      while ((count < areaInfoCount) &&
-             ((*areaInfoTwo)[currentElem] != areaInfo[count]))
-      {
-         count++;
-      }
-      if (count < areaInfoCount)
-         return (count);
-   }
-   return (-1);
+  if (ch == _K_ENTER_)
+  {
+    count = 0;
+    while (count < areaInfoCount && (*areaInfoTwo)[currentElem] != areaInfo[count])
+      count++;
+
+    if (count < areaInfoCount)
+      return count;
+  }
+  return -1;
 }
-
-
+//---------------------------------------------------------------------------

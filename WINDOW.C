@@ -607,9 +607,9 @@ void printStringFill( char *string, char ch, s16 num, u16 x, u16 y
 //---------------------------------------------------------------------------
 static s16 checkPackNode(char *nodeString, u16 *valid, s16 wildCards, s16 numSign)
 {
-   u16 count=0;
-   u16 pointFound=0;
-   u16 lastLevel=0;
+   u16 count;
+   u16 pointFound = 0;
+   u16 lastLevel  = 0;
 
    if ((*nodeString=='*') && (nodeString[1]==0)) return (0);
 
@@ -624,7 +624,7 @@ static s16 checkPackNode(char *nodeString, u16 *valid, s16 wildCards, s16 numSig
 
    while (*nodeString)
    {
-      count=0;
+      count = 0;
       while ((isdigit(*nodeString)) ||
              (wildCards && ((*nodeString=='?') || (*nodeString=='*'))) ||
              (numSign   && *nodeString=='#'))
@@ -1104,7 +1104,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
             *tempStr = 0;
             sPos = 0;
          }
-         strcpy (string, tempStr);
+         strcpy(string, tempStr);
       }
       update++;
    }
@@ -1201,7 +1201,7 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
                         *tempStr = 0;
                         while ((exportCount < MAX_FORWARD) && (tempInfo.forwards[exportCount].nodeNum.zone != 0))
                         {
-                           strcpy (tempStr2, nodeStr (&tempInfo.forwards[exportCount].nodeNum));
+                           strcpy(tempStr2, nodeStr (&tempInfo.forwards[exportCount].nodeNum));
                            helpPtr = tempStr2;
 
                            if (lastZone != tempInfo.forwards[exportCount].nodeNum.zone)
@@ -2437,20 +2437,14 @@ void printString(const char *string, u16 sx, u16 sy, u16 fgc, u16 bgc, u16 mAttr
 //---------------------------------------------------------------------------
 void displayMessage(char *msg)
 {
-  s16 recursive = 0;
   u16 sx = (76 - strlen(msg)) / 2;
 
-  if (recursive == 0)
+  fillRectangle(' ', 0, 24, 78, 24, BLACK, BLACK, MONO_NORM);
+  if (displayWindow(NULL, sx, 9, sx + strlen(msg) + 3, 13) == 0)
   {
-    recursive++;
-    fillRectangle(' ', 0, 24, 78, 24, BLACK, BLACK, MONO_NORM);
-    if (displayWindow(NULL, sx, 9, sx + strlen(msg) + 3, 13) == 0)
-    {
-      printString(msg, sx + 2, 11, windowLook.promptfg, windowLook.background, MONO_NORM);
-      readKbd();
-      removeWindow();
-    }
-    recursive = 0;
+    printString(msg, sx + 2, 11, windowLook.promptfg, windowLook.background, MONO_NORM);
+    readKbd();
+    removeWindow();
   }
 }
 //---------------------------------------------------------------------------

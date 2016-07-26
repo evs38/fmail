@@ -76,10 +76,10 @@ extern configType config;
 //---------------------------------------------------------------------------
 s16 nodesList(s16 currentElem)
 {
-   u16      elemCount = 0;
-   u16      windowBase = 0;
-   u16      count;
-   s16      ch;
+   u16         elemCount;
+   u16         windowBase;
+   u16         count;
+   s16         ch;
    tempStrType tempStr;
 
    saveWindowLook();
@@ -87,18 +87,15 @@ s16 nodesList(s16 currentElem)
    windowLook.actvborderfg = BLUE;
 
    windowBase = max(0, currentElem-MAX_NL_WINSIZE/2);
-   if ((nodeInfoCount >= MAX_NL_WINSIZE) &&
-       (windowBase+MAX_NL_WINSIZE > nodeInfoCount))
-   {
-      windowBase = nodeInfoCount-MAX_NL_WINSIZE;
-   }
+   if (nodeInfoCount >= MAX_NL_WINSIZE && windowBase + MAX_NL_WINSIZE > nodeInfoCount)
+      windowBase = nodeInfoCount - MAX_NL_WINSIZE;
 
    elemCount = nodeInfoCount;
 
    if (displayWindow (" Nodes ", 10, 7, 73, 8+MAX_NL_WINSIZE) != 0)
    {
       restoreWindowLook();
-      return (0);
+      return 0;
    }
 
    do
@@ -225,28 +222,30 @@ static s16 listData(u16 *totalElem, ldType listDataArray[MAX_AREAS], u16 *totalE
    u16            count;
    u16            windowBase = 0;
    u16            currentElem = 0;
-   s16            ch = 0;
+   s16            ch;
    tempStrType    tempStr;
-   s16            xu, xu2;
+   s16            xu
+                , xu2;
 
-   if ( listDataArray2 != NULL )
-   {  saveWindowLook();
-      windowLook.background = CYAN;
-      windowLook.actvborderfg = BLUE;
+   if (listDataArray2 != NULL)
+   {
+     saveWindowLook();
+     windowLook.background = CYAN;
+     windowLook.actvborderfg = BLUE;
    }
 
-   if (displayWindow (listDataArray2 != NULL ? " Active areas ": " Non-active areas " , 18, 8, 73, 9+MAX_LD_WINSIZE) != 0)
+   if (displayWindow(listDataArray2 != NULL ? " Active areas ": " Non-active areas " , 18, 8, 73, 9+MAX_LD_WINSIZE) != 0)
    {
-      if ( listDataArray2 != NULL )
+      if (listDataArray2 != NULL)
          restoreWindowLook();
-      return (0);
+      return 0;
    }
 
    do
    {
-      for ( count = 0; count < MAX_LD_WINSIZE; count++ )
+      for (count = 0; count < MAX_LD_WINSIZE; count++)
       {
-         if ( windowBase+count < *totalElem )
+         if (windowBase + count < *totalElem)
             strcpy(tempStr, listDataArray[windowBase+count].desc);
          else
             *tempStr = 0;
@@ -259,8 +258,8 @@ static s16 listData(u16 *totalElem, ldType listDataArray[MAX_AREAS], u16 *totalE
                               BLUE, CYAN, MONO_NORM );
       }
 
-      ch=readKbd();
-      switch(ch)
+      ch = readKbd();
+      switch (ch)
       {
          case _K_INS_:     if ( listDataArray2 != NULL )
                            {  xu2 = listData(totalElem2, listDataArray2, NULL, NULL);
@@ -383,7 +382,7 @@ u16 editNM(s16 editType, u16 setdef)
    toggleType   addressToggle;
    toggleType   statusToggle;
    s16          update = 0;
-   s16          total  = 0;
+   s16          total;
    char         addressText[MAX_AKAS+1][34];
    char         tempStr[24];
    char         ch;
@@ -573,7 +572,6 @@ u16 editNM(s16 editType, u16 setdef)
                }
                ++helpPtr1;
             }
-            ++helpPtr1;
          }
          while (update);
 

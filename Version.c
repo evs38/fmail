@@ -64,7 +64,11 @@
 #endif
 
 #if   defined(FSETUP)
+ #ifdef __32BIT__
+  #define TOOL "FConfig"
+ #else
   #define TOOL "FSetup"
+ #endif
 #elif defined(FTOOLS)
   #define TOOL "FTools"
 #else // FMAIL

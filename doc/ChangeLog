@@ -1,3 +1,8 @@
+2016-07-26  1.69.22.178-Beta
+  * FSetup Win32 version. Renamed it to FConfigW32.exe, because otherwise later
+    Windows versions (7 and up?) think it's a setup program, and puts up the
+    User Account Control window to ask permision to run it (as administrator).
+
 2016-07-06  1.69.22.178-Beta
   * FSetupX no longer crashes on the 'List general info' function in the Export menu.
 

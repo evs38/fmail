@@ -435,7 +435,6 @@ s16 listPtAreas (void)
    u16         count;
    FILE        *textFile;
    char        *fileNamePtr;
-   s16         display = 0;
    time_t      timer;
 
    time (&timer);
@@ -453,9 +452,9 @@ s16 listPtAreas (void)
 
       if ((textFile = fopen(fileNamePtr, "wt")) == NULL)
       {
-         displayMessage ("Can't open output file");
-         freeAreaInfo ();
-         return (0);
+         displayMessage("Can't open output file");
+         freeAreaInfo();
+         return 0;
       }
       fprintf (textFile, "\n%s  -  List of passthrough areas  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
@@ -469,7 +468,6 @@ s16 listPtAreas (void)
             fprintf (textFile, (strlen(areaInfo[count]->areaName) < ECHONAME_LEN_OLD)?"%-24s   %s\n":"%s\n                           %s\n",
                                areaInfo[count]->areaName,
                                areaInfo[count]->comment);
-            display++;
          }
       }
 

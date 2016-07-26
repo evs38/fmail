@@ -168,16 +168,16 @@ s16 askGroups(void)
 
 
 
-s16 netmailMenu (u16 v)
+s16 netmailMenu(u16 v)
 {
-   s16      update = 0;
+   s16 update;
 
    memset(&tempInfo, 0, RAWECHO_SIZE);
 
    if (v == 0)
-      strcpy (tempInfo.areaName, "Netmail Main");
+      strcpy(tempInfo.areaName, "Netmail Main");
    else
-      sprintf (tempInfo.areaName, "Netmail AKA %u", v);
+      sprintf(tempInfo.areaName, "Netmail AKA %u", v);
 
    tempInfo.board               = config.netmailBoard[v];
    tempInfo.groupRA             = config.groupRA[v];
@@ -208,8 +208,8 @@ s16 netmailMenu (u16 v)
    tempInfo.msgs                = config.msgsAKA[v];
    tempInfo.options             = config.optionsAKA[v];
 
-   memcpy (tempInfo.qwkName, config.qwkName[v], 13);
-   memcpy (tempInfo.comment, config.descrAKA[v], 51);
+   memcpy(tempInfo.qwkName, config.qwkName[v], 13);
+   memcpy(tempInfo.comment, config.descrAKA[v], 51);
 
    update = editAM(EDIT_NETMAIL, 0, NULL);
 
@@ -242,10 +242,10 @@ s16 netmailMenu (u16 v)
    config.msgsAKA[v]               = tempInfo.msgs;
    config.optionsAKA[v]            = tempInfo.options;
 
-   memcpy (config.qwkName[v],  tempInfo.qwkName, 13);
-   memcpy (config.descrAKA[v], tempInfo.comment, 51);
+   memcpy(config.qwkName[v],  tempInfo.qwkName, 13);
+   memcpy(config.descrAKA[v], tempInfo.comment, 51);
 
-   return (update);
+   return update;
 }
 
 
@@ -254,15 +254,15 @@ extern rawEchoType echoDefaultsRec;
 
 s16 defaultBBS (void)
 {
-   s16      update = 0;
+   s16 update;
 
-   memcpy (&tempInfo, &echoDefaultsRec, RAWECHO_SIZE);
+   memcpy(&tempInfo, &echoDefaultsRec, RAWECHO_SIZE);
 
    update = editAM(EDIT_ECHO_DEFAULT, 0, NULL);
 
-   memcpy (&echoDefaultsRec, &tempInfo, RAWECHO_SIZE);
+   memcpy(&echoDefaultsRec, &tempInfo, RAWECHO_SIZE);
 
-   return (update);
+   return update;
 }
 
 
@@ -271,11 +271,11 @@ uplinkNodeStrType uplinkNodeStr;
 
 s16 uplinkMenu (u16 v)
 {
-   menuType *uplMenu;
-   s16      update = 0;
-   u16      count;
-   char     title[20];
-   char     addressText[MAX_AKAS+1][34];
+  menuType *uplMenu;
+  s16       update;
+  u16       count;
+  char      title[20];
+  char      addressText[MAX_AKAS+1][34];
 
    toggleType fileTypeToggle;
    toggleType addressToggle;
@@ -339,7 +339,7 @@ s16 uplinkMenu (u16 v)
 
    uplinkNodeStr[v][27] = 0;
 
-   return (update);
+   return update;
 }
 
 

@@ -88,10 +88,10 @@ extern unsigned cdecl _stklen = 16384;
 extern uplinkNodeStrType uplinkNodeStr;
 #ifndef __32BIT__
 extern screenCharType far *screen;
+char promptStr[128];
 #endif
-extern s16  color;
+extern s16 color;
 
-char        promptStr[128];
 
 u16 defaultEnumRA;
 s16 boardEdit = 0;
@@ -210,12 +210,14 @@ int cdecl main(int argc, char *argv[])
 
   allowConversion = 1;
 
-  strcpy (promptStr, "PROMPT=Enter the command \"EXIT\" to return to FSetup.$_");
-  if (((helpPtr = getenv("PROMPT")) != NULL) && (strlen(helpPtr) <= 64))
-    strcat (promptStr, helpPtr);
+#ifndef __32BIT__
+  strcpy(promptStr, "PROMPT=Enter the command \"EXIT\" to return to "FSNAME".$_");
+  if ((helpPtr = getenv("PROMPT")) != NULL && strlen(helpPtr) <= 64)
+    strcat(promptStr, helpPtr);
   else
-    strcat (promptStr, "$n$g");
+    strcat(promptStr, "$n$g");
   putenv(promptStr);
+#endif
 
 #ifndef __WIN32__
   country(0, &countryInfo);
@@ -257,7 +259,7 @@ int cdecl main(int argc, char *argv[])
   {
     memset(&config, 0, sizeof(configType));
 
-    time (&config.creationDate);
+    time(&config.creationDate);
     config.creationDate ^= 0xe534a17bL;
 
     config.versionMajor = CONFIG_MAJOR;
@@ -325,7 +327,7 @@ int cdecl main(int argc, char *argv[])
     config.unRar.memRequired = 0;
     config.unJar.memRequired = 0;
   }
-  if ( count == 0 )
+  if (count == 0)
   {
     strcpy (config.arc32.programName, "PKArc.Com -a");
 #ifdef __FMAILX__
@@ -375,7 +377,7 @@ int cdecl main(int argc, char *argv[])
     config.unRar32.memRequired = 0;
     config.unJar32.memRequired = 0;
   }
-  else if ( count <= 8192 )
+  else if (count <= 8192)
   {
     strcpy (config.arc32.programName, config.arc.programName);
 #ifdef __FMAILX__
@@ -466,35 +468,35 @@ int cdecl main(int argc, char *argv[])
     update = 1;
   }
 
-  if ( config.maxForward < 64 )
+  if (config.maxForward < 64)
     config.maxForward = 64;
-  if ( config.maxMsgSize < 45 )
+  if (config.maxMsgSize < 45)
     config.maxMsgSize = 45;
-  if ( config.recBoard > MBBOARDS )
+  if (config.recBoard > MBBOARDS)
     config.recBoard = 0;
-  if ( config.badBoard > MBBOARDS )
+  if (config.badBoard > MBBOARDS)
     config.badBoard = 0;
-  if ( config.dupBoard > MBBOARDS )
+  if (config.dupBoard > MBBOARDS)
     config.dupBoard = 0;
 
 #ifdef GOLDBASE
   config.bbsProgram = BBS_QBBS;
 #endif
 
-  if ( config.tearType == 2 )
+  if (config.tearType == 2)
     config.tearType = 3;
-  if ( config.tearType == 4 )
+  if (config.tearType == 4)
     config.tearType = 5;
   if (config.recBoard > MBBOARDS)
     config.recBoard = 0;
 
-  if ((config.bbsProgram == BBS_RA1X) && config.genOptions._RA2)
+  if (config.bbsProgram == BBS_RA1X && config.genOptions._RA2)
   {
     config.bbsProgram = BBS_RA20;
     config.genOptions._RA2 = 0;
   }
 
-  memset (&echoDefaultsRec, 0, RAWECHO_SIZE);
+  memset(&echoDefaultsRec, 0, RAWECHO_SIZE);
   echoDefaultsRec.options.security = 1;
   if (openConfig(CFG_AREADEF, &adefHeader, (void*)&adefBuf))
   {
@@ -514,14 +516,14 @@ int cdecl main(int argc, char *argv[])
 
   if (argc > 1)
   {
-    if (stricmp (argv[1], "/M") == 0)
+    if (stricmp(argv[1], "/M") == 0)
       mode = 1;
-    if (stricmp (argv[1], "/C") == 0)
+    if (stricmp(argv[1], "/C") == 0)
       mode = 2;
 #ifndef __32BIT__
 #ifdef __FMAILX__
-    if ( !stricmp (argv[1], "/OS2") || !stricmp (argv[1], "/WIN") ||
-         !stricmp (argv[1], "/X32") || !stricmp (argv[1], "/32") )
+    if ( !stricmp(argv[1], "/OS2") || !stricmp (argv[1], "/WIN") ||
+         !stricmp(argv[1], "/X32") || !stricmp (argv[1], "/32") )
       xOS2 = 1;
 #endif
 #endif
@@ -630,22 +632,6 @@ int cdecl main(int argc, char *argv[])
   bbsToggle.text[7] = "EleBBS";
   bbsToggle.retval[7] = BBS_ELEB;
 
-#if 0
-  /* original */
-  tearToggle.data = &config.tearType;
-  tearToggle.text[0] = "Default";
-  tearToggle.retval[0] = 0;
-  tearToggle.text[1] = "Custom";
-  tearToggle.retval[1] = 1;
-  tearToggle.text[2] = "Empty";
-  tearToggle.retval[2] = 2;
-  tearToggle.text[3] = "Empty + TID";
-  tearToggle.retval[3] = 3;
-  tearToggle.text[4] = "Absent";
-  tearToggle.retval[4] = 4;
-  tearToggle.text[5] = "Absent + TID";
-  tearToggle.retval[5] = 5;
-#endif
   tearToggle.data = &config.tearType;
   tearToggle.text[0] = "Default";
   tearToggle.retval[0] = 0;
@@ -678,17 +664,17 @@ int cdecl main(int argc, char *argv[])
   if (!color)
     screen[81].attr = 0;
 #endif
-  sprintf(versionStr, "%s - Setup Utility", VersionStr());
+  sprintf(versionStr, "%s - Configuration utility", VersionStr());
 
-  printString (versionStr, 3, 1, YELLOW, RED, MONO_HIGH);
+  printString(versionStr, 3, 1, YELLOW, RED, MONO_HIGH);
   sprintf(tempStr, "Copyright (C) 1991-%s by FMail Developers - All rights reserved", __DATE__ + 7);
-  printString (tempStr, 3, 2, YELLOW, RED, MONO_HIGH);
+  printString(tempStr, 3, 2, YELLOW, RED, MONO_HIGH);
 
-  fillRectangle ('Ü', 0, 4, 79, 4, BLUE, BLACK, 0);
-  fillRectangle ('ß', 0, 23, 79, 23, BLUE, BLACK, 0);
-  fillRectangle (' ', 0, 24, 79, 24, YELLOW, BLACK, MONO_NORM);
+  fillRectangle('Ü', 0, 4, 79, 4, BLUE, BLACK, 0);
+  fillRectangle('ß', 0, 23, 79, 23, BLUE, BLACK, 0);
+  fillRectangle(' ', 0, 24, 79, 24, YELLOW, BLACK, MONO_NORM);
 
-  fillRectangle (' ', 0, 5, 79, 22, BLACK, BLUE, MONO_NORM);
+  fillRectangle(' ', 0, 5, 79, 22, BLACK, BLUE, MONO_NORM);
 
   switch (config.colorSet)
   {
@@ -758,7 +744,7 @@ int cdecl main(int argc, char *argv[])
 
   if (_osmajor < 3)
   {
-    displayMessage("FSetup requires at least DOS 3.0");
+    displayMessage(FSNAME" requires at least DOS 3.0");
     fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
     deInit(5);
     return 0;
@@ -775,7 +761,7 @@ int cdecl main(int argc, char *argv[])
       )
   {
     displayWindow(NULL, 7, 10, 73, 14);
-    printString("Waiting for another copy of FMail, FTools or FSetup to finish", 10, 12, WHITE, LIGHTGRAY, MONO_HIGH);
+    printString("Waiting for another copy of FMail, FTools or "FSNAME" to finish", 10, 12, WHITE, LIGHTGRAY, MONO_HIGH);
 
     time(&time1);
     time2 = time1;
@@ -814,7 +800,7 @@ int cdecl main(int argc, char *argv[])
      || config.versionMinor > CONFIG_MINOR
      )
   {
-    displayMessage(dCFGFNAME" was not created by FSetup version 0.90/0.92/0.94/0.96");
+    displayMessage(dCFGFNAME" was not created by "FSNAME" version 0.90/0.92/0.94/0.96");
     fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
     deInit(5);
     if (fmailLocHandle != -1)
@@ -844,7 +830,7 @@ int cdecl main(int argc, char *argv[])
         areaMgr ();
 
       if (ch == 'N')
-        unlink (tempStr);
+        unlink(tempStr);
 
       badEchoCount = 0;
     }
@@ -858,14 +844,10 @@ int cdecl main(int argc, char *argv[])
       close(fmailLocHandle);
     return 1;
   }
-  addItem(warningMenu, DISPLAY,
-           "FSetup's AutoExport feature overwrites existing", 0, NULL, 0, 0, NULL);
-  addItem(warningMenu, DISPLAY,
-           "area configuration files! Any information stored", 0, NULL, 0, 0, NULL);
-  addItem(warningMenu, DISPLAY,
-           "in those files not present in FSetup's Area Manager", 0, NULL, 0, 0, NULL);
-  addItem(warningMenu, DISPLAY,
-           "will be lost.                Press ESC to continue.", 0, NULL, 0, 0, NULL);
+  addItem(warningMenu, DISPLAY, FSNAME"'s AutoExport feature overwrites existing", 0, NULL, 0, 0, NULL);
+  addItem(warningMenu, DISPLAY, "area configuration files! Any information stored", 0, NULL, 0, 0, NULL);
+  addItem(warningMenu, DISPLAY, "in those files not present in "FSNAME"'s Area Manager", 0, NULL, 0, 0, NULL);
+  addItem(warningMenu, DISPLAY, "will be lost.                Press ESC to continue.", 0, NULL, 0, 0, NULL);
 
   if ((autoExpMenu = createMenu(" AutoExport ")) == NULL)
   {
@@ -1692,7 +1674,7 @@ int cdecl main(int argc, char *argv[])
   addItem(sysMiscMenu, BOOL_INT, "Monochrome", 0, &config.genOptions, BIT6, 0,
            "Do not use color even if a color card is detected (same as /M switch)");
   addItem(sysMiscMenu, ENUM_INT, "Color set", 0, &colorToggle, 0, 3,
-           "Color set used by FSetup (has no effect in monochrome mode)");
+           "Color set used by "FSNAME" (has no effect in monochrome mode)");
 
   if ((systemMenu = createMenu(" System info ")) == NULL)
     goto nomem;
