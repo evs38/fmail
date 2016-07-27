@@ -524,50 +524,49 @@ void initWindow(u16 mode)
 //---------------------------------------------------------------------------
 void deInit(u16 cursorLine)
 {
-   u16 pos = 6;
+#ifdef __32BIT__
+  textmode(LASTMODE);
+  clrscr();
+  locateCursor(0, 0);
+#else  // __32BIT__
+  u16 pos = 6;
 
-   while (pos--)
-     showChar(72 + pos, 1, ' ', calcAttr(YELLOW, RED), MONO_NORM);
-#ifndef __OS2__
-   if (videoModeDOS != videoModeFSetup)
-   {
-#ifndef __32BIT__
-      _AL = videoModeDOS;
-      _AH = 0x00;
-      geninterrupt(0x10);
-#endif
-      locateCursor(0, 0);
-   }
-   else
-      locateCursor(0, cursorLine);
-#ifndef __32BIT__
-   _CX = oldCursor;
-   _AH = 0x01;
-   geninterrupt(0x10);
-#endif
-#else
-   locateCursor(0, cursorLine);
-#endif
-#ifndef __32BIT__
-#ifndef __FMAILX__
-   /* restore original abort/retry/ignore/fail handler */
-   _os_uninstall_msghandler(); /* macro */
-#endif
-#endif
+  while (pos--)
+    showChar(72 + pos, 1, ' ', calcAttr(YELLOW, RED), MONO_NORM);
 #ifdef __OS2__
-   if ( vmiOrg.col == 80 && vmiOrg.row == 25 )
-   {
-      fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
-      VioShowBuf(0, 8000, 0);
-   }
-   else
-   {
-      VioSetMode(&vmiOrg, 0);
-      VioScrollUp(0, 0, 0xFFFF, 0xFFFF, 0xFFFF, " \x7", 0);
-   }
-#else
-   fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
-#endif
+  locateCursor(0, cursorLine);
+#else  // __OS2__
+  if (videoModeDOS != videoModeFSetup)
+  {
+    _AL = videoModeDOS;
+    _AH = 0x00;
+    geninterrupt(0x10);
+    locateCursor(0, 0);
+  }
+  else
+    locateCursor(0, cursorLine);
+  _CX = oldCursor;
+  _AH = 0x01;
+  geninterrupt(0x10);
+#endif  // __OS2__
+#ifndef __FMAILX__
+  /* restore original abort/retry/ignore/fail handler */
+  _os_uninstall_msghandler(); /* macro */
+#endif  // __FMAILX__
+#ifdef __OS2__
+  if ( vmiOrg.col == 80 && vmiOrg.row == 25 )
+  {
+    fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
+    VioShowBuf(0, 8000, 0);
+  }
+  else
+  {
+    VioSetMode(&vmiOrg, 0);
+    VioScrollUp(0, 0, 0xFFFF, 0xFFFF, 0xFFFF, " \x7", 0);
+  }
+#endif  // __OS2__
+  fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
+#endif  // __32BIT__
 }
 //---------------------------------------------------------------------------
 void printStringFill( char *string, char ch, s16 num, u16 x, u16 y
@@ -2524,7 +2523,7 @@ s16 askChar(char *prompt, u8 *keys)
    removeWindow();
    if (ch == _K_ESC_)
       return 0;
-      
+
    return *helpPtr;
 }
 
