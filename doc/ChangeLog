@@ -1,3 +1,9 @@
+2016-08-05  1.69.23.181-Beta
+  * RESCANNED kludge now has the same format as the VIA kludge,
+    so with full time stamp and version information.
+  * The 'Remove lf/soft cr' options no longer log the removed number of chars
+    in debug mode.
+
 2016-07-26  1.69.22.178-Beta
   * FSetup Win32 version. Renamed it to FConfigW32.exe, because otherwise later
     Windows versions (7 and up?) think it's a setup program, and puts up the

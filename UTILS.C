@@ -602,6 +602,9 @@ void removeLfSr(char *msgText)
   if (config.mbOptions.removeSr)
     removeSr(msgText);
 }
+#ifdef _DEBUG0
+#define _DEBUG_LOGREMOVELFSR
+#endif
 //---------------------------------------------------------------------------
 void removeLf(char *msgText)
 {
@@ -610,13 +613,13 @@ void removeLf(char *msgText)
      , *helpPtr
      , *wPtr = NULL
      ;
-#ifdef _DEBUG
+#ifdef _DEBUG_LOGREMOVELFSR
   int   n = 0;
 #endif
   oldStart = newEnd = helpPtr = msgText;
   while ((helpPtr = strchr(helpPtr, '\n')) != NULL)
   {
-#ifdef _DEBUG
+#ifdef _DEBUG_LOGREMOVELFSR
     n++;
 #endif
     // Remove linefeeds (only if preceeded by a (soft) carriage return)
@@ -638,7 +641,7 @@ void removeLf(char *msgText)
   }
   if (newEnd != oldStart)
     strcpy(newEnd, oldStart);
-#ifdef _DEBUG
+#ifdef _DEBUG_LOGREMOVELFSR
   if (n > 0)
   {
     tempStrType tempStr;
@@ -653,14 +656,14 @@ void removeSr(char *msgText)
   char *oldStart,
        *newEnd,
        *helpPtr;
-#ifdef _DEBUG
+#ifdef _DEBUG_LOGREMOVELFSR
   int   n = 0;
 #endif
 
   oldStart = newEnd = helpPtr = msgText;
   while ((helpPtr = strchr(helpPtr, 0x8d)) != NULL)
   {
-#ifdef _DEBUG
+#ifdef _DEBUG_LOGREMOVELFSR
     n++;
 #endif
     // Replace soft CR's by a cr if followed by a CR
@@ -676,7 +679,7 @@ void removeSr(char *msgText)
     }
   }
   strcpy(newEnd, oldStart);
-#ifdef _DEBUG
+#ifdef _DEBUG_LOGREMOVELFSR
   if (n > 0)
   {
     tempStrType tempStr;
@@ -1389,7 +1392,61 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
 }
 //---------------------------------------------------------------------------
 #ifdef FMAIL
-void addVia(char *msgText, u16 aka, const char *func, int isNetmail)
+extern char funcStr[];
+
+void setViaStr(char *buf, const char *preStr, u16 aka)
+{
+  if (NULL != buf)
+  {
+#if defined(__WIN32__)
+    SYSTEMTIME st;
+    GetSystemTime(&st);
+    sprintf(buf, "%s %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s(%s) %s\r"
+               , preStr, getAkaStr(aka, 1)
+               , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds
+               , TOOLSTR, funcStr, Version()
+           );
+#ifdef _DEBUG
+    {
+      tempStrType tStr;
+      sprintf( tStr, "DEBUG setViaStr: %04u%02u%02u.%02u%02u%02u.%03u.UTC"
+             , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+      logEntry(tStr, LOG_DEBUG, 0);
+    }
+#endif
+#elif defined(linux)
+    struct timeval tv;
+    struct tm *tm;
+
+    if (  0 != gettimeofday(&tv, NULL)
+       || NULL == (tm = gmtime(&tv.tv_sec))
+       )
+      sprintf(buf, "%s %s @00000000.000000 %s(%s) %s\r"
+                 , preStr, getAkaStr(aka, 1)
+                 , TOOLSTR, funcStr, Version()
+             );
+    else
+      sprintf(buf, "%s %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s(%s) %s\r"
+                 , preStr, getAkaStr(aka, 1)
+                 , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
+                 , tm->tm_hour, tm->tm_min, tm->tm_sec
+                 , tv.tv_usec / 1000
+                 , TOOLSTR, funcStr, Version()
+             );
+#else
+    struct tm *tmPtr;
+    tmPtr = gmtime(&startTime);
+    sprintf(buf, "%s %s @%04u%02u%02u.%02u%02u%02u %s(%s) %s\r"
+               , preStr, getAkaStr(aka, 1)
+               , tmPtr->tm_year + 1900, tmPtr->tm_mon + 1, tmPtr->tm_mday
+               , tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec
+               , TOOLSTR, funcStr, Version()
+           );
+#endif
+  }
+}
+//---------------------------------------------------------------------------
+void addVia(char *msgText, u16 aka, int isNetmail)
 {
   char *helpPtr;
   tempStrType tStr;
@@ -1405,51 +1462,13 @@ void addVia(char *msgText, u16 aka, const char *func, int isNetmail)
 
   if (NULL != helpPtr)
   {
-#if defined(__WIN32__)
-    SYSTEMTIME st;
-    GetSystemTime(&st);
-    sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s(%s) %s\r"
-                   , getAkaStr(aka, 1)
-                   , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds
-                   , TOOLSTR, func, Version()
-           );
 #ifdef _DEBUG
-    {
-      tempStrType tStr;
-      sprintf( tStr, "DEBUG addVia: %04u%02u%02u.%02u%02u%02u.%03u.UTC %s"
-             , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, isNetmail ? "net" : "echo");
-      logEntry(tStr, LOG_DEBUG, 0);
-    }
+    tempStrType tStr;
+    sprintf(tStr, "DEBUG addVia: %s", isNetmail ? "netmail" : "echomail");
+    logEntry(tStr, LOG_DEBUG, 0);
 #endif
-#elif defined(linux)
-    struct timeval tv;
-    struct tm *tm;
+    setViaStr(helpPtr, "\x1Via", aka);
 
-    if (  0 != gettimeofday(&tv, NULL)
-       || NULL == (tm = gmtime(&tv.tv_sec))
-       )
-      sprintf(helpPtr, "\x1Via %s @00000000.000000 %s(%s) %s\r"
-                     , getAkaStr(aka, 1)
-                     , TOOLSTR, func, Version()
-             );
-    else
-      sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u.%03u.UTC %s(%s) %s\r"
-                     , getAkaStr(aka, 1)
-                     , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
-                     , tm->tm_hour, tm->tm_min, tm->tm_sec
-                     , tv.tv_usec / 1000
-                     , TOOLSTR, func, Version()
-             );
-#else
-    struct tm *tmPtr;
-    tmPtr = gmtime(&startTime);
-    sprintf(helpPtr, "\x1Via %s @%04u%02u%02u.%02u%02u%02u %s(%s) %s\r"
-                   , getAkaStr(aka, 1)
-                   , tmPtr->tm_year + 1900, tmPtr->tm_mon + 1, tmPtr->tm_mday
-                   , tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec
-                   , TOOLSTR, func, Version()
-           );
-#endif
     if (!isNetmail)
       insertLineN(msgText, tStr, 1);
   }

@@ -167,7 +167,8 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   JAMHDRINFO     *jam_hdrinforec;
   JAMHDR          jam_msghdrrec;
   JAMIDXREC       jam_idxrec;
-  tempStrType     tempStr;
+  tempStrType     tempStr
+                , tempStr2;
   u32             msgCount = 0;
   u32             count;
   nodeFileRecType nfInfo;
@@ -178,7 +179,9 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
 
   sprintf(tempStr,"Scanning for messages in JAM area: %s", echoAreaList[echoIndex].areaName);
   logEntry(tempStr, LOG_ALWAYS, 0);
-  sprintf(tempStr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, getAkaStr(echoAreaList[echoIndex].address, 1));
+
+  sprintf(tempStr2, "AREA:%s\r\1RESCANNED", echoAreaList[echoIndex].areaName);
+  setViaStr(tempStr, tempStr2, echoAreaList[echoIndex].address);
   makeNFInfo(&nfInfo, echoAreaList[echoIndex].address, &nodeInfo->node);
   count = jam_hdrinforec->ActiveMsgs;
   found = jam_getidx(jam_code, &jam_idxrec, 0);

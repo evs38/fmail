@@ -820,7 +820,7 @@ static s16 processMsg(u16 areaIndex)
             nodeFileInfo[count]->fromNodeDup++;
 
       puts(dARROW" Duplicate message");
-      addVia(message->text, globVars.packetDestAka, "Toss", 0);
+      addVia(message->text, globVars.packetDestAka, 0);
       writeBBS(message, config.dupBoard, 1);
       echoAreaList[areaIndex].dupCount++;
       globVars.dupCount++;
@@ -1373,7 +1373,8 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
                 , origMsgTxtHandle;
   fhandle         tempHandle;
   u16             count;
-  tempStrType     tempStr;
+  tempStrType     tempStr
+                , tempStr2;
   msgIdxRec       msgIdxBuf[256];
   u16             msgIdxBufCount;
   nodeFileRecType nfInfo;
@@ -1436,7 +1437,10 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
 
     sprintf(tempStr, "Scanning for messages in HUDSON area: %s", echoAreaList[echoIndex].areaName);
     logEntry(tempStr, LOG_ALWAYS, 0);
-    sprintf(tempStr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, getAkaStr(echoAreaList[echoIndex].address, 1));
+
+    sprintf(tempStr2, "AREA:%s\r\1RESCANNED", echoAreaList[echoIndex].areaName);
+    setViaStr(tempStr, tempStr2, echoAreaList[echoIndex].address);
+
     makeNFInfo(&nfInfo, echoAreaList[echoIndex].address, &nodeInfo->node);
 
     index = 0;

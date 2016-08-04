@@ -72,6 +72,7 @@ extern time_t	startTime;
 // Global available datastructures
 configType config;
 s16        zero = 0;
+char funcStr[32] = "undefined?";
 
 extern s16 diskError;
 
@@ -199,7 +200,7 @@ s16 isNetmailBoard (u16 board)
   return count != -1;
 }
 //---------------------------------------------------------------------------
-void initFMail(const char *s, s32 switches)
+void initFMail(const char *_funcStr, s32 switches)
 {
   s16         ch;
   fhandle     configHandle;
@@ -210,6 +211,7 @@ void initFMail(const char *s, s32 switches)
             , tempStr2;
   char       *helpPtr;
 
+  strcpy(funcStr, _funcStr);
   strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
   if (((configHandle = openP(tempStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
@@ -327,7 +329,7 @@ void initFMail(const char *s, s32 switches)
   config.bbsProgram = BBS_QBBS;
 #endif
 
-  initLog(s, switches);
+  initLog(funcStr, switches);
 
   if (  NULL == (message       = malloc(INTMSG_SIZE                          ))
      || NULL == (seenByArray   = malloc(sizeof(psRecType) * MAX_MSGSEENBY    ))

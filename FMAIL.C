@@ -553,7 +553,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
             {
               make4d(message);
               localAkaNum = getLocalAka(&message->destNode);
-              addVia(message->text, globVars.packetDestAka, "Toss", 1);  // Add Toss Via here before any writeMsg()
+              addVia(message->text, globVars.packetDestAka, 1);  // Add Toss Via here before any writeMsg()
             }
 
             if (*config.topic1 || *config.topic2)
@@ -756,7 +756,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                     ++globVars.fromNoExpDup;
 
                   putStr(" "dARROW" Duplicate message");
-                  addVia(message->text, globVars.packetDestAka, "Toss", 0);
+                  addVia(message->text, globVars.packetDestAka, 0);
                   if (writeBBS(message, config.dupBoard, 1))
                     diskError = DERR_WRHDUP;
 
@@ -952,7 +952,7 @@ void Toss(int argc, char *argv[])
 
   switches = getSwitch(&argc, argv, SW_A | SW_B);
 
-  initFMail("TOSS", switches);
+  initFMail("Toss", switches);
 
   initPkt();
   initNodeInfo();
@@ -1479,7 +1479,7 @@ void Scan(int argc, char *argv[])
 
   switches = getSwitch(&argc, argv, SW_A | SW_E | SW_N | SW_H | SW_J | SW_S);
 
-  initFMail("SCAN", switches);
+  initFMail("Scan", switches);
 
   initPkt();
   initNodeInfo();
@@ -1737,7 +1737,7 @@ void Import(int argc, char *argv[])
 
   switches = getSwitch(&argc, argv, SW_A);
 
-  initFMail("IMPORT", switches);
+  initFMail("Import", switches);
 
   initPkt();
   initNodeInfo();
@@ -1866,7 +1866,7 @@ void Pack(int argc, char *argv[])
 
   switches = getSwitch(&argc, argv, SW_A | SW_C | SW_H | SW_I | SW_L | SW_O);
 
-  initFMail("PACK", switches);
+  initFMail("Pack", switches);
 
   initPkt();
   initNodeInfo();
@@ -1900,7 +1900,7 @@ void Mgr(int argc, char *argv[])
 
   switches = getSwitch(&argc, argv, 0);
 
-  initFMail("MGR", switches);
+  initFMail("Mgr", switches);
 
   initPkt();
   initNodeInfo();

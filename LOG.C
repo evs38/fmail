@@ -122,7 +122,7 @@ static void writeLogLine(fhandle logHandle, const char *s)
   write(logHandle, tempStr, sl);
 }
 //---------------------------------------------------------------------------
-void initLog(const char *s, s32 switches)
+void initLog(const char *funcStr, s32 switches)
 {
   fhandle     logHandle;
   tempStrType tempStr
@@ -152,10 +152,10 @@ void initLog(const char *s, s32 switches)
   {
 #ifdef __WIN32__
     if (config.logStyle == 4)
-      helpPtr = stpcpy(tempStr2, s);
+      helpPtr = stpcpy(tempStr2, funcStr);
     else
 #endif
-      helpPtr = tempStr2 + sprintf(tempStr2, "%s - %s", VersionStr(), s);
+      helpPtr = tempStr2 + sprintf(tempStr2, "%s - %s", VersionStr(), funcStr);
 
     for (count = 0; count < 26; count++)
     {
