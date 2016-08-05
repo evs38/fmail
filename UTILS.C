@@ -1463,9 +1463,11 @@ void addVia(char *msgText, u16 aka, int isNetmail)
   if (NULL != helpPtr)
   {
 #ifdef _DEBUG
-    tempStrType tStr;
-    sprintf(tStr, "DEBUG addVia: %s", isNetmail ? "netmail" : "echomail");
-    logEntry(tStr, LOG_DEBUG, 0);
+    {
+      tempStrType tStrDB;
+      sprintf(tStrDB, "DEBUG addVia: %s", isNetmail ? "netmail" : "echomail");
+      logEntry(tStrDB, LOG_DEBUG, 0);
+    }
 #endif
     setViaStr(helpPtr, "\x1Via", aka);
 

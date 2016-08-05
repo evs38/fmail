@@ -1,4 +1,7 @@
 2016-08-05  1.69.23.181-Beta
+  * Fixed bug in addVia debug logging.
+
+2016-08-05  1.69.23.181-Beta
   * RESCANNED kludge now has the same format as the VIA kludge,
     so with full time stamp and version information.
   * The 'Remove lf/soft cr' options no longer log the removed number of chars
