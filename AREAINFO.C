@@ -198,7 +198,7 @@ void initAreaInfo(void)
         if ((echoAreaList[echoCount].JAMdirPtr = (char*)malloc(strlen(areaBuf->msgBasePath)+1)) == NULL)
           logEntry ("Not enough memory available", LOG_ALWAYS, 2);
 
-        strcpy (echoAreaList[echoCount].JAMdirPtr, areaBuf->msgBasePath);
+        strcpy(echoAreaList[echoCount].JAMdirPtr, areaBuf->msgBasePath);
       }
 
       echoAreaList[echoCount].writeLevel  = areaBuf->writeLevel;
@@ -275,21 +275,26 @@ void initAreaInfo(void)
                {
                   logEntry ("Not enough memory available", LOG_ALWAYS, 2);
                }
-               errorDisplay |= makeNFInfo(nodeFileInfo[forwNodeCount++],
-                                          areaBuf->address,
-                                           &(areaBuf->forwards[count].nodeNum));
+               errorDisplay |= makeNFInfo( nodeFileInfo[forwNodeCount++]
+                                         , areaBuf->address, &(areaBuf->forwards[count].nodeNum));
             }
-            if ( !(areaBuf->forwards[count].flags.readOnly &&
-                   areaBuf->forwards[count].flags.writeOnly) )
-            {  if ( areaBuf->forwards[count].flags.readOnly )
+            if ( !(  areaBuf->forwards[count].flags.readOnly
+                  && areaBuf->forwards[count].flags.writeOnly
+                  )
+               )
+            {
+               if (areaBuf->forwards[count].flags.readOnly)
                   echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SETRO(c);
-               else if ( areaBuf->forwards[count].flags.writeOnly )
-                  echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SETWO(c);
                else
-                  echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SET(c);
+                  if (areaBuf->forwards[count].flags.writeOnly)
+                     echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SETWO(c);
+                  else
+                     echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SET(c);
+
                echoAreaList[echoCount].echoToNodeCount++;
-               if ( !areaBuf->forwards[count].flags.writeOnly &&
-                    nodeFileInfo[c]->nodePtr->useAka )
+               if ( !areaBuf->forwards[count].flags.writeOnly
+                  && nodeFileInfo[c]->nodePtr->useAka
+                  )
                   echoAreaList[echoCount].alsoSeenBy |= 1L << (nodeFileInfo[c]->nodePtr->useAka - 1);
             }
          }

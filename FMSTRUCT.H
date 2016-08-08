@@ -128,8 +128,8 @@ typedef struct
 } headerType;
 
 
-/* The structure below is used by the Areas File and (only partly)
-   by the Config File */
+// The structure below is used by the Areas File and (only partly)
+// by the Config File
 
 typedef struct
 {

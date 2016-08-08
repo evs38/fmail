@@ -386,6 +386,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   sprintf(tempStr, "Processing JAM area: %s", areaPtr->areaName);
   logEntry(tempStr, LOG_INBOUND | LOG_NOSCRN, 0);
   printf("%s... ", tempStr);
+  fflush(stdout);
 
   if (  (d.hJHR = fsopen(expJAMname(mbPath, EXT_HDR), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
      || (d.hJDT = fsopen(expJAMname(mbPath, EXT_TXT), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
@@ -773,7 +774,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 
 #if 0
   putStr("\nPress any key to continue... ");
-  flush();
+  fflush(stdout);
   getch();
   newLine();
 #endif
@@ -912,6 +913,7 @@ jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->are
   logEntry("O Updating", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
   putStr("Updating ");
+  fflush(stdout);
 
   read(JHRhandle, &headerInfo, sizeof(JAMHDRINFO));
 

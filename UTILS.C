@@ -1303,7 +1303,9 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
   // Add other nodes to SEENBY
   for (count = 0; count < forwNodeCount; count++)
   {
-    if (   ETN_ANYACCESS(echoToNode[ETN_INDEX(count)], count)
+    // Add only nodes to the seen-by's that get the message forwarded
+    // == Read Access
+    if (   ETN_READACCESS(echoToNode[ETN_INDEX(count)], count)
        && !nodeFileInfo[count]->destFake
        &&  nodeFileInfo[count]->destNode.point == 0
        )

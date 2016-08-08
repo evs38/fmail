@@ -129,9 +129,9 @@ static void removeTrunc(char *path)
   tempStrType    fileNameStr
                , pattern;
 
-#ifdef _DEBUG
+#ifdef _DEBUG0
   sprintf(fileNameStr, "DEBUG removeTrunc: %s", path);
-  logEntry(fileNameStr, LOG_DEBUG, 0);
+  logEntry(fileNameStr, LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
 
   if ((dir = opendir(path)) != NULL)
@@ -475,11 +475,11 @@ void initMsg(s16 noAreaFix)
 
     bl = strlen(tempStr);
 
-#ifdef _DEBUG
+#ifdef _DEBUG0
     {
       tempStrType dbStr;
       sprintf(dbStr, "DEBUG initMsg: %s, %s", dirStr, tempStr);
-      logEntry(dbStr, LOG_DEBUG, 0);
+      logEntry(dbStr, LOG_DEBUG | LOG_NOSCRN, 0);
     }
 #endif
 
