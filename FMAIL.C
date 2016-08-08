@@ -803,7 +803,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
                 if (echoToNodeCount)
                 {
-                  addPathSeenBy(message, tempEchoToNode, areaIndex);
+                  addPathSeenBy(message, tempEchoToNode, areaIndex, NULL);
 
                   if (writeEchoPkt(message, echoAreaList[areaIndex].options, tempEchoToNode))
                     diskError = DERR_WRPKTE;
@@ -1407,7 +1407,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
     sprintf(tempStr, "AREA:%s\r", echoAreaList[count].areaName);
     insertLine(message->text, tempStr);
 
-    addPathSeenBy(message, tempEchoToNode, count);
+    addPathSeenBy(message, tempEchoToNode, count, NULL);
 
     if (writeEchoPkt(message, echoAreaList[count].options, tempEchoToNode))
       return 1;

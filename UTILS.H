@@ -115,7 +115,7 @@ void        point4d        (internalMsgType *message);
 void        make4d         (internalMsgType *message);
 char       *insertLine     (char *pos, const char *line);
 char       *insertLineN    (char *pos, char *line, u16 num);
-void        addPathSeenBy  (internalMsgType *msg, echoToNodeType echoToNode, u16 areaIndex);
+void        addPathSeenBy  (internalMsgType *msg, echoToNodeType echoToNode, u16 areaIndex, nodeNumType *rescanNode);
 void        addVia         (char *msgText, u16 aka, int isNetmail);
 void        setViaStr      (char *buf, const char *preStr, u16 aka);
 s16         scanDate       (unsigned char *datePtr, u16 *year, u16 *month, u16 *day, u16 *hours, u16 *minutes);

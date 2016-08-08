@@ -862,7 +862,7 @@ static s16 processMsg(u16 areaIndex)
 
    if (echoToNodeCount)
    {
-      addPathSeenBy(message, tempEchoToNode, areaIndex);
+      addPathSeenBy(message, tempEchoToNode, areaIndex, NULL);
 
       if (writeEchoPkt(message, echoAreaList[areaIndex].options, tempEchoToNode))
          diskError = DERR_WRPKTE;
@@ -1463,7 +1463,7 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
                )
             {
               insertLine(message->text, tempStr);
-              addPathSeenBy(message, echoToNode[echoIndex], echoIndex);
+              addPathSeenBy(message, echoToNode[echoIndex], echoIndex, &nodeInfo->node);
               setSeenByPath(message, NULL, echoAreaList[echoIndex].options, nodeInfo->options);
               message->srcNode  = *getAkaNodeNum(echoAreaList[echoIndex].address, 1);
               message->destNode = nodeInfo->node;

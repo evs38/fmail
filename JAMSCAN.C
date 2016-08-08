@@ -203,7 +203,7 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
           removeLfSr(message->text);
           jam_getsubfields(jam_code, jam_subfields, jam_msghdrrec.SubfieldLen, message);
           insertLine(message->text, tempStr);
-          addPathSeenBy(message, echoToNode[echoIndex], echoIndex);
+          addPathSeenBy(message, echoToNode[echoIndex], echoIndex, &nodeInfo->node);
           setSeenByPath(message, NULL, echoAreaList[echoIndex].options, nodeInfo->options);
           message->srcNode  = *getAkaNodeNum(echoAreaList[echoIndex].address, 1);
           message->destNode = nodeInfo->node;

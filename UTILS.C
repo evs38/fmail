@@ -1023,38 +1023,35 @@ static void writePathSeenBy(u16 type, char *pathSeen, psType *psArray, u16 array
    *(helpPtr++) = '\r';
    *helpPtr = 0;
 }
-
-
-
+//---------------------------------------------------------------------------
 static s16 addSeenByNode(u16 net, u16 node, psType *array, u16 *seenByCount)
 {
-   u16 count;
+  u16 count;
 
-   for (count = 0; (count < *seenByCount) &&
-                   (((*array)[count].net < net) ||
-                   (((*array)[count].net == net) &&
-                   ((*array)[count].node < node)));
-                   count++)
-   {}
+  for (count = 0; (count < *seenByCount) &&
+                 (((*array)[count].net < net) ||
+                 (((*array)[count].net == net) &&
+                 ((*array)[count].node < node)))
+     ; count++)
+  {}
 
-   if (count == *seenByCount)
-   {
-      (*array)[*seenByCount].net      = net;
-      (*array)[(*seenByCount)++].node = node;
-   }
-   else
-      if (((*array)[count].net != net) ||
-          ((*array)[count].node != node))
-      {
-         memmove (&((*array)[count+1]),
-                  &((*array)[count]),
-                  (((*seenByCount)++)-count)*sizeof(psRecType));
-         (*array)[count].net  = net;
-         (*array)[count].node = node;
-      }
-      else
-         return (0);
-   return (1);
+  if (count == *seenByCount)
+  {
+    (*array)[*seenByCount].net      = net;
+    (*array)[(*seenByCount)++].node = node;
+  }
+  else
+    if ((*array)[count].net != net || (*array)[count].node != node)
+    {
+      memmove ( &((*array)[count + 1]), &((*array)[count])
+              , (((*seenByCount)++) - count) * sizeof(psRecType));
+      (*array)[count].net  = net;
+      (*array)[count].node = node;
+    }
+    else
+      return 0;
+
+  return 1;
 }
 //---------------------------------------------------------------------------
 int getLocalAkaNum(nodeNumType *node)
@@ -1251,7 +1248,7 @@ int comparSeenBy(const void* p1, const void* p2)
   return ((psRecType*)p1)->net - ((psRecType*)p2)->net;
 }
 //---------------------------------------------------------------------------
-void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaIndex)
+void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaIndex, nodeNumType *rescanNode)
 {
   u16          seenByCount   = 0
              , tinySeenCount = 0
@@ -1300,41 +1297,50 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
   // Sort seen-by list
   qsort(seenByArray, seenByCount, sizeof(psRecType), comparSeenBy);
 
-  // Add other nodes to SEENBY
-  for (count = 0; count < forwNodeCount; count++)
+  // Add other nodes to SEENBY, or asking node in case of rescan
+  if (NULL != rescanNode)
   {
-    // Add only nodes to the seen-by's that get the message forwarded
-    // == Read Access
-    if (   ETN_READACCESS(echoToNode[ETN_INDEX(count)], count)
-       && !nodeFileInfo[count]->destFake
-       &&  nodeFileInfo[count]->destNode.point == 0
-       )
+    // Rescan
+    if (rescanNode->point == 0)
     {
-      // Assign return value of addSeenByNode to
-      // echoToNode[ETN_INDEX(count)] & ETN_SET(count) when SEEN-BY usage is required
-      count2 = addSeenByNode( nodeFileInfo[count]->destNode.net
-                            , nodeFileInfo[count]->destNode.node
-                            , seenByArray
-                            , &seenByCount
-                            );
-
-      if (echoAreaList[areaIndex].options.checkSeenBy && count2 == 0)
-        echoToNode[ETN_INDEX(count)] &= ETN_RESET(count);
-
-      addSeenByNode( nodeFileInfo[count]->destNode.net
-                   , nodeFileInfo[count]->destNode.node
-                   , tinySeenArray
-                   , &tinySeenCount
-                   );
-#ifdef _DEBUG0
-      {
-        tempStrType ts;
-        sprintf(ts, "DEBUG: Add other node to SEENBY: %s", nodeStr(&nodeFileInfo[count]->destNode));
-        logEntry(ts, LOG_DEBUG, 0);
-      }
-#endif
+      addSeenByNode(rescanNode->net, rescanNode->node, seenByArray  , &seenByCount  );
+      addSeenByNode(rescanNode->net, rescanNode->node, tinySeenArray, &tinySeenCount);
     }
   }
+  else
+    for (count = 0; count < forwNodeCount; count++)
+    {
+      // Add only nodes to the seen-by's that get the message forwarded == Read Access
+      if (   ETN_READACCESS(echoToNode[ETN_INDEX(count)], count)
+         && !nodeFileInfo[count]->destFake
+         &&  nodeFileInfo[count]->destNode.point == 0
+         )
+      {
+        // Assign return value of addSeenByNode to
+        // echoToNode[ETN_INDEX(count)] & ETN_SET(count) when SEEN-BY usage is required
+        count2 = addSeenByNode( nodeFileInfo[count]->destNode.net
+                              , nodeFileInfo[count]->destNode.node
+                              , seenByArray
+                              , &seenByCount
+                              );
+
+        if (echoAreaList[areaIndex].options.checkSeenBy && count2 == 0)
+          echoToNode[ETN_INDEX(count)] &= ETN_RESET(count);
+
+        addSeenByNode( nodeFileInfo[count]->destNode.net
+                     , nodeFileInfo[count]->destNode.node
+                     , tinySeenArray
+                     , &tinySeenCount
+                     );
+#ifdef _DEBUG0
+        {
+          tempStrType ts;
+          sprintf(ts, "DEBUG: Add other node to SEENBY: %s", nodeStr(&nodeFileInfo[count]->destNode));
+          logEntry(ts, LOG_DEBUG, 0);
+        }
+#endif
+      }
+    }
 
   // Add other AKAs to SEENBY
   if (echoAreaList[areaIndex].alsoSeenBy != 0)
