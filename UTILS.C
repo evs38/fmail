@@ -832,8 +832,8 @@ static void readPathSeenBy(u16 type, char *msgText, psType *psArray, u16 *arrayC
 {
    char *searchStr;
    u16   searchLength;
-   char *helpPtr1,
-      	*helpPtr2;
+   char *helpPtr1
+      , *helpPtr2;
    u16   psNet = 0;
    s16   skip = 0;
    u16   helpInt;
@@ -868,7 +868,7 @@ static void readPathSeenBy(u16 type, char *msgText, psType *psArray, u16 *arrayC
             helpInt = 0;
             do
             {
-               helpInt = (helpInt<<3) + (helpInt<<1) + *(helpPtr2++) - '0';
+               helpInt = (helpInt << 3) + (helpInt << 1) + *(helpPtr2++) - '0';
             }
             while (isdigit(*helpPtr2));
 
@@ -899,10 +899,22 @@ static void readPathSeenBy(u16 type, char *msgText, psType *psArray, u16 *arrayC
                || *helpPtr2 == '\n'
                )
             helpPtr2++;
-
       }
       strcpy(helpPtr1, helpPtr2);
    }
+}
+//---------------------------------------------------------------------------
+void logPathSeenBy(const char *pre, u16 type, psRecType *psArray, int arrayCount)
+{
+  char tmpStr[0x4000]
+    , *p;
+  int  i;
+
+  p = stpcpy(stpcpy(tmpStr, pre), type == ECHO_SEENBY ? "SEEN-BY:" : "PATH:");
+  for (i = 0; i < arrayCount; i++)
+    p += sprintf(p, " %u/%u", psArray[i].net, psArray[i].node);
+
+  logEntry(tmpStr, LOG_ALWAYS, 0);
 }
 //---------------------------------------------------------------------------
 static void writePathSeenBy(u16 type, char *pathSeen, psType *psArray, u16 arrayCount)
@@ -935,10 +947,6 @@ static void writePathSeenBy(u16 type, char *pathSeen, psType *psArray, u16 array
             *helpPtr++ = '\r';
          }
 
-/*	 outputLength = sprintf (helpPtr, "%s%u/%u", name,
-                                          (*psArray)[count].net,
-				          (*psArray)[count].node);
-*/
          helpPtr = stpcpy (helpPtr, name);
          num = (*psArray)[count].net;
          helpPtr2 = tempStr+5;
@@ -969,10 +977,6 @@ static void writePathSeenBy(u16 type, char *pathSeen, psType *psArray, u16 array
          *(helpPtr++) = ' ';
 	 if ((*psArray)[count].net != (*psArray)[count-1].net)
          {
-/*	    outputLength = sprintf (helpPtr, " %u/%u",
-                                             (*psArray)[count].net,
-     				             (*psArray)[count].node);
-*/
             num = (*psArray)[count].net;
             helpPtr2 = tempStr+5;
             do
@@ -1117,38 +1121,28 @@ s16 node2d(nodeNumType *node)
       node->net   = config.akaList[count].fakeNet;
       node->node  = node->point;
       node->point = 0;
-      return (count);
+      return count;
    }
-   return (-1);
+   return -1;
 }
-
-
+//---------------------------------------------------------------------------
 void make2d(internalMsgType *message)
 {
-   char     *helpPtr;
+  char *helpPtr;
 
-   /* 2d source */
+  // 2d source
+  if ((helpPtr = findCLStr(message->text, "\1FMPT")) != NULL)
+    message->srcNode.point = atoi(helpPtr+5);
 
-   if ((helpPtr = findCLStr (message->text, "\1FMPT")) != NULL)
-   {
-      message->srcNode.point = atoi (helpPtr+5);
-   }
-   if ((node2d (&message->srcNode) != -1) && (helpPtr != NULL))
-   {
-      removeLine (helpPtr);
-   }
+  if ((node2d(&message->srcNode) != -1) && helpPtr != NULL)
+    removeLine(helpPtr);
 
-   /* 2d destination */
+  // 2d destination
+  if ((helpPtr = findCLStr(message->text, "\1TOPT")) != NULL)
+    message->destNode.point = atoi(helpPtr + 5);
 
-   if ((helpPtr = findCLStr (message->text, "\1TOPT")) != NULL)
-   {
-      message->destNode.point = atoi (helpPtr+5);
-   }
-
-   if ((node2d (&message->destNode) != -1) && (helpPtr != NULL))
-   {
-      removeLine (helpPtr);
-   }
+  if ((node2d(&message->destNode) != -1) && helpPtr != NULL)
+    removeLine(helpPtr);
 }
 //---------------------------------------------------------------------------
 s16 node4d(nodeNumType *node)
@@ -1248,6 +1242,10 @@ int comparSeenBy(const void* p1, const void* p2)
   return ((psRecType*)p1)->net - ((psRecType*)p2)->net;
 }
 //---------------------------------------------------------------------------
+#ifdef _DEBUG0
+#define _DEBUG_LOGPATHSEENBY
+#endif
+
 void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaIndex, nodeNumType *rescanNode)
 {
   u16          seenByCount   = 0
@@ -1282,6 +1280,9 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
 
   // SEEN-BY
   readPathSeenBy(ECHO_SEENBY, msg->text, seenByArray, &seenByCount);
+#ifdef _DEBUG_LOGPATHSEENBY
+  logPathSeenBy("DEBUG 1r ", ECHO_SEENBY, *seenByArray, seenByCount);
+#endif
 
   // Remove fake-net from seen-by
   if (seenByCount != 0)
@@ -1296,6 +1297,10 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
 
   // Sort seen-by list
   qsort(seenByArray, seenByCount, sizeof(psRecType), comparSeenBy);
+
+#ifdef _DEBUG_LOGPATHSEENBY
+  logPathSeenBy("DEBUG 1s ", ECHO_SEENBY, *seenByArray, seenByCount);
+#endif
 
   // Add other nodes to SEENBY, or asking node in case of rescan
   if (NULL != rescanNode)
@@ -1378,8 +1383,16 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
   writePathSeenBy(ECHO_SEENBY, msg->normSeen,   seenByArray,   seenByCount);
   writePathSeenBy(ECHO_SEENBY, msg->tinySeen, tinySeenArray, tinySeenCount);
 
+#ifdef _DEBUG_LOGPATHSEENBY
+  logPathSeenBy("DEBUG 2F ", ECHO_SEENBY, *seenByArray  , seenByCount  );
+  logPathSeenBy("DEBUG 2T ", ECHO_SEENBY, *tinySeenArray, tinySeenCount);
+#endif
+
   // PATH
   readPathSeenBy(ECHO_PATH, msg->text, pathArray, &pathCount);
+#ifdef _DEBUG_LOGPATHSEENBY
+  logPathSeenBy("DEBUG 1  ", ECHO_PATH, *pathArray, pathCount);
+#endif
 
   if (!mainNode.nodeNum.point || config.mailOptions.addPointToPath)             // If not a point or if option "Add point to path'
   {
@@ -1397,6 +1410,10 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
     writePathSeenBy(ECHO_PATH, msg->normPath, pathArray    , pathCount    );
   if (tinyPathCount)
     writePathSeenBy(ECHO_PATH, msg->tinyPath, tinyPathArray, tinyPathCount);
+#ifdef _DEBUG_LOGPATHSEENBY
+  logPathSeenBy("DEBUG 2F ", ECHO_PATH, *pathArray    , pathCount    );
+  logPathSeenBy("DEBUG 2T ", ECHO_PATH, *tinyPathArray, tinyPathCount);
+#endif
 }
 //---------------------------------------------------------------------------
 #ifdef FMAIL

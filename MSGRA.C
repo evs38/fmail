@@ -917,7 +917,7 @@ static s16 processMsg(u16 areaIndex)
          if (strncmp (message->text, "AREA:", 5) == 0)
          {
             if (*(helpPtr = strchr (message->text, '\r') + 1) == '\n')
-      	      helpPtr++;
+              helpPtr++;
 
             memmove(message->text,helpPtr,strlen(helpPtr)+1);
          }
@@ -1122,10 +1122,19 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
       return 0;
    }
 
-   if ((((((msgRa.MsgAttr & RA_ECHO_OUT) && (!isNetmailBoard(msgRa.Board))) ||
-          ((msgRa.MsgAttr & RA_NET_OUT ) && (isNetmailBoard(msgRa.Board)))) &&
-       (msgRa.MsgAttr & RA_LOCAL)) || rescan) &&
-       (!(msgRa.MsgAttr & RA_DELETED)))
+   if (
+         (
+            (
+               (
+                  ((msgRa.MsgAttr & RA_ECHO_OUT) && !isNetmailBoard(msgRa.Board))
+               || ((msgRa.MsgAttr & RA_NET_OUT ) &&  isNetmailBoard(msgRa.Board))
+               )
+            && (msgRa.MsgAttr & RA_LOCAL)
+            )
+         || rescan
+         )
+      && !(msgRa.MsgAttr & RA_DELETED)
+      )
    {
       if ((u32)msgRa.NumRecs > ((u32)((u32)TEXT_SIZE - 2048) >> 8))
       {
@@ -1249,15 +1258,12 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
       }
       else
       {
-         if (rescan != 2)
+         // Convert SEEN-BY kludge lines to normal SEEN-BY lines
+         helpPtr = message->text;
+         while ((helpPtr = findCLStr(helpPtr, "\1SEEN-BY: ")) != NULL)
          {
-            helpPtr = message->text;
-            while ((helpPtr = findCLStr(helpPtr, "\1SEEN-BY")) != NULL)
-               removeLine (helpPtr);
-
-            helpPtr = message->text;
-            while ((helpPtr = findCLStr(helpPtr, "\1PATH")) != NULL)
-               removeLine(helpPtr);
+            memmove(helpPtr, helpPtr + 1, strlen(helpPtr));
+            helpPtr += 9;
          }
       }
       return msgRa.Board;
@@ -1451,22 +1457,34 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
       for (count = 0; count < msgIdxBufCount; count++)
       {
          if (  msgIdxBuf[count].Board == echoAreaList[echoIndex].board
-      #ifndef GOLDBASE
+#ifndef GOLDBASE
             && msgIdxBuf[count].MsgNum != MAXU16
-      #else
+#else
             && msgIdxBuf[count].MsgNum != MAXU32
-      #endif
+#endif
             )
          {
             if (  msgCount <= maxRescan
                && scanBBS(index, message, 1) == echoAreaList[echoIndex].board
                )
             {
-              insertLine(message->text, tempStr);
+#ifdef _DEBUG0
+              {
+                char fname[64];
+                sprintf(fname, "%08lx_rescanned_hudson.msg", uniqueID());
+                logEntry(fname, LOG_DEBUG, 0);
+                if ((tempHandle = open(fname, O_WRONLY | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+                {
+                  write(tempHandle, message->text, strlen(message->text));
+                  close(tempHandle);
+                }
+              }
+#endif
               addPathSeenBy(message, echoToNode[echoIndex], echoIndex, &nodeInfo->node);
               setSeenByPath(message, NULL, echoAreaList[echoIndex].options, nodeInfo->options);
               message->srcNode  = *getAkaNodeNum(echoAreaList[echoIndex].address, 1);
               message->destNode = nodeInfo->node;
+              insertLine(message->text, tempStr);
               writeNetPktValid(message, &nfInfo);
               msgsFound++;
             }

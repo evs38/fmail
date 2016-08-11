@@ -676,6 +676,13 @@ void RemoveNetKludge(char *text, const char *kludge)
 char *setSeenByPath( internalMsgType *msg, char *txtEnd
                    , areaOptionsType areaOptions, nodeOptionsType nodeOptions)
 {
+#ifdef _DEBUG0
+  tempStrType tempStr;
+  
+  sprintf(tempStr, "DEBUG setSeenByPath areaOptions.tinySeenBy:%u nodeOptions.tinySeenBy:%u areaOptions.tinyPath:%u", areaOptions.tinySeenBy, nodeOptions.tinySeenBy, areaOptions.tinyPath);
+  logEntry(tempStr, LOG_DEBUG, 0);
+#endif
+
   if (NULL == txtEnd)
     txtEnd = strchr(msg->text, 0);
 

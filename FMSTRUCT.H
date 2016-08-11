@@ -89,10 +89,10 @@ typedef struct
 
 typedef struct
 {
-  unsigned readOnly   : 1;  /* Bit  0    */
-  unsigned writeOnly  : 1;  /* Bit  1    */
-  unsigned locked     : 1;  /* Bit  2    */
-  unsigned reserved   : 13; /* Bits 3-15 */
+  unsigned readOnly   : 1;  // Bit  0
+  unsigned writeOnly  : 1;  // Bit  1
+  unsigned locked     : 1;  // Bit  2
+  unsigned reserved   : 13; // Bits 3-15
 } nodeFlagsType;
 
 typedef struct
@@ -133,22 +133,22 @@ typedef struct
 
 typedef struct
 {
-  unsigned active      : 1; /* Bit  0 */
-  unsigned tinySeenBy  : 1; /* Bit  1 */
-  unsigned security    : 1; /* Bit  2 */
-  unsigned noRescan    : 1; /* Bit  3 */
-  unsigned allowPrivate: 1; /* Bit  4 */
-  unsigned impSeenBy   : 1; /* Bit  5 */
-  unsigned checkSeenBy : 1; /* Bit  6 */
-  unsigned tinyPath    : 1; /* Bit  7 */
-  unsigned local       : 1; /* Bit  8 */
-  unsigned disconnected: 1; /* Bit  9 */
-  unsigned _reserved   : 1; /* Bit 10 */
-  unsigned allowAreafix: 1; /* Bit 11 */
-  unsigned export2BBS  : 1; /* Bit 12 */
-  unsigned             : 1; /* Bit 13 */
-  unsigned arrivalDate : 1; /* Bit 14 */
-  unsigned sysopRead   : 1; /* Bit 15 */
+  unsigned active      : 1; // Bit  0
+  unsigned tinySeenBy  : 1; // Bit  1
+  unsigned security    : 1; // Bit  2
+  unsigned noRescan    : 1; // Bit  3
+  unsigned allowPrivate: 1; // Bit  4
+  unsigned impSeenBy   : 1; // Bit  5
+  unsigned checkSeenBy : 1; // Bit  6
+  unsigned tinyPath    : 1; // Bit  7
+  unsigned local       : 1; // Bit  8
+  unsigned disconnected: 1; // Bit  9
+  unsigned _reserved   : 1; // Bit 10
+  unsigned allowAreafix: 1; // Bit 11
+  unsigned export2BBS  : 1; // Bit 12
+  unsigned             : 1; // Bit 13
+  unsigned arrivalDate : 1; // Bit 14
+  unsigned sysopRead   : 1; // Bit 15
 } areaOptionsType;
 
 
@@ -199,93 +199,93 @@ typedef nodeFakeType akaListType[MAX_AKAS_F];
 
 typedef struct
 {
-  unsigned useEMS       : 1; /* BIT 0 */
-  unsigned checkBreak   : 1; /* BIT 1 */
-  unsigned swap         : 1; /* BIT 2 */
-  unsigned swapEMS      : 1; /* BIT 3 */
-  unsigned swapXMS      : 1; /* BIT 4 */
-  unsigned lfn          : 1; /* BIT 5 */
-  unsigned monochrome   : 1; /* BIT 6 */
-  unsigned commentFFD   : 1; /* BIT 7 */
-  unsigned PTAreasBBS   : 1; /* BIT 8 */
-  unsigned commentFRA   : 1; /* BIT 9 */
-  unsigned              : 1; /* BIT 10 */
-  unsigned incBDRRA     : 1; /* BIT 11 */
-  unsigned ctrlcodes    : 1; /* BIT 12 */
-  unsigned timeSliceFM  : 1; /* BIT 13 */
-  unsigned timeSliceFT  : 1; /* BIT 14 */
-  unsigned _RA2         : 1; /* BIT 15 */
+  unsigned useEMS       : 1;  // BIT 0
+  unsigned checkBreak   : 1;  // BIT 1
+  unsigned swap         : 1;  // BIT 2
+  unsigned swapEMS      : 1;  // BIT 3
+  unsigned swapXMS      : 1;  // BIT 4
+  unsigned lfn          : 1;  // BIT 5
+  unsigned monochrome   : 1;  // BIT 6
+  unsigned commentFFD   : 1;  // BIT 7
+  unsigned PTAreasBBS   : 1;  // BIT 8
+  unsigned commentFRA   : 1;  // BIT 9
+  unsigned              : 1;  // BIT 10
+  unsigned incBDRRA     : 1;  // BIT 11
+  unsigned ctrlcodes    : 1;  // BIT 12
+  unsigned timeSliceFM  : 1;  // BIT 13
+  unsigned timeSliceFT  : 1;  // BIT 14
+  unsigned _RA2         : 1;  // BIT 15
 } genOptionsType;
 
 typedef struct
 {
-  unsigned removeNetKludges : 1; /* Bit 0 */
-  unsigned addPointToPath   : 1; /* Bit 1 */
-  unsigned checkPktDest     : 1; /* Bit 2 */
-  unsigned neverARC060      : 1; /* Bit 3 */
-  unsigned createSema       : 1; /* Bit 4 */
-  unsigned dailyMail	      : 1; /* Bit 5 */
-  unsigned warnNewMail      : 1; /* bit 6 */
-  unsigned killBadFAtt      : 1; /* Bit 7 */
-  unsigned dupDetection     : 1; /* Bit 8 */
-  unsigned ignoreMSGID      : 1; /* Bit 9 */
-  unsigned ARCmail060       : 1; /* Bit 10 */
-  unsigned extNames         : 1; /* Bit 11 */
-  unsigned persNetmail      : 1; /* Bit 12 */
-  unsigned privateImport    : 1; /* Bit 13 */
-  unsigned keepExpNetmail   : 1; /* Bit 14 */
-  unsigned killEmptyNetmail : 1; /* Bit 15 */
+  unsigned removeNetKludges : 1;  // Bit 0
+  unsigned addPointToPath   : 1;  // Bit 1
+  unsigned checkPktDest     : 1;  // Bit 2
+  unsigned neverARC060      : 1;  // Bit 3
+  unsigned createSema       : 1;  // Bit 4
+  unsigned dailyMail        : 1;  // Bit 5
+  unsigned warnNewMail      : 1;  // bit 6
+  unsigned killBadFAtt      : 1;  // Bit 7
+  unsigned dupDetection     : 1;  // Bit 8
+  unsigned ignoreMSGID      : 1;  // Bit 9
+  unsigned ARCmail060       : 1;  // Bit 10
+  unsigned extNames         : 1;  // Bit 11
+  unsigned persNetmail      : 1;  // Bit 12
+  unsigned privateImport    : 1;  // Bit 13
+  unsigned keepExpNetmail   : 1;  // Bit 14
+  unsigned killEmptyNetmail : 1;  // Bit 15
 } mailOptionsType;
 
 typedef struct
 {
-  unsigned sortNew      : 1; /* bit  0   */
-  unsigned sortSubject  : 1; /* bit  1   */
-  unsigned updateChains : 1; /* bit  2   */
-  unsigned reTear       : 1; /* bit  3   */
-  unsigned              : 1; /* bit  4   */
-  unsigned removeLf     : 1; /* bit  5   */
-  unsigned removeRe     : 1; /* bit  6   */
-  unsigned removeSr     : 1; /* bit  7   */
-  unsigned scanAlways   : 1; /* bit  8   */
-  unsigned scanUpdate   : 1; /* bit  9   */
-  unsigned mbSharing    : 1; /* bit 10   */
-  unsigned              : 1; /* bit 11   */
-  unsigned quickToss    : 1; /* bit 12   */
-  unsigned checkNetBoard: 1; /* bit 13   */
-  unsigned persSent     : 1; /* bit 14   */
-  unsigned sysopImport  : 1; /* bit 15   */
+  unsigned sortNew      : 1;  // bit  0
+  unsigned sortSubject  : 1;  // bit  1
+  unsigned updateChains : 1;  // bit  2
+  unsigned reTear       : 1;  // bit  3
+  unsigned              : 1;  // bit  4
+  unsigned removeLf     : 1;  // bit  5
+  unsigned removeRe     : 1;  // bit  6
+  unsigned removeSr     : 1;  // bit  7
+  unsigned scanAlways   : 1;  // bit  8
+  unsigned scanUpdate   : 1;  // bit  9
+  unsigned mbSharing    : 1;  // bit 10
+  unsigned              : 1;  // bit 11
+  unsigned quickToss    : 1;  // bit 12
+  unsigned checkNetBoard: 1;  // bit 13
+  unsigned persSent     : 1;  // bit 14
+  unsigned sysopImport  : 1;  // bit 15
 } mbOptionsType;
 
 typedef struct
 {
-  unsigned keepRequest  : 1; /* Bit  0 */
-  unsigned keepReceipt  : 1; /* Bit  1 */
-  unsigned sendUplArList: 1; /* Bit  2 */
-  unsigned              : 1; /* Bit  3 */
-  unsigned autoDiscArea : 1; /* Bit  4 */
-  unsigned autoDiscDel  : 1; /* Bit  5 has temp. no effect, rec is always deleted */
-  unsigned              : 3; /* Bit 6-8 */
-  unsigned allowAddAll  : 1; /* Bit  9 */
-  unsigned allowActive  : 1; /* Bit 10 */
-  unsigned allowBCL     : 1; /* Bit 11 */
-  unsigned allowPassword: 1; /* Bit 12 */
-  unsigned allowPktPwd  : 1; /* Bit 13 */
-  unsigned allowNotify  : 1; /* Bit 14 */
-  unsigned allowCompr   : 1; /* Bit 15 */
+  unsigned keepRequest  : 1;  // Bit  0
+  unsigned keepReceipt  : 1;  // Bit  1
+  unsigned sendUplArList: 1;  // Bit  2
+  unsigned              : 1;  // Bit  3
+  unsigned autoDiscArea : 1;  // Bit  4
+  unsigned autoDiscDel  : 1;  // Bit  5 has temp. no effect, rec is always deleted
+  unsigned              : 3;  // Bit 6-8
+  unsigned allowAddAll  : 1;  // Bit  9
+  unsigned allowActive  : 1;  // Bit 10
+  unsigned allowBCL     : 1;  // Bit 11
+  unsigned allowPassword: 1;  // Bit 12
+  unsigned allowPktPwd  : 1;  // Bit 13
+  unsigned allowNotify  : 1;  // Bit 14
+  unsigned allowCompr   : 1;  // Bit 15
 } mgrOptionsType;
 
 typedef struct
 {
-  unsigned smtpImm : 1;  /* BIT 0 */
-  unsigned         : 15; /* BIT 1-15 */
+  unsigned smtpImm : 1;   // BIT 0
+  unsigned         : 15;  // BIT 1-15
 } inetOptionsType;
 
 typedef struct
 {
-  unsigned addPlusPrefix :  1; /* BIT 0 */
+  unsigned addPlusPrefix :  1; // BIT 0
   unsigned               :  3;
-  unsigned unconditional :  1; /* BIT 4 */
+  unsigned unconditional :  1; // BIT 4
   unsigned               : 11;
 } uplOptType;
 
@@ -622,23 +622,23 @@ typedef struct
 
 typedef struct
 {
-  unsigned fixDate     : 1; /* Bit 0 */
-  unsigned tinySeenBy  : 1; /* Bit 1 */
-  unsigned             : 1; /* Bit 2 */
-  unsigned ignorePwd   : 1; /* Bit 3 */
-  unsigned active      : 1; /* Bit 4 */
-  unsigned             : 1;
-  unsigned routeToPoint: 1; /* Bit 6 */
-  unsigned packNetmail : 1; /* Bit 7 */
-  unsigned             : 1; /* Bit 8 */
-  unsigned             : 3;
-  unsigned forwardReq  : 1; /* Bit 12 */
-  unsigned remMaint    : 1; /* Bit 13 */
-  unsigned allowRescan : 1; /* Bit 14 */
-  unsigned notify      : 1;
+  unsigned fixDate     : 1;  // Bit 0
+  unsigned tinySeenBy  : 1;  // Bit 1
+  unsigned             : 1;  // Bit 2
+  unsigned ignorePwd   : 1;  // Bit 3
+  unsigned active      : 1;  // Bit 4
+  unsigned             : 1;  // Bit 5
+  unsigned routeToPoint: 1;  // Bit 6
+  unsigned packNetmail : 1;  // Bit 7
+  unsigned             : 1;  // Bit 8
+  unsigned             : 3;  // Bit 9 - 11
+  unsigned forwardReq  : 1;  // Bit 12
+  unsigned remMaint    : 1;  // Bit 13
+  unsigned allowRescan : 1;  // Bit 14
+  unsigned notify      : 1;  // Bit 15
 } nodeOptionsType;
 
-typedef struct /* OLD !!! */
+typedef struct  // OLD !!!
 {
   nodeNumType     node;
   uchar           reserved1[2];
@@ -659,7 +659,7 @@ typedef struct /* OLD !!! */
 
 typedef struct
 {
-  u16             signature; /* contains "ND" */
+  u16             signature;  // contains "ND"
   u16             writeLevel;
   nodeNumType     node;
   nodeNumType     viaNode;

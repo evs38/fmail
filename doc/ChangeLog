@@ -1,3 +1,13 @@
+2016-08-11  1.69.24.186-Beta
+  * SEEN-BY's are storred as kludge lines in the hudson message base. Convert them back to
+    real SEEN-BY lines on a rescan.
+  * On a rescan of a hudson area all stored SEEN-BY and PATH lines of a rescanned message
+    were unconditionally removed, which is wrong.
+  * When a log string was longer than about 256 chars FMail could crash.
+
+2016-08-08  1.69.24.184-Beta
+  * Only add asking node to seen-by's in case of rescan, not all connected nodes to an area.
+
 2016-08-08  1.69.24.183-Beta
   * If a node in the export list of an area is w/o or locked it won't be added to the SEEN-BY's.
   * Flush output to stdout at strategic places during maint of jam areas.

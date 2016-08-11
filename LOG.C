@@ -83,43 +83,45 @@ static void writeLogLine(fhandle logHandle, const char *s)
   switch (config.logStyle)
   {
     case 1:  // QuickBBS
-      sl = sprintf( tempStr ,"%02u-%.3s-%02u %02u:%02u  %s\n"
-                  , tm.tm_mday
-                  , months + (tm.tm_mon * 3)
-                  , tm.tm_year % 100
-                  , tm.tm_hour
-                  , tm.tm_min, s
-                  );
-      break;
-    case 2:  // D'Bridge
-      sl = sprintf( tempStr ,"%02u/%02u/%02u %02u:%02u  %s\n"
-                  , tm.tm_mon + 1
-                  , tm.tm_mday
-                  , tm.tm_year % 100
-                  , tm.tm_hour
-                  , tm.tm_min, s
-                  );
-      break;
-    case 3:  // Binkley
-      sl = sprintf( tempStr ,"> %02u %.3s %02u %02u:%02u:%02u FMAIL  %s\n"
+      sl = sprintf( tempStr ,"%02u-%.3s-%02u %02u:%02u  "
                   , tm.tm_mday
                   , months + (tm.tm_mon * 3)
                   , tm.tm_year % 100
                   , tm.tm_hour
                   , tm.tm_min
-                  , tm.tm_sec, s
+                  );
+      break;
+    case 2:  // D'Bridge
+      sl = sprintf( tempStr ,"%02u/%02u/%02u %02u:%02u  "
+                  , tm.tm_mon + 1
+                  , tm.tm_mday
+                  , tm.tm_year % 100
+                  , tm.tm_hour
+                  , tm.tm_min
+                  );
+      break;
+    case 3:  // Binkley
+      sl = sprintf( tempStr ,"> %02u %.3s %02u %02u:%02u:%02u FMAIL  "
+                  , tm.tm_mday
+                  , months + (tm.tm_mon * 3)
+                  , tm.tm_year % 100
+                  , tm.tm_hour
+                  , tm.tm_min
+                  , tm.tm_sec
                   );
       break;
 #ifdef __WIN32__
     case 4:  // FMail
-      sl = sprintf(tempStr, "%02u:%02u:%02u.%03u  %s\n", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
+      sl = sprintf(tempStr, "%02u:%02u:%02u.%03u  ", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
       break;
 #endif
     default:  // FrontDoor
-      sl = sprintf(tempStr, "  %2u:%02u:%02u  %s\n", tm.tm_hour, tm.tm_min, tm.tm_sec , s);
+      sl = sprintf(tempStr, "  %2u:%02u:%02u  ", tm.tm_hour, tm.tm_min, tm.tm_sec , s);
       break;
   }
   write(logHandle, tempStr, sl);
+  write(logHandle, s, strlen(s));
+  write(logHandle, "\n", 1);
 }
 //---------------------------------------------------------------------------
 void initLog(const char *funcStr, s32 switches)
@@ -264,7 +266,7 @@ void logEntry(const char *s, u16 entryType, u16 errorLevel)
       if (entryType != LOG_NEVER)
         closeDup();
     }
-    exit(errorLevel==100 ? 0 : errorLevel);
+    exit(errorLevel == 100 ? 0 : errorLevel);
   }
   if (logHandle != -1)
     close(logHandle);

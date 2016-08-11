@@ -43,7 +43,7 @@ char *findCLiStr(char *s1, const char *s2)
 
   helpPtr = s1;
 
-  while ((helpPtr = stristr(helpPtr+1, s2)) != NULL)
+  while ((helpPtr = stristr(helpPtr + 1, s2)) != NULL)
     if (*(helpPtr - 1) == '\r' || *(helpPtr - 1) == '\n')
       return helpPtr;
 
