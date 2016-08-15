@@ -219,10 +219,12 @@ FMAIL.BDE      File created  by FMAIL.EXE when new areas are tossed
 To use FMail you  need an IBM PC, AT, 386, 486  or Pentium or fully
 compatible computer  with a mono or  color display and  a harddisk.
 
-Also you need MS-DOS or  PC DOS 3.3 or  later for the DOS,  DOS/386
-and DOS/DPMI version  and OS/2 2.1 or  later for the  OS/2 version.
-To use the  Win32 version you must be using  either Windows NT/2000
-or Windows 95/98/98SE/ME.
+Also you need MS-DOS or PC DOS 3.3 or later for the DOS, DOS/386 and
+DOS/DPMI version and OS/2 2.1 or later for the OS/2 version. To use
+the Win32 version you must be using Windows
+NT/95/98/98SE/ME/2000/XP/Vista/7/8/8.1/10. The latest release (1.69)
+has been tested on Windows XP, and 32 and 64 bit versions of Windows 7
+and up.
 
 In  order to be  able to send  and receive mail,  you need a mailer
 that is compatible with FTS-0001. For  reading and writing mail you
