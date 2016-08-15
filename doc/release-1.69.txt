@@ -1,0 +1,26 @@
+Release of FMail 1.69.
+
+More then 2 years after the last release, 1.69 has been released!
+
+You can download it from the Sourceforge website here:
+
+https://sourceforge.net/projects/fmail/files/FMail/1.69/
+
+Lots of changes in this release. If you are interested in the complete list, you
+can read about them in detail in the 'changelog' file in the zip archive after
+you download it.
+
+The most notable changes are:
+
+- FSetup Win32 version: FConfigW32.exe
+- Via kludge shows milliseconds and time in UTC and is more FTS-4009 compliant.
+- RESCANNED kludge now has the same format as the VIA kludge.
+- Add a Via line as regular kludge line to messages tossed to the dupe area.
+- Also add Via kludge on received/tossed net mails.
+- 'Tiny Path' option.
+- Jam-maint function rewritten: uses memory buffers, for faster operation, and
+  fixed file lock bug.
+- 'Allow Rescan' option for echo mail areas.
+- FMail log style added: Print "Active" time with millisecond precision.
+- Detect old messages (setting in days in FSetup) and move them to the bad area
+  on detection.

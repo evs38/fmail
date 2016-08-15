@@ -1,3 +1,8 @@
+2016-08-15  1.69.25.188
+  * Fixed some compiler warnings.
+  * Build 1.69.25 release versions of all 3 modules.
+  * Updated the documentation for the release.
+
 2016-08-11  1.69.24.186-Beta
   * SEEN-BY's are storred as kludge lines in the hudson message base. Convert them back to
     real SEEN-BY lines on a rescan.

@@ -29,7 +29,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG"/>
+    <USERDEFINES value="FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FToolsW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -38,11 +38,11 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -Q -Vx -Ve -C -X- -r- -a1 -6 -b -d -k -y -v -vi- -tWC -tWM- -c"/>
-    <PFLAGS value="-N2OBJ.6\FToolsW32 -N0OBJ.6\FToolsW32 -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
+    <CFLAG1 value="-O2 -Q -Vx -Ve -C -X- -a1 -6 -b -d -k- -vi -tWC -tWM- -c"/>
+    <PFLAGS value="-N2OBJ.6\FToolsW32 -N0OBJ.6\FToolsW32 -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-IOBJ.6\FToolsW32 -D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-IOBJ.6\FToolsW32 -D&quot;&quot; -ap -Tpe -x -Gn"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -85,10 +85,10 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=69
-Release=20
-Build=91
-Debug=1
-PreRelease=1
+Release=25
+Build=93
+Debug=0
+PreRelease=0
 Special=0
 Private=0
 DLL=0
@@ -98,7 +98,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FTools Windows 32 bit version
-FileVersion=1.69.20.91
+FileVersion=1.69.25.93
 InternalName=FTools
 LegalCopyright=Copyright (c) 1991 - 2015 FMail developers
 LegalTrademarks=
@@ -144,18 +144,19 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=11
-Item0=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item1=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item2=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item3=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
-Item4=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
-Item5=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item6=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item7=_DEBUG;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item8=_DEBUG;P386;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item9=_DEBUG;P386;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUM__
-Item10=_DEBUG
+Count=12
+Item0=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item1=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item2=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item3=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item4=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
+Item5=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
+Item6=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item7=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item8=_DEBUG;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item9=_DEBUG;P386;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item10=_DEBUG;P386;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUM__
+Item11=_DEBUG
 
 [HistoryLists\hlIntOutputDir]
 Count=1

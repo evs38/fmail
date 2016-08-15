@@ -909,7 +909,7 @@ s32 writeMsgLocal(internalMsgType *message, s16 msgType, s16 valid)
   p = addPointKludges(message, p);
   p = addMSGIDKludge (message, p);
   p = addTZUTCKludge (p);
-  p = addPIDKludge   (p);
+      addPIDKludge   (p);
 
   return writeMsg(message, msgType, valid);
 }

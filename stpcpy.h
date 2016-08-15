@@ -14,6 +14,7 @@ static inline char *stpcpy(char *dst, const char *src)
 #endif
 
 #pragma warn -8060
+#pragma warn -8027
 
 __inline static char *stpncpy(char *dst, const char *src, int n)
 {

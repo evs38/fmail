@@ -1,5 +1,6 @@
 The FMail/Win32 echomail utility package consists of the following files:
 
+
 areamgr.hlp         An example help file that can be sent automatically to
                     downlinks by FMail upon their request.
 
@@ -9,22 +10,16 @@ FMailW32.exe        The main program. It is used for importing and exporting
                     messages, packing of netmail messages and the AreaMgr
                     function.
 
-FSetupX.exe         Used to create and update the system data files and to
+FConfigW32.exe      Used to create and update the system data files and to
                     export them to text files and configuration files used by
                     other programs.
-
-                    IMPORTANT: Start FSetupX with the parameter /WIN to enable
-                    a few specific Windows options in FSetup!
+                    (Replaces FSetup(X).exe from previous releases)
 
 FToolsW32.exe       Message base maintenance utility.
 
-RTM.EXE             Run-time manager for the 16 bit DPMI executables (FSetupX).
-
-doc\ChangeLog       List of changes since the 1.60-GPL release
-doc\COPYING         GNU GENERAL PUBLIC LICENSE Version 3
-doc\DPMI.INF        Additional information about DPMI.
+doc\ChangeLog       List of changes since the 1.60-GPL release.
+doc\COPYING         GNU GENERAL PUBLIC LICENSE Version 3.
 doc\FMAIL.TXT       The FMAIL manual.
 doc\FMWFILES.TXT    This file.
-doc\NEW_IN.160      New features in FMail 1.60.
-doc\README.1ST      Important information about the program
-doc\ReadMe.GPL.txt  Some specific information about the GPL releases
+doc\readme          Start reading here.
+doc\Release.txt     Release (history) information.

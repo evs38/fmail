@@ -970,9 +970,9 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                   }
                }
 
-               while ((!error) && ((helpPtr = strtok(NULL, " ")) != NULL))
+               while (!error && (helpPtr = strtok(NULL, " ")) != NULL)
                {
-                   if ((*(helpPtr++) != '/') ||
+                  if ((*(helpPtr++) != '/') ||
                        ((*helpPtr != 'C') &&
                         (*helpPtr != 'H') &&
                         (*helpPtr != 'I') &&
@@ -980,11 +980,11 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                         (*helpPtr != 'O')) ||
                         ((*(++helpPtr) != ' ') &&
                          (*helpPtr != 0)))
-                   {
-                      redo = (askBoolean ("Illegal switch. Edit ?", 'Y') == 'Y');
-                      error = 1;
-                   }
-                  helpPtr = strtok(NULL, " ");
+                  {
+                    redo = (askBoolean ("Illegal switch. Edit ?", 'Y') == 'Y');
+                    error = 1;
+                  }
+                  strtok(NULL, " ");
                }
             }
          } else
@@ -1201,34 +1201,23 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
                         while ((exportCount < MAX_FORWARD) && (tempInfo.forwards[exportCount].nodeNum.zone != 0))
                         {
                            strcpy(tempStr2, nodeStr (&tempInfo.forwards[exportCount].nodeNum));
-                           helpPtr = tempStr2;
 
                            if (lastZone != tempInfo.forwards[exportCount].nodeNum.zone)
-                           {
                               helpPtr = tempStr2;
-                           }
                            else
                            {
                               if (lastNet != tempInfo.forwards[exportCount].nodeNum.net)
-                              {
-                                 helpPtr = strchr (tempStr2, ':') + 1;
-                              }
+                                 helpPtr = strchr(tempStr2, ':') + 1;
                               else
                               {
                                  if (lastNode != tempInfo.forwards[exportCount].nodeNum.node)
-                                 {
-                                    helpPtr = strchr (tempStr2, '/') + 1;
-                                 }
+                                    helpPtr = strchr(tempStr2, '/') + 1;
                                  else
                                  {
                                     if (tempInfo.forwards[exportCount].nodeNum.point == 0)
-                                    {
-                                       helpPtr = strchr (tempStr2, 0);
-                                    }
+                                       helpPtr = strchr(tempStr2, 0);
                                     else
-                                    {
-                                       helpPtr = strchr (tempStr2, '.');
-                                    }
+                                       helpPtr = strchr(tempStr2, '.');
                                  }
                               }
                            }
@@ -1239,9 +1228,8 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
                            if (strlen (tempStr) + strlen (helpPtr) + 3 < ORGLINE_LEN)
                            {
                               if (strlen (tempStr) > 0)
-                              {
                                  strcat (tempStr, " ");
-                              }
+
                               strcat (tempStr, helpPtr);
                               exportCount++;
                            }

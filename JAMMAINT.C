@@ -448,7 +448,9 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   woJHR = 0;
   rpJHR = d.ibJHR;
   memwrite(d.obJHR, &woJHR, rpJHR, sizeof(JAMHDRINFO), &highJHR, sizeJHR);
+#if 0
   rpJHR += sizeof(JAMHDRINFO);
+#endif
   headerInfo = (JAMHDRINFO*)d.obJHR;
 
   if (areaPtr->msgs && headerInfo->ActiveMsgs > (u32)areaPtr->msgs)
@@ -498,8 +500,9 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
       rpJHR += sizeof(JAMHDR);
       orgSubfieldLen = headerRec->SubfieldLen;
       wpSubf    =          memwrite(d.obJHR, &woJHR, rpJHR, orgSubfieldLen, &highJHR, sizeJHR);
+#if 0
       rpJHR += orgSubfieldLen;
-
+#endif
       if (areaPtr->options.arrivalDate && headerRec->DateProcessed)
         msgTime = headerRec->DateProcessed;
       else

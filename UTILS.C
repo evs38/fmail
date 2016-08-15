@@ -1752,7 +1752,7 @@ char *addPointKludges(internalMsgType *message, char *insertPoint)
 const char *TZUTCStr(void)
 {
 #if defined(__WIN32__)
-  LONG bias = 0;
+  LONG bias;
   TIME_ZONE_INFORMATION tzi;
   unsigned long ubias;
   static char s[10];

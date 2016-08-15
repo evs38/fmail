@@ -58,7 +58,7 @@ void addInfo(internalMsgType *message, s16 isNetmail)
 
   p = addMSGIDKludge(message, NULL);
   p = addTZUTCKludge(p);
-  p = addPIDKludge  (p);
+      addPIDKludge  (p);
 
   if (isNetmail)
   {
