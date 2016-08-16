@@ -86,7 +86,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=69
 Release=25
-Build=93
+Build=95
 Debug=0
 PreRelease=0
 Special=0
@@ -98,7 +98,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FTools Windows 32 bit version
-FileVersion=1.69.25.93
+FileVersion=1.69.25.95
 InternalName=FTools
 LegalCopyright=Copyright (c) 1991 - 2015 FMail developers
 LegalTrademarks=

@@ -81,7 +81,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=69
 Release=25
-Build=14
+Build=16
 Debug=0
 PreRelease=0
 Special=0
@@ -93,7 +93,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FMail mail tosser configuration program
-FileVersion=1.69.25.14
+FileVersion=1.69.25.16
 InternalName=FConfig
 LegalCopyright=Copyright (c) 1991 - 2016 FMail developers
 LegalTrademarks=

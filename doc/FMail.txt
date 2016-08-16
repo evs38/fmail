@@ -1936,7 +1936,7 @@ were coming from, please check if the address listed on the
 'Processing...' line when tossing, is the same address as the one
 that is listed in the Export list of the echoes concerned.
 
-The /A switch tells FMail to ingnore AreaMgr requests.
+The /A switch tells FMail to ignore AreaMgr requests.
 
 The /B switch may be added to let FMail check all messages in the
 bad messages directory to see whether they are valid echomail
@@ -1952,7 +1952,7 @@ duplicate messages to be sent into the net.
 Imports netmail messages destined for your system into the message
 base. A netmail board should be defined in FConfig. Whether or not
 messages to the Sysop should be imported can also be defined in
-FConfig. The /A switch tells FMail to ingnore AreaMgr requests.
+FConfig. The /A switch tells FMail to ignore AreaMgr requests.
 
 
 4.4       Pack
@@ -1976,7 +1976,7 @@ will be used. Packing messages is not required (but sometimes
 useful) in e.g. a FrontDoor environment. It _is_ required in a
 Binkley/PoP environment.
 
-The /A switch tells FMail to ingnore AreaMgr requests.
+The /A switch tells FMail to ignore AreaMgr requests.
 
 
 4.4.1     Examples

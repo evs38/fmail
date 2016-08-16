@@ -1,3 +1,7 @@
+2016-08-16  1.69.25.189
+  * Forgot to remove the Beta status
+  * Fixed some spelling errors in FMail.txt
+
 2016-08-15  1.69.25.188
   * Fixed some compiler warnings.
   * Build 1.69.25 release versions of all 3 modules.

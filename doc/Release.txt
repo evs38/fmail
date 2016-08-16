@@ -1,7 +1,7 @@
 This file contains information about FMail releases since 1.60.GPL
 
 
-2016-08-15  -  1.69
+2016-08-16  -  1.69
 
   Release of FMail 1.69.
 
