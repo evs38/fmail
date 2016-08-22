@@ -141,7 +141,7 @@ void initAreaInfo(void)
     logEntry("Bad or missing "dARFNAME, LOG_ALWAYS, 1);
 
   if ((echoAreaList = (cookedEchoType*)malloc(sizeof(cookedEchoType) * areaHeader->totalRecords + 1)) == NULL)
-    logEntry ("Not enough memory available", LOG_ALWAYS, 2);
+    logEntry("Not enough memory available", LOG_ALWAYS, 2);
 
   memset(echoAreaList, 0, sizeof(cookedEchoType) * areaHeader->totalRecords);
 
@@ -218,19 +218,17 @@ void initAreaInfo(void)
       }
       if (olHelpPtr == NULL)
       {
-	 if ((olHelpPtr = (struct orgLineListType *)malloc(5 + strlen(areaBuf->originLine))) == NULL)
-         {
-	    logEntry ("Not enough memory available", LOG_ALWAYS, 2);
-	 }
-	       strcpy(olHelpPtr->originLine, areaBuf->originLine);
-         olHelpPtr->next = orgLineListPtr;
-         orgLineListPtr = olHelpPtr;
+        if ((olHelpPtr = (struct orgLineListType *)malloc(5 + strlen(areaBuf->originLine))) == NULL)
+          logEntry ("Not enough memory available", LOG_ALWAYS, 2);
+
+        strcpy(olHelpPtr->originLine, areaBuf->originLine);
+        olHelpPtr->next = orgLineListPtr;
+        orgLineListPtr = olHelpPtr;
       }
       echoAreaList[echoCount].originLine = olHelpPtr->originLine;
 
       count = 0;
-      while ((count < MAX_FORWARD) &&
-	           (areaBuf->forwards[count].nodeNum.zone != 0))
+      while (count < MAX_FORWARD && areaBuf->forwards[count].nodeNum.zone != 0)
       {
          if ( areaBuf->forwards[count].flags.locked )
          {  count++;

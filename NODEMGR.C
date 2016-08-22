@@ -732,8 +732,8 @@ s16 nodeMgr(void)
             printString ("F8 ", 51, 24, YELLOW, BLACK, MONO_NORM);
             printString ("Areas     ", 54, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
             printString ("Ins ", 64, 24, YELLOW, BLACK, MONO_HIGH);
-            printString ("Del      ", 68, 24, BROWN, BLACK, MONO_NORM);
-            printString ("\x1b\x1a", 77, 24, BROWN, BLACK, MONO_NORM);
+            printString ("Del        ", 68, 24, BROWN, BLACK, MONO_NORM);
+//          printString ("\x1b\x1a", 77, 24, BROWN, BLACK, MONO_NORM);
          }
          else
          {
@@ -772,8 +772,8 @@ s16 nodeMgr(void)
               printString ("Ins ", 64, 24, BROWN, BLACK, MONO_NORM);
             else
               printString ("Ins ", 64, 24, YELLOW, BLACK, MONO_HIGH);
-            printString ("Del      ", 68, 24, YELLOW, BLACK, MONO_HIGH);
-            printString ("\x1b\x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
+            printString ("Del        ", 68, 24, YELLOW, BLACK, MONO_HIGH);
+//          printString ("\x1b\x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
          }
 
          ch=readKbd();

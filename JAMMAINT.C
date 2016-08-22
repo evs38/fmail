@@ -34,6 +34,9 @@
 #ifdef _DEBUG
 #include <dir.h>      // mkdir
 #include <windows.h>  // CopyFile DeleteFile MoveFile
+#if 0
+#define _COMPOLD_
+#endif
 #endif
 
 #include "fmail.h"
@@ -212,7 +215,7 @@ char *memwrite(char *dest, u32 *offset, const char *src, u32 n, u32 *high, u32 m
   return dest;
 }
 //---------------------------------------------------------------------------
-#ifdef _DEBUG
+#ifdef _COMPOLD_
 #define TXTBUFSIZE 0x7000 // moet 16-voud zijn i.v.m. lastread buf
 #define LRSIZE     0x3ff0  // 'record' is u16, max 7ff0
 #define MSGIDNUM   0x3ff0  // 'record' is u32
@@ -375,7 +378,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   JAMHDR       *headerRec;
   const char   *mbPath = areaPtr->msgBasePath;
 
-#ifdef _DEBUG
+#ifdef _COMPOLD_
   int compareResult = 0;
   int debug = access(expJAMname(mbPath, "no_debug"), 0);
 
@@ -699,7 +702,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
     writedata(expJAMname(mbPath, "#"BASE_EXT_TXT), d.ibJDT, sizeJDT);
     writedata(expJAMname(mbPath, "#"BASE_EXT_HDR), d.ibJHR, sizeJHR);
 #endif
-#ifdef _DEBUG
+#ifdef _COMPOLD_
     if (debug)
     {
       compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_HDR), d.obJHR, highJHR);
@@ -717,6 +720,8 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
         writedata(expJAMname(mbPath, EXT_ORG_HDR), d.ibJHR, sizeJHR);
       }
     }
+#endif
+#ifdef _DEBUG
     logEntry("Save data", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
     // save data.
@@ -730,7 +735,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
     puts("Ready");
   }
   CleanUp(&d);
-#ifdef _DEBUG
+#ifdef _COMPOLD_
   if (debug)
     if (compareResult)
     {
@@ -785,7 +790,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 
   return JAMerror;
 }
-#ifdef _DEBUG
+#ifdef _COMPOLD_
 //---------------------------------------------------------------------------
 s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
 {

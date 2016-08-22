@@ -443,13 +443,13 @@ s16 badduprecDisplayAreas (u16 *v)
 
 
 
-s16 echoOnly (s16 editType, s16 code)
+s16 echoOnly(s16 editType, s16 code)
 {
    if ((editType == EDIT_ECHO)   || (editType == DISPLAY_ECHO_DATA) ||
        (editType == EDIT_ECHO_GLOBAL) || (editType == DISPLAY_ECHO_WINDOW))
-      return (code);
+      return code;
    else
-      return (DISPLAY);
+      return DISPLAY;
 }
 
 
@@ -995,7 +995,7 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    toggleType  QBBSToggle;
    toggleType  addressToggle;
    s16         temp;
-   char        addressText[MAX_AKAS+1][34];
+   char        addressText[MAX_AKAS + 1][34];
    u16         count, total;
    static s32  groupCode;
 
@@ -1031,10 +1031,10 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    boardTypeToggle.retval[2] = 2;
 
    if ( editType == EDIT_ECHO_DEFAULT )
-		RAToggle.data = (char*)&defaultEnumRA;
-	else
-	{
-		RAToggle.data = (char*)&tempToggleRA;
+      RAToggle.data = (char*)&defaultEnumRA;
+   else
+   {
+      RAToggle.data = (char*)&tempToggleRA;
       tempToggleRA = (tempInfo.attrRA & BIT3) ?
                      (tempInfo.attrRA & BIT5) ? 1 : 2 : 0;
    }
@@ -1053,11 +1053,13 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    RAToggle2.text[2] = "Public";
    RAToggle2.retval[2] = 2;
    if ( config.bbsProgram == BBS_PROB )
-   {  RAToggle2.text[3] = "To-all";
+   {
+      RAToggle2.text[3] = "To-all";
       RAToggle2.retval[3] = 3;
    }
    else
-   {  RAToggle2.text[3] = "Read-only";
+   {
+      RAToggle2.text[3] = "Read-only";
       RAToggle2.retval[3] = 3;
       RAToggle2.text[4] = "No-reply";
       RAToggle2.retval[4] = 4;
@@ -1346,9 +1348,11 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
       addItem (areaMenu, FUNCTION, "Export", 0, gndFun, 2, 2,
                       "Nodes to which the echo area is exported");
 
-   if ((editType == EDIT_ECHO) || (editType == DISPLAY_ECHO_WINDOW) ||
-       (editType == DISPLAY_ECHO_DATA))
-      addItem (areaMenu, echoOnly(editType,EXTRA_TEXT|NO_EDIT), NULL, 0, NULL, ORGLINE_LEN-1, 0, "");
+   if (  editType == EDIT_ECHO
+      || editType == DISPLAY_ECHO_WINDOW
+      || editType == DISPLAY_ECHO_DATA
+      )
+      addItem(areaMenu, echoOnly(editType, EXTRA_TEXT | NO_EDIT), NULL, 0, NULL, ORGLINE_LEN - 1, 0, "");
 
    switch (editType)
    {
@@ -1356,12 +1360,12 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
         temp = displayMenu(areaMenu, 1, 5);
         break;
       case DISPLAY_ECHO_DATA   :
-               displayData(areaMenu, 1, 5, 0);
+        displayData(areaMenu, 1, 5, 0);
         temp = 0;
         break;
       case EDIT_GLOB_BBS       :
         temp = runMenuD   (raMenu  , 2, 7, NULL, setdef);
-				break;
+        break;
       case EDIT_ECHO           :
         temp = runMenuD   (areaMenu, 1, 5, NULL, setdef);
         break;
@@ -1369,33 +1373,33 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
         temp = runMenuD   (areaMenu, 1, 5, NULL, setdef);
         break;
       case EDIT_ECHO_GLOBAL    :
-               runMenuD   (areaMenu, 1, 5, NULL, setdef);
+        runMenuD   (areaMenu, 1, 5, NULL, setdef);
         temp = 0;
         break;
       case EDIT_ECHO_DEFAULT   :
         temp = runMenuD   (areaMenu, 1, 5, NULL, setdef);
-				break;
+        break;
    }
    if (editType == EDIT_ECHO_DEFAULT)
    {
       if (defaultEnumRA)
-       	 tempInfo.attrRA |= BIT3;
+         tempInfo.attrRA |= BIT3;
       else
          tempInfo.attrRA &= ~BIT3;
       if (defaultEnumRA == 1)
          tempInfo.attrRA |= BIT5;
       else
-       	 tempInfo.attrRA &= ~BIT5;
+         tempInfo.attrRA &= ~BIT5;
    }
    else
    {  if (tempToggleRA)
-   	 tempInfo.attrRA |= BIT3;
+        tempInfo.attrRA |= BIT3;
       else
-       	 tempInfo.attrRA &= ~BIT3;
+        tempInfo.attrRA &= ~BIT3;
       if (tempToggleRA == 1)
-         tempInfo.attrRA |= BIT5;
+        tempInfo.attrRA |= BIT5;
       else
-         tempInfo.attrRA &= ~BIT5;
+        tempInfo.attrRA &= ~BIT5;
    }
    tempInfo.alsoSeenBy = alsoSeenBy;
 
@@ -1421,7 +1425,7 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
                   ++total;
                   getRec(CFG_ECHOAREAS, count);
                   memcpy(&tempInfo, areaBuf, RAWECHO_SIZE);
-		              temp += changeGlobal(areaMenu, &tempInfo, &updInfo)
+                  temp += changeGlobal(areaMenu, &tempInfo, &updInfo)
                         | changeGlobal(raMenu  , &tempInfo, &updInfo);
                   memcpy(areaBuf, &tempInfo, RAWECHO_SIZE);
                   putRec(CFG_ECHOAREAS, count);

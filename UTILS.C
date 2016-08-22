@@ -691,8 +691,8 @@ void removeSr(char *msgText)
 //---------------------------------------------------------------------------
 char *srchar(char *string, s16 t, s16 c)
 {
-   char *helpPtr1,
-	*helpPtr2;
+   char *helpPtr1
+      , *helpPtr2;
    s16  temp;
 
    if ((helpPtr1 = strchr (string, t)) == NULL)
@@ -704,19 +704,30 @@ char *srchar(char *string, s16 t, s16 c)
    return (helpPtr2);
 }
 //---------------------------------------------------------------------------
-extern u16  nodeStrIndex;
-extern char nodeNameStr[2][24];  // 65535:65535/65535.65535  4 * 5 + 3 + 1 = 24
+u16  nodeStrIndex = -1;
+char nodeNameStr[NO_NodeStrIndex][24];
 
-const char *nodeStrZ(const nodeNumType *nodeNum)
+char *tmpNodeStr(void)
 {
-  char *tempPtr = nodeNameStr[nodeStrIndex = 1 - nodeStrIndex];
-
-  if (nodeNum->zone != 0)
-    tempPtr += sprintf(tempPtr, "%u:", nodeNum->zone);
-
-  sprintf(tempPtr, "%u/%u.%u", nodeNum->net, nodeNum->node, nodeNum->point);
+  if (++nodeStrIndex >= NO_NodeStrIndex)
+    nodeStrIndex = 0;
 
   return nodeNameStr[nodeStrIndex];
+}
+//---------------------------------------------------------------------------
+const char *nodeStrZ(const nodeNumType *nodeNum)
+{
+  char *t1 = tmpNodeStr()
+     , *t2;
+
+  if (nodeNum->zone != 0)
+    t2 = t1 + sprintf(t1, "%u:", nodeNum->zone);
+  else
+    t2 = t1;  
+
+  sprintf(t2, "%u/%u.%u", nodeNum->net, nodeNum->node, nodeNum->point);
+
+  return t1;
 }
 //---------------------------------------------------------------------------
 char *findCLStr(char *s1, const char *s2)
@@ -1058,7 +1069,7 @@ static s16 addSeenByNode(u16 net, u16 node, psType *array, u16 *seenByCount)
   return 1;
 }
 //---------------------------------------------------------------------------
-int getLocalAkaNum(nodeNumType *node)
+int getLocalAkaNum(const nodeNumType *node)
 {
   int i = 0;
 
@@ -1070,13 +1081,13 @@ int getLocalAkaNum(nodeNumType *node)
   return i < MAX_AKAS ? i : -1;
 }
 //---------------------------------------------------------------------------
-int getLocalAka(nodeNumType *node)
+int getLocalAka(const nodeNumType *node)
 {
   int i = 0;
 
   while (  i < MAX_AKAS
         && (  config.akaList[i].nodeNum.zone == 0
-           || memcmp(&(node->net), &(config.akaList[i].nodeNum.net), sizeof(nodeNumType) - 2) != 0
+           || memcmp(&(node->net), &(config.akaList[i].nodeNum.net), sizeof(nodeNumType) - sizeof(u16)) != 0
            )
         )
     i++;
@@ -1147,22 +1158,24 @@ void make2d(internalMsgType *message)
 //---------------------------------------------------------------------------
 s16 node4d(nodeNumType *node)
 {
-   u16 count = 0;
+  u16 count = 0;
 
-   while (count < MAX_AKAS &&
-          ((config.akaList[count].nodeNum.zone == 0) ||
-           (node->net != config.akaList[count].fakeNet) ||
-           (node->point != 0)))
-      count++;
+  while (  count < MAX_AKAS
+        && (  config.akaList[count].nodeNum.zone == 0
+           || node->net != config.akaList[count].fakeNet
+           || node->point != 0
+           )
+        )
+    count++;
 
-   if (count < MAX_AKAS)
-   {
-      node->point = node->node;
-      memcpy(node, &config.akaList[count].nodeNum, 6);
+  if (count < MAX_AKAS)
+  {
+    node->point = node->node;
+    memcpy(node, &config.akaList[count].nodeNum, 6);
 
-      return count;
-   }
-   return -1;
+    return count;
+  }
+  return -1;
 }
 //---------------------------------------------------------------------------
 void point4d(internalMsgType *message)
@@ -1171,7 +1184,6 @@ void point4d(internalMsgType *message)
    tempStrType tempStr;
 
    // 4d source
-
    if ((helpPtr = findCLStr(message->text, "\1FMPT")) != NULL)
    {
       message->srcNode.point = atoi(helpPtr + 5);
@@ -1185,7 +1197,6 @@ void point4d(internalMsgType *message)
    }
 
    // 4d destination
-
    if ((helpPtr = findCLStr(message->text, "\1TOPT")) != NULL)
    {
       message->destNode.point = atoi(helpPtr + 5);
@@ -1645,46 +1656,6 @@ void getKludgeNode(char *txt, char *kludge, nodeNumType *nodeNum)
     }
 }
 //---------------------------------------------------------------------------
-static tempStrType searchString;
-static u8          *searchPos;
-
-u16 nextFile(u8 **filename)
-{
-  u8 *ep;
-
-  if (searchPos == NULL)
-    return 0;
-  do
-  {
-    if (*searchPos == 0)
-       return 0;
-  } while (*searchPos == ' ');
-  if (*searchPos == '\"')
-  {
-    ++searchPos;
-    if ((ep = strchr(searchPos, '\"')) == NULL)
-    {
-      *filename = searchPos;
-      searchPos = NULL;
-      return 1;
-    }
-    *ep = 0;
-    *filename = searchPos;
-    searchPos = ep + 1;
-    return 1;
-  }
-  if ((ep = strchr(searchPos, ' ')) == NULL)
-  {
-    *filename = searchPos;
-    searchPos = NULL;
-    return 1;
-  }
-  *ep = 0;
-  *filename = searchPos;
-  searchPos = ep + 1;
-  return 1;
-}
-//---------------------------------------------------------------------------
 char *addKludge(char *txt, const char *kludge, const char *kludgeValue)
 {
   tempStrType tempStr;
@@ -1791,6 +1762,64 @@ char *addTZUTCKludge(char *txt)
     return addKludge(txt, "TZUTC:", tzutcStr);
 
   return txt;
+}
+//---------------------------------------------------------------------------
+void setCurDateMsg(internalMsgType *msg)
+{
+  time_t     ti;
+  struct tm *tm;
+
+  *msg->dateStr = 0;
+
+  time(&ti);
+  tm = localtime(&ti);
+
+  msg->year    = tm->tm_year + 1900;
+  msg->month   = tm->tm_mon + 1;
+  msg->day     = tm->tm_mday;
+  msg->hours   = tm->tm_hour;
+  msg->minutes = tm->tm_min;
+  msg->seconds = tm->tm_sec;
+}
+//---------------------------------------------------------------------------
+static tempStrType searchString;
+static u8          *searchPos;
+
+u16 nextFile(u8 **filename)
+{
+  u8 *ep;
+
+  if (searchPos == NULL)
+    return 0;
+  do
+  {
+    if (*searchPos == 0)
+       return 0;
+  } while (*searchPos == ' ');
+  if (*searchPos == '\"')
+  {
+    ++searchPos;
+    if ((ep = strchr(searchPos, '\"')) == NULL)
+    {
+      *filename = searchPos;
+      searchPos = NULL;
+      return 1;
+    }
+    *ep = 0;
+    *filename = searchPos;
+    searchPos = ep + 1;
+    return 1;
+  }
+  if ((ep = strchr(searchPos, ' ')) == NULL)
+  {
+    *filename = searchPos;
+    searchPos = NULL;
+    return 1;
+  }
+  *ep = 0;
+  *filename = searchPos;
+  searchPos = ep + 1;
+  return 1;
 }
 //---------------------------------------------------------------------------
 u16 firstFile(u8 *string, u8 **filename)

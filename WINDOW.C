@@ -2387,11 +2387,11 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
       }
     }
   }
-  while ((ch != _K_ESC_) && (ch != _K_F7_) && (ch != _K_F10_));
+  while (ch != _K_ESC_ && ch != _K_F7_ && ch != _K_F10_);
 
   removeWindow();
 
-  if ((ch != _K_ESC_) && (dataPtr != NULL))
+  if (ch != _K_ESC_ && dataPtr != NULL)
     *dataPtr = count;
 
   return update;

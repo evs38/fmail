@@ -231,11 +231,12 @@ static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
   return(found);
 }
 //---------------------------------------------------------------------------
-s16 toAreaFix (char *toName)
+int toAreaFix(const char *toName)
 {
-  char *helpPtr = toName;
+  const char *helpPtr = toName;
 
-  while (*helpPtr == ' ') helpPtr++;
+  while (isspace(*helpPtr))
+    helpPtr++;
 
   return ((strnicmp (helpPtr, "AREAFIX",  7) == 0) ||
           (strnicmp (helpPtr, "AREAMGR",  7) == 0) ||
@@ -293,20 +294,8 @@ static void sendMsg( internalMsgType *message, char *replyStr
   char       *helpPtr;
   u16         count;
   nodeNumType tempNode;
-  time_t      ti;
-  struct tm  *tm;
 
-  *message->dateStr = 0;
-
-  time(&ti);
-  tm = localtime(&ti);
-
-  message->year    = tm->tm_year + 1900;
-  message->month   = tm->tm_mon + 1;
-  message->day     = tm->tm_mday;
-  message->hours   = tm->tm_hour;
-  message->minutes = tm->tm_min;
-  message->seconds = tm->tm_sec;
+  setCurDateMsg(message);
 
   helpPtr = addTZUTCKludge(message->text);
   addPIDKludge(helpPtr);
@@ -380,7 +369,7 @@ static void sendMsg( internalMsgType *message, char *replyStr
   }
 }
 //---------------------------------------------------------------------------
-s16 areaFix(internalMsgType *message)
+int areaFix(internalMsgType *message)
 {
   nodeInfoType   *nodeInfoPtr;
   nodeInfoType   *remMaintPtr;
@@ -452,8 +441,8 @@ s16 areaFix(internalMsgType *message)
     return -1;
   }
 #else
-  areaFixList = (areaFixListType*)(message->text+TEXT_SIZE-sizeof(areaFixListType));
-  badAreaList = (badAreaListType*)(message->text+TEXT_SIZE-sizeof(areaFixListType)-sizeof(badAreaListType));
+  areaFixList = (areaFixListType*)(message->text + TEXT_SIZE - sizeof(areaFixListType));
+  badAreaList = (badAreaListType*)(message->text + TEXT_SIZE - sizeof(areaFixListType) - sizeof(badAreaListType));
 #endif
 
   if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
@@ -472,7 +461,7 @@ s16 areaFix(internalMsgType *message)
 
   if ((helpPtr = findCLStr(message->text, "\x1MSGID: ")) != NULL)
   {
-    memcpy (replyStr, helpPtr + 8, sizeof(tempStrType)-1);
+    memcpy(replyStr, helpPtr + 8, sizeof(tempStrType) - 1);
     if ((helpPtr = strchr(replyStr, 0x0d)) != NULL)
       *helpPtr = 0;
   }
@@ -1041,7 +1030,7 @@ s16 areaFix(internalMsgType *message)
           sprintf(helpPtr, "\r*** Listing is continued in the next message ***\r");
           sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
           sprintf(message->subject, "FMail AreaMgr confirmation report for %s (continued)", nodeStr(&nodeInfoPtr->node));
-          helpPtr = message->text + sprintf (message->text, "*** Following list is a continuation of the previous message ***\r");
+          helpPtr = message->text + sprintf(message->text, "*** Following list is a continuation of the previous message ***\r");
           *(helpPtr++) = '\r';
           bufCount = MAX_DISPLAY;
         }
@@ -1325,18 +1314,17 @@ s16 areaFix(internalMsgType *message)
     helpPtr = stpcpy(helpPtr, "\rUse %HELP in a message to FMail for more information.\r\r");
   }
 Send:
-  strcpy (tempStr, configPath);
-  strcat (tempStr, "areamgr.txt");
+  strcpy(stpcpy(tempStr, configPath), "areamgr.txt");
 
   ++no_msg;
-  if ((helpHandle = openP(tempStr, O_RDONLY|O_BINARY, 0)) != -1)
+  if ((helpHandle = openP(tempStr, O_RDONLY | O_BINARY, 0)) != -1)
   {
-    bytesRead = read (helpHandle, helpPtr, 32767);
-    close (helpHandle);
-    if ( bytesRead >= 0 )
-      *(helpPtr+bytesRead) = 0;
+    bytesRead = read(helpHandle, helpPtr, 0x7FFF);
+    close(helpHandle);
+    if (bytesRead >= 0)
+      *(helpPtr + bytesRead) = 0;
   }
-  sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+  sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
 
   // Send uplink requests
 
@@ -1800,18 +1788,17 @@ Send:
       }
     }
     if (!availCount)
-    {
-      strcpy (helpPtr, "\r--- You are active for all areas ---\r");
-    }
-    sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
-  }
-  closeConfig (CFG_ECHOAREAS);
+      strcpy(helpPtr, "\r--- You are active for all areas ---\r");
 
-  /* Binary Conference Listing */
+    sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+  }
+  closeConfig(CFG_ECHOAREAS);
+
+  // Binary Conference Listing
   if (replyBCL)
     send_bcl(&message->srcNode, &message->destNode, nodeInfoPtr);
 
-  free (areaSortList);
+  free(areaSortList);
 #if defined(__FMAILX__) || defined(__32BIT__)
   free(areaFixList);
   free(badAreaList);

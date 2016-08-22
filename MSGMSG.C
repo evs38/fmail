@@ -41,6 +41,7 @@
 #include "msgmsg.h"
 #include "msgpkt.h"  // for openP
 #include "nodeinfo.h"
+#include "ping.h"
 #include "spec.h"
 #include "utils.h"
 #include "version.h"
@@ -223,11 +224,13 @@ void initMsg(s16 noAreaFix)
   u16            temp
                , containsNote;
   u16            scanCount;
-  u16            aFixCount = 0;
-  u16            aFixMsgNum[MAX_AFIX];
+  u16            aFixCount = 0
+               , pingCount = 0;
+  u32            aFixMsgNum[MAX_AFIX];
+  u32            pingMsgNum[MAX_AFIX];
   DIR           *dir;
   struct dirent *ent;
-  u16            msgNum;
+  u32            msgNum;
   char          *helpPtr
               , *fPtr;
   tempStrType    fileNameStr
@@ -263,11 +266,11 @@ void initMsg(s16 noAreaFix)
       if (!match_spec("*.msg", ent->d_name))
         continue;
 
-      msgNum = (u16)strtoul(ent->d_name, &helpPtr, 10);
+      msgNum = strtoul(ent->d_name, &helpPtr, 10);
 
       if (msgNum != 0 && *helpPtr == '.')
       {
-        sprintf(fPtr, "%u.msg", msgNum);
+        sprintf(fPtr, "%lu.msg", msgNum);
 
         if ((msgMsgHandle = openP(fileNameStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
         {
@@ -286,7 +289,7 @@ void initMsg(s16 noAreaFix)
                && !unlink(fileNameStr)
                )
             {
-              sprintf(tempStr, "Killing empty netmail message #%u, from: %s to: %s", msgNum, msgMsg.fromUserName, msgMsg.toUserName);
+              sprintf(tempStr, "Killing empty netmail message #%lu, from: %s to: %s", msgNum, msgMsg.fromUserName, msgMsg.toUserName);
               logEntry(tempStr, LOG_SENTRCVD, 0);
               messagesMoved = 1;
             }
@@ -308,7 +311,7 @@ void initMsg(s16 noAreaFix)
                       emptyText(textStr) &&
                       !unlink(fileNameStr))
                   {
-                    sprintf(tempStr, "Attached file not found, killing ARCmail message #%u", msgNum);
+                    sprintf(tempStr, "Attached file not found, killing ARCmail message #%lu", msgNum);
                     logEntry(tempStr, LOG_SENTRCVD, 0);
                     messagesMoved = 1;
                   }
@@ -329,15 +332,18 @@ void initMsg(s16 noAreaFix)
                     }
                     if ((helpPtr = findCLStr(textStr, "\1FMPT")) != NULL)
                       origNode.point = atoi(helpPtr+6);
+
                     if ((helpPtr = findCLStr(textStr, "\1TOPT")) != NULL)
                       destNode.point = atoi(helpPtr+6);
-                    if ((stricmp (msgMsg.fromUserName, "ARCmail") == 0) &&
-                        (count < 256) &&
-                        (scanCount == 6) &&
-                        (msgMsg.attribute & FILE_ATT) &&
-                        (origNode.net == msgMsg.origNet) &&
-                        (destNode.net == msgMsg.destNet) &&
-                        (fAttCount < MAX_ATTACH))
+
+                    if (  stricmp(msgMsg.fromUserName, "ARCmail") == 0
+                       && count < 256
+                       && scanCount == 6
+                       && (msgMsg.attribute & FILE_ATT)
+                       && origNode.net == msgMsg.origNet
+                       && destNode.net == msgMsg.destNet
+                       && fAttCount < MAX_ATTACH
+                       )
                     {
                       arcSize = 0;
                       if ((tempHandle = openP(msgMsg.subject, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
@@ -367,9 +373,8 @@ void initMsg(s16 noAreaFix)
                       {
                         strcpy(stpcpy(tempStr, drive), dirStr);
 
-                        /* are the first two letters of the extension correct? */
-                        for (count = 0; (count < 7) &&
-                             (strnicmp(dayName[count],ext+1,2) != 0); count++)
+                        // are the first two letters of the extension correct?
+                        for (count = 0; (count < 7) && strnicmp(dayName[count], ext + 1, 2) != 0; count++)
                         {}
                         if ( (!config.mailOptions.dailyMail || count == timeBlock.tm_wday)
                              && count != 7 && (stricmp(tempStr, config.outPath) == 0))
@@ -388,13 +393,23 @@ void initMsg(s16 noAreaFix)
                     }
                     else
                     {
-                      // Check for Areafix message
-
-                      if ((aFixCount < MAX_AFIX) &&
-                          (!(msgMsg.attribute & RECEIVED)) &&
-                          (!noAreaFix) &&
-                          (toAreaFix(msgMsg.toUserName)))
-                        aFixMsgNum[aFixCount++] = msgNum;
+                      if (  !(msgMsg.attribute & RECEIVED)
+                         && !noAreaFix
+                         )
+                      {
+                        // Check for Areafix & Ping messages
+                        if (toAreaFix(msgMsg.toUserName))
+                        {
+                          if (aFixCount < MAX_AFIX)
+                            aFixMsgNum[aFixCount++] = msgNum;
+                        }
+                        else
+                          if (toPing(msgMsg.toUserName))
+                          {
+                            if (pingCount < MAX_AFIX)
+                              pingMsgNum[pingCount++] = msgNum;
+                          }
+                      }
                     }
                   }
                 }
@@ -407,8 +422,9 @@ void initMsg(s16 noAreaFix)
     closedir(dir);
   }
   if (messagesMoved == 1)
-    newLine ();
+    newLine();
 
+  // Process AreaFix messages.
   for (count = 0; count < aFixCount; count++)
   {
     if (readMsg(message, aFixMsgNum[count]) == 0)
@@ -416,34 +432,55 @@ void initMsg(s16 noAreaFix)
       if (getLocalAkaNum(&message->destNode) != -1)
       {
         // Message is for this node
-
-        sprintf(fPtr, "%u.msg", aFixMsgNum[count]);
-
-        // DENYNONE was DENYALL
-        if ((msgMsgHandle = openP(fileNameStr, O_RDWR | O_DENYNONE | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+        if (messagesMoved)
         {
-          if (messagesMoved)
-          {
-            messagesMoved = 2;
-            newLine();
-          }
-          temp = message->attribute;
-          containsNote = (findCLiStr(message->text, "%NOTE") != NULL);
-          if (!areaFix(message))
-          {
-            close(msgMsgHandle);
-            if (config.mgrOptions.keepRequest || containsNote )
-              attribMsg(temp | RECEIVED, aFixMsgNum[count]);
-            else
-              unlink(fileNameStr);
-
-            validateMsg();
-          }
-          else
-            close(msgMsgHandle);
-
+          messagesMoved = 2;
           newLine();
         }
+        temp = message->attribute;
+        containsNote = findCLiStr(message->text, "%NOTE") != NULL;
+        if (!areaFix(message))
+        {
+          if (config.mgrOptions.keepRequest || containsNote)
+            attribMsg(temp | RECEIVED, aFixMsgNum[count]);
+          else
+          {
+            sprintf(fPtr, "%lu.msg", aFixMsgNum[count]);
+            unlink(fileNameStr);
+          }
+          validateMsg();
+        }
+        newLine();
+      }
+    }
+  }
+
+  // Process Ping messages.
+  for (count = 0; count < pingCount; count++)
+  {
+    if (readMsg(message, pingMsgNum[count]) == 0)
+    {
+      int localAkaNum = getLocalAkaNum(&message->destNode);
+      if (localAkaNum >= 0)
+      {
+        // Message is for this node
+        if (messagesMoved)
+        {
+          messagesMoved = 2;
+          newLine();
+        }
+        if (!Ping(message, localAkaNum))
+        {
+//          if (config.mgrOptions.keepRequest)
+            attribMsg(message->attribute | RECEIVED, pingMsgNum[count]);
+//          else
+//        {
+//            sprintf(fPtr, "%lu.msg", pingMsgNum[count]);
+//            unlink(fileNameStr);
+//          }
+//          validateMsg();
+        }
+        newLine();
       }
     }
   }
@@ -595,15 +632,15 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
   msgMsgType  msgMsg;
   u16         count;
 
-  memset (message, 0, INTMSG_SIZE);
+  memset(message, 0, INTMSG_SIZE);
 
-  sprintf (tempStr1, "%s%lu.msg", config.netPath, msgNum);
+  sprintf(tempStr1, "%s%lu.msg", config.netPath, msgNum);
 
-  if ((msgMsgHandle = openP(tempStr1, O_RDONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) == -1)
+  if ((msgMsgHandle = openP(tempStr1, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
   {
-    sprintf (tempStr2, "Can't open file %s", tempStr1);
-    logEntry (tempStr2, LOG_ALWAYS, 0);
-    return (-1);
+    sprintf(tempStr2, "Can't open file %s", tempStr1);
+    logEntry(tempStr2, LOG_ALWAYS, 0);
+    return -1;
   }
 
   if (  (filelength(msgMsgHandle) > (long)(sizeof(msgMsgType) + TEXT_SIZE))
@@ -629,14 +666,14 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
         (isdigit(*(helpPtr+2)))))                     /* Skip day-of-week */
     helpPtr += 4;
 
-  if (sscanf (helpPtr, "%hd-%hd-%hd %hd:%hd:%hd", &message->day,
+  if (sscanf(helpPtr, "%hd-%hd-%hd %hd:%hd:%hd", &message->day,
               &message->month,
               &message->year,
               &message->hours,
               &message->minutes,
               &message->seconds) < 5)
   {
-    if (sscanf (helpPtr, "%hd %s %hd %hd:%hd:%hd", &message->day,
+    if (sscanf(helpPtr, "%hd %s %hd %hd:%hd:%hd", &message->day,
                 tempStr1,
                 &message->year,
                 &message->hours,
@@ -702,7 +739,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
       {
         sprintf(tempStr1,"\1TOPT %u\r", message->destNode.point = nodeInfo[count]->node.point);
         insertLine(message->text, tempStr1);
-        if (! message->attribute & LOCAL)
+        if (!(message->attribute & LOCAL))
           message->attribute |= IN_TRANSIT;
         count = nodeCount;
       }

@@ -114,7 +114,7 @@ s16 packMgr (void)
    printString("First  ", 61, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
    printString("End ", 68, 24, YELLOW, BLACK, MONO_HIGH);
    printString("Last ", 72, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-   printString("\x18\x19", 77, 24, YELLOW, BLACK, MONO_HIGH);
+   printString("  ", 77, 24, YELLOW, BLACK, MONO_HIGH);
 
    while (elemCount < MAX_PACK && *(*pack)[elemCount] != 0)
       elemCount++;

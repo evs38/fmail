@@ -615,8 +615,8 @@ s16 areaMgr(void)
 	    printString("Ins ", 51, 24, YELLOW, BLACK, MONO_HIGH);
 	    printString("Insert  ", 55, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
 	    printString("Del ", 63, 24, BROWN, BLACK, MONO_NORM);
-	    printString("Delete    ", 67, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString("\x1b\x1a", 77, 24, BROWN, BLACK, MONO_NORM);
+	    printString("Delete      ", 67, 24, MAGENTA, BLACK, MONO_NORM);
+//    printString("\x1b\x1a", 77, 24, BROWN, BLACK, MONO_NORM);
 	 }
 	 else
 	 {
@@ -713,8 +713,8 @@ s16 areaMgr(void)
 	       printString ("Insert  ", 55, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
 	    }
 	    printString ("Del ", 63, 24, YELLOW, BLACK, MONO_HIGH);
-	    printString ("Delete    ", 67, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-	    printString ("\x1b\x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
+	    printString ("Delete      ", 67, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+//    printString ("\x1b\x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
 	 }
 	 if (groupSelectMask)
 	 {

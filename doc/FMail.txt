@@ -2,7 +2,7 @@
 
 
 
-                            FMail 1.69
+                            FMail 1.72
 
 
 
@@ -914,7 +914,8 @@ Long file names
 Max exports
 
           The maximum number of nodes that an area can be exported
-          to. The default (and minimum) value is 64.
+          to. The default (and minimum) value is 64. The maximum is
+          256.
 
 FMail MT aware
 
@@ -1885,7 +1886,14 @@ Export
           always be the normal node number i.e. you should NEVER
           enter a node number containing a fakenet. FMail
           automatically uses the fakenet if necessary. The maximum
-          number of systems on the Export list is 64.
+          number of systems on the Export list is configured under
+          System info / Miscellaneous / Max exports (see 3.4.1).
+
+          Nodes can be made read/only, write/only or locked. In the
+          Area Manager Exports list you can set nodes to Read Only by
+          pressing R, to Write Only by pressing W and to Locked (both
+          read and write not allowed) by pressing L.
+
 
 Settings in the Area Manager can be changed for more than one node
 at once by means of the Global change function (F3). First you

@@ -277,6 +277,22 @@ typedef struct
 
 typedef struct
 {
+  unsigned enablePing        : 1;  // Bit  0
+  unsigned enableTrace       : 1;  // Bit  1
+  unsigned keepPingRequests  : 1;  // Bit  2
+  unsigned                   : 1;  // Bit  3
+  unsigned keepPingResponses : 1;  // Bit  4
+  unsigned keepTraceRepsonses: 1;  // Bit  5
+  unsigned                   : 1;  // Bit  6
+  unsigned                   : 1;  // Bit  7
+} pingOptionsType;
+
+#if sizeof(pingOptionsType) != sizeof(u8)
+#error "*** Error: sizeof(pingOptionsType) != sizeof(u8)"
+#endif
+
+typedef struct
+{
   unsigned smtpImm : 1;   // BIT 0
   unsigned         : 15;  // BIT 1-15
 } inetOptionsType;
@@ -360,7 +376,8 @@ typedef struct
   u16             maxMsgSize;
   u16             defMaxRescan;
   u16             oldMsgDays;
-  uchar           reserved2[60];
+  pingOptionsType pingOptions;
+  uchar           reserved2[59];
   u16             colorSet;
   char            sysopName[36];
   u16             defaultArc;

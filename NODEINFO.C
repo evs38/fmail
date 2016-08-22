@@ -56,7 +56,7 @@ void initNodeInfo(void)
   nodeInfoType *nodeBuf;
 
   if (!openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf))
-    logEntry ("Bad or missing "dNODFNAME, LOG_ALWAYS, 2);
+    logEntry("Bad or missing "dNODFNAME, LOG_ALWAYS, 2);
 
   nodeCount = min(MAX_NODES, (u16)(nodeHeader->totalRecords));
 

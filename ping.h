@@ -1,9 +1,8 @@
-#ifndef areafixH
-#define areafixH
+#ifndef pingH
+#define pingH
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -25,7 +24,7 @@
 
 #include "fmail.h"
 
-int toAreaFix(const char *toName);
-int areaFix  (internalMsgType *message);
+int toPing(const char *toName);
+int Ping  (internalMsgType *message, int localAkaNum);
 
-#endif  // areafixH
+#endif  // pingH

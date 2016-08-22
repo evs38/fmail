@@ -63,6 +63,8 @@
 #define SW_Y  0x01000000L
 #define SW_Z  0x02000000L
 
+#define NO_NodeStrIndex  4
+
 //---------------------------------------------------------------------------
 extern u32 lastID;
 
@@ -99,14 +101,15 @@ void        removeLfSr     (char *msgText);
 void        removeLf       (char *msgText);
 void        removeSr       (char *msgText);
 char       *srchar         (char *string, s16 t, s16 c);
+char       *tmpNodeStr     (void);
 const char *nodeStr        (const nodeNumType *nodeNum);
 const char *nodeStrZ       (const nodeNumType *nodeNum);
 char       *findCLStr      (char *s1, const char *s2);
 char       *findCLiStr     (char *s1, const char *s2);
 void        removeLine     (char *s);
 void        addINTL        (internalMsgType *message);
-int         getLocalAkaNum (nodeNumType *node);
-int         getLocalAka    (nodeNumType *node);
+int         getLocalAkaNum (const nodeNumType *node);
+int         getLocalAka    (const nodeNumType *node);
 s16         isLocalPoint   (nodeNumType *node);
 s16         node2d         (nodeNumType *node);
 void        make2d         (internalMsgType *message);
@@ -132,6 +135,7 @@ char       *addMSGIDKludge (internalMsgType *message, char *insertPoint);
 char       *addPIDKludge   (char *txt);
 char       *addPointKludges(internalMsgType *message, char *insertPoint);
 char       *addTZUTCKludge (char *txt);
+void        setCurDateMsg  (internalMsgType *msg);
 u16         firstFile      (u8 *string, u8 **filename);
 u16         nextFile       (u8 **filename);
 char       *stristr        (const char *str1, const char *str2);

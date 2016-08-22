@@ -195,48 +195,47 @@ typedef struct
   fromNoExpSec;
 } globVarsType;
 
-/*
-      AttributeWord   bit       meaning
-		      ---       --------------------
-			0  +    Private
-			1  + s  Crash
-			2       Recd
-			3       Sent
-                        4  +    FileAttached
-                        5       InTransit
-                        6       Orphan
-                        7       KillSent
-                        8       Local
-                        9    s  HoldForPickup
-                       10  +    unused
-                       11    s  FileRequest
-                       12  + s  ReturnReceiptRequest
-                       13  + s  IsReturnReceipt
-                       14  + s  AuditRequest
-                       15    s  FileUpdateReq
+// AttributeWord   bit       meaning
+//                 ---       --------------------
+//                   0  +    Private
+//                   1  + s  Crash
+//                   2       Recd
+//                   3       Sent
+//                   4  +    FileAttached
+//                   5       InTransit
+//                   6       Orphan
+//                   7       KillSent
+//                   8       Local
+//                   9    s  HoldForPickup
+//                  10  +    unused
+//                  11    s  FileRequest
+//                  12  + s  ReturnReceiptRequest
+//                  13  + s  IsReturnReceipt
+//                  14  + s  AuditRequest
+//                  15    s  FileUpdateReq
+//
+//                        s - need not be recognized, but it's ok
+//                        + - not zeroed before packeting
+//
+// Bits numbers ascend with arithmetic significance of bit position.
 
-                             s - need not be recognized, but it's ok
-|                            + - not zeroed before packeting
+#define PRIVATE       0x0001  // PVT
+#define CRASH         0x0002  // CRA
+#define RECEIVED      0x0004  // RCV
+#define SENT          0x0008  // SNT
+#define FILE_ATT      0x0010  // FIL
+#define IN_TRANSIT    0x0020  // TRS
+#define ORPHAN        0x0040  // ORP
+#define KILLSENT      0x0080  // K/S
+#define LOCAL         0x0100  // LOC
+#define HOLDPICKUP    0x0200  // HLD
+#define UNUSED        0x0400  // ---
+#define FILE_REQ      0x0800  // FRQ
+#define RET_REC_REQ   0x1000  // RRQ
+#define IS_RET_REC    0x2000  // RRC
+#define AUDIT_REQ     0x4000  // ARQ
+#define FILE_UPD_REQ  0x8000  // URQ
 
-      Bits numbers ascend with arithmetic significance of bit position.
-*/
-
-#define PRIVATE           1
-#define CRASH             2
-#define RECEIVED          4
-#define SENT              8
-#define FILE_ATT         16
-#define IN_TRANSIT       32
-#define ORPHAN           64
-#define KILLSENT        128
-#define LOCAL           256
-#define HOLDPICKUP      512
-#define UNUSED         1024
-#define FILE_REQ       2048
-#define RET_REC_REQ    4096
-#define IS_RET_REC     8192
-#define AUDIT_REQ     16384
-#define FILE_UPD_REQ  32768L
 
 #define _K_ENTER_ 0x000d
 #define _K_ESC_   0x001b

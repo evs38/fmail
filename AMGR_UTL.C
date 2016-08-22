@@ -86,7 +86,7 @@ Page Up  Page Down  Insert  Delete  Home First  End Last  R/o  W/o  Lock  ^V    
   printString("/o  "       , 64, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
   printString("L"          , 68, 24, YELLOW      , BLACK, MONO_NORM);
   printString("ock  "      , 69, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-  printString("\x18\x19   ", 74, 24, YELLOW      , BLACK, MONO_NORM);
+  printString("     "      , 74, 24, YELLOW      , BLACK, MONO_NORM);
 
   while (elemCount < MAX_FORWARD && tempInfo.forwards[elemCount].nodeNum.zone != 0)
     elemCount++;
@@ -98,7 +98,7 @@ Page Up  Page Down  Insert  Delete  Home First  End Last  R/o  W/o  Lock  ^V    
   {
     for (count = 0; count < MAX_NS_WINSIZE; count++)
     {
-      if (windowBase+count < elemCount)
+      if (windowBase + count < elemCount)
       {
         *tempStr = ' ';
         strcpy(tempStr + 1, nodeStr(&tempInfo.forwards[windowBase + count].nodeNum));
@@ -208,7 +208,7 @@ Page Up  Page Down  Insert  Delete  Home First  End Last  R/o  W/o  Lock  ^V    
          case _K_INS_ :
                        if (elemCount < MAX_FORWARD)            /* Insert */
                        {
-			  tempNode = getNodeNum ("Insert node", 37, 12, tempInfo.address);
+                          tempNode = getNodeNum ("Insert node", 37, 12, tempInfo.address);
                           if (tempNode.zone != 0)
                           {
                              currentElem = 0;

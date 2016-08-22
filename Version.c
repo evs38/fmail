@@ -19,8 +19,12 @@
 //
 //----------------------------------------------------------------------------
 
-#if 0
+#if 1
   #define BETA
+#endif
+
+#if defined(BETA) && !defined(_DEBUG)
+#pragma message ("*** Warning! Compiling BETA version in NON-DEBUG mode!?")
 #endif
 
 #include "Version.h"

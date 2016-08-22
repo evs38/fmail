@@ -63,6 +63,7 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include "msgra.h"
 #include "nodeinfo.h"
 #include "pack.h"
+#include "ping.h"
 #include "pp_date.h"
 #include "sorthb.h"
 #include "spec.h"
@@ -523,20 +524,22 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
           logEntry(tempStr, LOG_PKTINFO, 0);
 
           if ((globVars.remoteCapability & 1) == 1)
-            sprintf(tempStr, "Pkt info: %s %u.%02u, Type 2+, %ld, %04u-%02u-%02u %02u:%02u:%02u%s%s",
-                     helpPtr, globVars.versionHi, globVars.versionLo,
-                     globVars.packetSize,
-                     globVars.year, globVars.month, globVars.day,
-                     globVars.hour, globVars.min, globVars.sec,
-                     globVars.password?", Pwd":"", (globVars.password==2)?", Sec":"");
+            sprintf( tempStr, "Pkt info: %s %u.%02u, Type 2+, %ld, %04u-%02u-%02u %02u:%02u:%02u%s%s"
+                   , helpPtr, globVars.versionHi, globVars.versionLo
+                   , globVars.packetSize
+                   , globVars.year, globVars.month, globVars.day
+                   , globVars.hour, globVars.min, globVars.sec
+                   , globVars.password ? ", Pwd" : "", (globVars.password == 2) ? ", Sec" : ""
+                   );
           else
-            sprintf(tempStr, "Pkt info: %s, Type %s, %ld, %04u-%02u-%02u %02u:%02u:%02u%s%s",
-                     helpPtr,
-                     globVars.remoteCapability == 0xffff ? "2.2" :"2.0",
-                     globVars.packetSize,
-                     globVars.year, globVars.month, globVars.day,
-                     globVars.hour, globVars.min, globVars.sec,
-                     globVars.password?", Pwd":"", (globVars.password==2)?", Sec":"");
+            sprintf( tempStr, "Pkt info: %s, Type %s, %ld, %04u-%02u-%02u %02u:%02u:%02u%s%s"
+                   , helpPtr
+                   , globVars.remoteCapability == 0xffff ? "2.2" :"2.0"
+                   , globVars.packetSize
+                   , globVars.year, globVars.month, globVars.day
+                   , globVars.hour, globVars.min, globVars.sec
+                   , globVars.password ? ", Pwd" : "", (globVars.password == 2) ? ", Sec" : ""
+                   );
           logEntry(tempStr, LOG_XPKTINFO, 0);
 
           pktMsgCount = 0;
@@ -602,11 +605,12 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                                       IS_RET_REC  | AUDIT_REQ;
 
                 areaFixRep = 0;
-
-                if (localAkaNum >= 0 && !noAreaFix && toAreaFix(message->toUserName))
+                // Check for messages to AreaFix in pkt
+                if (!noAreaFix && localAkaNum >= 0 && toAreaFix(message->toUserName))
                 {
                   if (  config.mgrOptions.keepRequest
-                     || findCLiStr(message->text, "%NOTE") != NULL)
+                     || findCLiStr(message->text, "%NOTE") != NULL
+                     )
                   {
                     message->attribute |= RECEIVED;
                     writeMsg(message, NETMSG, 1);
@@ -614,6 +618,19 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                   putchar(' ');
                   areaFixRep = !areaFix(message);
                 }
+
+                // Check for messages to PING in pkt
+                if (toPing(message->toUserName))
+                {
+                  if (/*config.mgrOptions.keepRequest &&*/ localAkaNum >= 0)
+                  {
+                    message->attribute |= RECEIVED;
+                    writeMsg(message, NETMSG, 1);
+                  }
+                  putchar(' ');
+                  areaFixRep = !Ping(message, localAkaNum) && localAkaNum >= 0;
+                }
+
                 if (!areaFixRep)
                 {
                   // re-route to point
@@ -658,11 +675,12 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                       putStr(" (in transit)");
                       message->attribute |= IN_TRANSIT | KILLSENT;
                     }
-                    if (!(getNodeInfo(&message->destNode)->capability & PKT_TYPE_2PLUS)
-                       && isLocalPoint(&message->destNode))
-                      make2d (message);
+                    if (  !(getNodeInfo(&message->destNode)->capability & PKT_TYPE_2PLUS)
+                       && isLocalPoint(&message->destNode)
+                       )
+                      make2d(message);
                   }
-                  if ((message->attribute & FILE_ATT) && (message->attribute & IN_TRANSIT)
+                  if (  (message->attribute & FILE_ATT) && (message->attribute & IN_TRANSIT)
                      && (strchr(message->subject, '*') != 0 || strchr(message->subject, '?') != 0))
                   {
                     insertLine(message->text, "\1FLAGS LOK\r");
@@ -2006,6 +2024,10 @@ int main(int argc, char *argv[])
          , globVars.nmbCountV, globVars.echoCountV, globVars.dupCountV, globVars.badCountV);
   logEntry(tempStr, LOG_STATS, 0);
 
+#ifdef _DEBUG0
+  sprintf(tempStr, "DEBUG sizeof(pingOptionsType): %u", sizeof(pingOptionsType));
+  logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
 
   // Semaphore files
   //

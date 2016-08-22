@@ -60,22 +60,25 @@ char *insertLine(char *pos, const char *line)
   return pos + s;
 }
 //---------------------------------------------------------------------------
-u16  nodeStrIndex = 0;
-char nodeNameStr[2][24];
+extern u16  nodeStrIndex;
+extern char nodeNameStr[NO_NodeStrIndex][24];  // 65535:65535/65535.65535  4 * 5 + 3 + 1 = 24
 
 const char *nodeStr(const nodeNumType *nodeNum)
 {
-  char *tempPtr = nodeNameStr[nodeStrIndex = 1 - nodeStrIndex];
+  char *t1 = tmpNodeStr()
+     , *t2 ;
 
   if (nodeNum->zone != 0)
-    tempPtr += sprintf(tempPtr, "%u:", nodeNum->zone);
+    t2 = t1 + sprintf(t1, "%u:", nodeNum->zone);
+  else
+    t2 = t1;
 
   if (nodeNum->point != 0)
-    sprintf(tempPtr, "%u/%u.%u", nodeNum->net, nodeNum->node, nodeNum->point);
+    sprintf(t2, "%u/%u.%u", nodeNum->net, nodeNum->node, nodeNum->point);
   else
-    sprintf(tempPtr, "%u/%u"   , nodeNum->net, nodeNum->node);
+    sprintf(t2, "%u/%u"   , nodeNum->net, nodeNum->node);
 
-  return nodeNameStr[nodeStrIndex];
+  return t1;
 }
 //---------------------------------------------------------------------------
 char *stristr(const char *str1, const char *str2)
