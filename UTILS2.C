@@ -60,9 +60,18 @@ char *insertLine(char *pos, const char *line)
   return pos + s;
 }
 //---------------------------------------------------------------------------
-extern u16  nodeStrIndex;
-extern char nodeNameStr[NO_NodeStrIndex][24];  // 65535:65535/65535.65535  4 * 5 + 3 + 1 = 24
+u16  nodeStrIndex = -1;
+char nodeNameStr[NO_NodeStrIndex][24];  // 65535:65535/65535.65535  4 * 5 + 3 + 1 = 24
 
+
+char *tmpNodeStr(void)
+{
+  if (++nodeStrIndex >= NO_NodeStrIndex)
+    nodeStrIndex = 0;
+
+  return nodeNameStr[nodeStrIndex];
+}
+//---------------------------------------------------------------------------
 const char *nodeStr(const nodeNumType *nodeNum)
 {
   char *t1 = tmpNodeStr()

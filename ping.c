@@ -96,6 +96,7 @@ const char *attributeStr(u16 attr)
 int Ping(internalMsgType *message, int localAkaNum)
 {
   u32              msgLen;
+  s32              msgNum;
   tempStrType      tempStr
                 ,  replyStr
                 ,  fromNodeStr;
@@ -155,8 +156,10 @@ int Ping(internalMsgType *message, int localAkaNum)
     strncpy(stpcpy(replyMsg->subject, "Pong: "), message->subject, 65);
 
   replyMsg->attribute = LOCAL | PRIVATE;
-//  if (!config.mgrOptions.keepReceipt)
-//    replyMsg->attribute |= KILLSENT;
+  if (  (localAkaNum >=0 && config.pingOptions.deletePingResponses )
+     || (localAkaNum < 0 && config.pingOptions.deleteTraceResponses)
+     )
+    replyMsg->attribute |= KILLSENT;
 
   setCurDateMsg(replyMsg);
 
@@ -210,13 +213,13 @@ int Ping(internalMsgType *message, int localAkaNum)
   // Add closing line
   helpPtr2 = stpcpy(helpPtr2, "==============================================================================\r");
 
-  writeMsg(replyMsg, NETMSG, 1);
+  msgNum = writeMsg(replyMsg, NETMSG, 1);
 
   free(replyMsg);
 
   sprintf(tempStr, "Processed PING message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
   logEntry(tempStr, LOG_ALWAYS, 0);
 
-  return 0;
+  return msgNum < 0;
 }
 //---------------------------------------------------------------------------

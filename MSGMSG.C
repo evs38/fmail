@@ -404,7 +404,7 @@ void initMsg(s16 noAreaFix)
                             aFixMsgNum[aFixCount++] = msgNum;
                         }
                         else
-                          if (toPing(msgMsg.toUserName))
+                          if (!config.pingOptions.disablePing && toPing(msgMsg.toUserName))
                           {
                             if (pingCount < MAX_AFIX)
                               pingMsgNum[pingCount++] = msgNum;
@@ -456,37 +456,37 @@ void initMsg(s16 noAreaFix)
   }
 
   // Process Ping messages.
-  for (count = 0; count < pingCount; count++)
-  {
-    if (readMsg(message, pingMsgNum[count]) == 0)
+  if (!config.pingOptions.disablePing)
+    for (count = 0; count < pingCount; count++)
     {
-      int localAkaNum = getLocalAkaNum(&message->destNode);
-      if (localAkaNum >= 0)
+      if (readMsg(message, pingMsgNum[count]) == 0)
       {
-        // Message is for this node
-        if (messagesMoved)
+        int localAkaNum = getLocalAkaNum(&message->destNode);
+        if (localAkaNum >= 0)
         {
-          messagesMoved = 2;
+          // Message is for this node
+          if (messagesMoved)
+          {
+            messagesMoved = 2;
+            newLine();
+          }
+          if (!Ping(message, localAkaNum))
+          {
+            if (config.pingOptions.deletePingRequests)
+            {
+              sprintf(fPtr, "%lu.msg", pingMsgNum[count]);
+              unlink(fileNameStr);
+            }
+            else
+              attribMsg(message->attribute | RECEIVED, pingMsgNum[count]);
+            validateMsg();
+          }
           newLine();
         }
-        if (!Ping(message, localAkaNum))
-        {
-//          if (config.mgrOptions.keepRequest)
-            attribMsg(message->attribute | RECEIVED, pingMsgNum[count]);
-//          else
-//        {
-//            sprintf(fPtr, "%lu.msg", pingMsgNum[count]);
-//            unlink(fileNameStr);
-//          }
-//          validateMsg();
-        }
-        newLine();
       }
     }
-  }
 
   // Remove old truncated mailbundles (or w/o file attach in D'B mode)
-
   if (config.mailer == 3 || config.mailer == 5)  // Binkley/Xenia
   {
     tempStrType dirStr;
@@ -904,19 +904,17 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     if (valid == 2)
       chmod(tempStr, S_IREAD);
 
+    switch (msgType)
     {
-      switch (msgType)
-      {
-        case NETMSG:
-          globVars.netCount++;
-          globVars.createSemaphore++;
-          break;
-        case PERMSG:
-          globVars.perCount++;
-          break;
-        default:
-          return -1;
-      }
+      case NETMSG:
+        globVars.netCount++;
+        globVars.createSemaphore++;
+        break;
+      case PERMSG:
+        globVars.perCount++;
+        break;
+      default:
+        return -1;
     }
   }
   while (++xu <= fnPtrCnt);
@@ -965,7 +963,7 @@ void validateMsg(void)
 
   for (c = PERMSG; c <= NETMSG; c++)
   {
-    if ((c == NETMSG && globVars.netCount) || (c == PERMSG && globVars.perCount))
+    if (c == NETMSG && globVars.netCount || c == PERMSG && globVars.perCount)
     {
       switch (c)
       {

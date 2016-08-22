@@ -277,14 +277,14 @@ typedef struct
 
 typedef struct
 {
-  unsigned enablePing        : 1;  // Bit  0
-  unsigned enableTrace       : 1;  // Bit  1
-  unsigned keepPingRequests  : 1;  // Bit  2
-  unsigned                   : 1;  // Bit  3
-  unsigned keepPingResponses : 1;  // Bit  4
-  unsigned keepTraceRepsonses: 1;  // Bit  5
-  unsigned                   : 1;  // Bit  6
-  unsigned                   : 1;  // Bit  7
+  unsigned disablePing         : 1;  // Bit  0
+  unsigned disableTrace        : 1;  // Bit  1
+  unsigned deletePingRequests  : 1;  // Bit  2
+  unsigned                     : 1;  // Bit  3
+  unsigned deletePingResponses : 1;  // Bit  4
+  unsigned deleteTraceResponses: 1;  // Bit  5
+  unsigned                     : 1;  // Bit  6
+  unsigned                     : 1;  // Bit  7
 } pingOptionsType;
 
 #if sizeof(pingOptionsType) != sizeof(u8)

@@ -620,15 +620,19 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                 }
 
                 // Check for messages to PING in pkt
-                if (toPing(message->toUserName))
+                if (  (  (!config.pingOptions.disablePing  && localAkaNum >= 0)
+                      || (!config.pingOptions.disableTrace && localAkaNum <  0)
+                      )
+                   && toPing(message->toUserName)
+                   )
                 {
-                  if (/*config.mgrOptions.keepRequest &&*/ localAkaNum >= 0)
+                  putchar(' ');
+                  areaFixRep = !Ping(message, localAkaNum) && localAkaNum >= 0;
+                  if (areaFixRep && !config.pingOptions.deletePingRequests)
                   {
                     message->attribute |= RECEIVED;
                     writeMsg(message, NETMSG, 1);
                   }
-                  putchar(' ');
-                  areaFixRep = !Ping(message, localAkaNum) && localAkaNum >= 0;
                 }
 
                 if (!areaFixRep)

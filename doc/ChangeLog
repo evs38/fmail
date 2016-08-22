@@ -1,3 +1,9 @@
+2016-08-22  1.71.3.200-Beta
+  * Made ping/trace function configurable in FConfig
+
+2016-08-22  1.71.2.198-Beta
+  * Ping/trace function in FMail
+
 2016-08-16  1.69.25.189
   * Forgot to remove the Beta status
   * Fixed some spelling errors in FMail.txt

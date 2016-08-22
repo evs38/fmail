@@ -159,6 +159,7 @@ int cdecl main(int argc, char *argv[])
   menuType *mbMenu       = NULL;
   menuType *internetMenu = NULL;
   menuType *mgrMenu      = NULL;
+  menuType *pingMenu     = NULL;
   menuType *netMenu      = NULL;
   menuType *address1Menu = NULL;
   menuType *address2Menu = NULL;
@@ -1338,6 +1339,18 @@ int cdecl main(int argc, char *argv[])
 /* addItem(mgrMenu, BOOL_INT, "»Õ Remove record", 0, &config.mgrOptions, BIT5, 0,
   	    "Immediatly remove an auto-disconnected area from the Area Manager");
 */
+
+  if ((pingMenu = createMenu(" Ping/trace options ")) == NULL)
+    goto nomem;
+
+  addItem(pingMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
+  addItem(pingMenu, BOOL_INT_REV, "Enable PING"           , 0, &config.pingOptions, BIT0, 0, "Enable the PING function");
+  addItem(pingMenu, BOOL_INT_REV, "Enable TRACE"          , 0, &config.pingOptions, BIT1, 0, "Enable the TRACE function");
+  addItem(pingMenu, BOOL_INT    , "Delete PING requests"  , 0, &config.pingOptions, BIT2, 0, "Delete PING request messages after processing");
+//addItem(pingMenu, BOOL_INT    , "Delete TRACE requests" , 0, &config.pingOptions, BIT3, 0, "Delete TRACE request messages after processing");
+  addItem(pingMenu, BOOL_INT    , "Delete PING responses" , 0, &config.pingOptions, BIT4, 0, "Delete PING response messages after they have been sent");
+  addItem(pingMenu, BOOL_INT    , "Delete TRACE responses", 0, &config.pingOptions, BIT5, 0, "Delete TRACE response messages after they have been sent");
+
   if ((netMenu = createMenu(" Netmail boards ")) == NULL)
     goto nomem;
 
@@ -1732,6 +1745,8 @@ int cdecl main(int argc, char *argv[])
            "Mailflow related options");
   addItem(miscMenu, NEW_WINDOW, "Mgr options", 0, mgrMenu, 2, -1,
            "Mgr related options");
+  addItem(miscMenu, NEW_WINDOW, "Ping/trace options", 0, pingMenu, 2, -1,
+           "Ping/trace related options");
   addItem(miscMenu, NEW_WINDOW, "Personal mail", 0, pmailMenu, 2, 2,
            "Personal mail settings");
   addItem(miscMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
@@ -1876,6 +1891,7 @@ nomem:
   if (mbMenu      ) free(mbMenu      );
   if (internetMenu) free(internetMenu);
   if (mgrMenu     ) free(mgrMenu     );
+  if (pingMenu    ) free(pingMenu    );
   if (netMenu     ) free(netMenu     );
   if (address1Menu) free(address1Menu);
   if (address2Menu) free(address2Menu);
@@ -1894,7 +1910,7 @@ nomem:
 
   if (fmailLocHandle != -1)
     close(fmailLocHandle);
-    
+
   return 0;
 }
 //---------------------------------------------------------------------------

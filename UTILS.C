@@ -704,17 +704,9 @@ char *srchar(char *string, s16 t, s16 c)
    return (helpPtr2);
 }
 //---------------------------------------------------------------------------
-u16  nodeStrIndex = -1;
-char nodeNameStr[NO_NodeStrIndex][24];
+extern u16  nodeStrIndex;
+extern char nodeNameStr[NO_NodeStrIndex][24];
 
-char *tmpNodeStr(void)
-{
-  if (++nodeStrIndex >= NO_NodeStrIndex)
-    nodeStrIndex = 0;
-
-  return nodeNameStr[nodeStrIndex];
-}
-//---------------------------------------------------------------------------
 const char *nodeStrZ(const nodeNumType *nodeNum)
 {
   char *t1 = tmpNodeStr()
@@ -723,7 +715,7 @@ const char *nodeStrZ(const nodeNumType *nodeNum)
   if (nodeNum->zone != 0)
     t2 = t1 + sprintf(t1, "%u:", nodeNum->zone);
   else
-    t2 = t1;  
+    t2 = t1;
 
   sprintf(t2, "%u/%u.%u", nodeNum->net, nodeNum->node, nodeNum->point);
 
