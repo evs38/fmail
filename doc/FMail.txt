@@ -854,6 +854,14 @@ From fts-5001.005, which describes nodelist flags:
     and will forward the original mail unaltered towards its final
     destination.
 
+The PING and TRACE function in FMail are executed when .pkt files are
+processed during the Toss function. Further more the PING function is
+active on the messages, without the received flag, in the netmail
+directory when the Toss, Scan, Pack, Import or Mgr functions are
+executed. This last sentence means you can send PING messages to your
+own node, from your own node, by creating a netmail with your message
+editor.
+
 Options:
 
 Enable PING

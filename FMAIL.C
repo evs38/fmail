@@ -479,7 +479,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
     {
       tempStrType cwd;
       getcwd(cwd, dTEMPSTRLEN);
-      sprintf(tempStr, "DEBUG: secure:%d, cwd:%s, scanning:%s", secure, cwd, dirStr);
+      sprintf(tempStr, "DEBUG secure:%d, cwd:%s, scanning:%s", secure, cwd, dirStr);
       logEntry(tempStr, LOG_DEBUG, 0);
     }
 #endif

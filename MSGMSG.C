@@ -476,6 +476,8 @@ void initMsg(s16 noAreaFix)
             {
               sprintf(fPtr, "%lu.msg", pingMsgNum[count]);
               unlink(fileNameStr);
+              sprintf(tempStr, "Delete PING request message: %s", fileNameStr);
+              logEntry(tempStr, LOG_ALWAYS, 0);
             }
             else
               attribMsg(message->attribute | RECEIVED, pingMsgNum[count]);
@@ -762,7 +764,11 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
   fhandle        msgHandle;
   int            len;
   tempStrType    tempStr
-               , tempFName;
+               , tempFName
+#ifdef _DEBUG
+               , logStr
+#endif
+               ;
   char          *helpPtr;
   s32            highMsgNum;
   u16            count;
@@ -787,6 +793,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
       strcpy(stpcpy(msgMsg.subject, config.inPath), tempFName);
     else
       strcpy(msgMsg.subject, tempFName);
+
     while (helpPtr != NULL && fnPtrCnt < MAX_FNPTR)
     {
       while (*helpPtr == ' ')
@@ -825,12 +832,15 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     case NETMSG:
       helpPtr = stpcpy(tempStr, config.netPath);
       break;
+
     case PERMSG:
       helpPtr = stpcpy(tempStr, config.pmailPath);
       break;
+
     case SECHOMSG:
       helpPtr = stpcpy(tempStr, config.sentEchoPath);
       break;
+
     default:
       return -1;
   }
@@ -843,6 +853,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
   {
     if (read(msgHandle, &highMsgNum, 2) != 2)
       highMsgNum = 0;
+
     close(msgHandle);
   }
   *helpPtr = 0;
@@ -865,10 +876,10 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
   {
     if (xu)
     {
-      if (strlen(config.inPath) + strlen(fnPtr[xu-1]) < 72)
-        strcpy(stpcpy(msgMsg.subject, config.inPath), fnPtr[xu-1]);
+      if (strlen(config.inPath) + strlen(fnPtr[xu - 1]) < 72)
+        strcpy(stpcpy(msgMsg.subject, config.inPath), fnPtr[xu - 1]);
       else
-        strcpy(msgMsg.subject, fnPtr[xu-1]);
+        strcpy(msgMsg.subject, fnPtr[xu - 1]);
     }
 
     // Try to open file
@@ -876,8 +887,9 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     sprintf(helpPtr, valid ? "%lu.msg" : "%lu."MBEXTB, ++highMsgNum);
 
     while (  count < 20
-          && (msgHandle = openP( tempStr, O_RDWR|O_CREAT|O_EXCL|O_TRUNC|O_BINARY|O_DENYNONE
-                               , S_IREAD|S_IWRITE)) == -1)
+          && (msgHandle = openP(tempStr, O_RDWR | O_CREAT | O_EXCL | O_TRUNC | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)
+             ) == -1
+          )
     {
       highMsgNum += count++ < 10 ? 1 : 10;
       sprintf(helpPtr, valid ? "%lu.msg" : "%lu."MBEXTB, highMsgNum);
@@ -897,9 +909,15 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     {
       close(msgHandle);
       puts("Can't write to output file.");
+
       return -1;
     }
     close(msgHandle);
+
+#ifdef _DEBUG
+    sprintf(logStr, "DEBUG Message file writen: %s", tempStr);
+    logEntry(logStr, LOG_DEBUG, 0);
+#endif
 
     if (valid == 2)
       chmod(tempStr, S_IREAD);
@@ -910,9 +928,11 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
         globVars.netCount++;
         globVars.createSemaphore++;
         break;
+
       case PERMSG:
         globVars.perCount++;
         break;
+
       default:
         return -1;
     }

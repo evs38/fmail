@@ -105,19 +105,13 @@ int Ping(internalMsgType *message, int localAkaNum)
   internalMsgType *replyMsg;
   char            *funcText = localAkaNum >= 0 ? "PING" : "TRACE";
 
-#ifdef _DEBUG0
+#ifdef _DEBUG
   sprintf(tempStr, "Processing PING message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
   logEntry(tempStr, LOG_DEBUG, 0);
 #endif
 
   // Maak de replyMsg aan de hand van de lengte van het ontvangen bericht.
   msgLen = (((sizeof(internalMsgType) - DEF_TEXT_SIZE) + strlen(message->text)) & 0xFFFFF000) + 0x2000;
-#ifdef _DEBUG0
-  sprintf(tempStr, "DEBUG Ping: OldMsgLen: %u NewMsgLen: %u", (sizeof(internalMsgType) - DEF_TEXT_SIZE) + strlen(message->text), msgLen);
-  logEntry(tempStr, LOG_DEBUG, 0);
-  sprintf(tempStr, "DEBUG Ping: OldMsgLen: %x NewMsgLen: %x", (sizeof(internalMsgType) - DEF_TEXT_SIZE) + strlen(message->text), msgLen);
-  logEntry(tempStr, LOG_DEBUG, 0);
-#endif
   if (NULL == (replyMsg = (internalMsgType *)malloc(msgLen)))
     logEntry("Not enough memory to create PING message", LOG_ALWAYS, 2);
 
@@ -217,7 +211,7 @@ int Ping(internalMsgType *message, int localAkaNum)
 
   free(replyMsg);
 
-  sprintf(tempStr, "Processed PING message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
+  sprintf(tempStr, "Processed PING request message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
   logEntry(tempStr, LOG_ALWAYS, 0);
 
   return msgNum < 0;

@@ -740,7 +740,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
     if (compareResult)
     {
       // Must be done after cleanup. Files need to be closed
-      logEntry("DEBUG: Create trace files", LOG_DEBUG, 0);
+      logEntry("DEBUG Create trace files", LOG_DEBUG, 0);
       sprintf(tempStr, "%s-%d", mbPath, startTime);
       if (0 == mkdir(tempStr))
       {

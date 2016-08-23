@@ -316,7 +316,7 @@ u32 diskFree(const char *path)
   dfs = (u64)dtable.df_avail * (u64)dtable.df_bsec * (u64)dtable.df_sclus;
 
 #ifdef _DEBUG
-  sprintf(tempStr, "DEBUG: Disk %s free: %s", path, fmtU64(dfs));
+  sprintf(tempStr, "DEBUG Disk %s free: %s", path, fmtU64(dfs));
   logEntry(tempStr, LOG_DEBUG, 0);
 #endif
 
@@ -1343,7 +1343,7 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
 #ifdef _DEBUG0
         {
           tempStrType ts;
-          sprintf(ts, "DEBUG: Add other node to SEENBY: %s", nodeStr(&nodeFileInfo[count]->destNode));
+          sprintf(ts, "DEBUG Add other node to SEENBY: %s", nodeStr(&nodeFileInfo[count]->destNode));
           logEntry(ts, LOG_DEBUG, 0);
         }
 #endif
@@ -1367,7 +1367,7 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
 #ifdef _DEBUG0
         {
           tempStrType ts;
-          sprintf(ts, "DEBUG: Add other AKA to SEENBY: %s", nodeStr(&config.akaList[count].nodeNum));
+          sprintf(ts, "DEBUG Add other AKA to SEENBY: %s", nodeStr(&config.akaList[count].nodeNum));
           logEntry(ts, LOG_DEBUG, 0);
         }
 #endif

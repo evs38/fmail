@@ -1,5 +1,9 @@
+2016-08-23  1.71.5.203-Beta
+  * Added some more explanation about the ping/trace funtion to FMail.txt.
+  * Some extra (debug) logging.
+
 2016-08-23  1.71.3.200-Beta
-  * Added explanation of Ping/trace options to FMail.txt
+  * Added explanation of Ping/trace options to FMail.txt.
   * Files created by Export/list functions no longer contain high ascii.
   * Changed use of 0x10 character to '>' in FConfig, which should be more
     compatible with windows.

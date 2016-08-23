@@ -1190,7 +1190,7 @@ fhandle openP(const char *pathname, int access, u16 mode)
     if (errno != EMFILE || closeLuPkt())
     {
       if (  !no_msg && no_log == 1
-         && ((config.logInfo & LOG_OPENERR) || (config.logInfo & LOG_ALWAYS ))
+         && ((config.logInfo & LOG_OPENERR) || (config.logInfo & LOG_ALWAYS))
          )
       {
         tempStrType tempStr;
