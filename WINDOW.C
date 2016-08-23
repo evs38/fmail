@@ -1675,50 +1675,48 @@ s16 displayMenu(menuType *menu, u16 sx, u16 sy)
   return 0;
 }
 //---------------------------------------------------------------------------
-static nodeNumType convertNodeStr (char *ns, u16 aka)
+static nodeNumType convertNodeStr(char *ns, u16 aka)
 {
-   nodeNumType tempNode;
-   s16         temp;
+  nodeNumType tempNode;
+  s16         temp;
 
-   tempNode.point = 0;
+  tempNode.point = 0;
 
-   if (sscanf (ns, "%hu:%hu/%hu.%hu",
-                   &tempNode.zone, &tempNode.net,
-                   &tempNode.node, &tempNode.point) >= 3)
-   {
-      return (tempNode);
-   }
-   if (config.akaList[aka].nodeNum.zone == 0)
-   {
-      if (config.akaList[aka=0].nodeNum.zone == 0)
-      {
-         displayMessage ("Main AKA not defined Í No default zone/net/node available");
-         memset (&tempNode, 0, sizeof(nodeNumType));
-         return (tempNode);
-     }
-   }
-   tempNode.zone = config.akaList[aka].nodeNum.zone;
-   if (sscanf (ns, "%hu/%hu.%hu",
-                   &tempNode.net, &tempNode.node, &tempNode.point) >= 2)
-   {
-      return (tempNode);
-   }
-   tempNode.net = config.akaList[aka].nodeNum.net;
-   if (((temp = sscanf (ns, "%hu.%hu", &tempNode.node, &tempNode.point)) > 1) ||
-       ((temp == 1) && (strchr(ns, ':') == 0) && (strchr(ns, '/') == 0)))
-   {
-      return (tempNode);
-   }
-   tempNode.node = config.akaList[aka].nodeNum.node;
-   if (sscanf (ns, ".%hu", &tempNode.point) <= 0)
-   {
-      if (*ns != 0)
-         displayMessage ("Invalid node number");
-      memset (&tempNode, 0, sizeof(nodeNumType));
-   }
-   return (tempNode);
+  if (sscanf(ns, "%hu:%hu/%hu.%hu",
+                 &tempNode.zone, &tempNode.net,
+                 &tempNode.node, &tempNode.point) >= 3)
+    return tempNode;
+
+  if (config.akaList[aka].nodeNum.zone == 0)
+  {
+    if (config.akaList[aka=0].nodeNum.zone == 0)
+    {
+      displayMessage ("Main AKA not defined -> No default zone/net/node available");
+      memset(&tempNode, 0, sizeof(nodeNumType));
+
+      return tempNode;
+    }
+  }
+  tempNode.zone = config.akaList[aka].nodeNum.zone;
+  if (sscanf(ns, "%hu/%hu.%hu",
+                 &tempNode.net, &tempNode.node, &tempNode.point) >= 2)
+    return tempNode;
+
+  tempNode.net = config.akaList[aka].nodeNum.net;
+  if (  (temp = sscanf(ns, "%hu.%hu", &tempNode.node, &tempNode.point)) > 1
+    || (temp == 1 && strchr(ns, ':') == 0 && strchr(ns, '/') == 0)
+    )
+    return tempNode;
+
+  tempNode.node = config.akaList[aka].nodeNum.node;
+  if (sscanf(ns, ".%hu", &tempNode.point) <= 0)
+  {
+    if (*ns != 0)
+      displayMessage("Invalid node number");
+    memset(&tempNode, 0, sizeof(nodeNumType));
+  }
+  return tempNode;
 }
-
 //---------------------------------------------------------------------------
 nodeNumType getNodeNum (char *title,  u16 sx, u16 sy, u16 aka)
 {

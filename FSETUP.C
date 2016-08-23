@@ -865,12 +865,12 @@ int cdecl main(int argc, char *argv[])
            "CHANGE SOMETHING IN AREAMGR AND NODEMGR TO CREATE AREA AND NODE FILES !!!");
   addItem(autoExpMenu, PATH, "Areas.BBS path", 0, config.autoAreasBBSPath, sizeof(pathType)-1, 0,
            "Directory to create Areas.BBS in");
-  addItem(autoExpMenu, BOOL_INT, "ÈÍ Include PT", 0, &config.genOptions, BIT8, 0,
+  addItem(autoExpMenu, BOOL_INT, "ÈÍ> Include PT", 0, &config.genOptions, BIT8, 0,
            "Include pass through areas");
   addItem(autoExpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(autoExpMenu, PATH, "Folder.FD/IM path", 0, config.autoFolderFdPath, sizeof(pathType)-1, 0,
            "Directory to create Folder.FD or IMFolder.CFG in");
-  addItem(autoExpMenu, BOOL_INT, "ÈÍ Use comment", 0, &config.genOptions, BIT7, 0,
+  addItem(autoExpMenu, BOOL_INT, "ÈÍ> Use comment", 0, &config.genOptions, BIT7, 0,
            "Use comment instead of area tag for Folder.FD or IMFolder.CFG");
   addItem(autoExpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(autoExpMenu, PATH, "Areas.GLD path", 0, config.autoGoldEdAreasPath, sizeof(pathType)-1, 0,
@@ -878,9 +878,9 @@ int cdecl main(int argc, char *argv[])
   addItem(autoExpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(autoExpMenu, PATH, "BBS area file path", 0, config.autoRAPath, sizeof(pathType)-1, 0,
            "Directory to create MESSAGES.RA / BOARDS.BBS / MESSAGES.PB in");
-  addItem(autoExpMenu, BOOL_INT, "ÌÍ Include B/D/R", 0, &config.genOptions, BIT11, 0,
+  addItem(autoExpMenu, BOOL_INT, "ÌÍ> Include B/D/R", 0, &config.genOptions, BIT11, 0,
            "Include the Bad msg board, the Duplicate msg board and the Recovery board");
-  addItem(autoExpMenu, BOOL_INT, "ÈÍ Use comment", 0, &config.genOptions, BIT9, 0,
+  addItem(autoExpMenu, BOOL_INT, "ÈÍ> Use comment", 0, &config.genOptions, BIT9, 0,
            "Use comment instead of area tag for MESSAGES.RA / BOARDS.BBS");
 
   if ((anImpMenu = createMenu(" Import config ")) == NULL)
@@ -1232,7 +1232,7 @@ int cdecl main(int argc, char *argv[])
            "Log inbound mail packet filenames and origin/destination nodes");
   addItem(logMenu, BOOL_INT, "Program execution    ", 32, &config.logInfo, BIT13, 0,
            "Log information about programs being started (e.g. compression programs)");
-  addItem(logMenu, BOOL_INT, "ÈÍ Extended info", 0, &config.logInfo, BIT3, 0,
+  addItem(logMenu, BOOL_INT, "ÈÍ> Extended info", 0, &config.logInfo, BIT3, 0,
            "Log extended packet info, such as program name, type, size, date and time");
   addItem(logMenu, BOOL_INT, "File open errors     ", 32, &config.logInfo, LOG_OPENERR, 0,
            "Log info about files that could not be opened by FMail (NOT ALWAYS REAL ERRORS!)");
@@ -1261,25 +1261,25 @@ int cdecl main(int argc, char *argv[])
            "Never use the ARCmail 0.60 naming convention");
   addItem(mailMenu, BOOL_INT, "Dupe detection        ", 28, &config.mailOptions, BIT8, 0,
            "Detect and remove duplicate messages");
-  addItem(mailMenu, BOOL_INT, "ÈÍ Out-of-zone", 0, &config.mailOptions, BIT10, 0,
+  addItem(mailMenu, BOOL_INT, "ÈÍ> Out-of-zone", 0, &config.mailOptions, BIT10, 0,
            "Use ARCmail 0.60 naming convention for out-of-zone mail");
-  addItem(mailMenu, BOOL_INT, "ÌÍ Ignore MSGID      ", 28, &config.mailOptions, BIT9, 0,
+  addItem(mailMenu, BOOL_INT, "ÌÍ> Ignore MSGID      ", 28, &config.mailOptions, BIT9, 0,
            "Do not use MSGIDs for dupe detection");
   addItem(mailMenu, BOOL_INT, "Ext. bundle names", 0, &config.mailOptions, BIT11, 0,
            "Use 0-Z in stead of only 0-9 for mail bundle name extensions");
 #ifdef __32BIT__
-  addItem(mailMenu, NUM_INT, "ÈÍ Dup recs (x1024)  ", 28, &config.kDupRecs, 4, 9999,
+  addItem(mailMenu, NUM_INT, "ÈÍ> Dup recs (x1024)  ", 28, &config.kDupRecs, 4, 9999,
            "Number of messages x 1024 of which dup checking information is stored");
 #else
 #ifdef __FMAILX__
   if (xOS2)
-    addItem(mailMenu, NUM_INT, "ÈÍ Dup recs (x1024)  ", 28, &config.kDupRecs, 4, 9999,
+    addItem(mailMenu, NUM_INT, "ÈÍ> Dup recs (x1024)  ", 28, &config.kDupRecs, 4, 9999,
              "Number of messages x 1024 of which dup checking information is stored");
   else
-    addItem(mailMenu, DISPLAY, "ÈÍ Use EMS           ", 28, &config.genOptions, BIT0, 0,
+    addItem(mailMenu, DISPLAY, "ÈÍ> Use EMS           ", 28, &config.genOptions, BIT0, 0,
              "Use 64 kb of EMS memory to store message signatures in");
 #else
-  addItem(mailMenu, BOOL_INT, "ÈÍ Use EMS           ", 28, &config.genOptions, BIT0, 0,
+  addItem(mailMenu, BOOL_INT, "ÈÍ> Use EMS           ", 28, &config.genOptions, BIT0, 0,
            "Use 64 kb of EMS memory to store message signatures in");
 #endif
 #endif
@@ -1336,7 +1336,7 @@ int cdecl main(int argc, char *argv[])
            "Allow nodes to use %+ALL");
   addItem(mgrMenu, BOOL_INT, "Auto-disconnect", 0, &config.mgrOptions, BIT4, 0,
            "Automatically disconnect passthru areas with only one link");
-/* addItem(mgrMenu, BOOL_INT, "ÈÍ Remove record", 0, &config.mgrOptions, BIT5, 0,
+/* addItem(mgrMenu, BOOL_INT, "ÈÍ> Remove record", 0, &config.mgrOptions, BIT5, 0,
   	    "Immediatly remove an auto-disconnected area from the Area Manager");
 */
 
@@ -1440,7 +1440,7 @@ int cdecl main(int argc, char *argv[])
   addItem(mbMenu, BOOL_INT  , "Message base sharing  ", 32, &config.mbOptions       , BIT10,     0, "Enable the message base locking system");
   addItem(mbMenu, BOOL_INT  , "Sort new messages"     ,  0, &config.mbOptions       , BIT0 ,     0, "Sort the messages that have been tossed into the message base");
   addItem(mbMenu, BOOL_INT  , "Scan always           ", 32, &config.mbOptions       , BIT8 ,     0, "Do not use ECHOMAIL.BBS or NETMAIL.BBS");
-  addItem(mbMenu, BOOL_INT  , "ÈÍ Use subject"       ,  0, &config.mbOptions       , BIT1 ,     0, "Apart from time/date also use the subject to sort");
+  addItem(mbMenu, BOOL_INT  , "ÈÍ> Use subject"       ,  0, &config.mbOptions       , BIT1 ,     0, "Apart from time/date also use the subject to sort");
   addItem(mbMenu, BOOL_INT  , "Quick toss            ", 32, &config.mbOptions       , BIT12,     0, "Do not update message base directory entries after tossing a packet");
   addItem(mbMenu, DISPLAY   , NULL                    ,  0, NULL                    ,     0,     0, NULL);
   addItem(mbMenu, FILE_NAME , "Tossed Areas List"     ,  0, config.tossedAreasList , sizeof(pathType)-3, 0, "List of echomail areas in which mail has been tossed");
@@ -1508,9 +1508,9 @@ int cdecl main(int argc, char *argv[])
 
   addItem(swapMenu, BOOL_INT, "Swapping", 0, &config.genOptions, BIT2, 0,
            "Swap FMail out of memory before executing de-/compression programs");
-  addItem(swapMenu, BOOL_INT, "ÌÍ Use EMS", 0, &config.genOptions, BIT3, 0,
+  addItem(swapMenu, BOOL_INT, "ÌÍ> Use EMS", 0, &config.genOptions, BIT3, 0,
            "Use EMS memory if possible instead of the harddisk");
-  addItem(swapMenu, BOOL_INT, "ÈÍ Use XMS", 0, &config.genOptions, BIT4, 0,
+  addItem(swapMenu, BOOL_INT, "ÈÍ> Use XMS", 0, &config.genOptions, BIT4, 0,
            "Use XMS memory if possible instead of the harddisk");
   addItem(swapMenu, PATH, "Swap file path", 0, config.swapPath, sizeof(pathType)-1, 0,
            "Where the swap file will be located");
@@ -1594,7 +1594,7 @@ int cdecl main(int argc, char *argv[])
   addItem(genMenu, TEXT, "SysOp name", 0, &config.sysopName, sizeof(config.sysopName)-1, 0, "Name of the SysOp");
   addItem(genMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(genMenu, ENUM_INT, "Mailer", 0, &mailerToggle, 0, 6, "Mailer used");
-  addItem(genMenu, BOOL_INT, "ÈÍ Busy flags", 0, &config.mailOptions, BIT4, 0
+  addItem(genMenu, BOOL_INT, "ÈÍ> Busy flags", 0, &config.mailOptions, BIT4, 0
           , "Create busy flags when mail is being compressed");
   addItem(genMenu,
 #ifdef GOLDBASE
@@ -1604,12 +1604,12 @@ int cdecl main(int argc, char *argv[])
 #endif
            "BBS program", 0, &bbsToggle, 0, 8,
            "BBS program program used (used by AutoExport)");
-  /* addItem(genMenu, BOOL_INT, "ÈÍ RA 2", 0, &config.genOptions, BIT15, 0,
+  /* addItem(genMenu, BOOL_INT, "ÈÍ> RA 2", 0, &config.genOptions, BIT15, 0,
               "If you are using RemoteAccess, are you using version 2.00 or higher?");
   */
   addItem(genMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(genMenu, ENUM_INT, "Tearline      ", 0, &tearToggle, 0, 5, "Tearline type");
-  addItem(genMenu, TEXT  , "ÈÍ Custom    ", 0, &config.tearLine, 24, 0, "Custom tearline");
+  addItem(genMenu, TEXT  , "ÈÍ> Custom    ", 0, &config.tearLine, 24, 0, "Custom tearline");
   addItem(genMenu, BOOL_INT, "ReTear        ", 0, &config.mbOptions, BIT3, 0, "Replace an existing tear line");
 
   if ((userMenu = createMenu(" Users ")) == NULL)
@@ -1629,9 +1629,9 @@ int cdecl main(int argc, char *argv[])
 
   addItem(pmailMenu, PATH, "Pers. mail path", 0, config.pmailPath, sizeof(pathType)-1, 0,
            "Where copies of echo messages directed to the SysOp will be stored (optional)");
-  addItem(pmailMenu, TEXT|UPCASE, "ÌÍ Topic 1", 0, config.topic1, 15, 0,
+  addItem(pmailMenu, TEXT|UPCASE, "ÌÍ> Topic 1", 0, config.topic1, 15, 0,
            "Scan subject line of messages for a topic");
-  addItem(pmailMenu, TEXT|UPCASE, "ÈÍ Topic 2", 0, config.topic2, 15, 0,
+  addItem(pmailMenu, TEXT|UPCASE, "ÈÍ> Topic 2", 0, config.topic2, 15, 0,
            "Scan subject line of messages for a topic");
   addItem(pmailMenu, BOOL_INT, "Include netmail", 0, &config.mailOptions, BIT12, 0,
            "Also scan netmail messages for personal mail");
