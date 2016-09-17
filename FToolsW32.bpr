@@ -29,7 +29,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG"/>
+    <USERDEFINES value="FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FToolsW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -38,11 +38,11 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -Q -Vx -Ve -C -X- -r- -a1 -6 -b -d -k -y -v -vi- -tWC -tWM- -c"/>
-    <PFLAGS value="-N2OBJ.6\FToolsW32 -N0OBJ.6\FToolsW32 -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
+    <CFLAG1 value="-O2 -Q -Vx -Ve -C -X- -a1 -6 -b -d -k- -vi -tWC -tWM- -c"/>
+    <PFLAGS value="-N2OBJ.6\FToolsW32 -N0OBJ.6\FToolsW32 -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-IOBJ.6\FToolsW32 -D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-IOBJ.6\FToolsW32 -D&quot;&quot; -ap -Tpe -x -Gn"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -82,11 +82,11 @@
   <IDEOPTIONS>
 [Version Info]
 IncludeVerInfo=1
-AutoIncBuild=1
+AutoIncBuild=0
 MajorVer=1
-MinorVer=71
-Release=2
-Build=97
+MinorVer=72
+Release=0
+Build=0
 Debug=0
 PreRelease=0
 Special=0
@@ -98,13 +98,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FTools Windows 32 bit version
-FileVersion=1.71.2.97
+FileVersion=1.72.0.0
 InternalName=FTools
 LegalCopyright=Copyright (c) 1991 - 2015 FMail developers
 LegalTrademarks=
 OriginalFilename=FToolsW32.exe
 ProductName=FMail
-ProductVersion=1.71
+ProductVersion=1.72
 
 [Excluded Packages]
 C:\Program Files\Borland\CBuilder6\Bin\dclstd60.bpl=Borland Standard Components
@@ -145,8 +145,8 @@ Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=12
-Item0=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item1=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item0=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item1=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
 Item2=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
 Item3=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
 Item4=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA

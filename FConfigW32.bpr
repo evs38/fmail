@@ -31,7 +31,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__;_DEBUG"/>
+    <USERDEFINES value="FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FConfigW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -40,11 +40,11 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -Vx -Ve -C -X- -r- -a1 -6 -b -d -k -y -v -vi- -tWC -tWM- -c"/>
-    <PFLAGS value="-N2OBJ.6\FConfigW32 -N0OBJ.6\FConfigW32 -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
+    <CFLAG1 value="-O2 -Vx -Ve -C -X- -a1 -6 -b -d -k- -vi -tWC -tWM- -c"/>
+    <PFLAGS value="-N2OBJ.6\FConfigW32 -N0OBJ.6\FConfigW32 -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-IOBJ.6\FConfigW32 -D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-IOBJ.6\FConfigW32 -D&quot;&quot; -ap -Tpe -x -Gn"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -81,11 +81,11 @@
   <IDEOPTIONS>
 [Version Info]
 IncludeVerInfo=1
-AutoIncBuild=1
+AutoIncBuild=0
 MajorVer=1
-MinorVer=71
-Release=6
-Build=24
+MinorVer=72
+Release=0
+Build=0
 Debug=0
 PreRelease=0
 Special=0
@@ -97,13 +97,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FMail mail tosser configuration program
-FileVersion=1.71.6.24
+FileVersion=1.72.0.0
 InternalName=FConfig
 LegalCopyright=Copyright (c) 1991 - 2016 FMail developers
 LegalTrademarks=
 OriginalFilename=FConfigW32.exe
 ProductName=FMail
-ProductVersion=1.71
+ProductVersion=1.72
 
 [HistoryLists\hlIncludePath]
 Count=1
@@ -119,8 +119,8 @@ Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=5
-Item0=FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__;_DEBUG
-Item1=FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
+Item0=FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
+Item1=FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__;_DEBUG
 Item2=_DEBUG;FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
 Item3=_DEBUG;FSETUP;PENTIUMPRO;__FMAILX__
 Item4=_DEBUG

@@ -205,7 +205,10 @@ int Ping(internalMsgType *message, int localAkaNum)
     *helpPtr2++ = '\r';
 
   // Add closing line
-  helpPtr2 = stpcpy(helpPtr2, "==============================================================================\r");
+#if 0
+  helpPtr2 =
+#endif  
+  stpcpy(helpPtr2, "==============================================================================\r");
 
   msgNum = writeMsg(replyMsg, NETMSG, 1);
 

@@ -1,5 +1,22 @@
 This file contains information about FMail releases since 1.60.GPL
 
+2016-09-18  -  1.72.0.0
+
+  Only 1 month after the last release this time. ;)
+
+  You can download it from the Sourceforge website here:
+
+  https://sourceforge.net/projects/fmail/files/FMail/1.72/
+
+  I decided to slightly change the version nummering. Beta versions will have an
+  uneven second number, and releases an even number. So you won't get releases
+  with a high 3th, and even higher 4th (build) number. That's why there is the
+  little jump in version numbers this time.
+
+  There's only one major new function in this release, and that is the
+  PING/TRACE function. You can read about the smaller changes and bug fixes in
+  the ChangLog file.
+
 
 2016-08-16  -  1.69
 

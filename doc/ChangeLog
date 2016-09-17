@@ -1,3 +1,7 @@
+2016-09-18  1.72.0.0
+  * Build 1.72.0 release versions of all 3 modules.
+  * Updated the documentation for the release.
+
 2016-09-17  1.71.6.204-Beta
   * FConfig: PING configuration: Changed 'Delete' to 'Keep' functions, which should be a bit more clear.
   * FConfig: Fixed keyboard input routine to allow for high ascii characters.
