@@ -355,7 +355,7 @@ void locateCursor(int x, int y);
 #endif
 #endif
 
-s16  readKbd(void);
+u16  readKbd(void);
 void initWindow(u16 mode);
 menuType *createMenu(char *title);
 s16  displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey);

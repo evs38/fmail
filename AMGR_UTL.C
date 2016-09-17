@@ -60,7 +60,7 @@ s16 nodeScroll(void)
   u16         count;
   u16         windowBase = 0;
   u16         currentElem = 0;
-  s16         ch;
+  u16         ch;
   char        tempStr[35];
   nodeNumType tempNode;
 
@@ -278,7 +278,7 @@ s16 areasList(s16 currentElem, char groupSelectMask)
    u16             elemCount = 0;
    u16             count;
    u16             windowBase = 0;
-   s16             ch = 0;
+   u16             ch = 0;
    tempStrType     tempStr;
    areaInfoPtrArr *areaInfoTwo;
    areaInfoPtr     areaInfoHelpPtr;

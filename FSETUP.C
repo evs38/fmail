@@ -1346,10 +1346,10 @@ int cdecl main(int argc, char *argv[])
   addItem(pingMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(pingMenu, BOOL_INT_REV, "Enable PING"           , 0, &config.pingOptions, BIT0, 0, "Enable the PING function");
   addItem(pingMenu, BOOL_INT_REV, "Enable TRACE"          , 0, &config.pingOptions, BIT1, 0, "Enable the TRACE function");
-  addItem(pingMenu, BOOL_INT    , "Delete PING requests"  , 0, &config.pingOptions, BIT2, 0, "Delete PING request messages after processing");
-//addItem(pingMenu, BOOL_INT    , "Delete TRACE requests" , 0, &config.pingOptions, BIT3, 0, "Delete TRACE request messages after processing");
-  addItem(pingMenu, BOOL_INT    , "Delete PING responses" , 0, &config.pingOptions, BIT4, 0, "Delete PING response messages after they have been sent");
-  addItem(pingMenu, BOOL_INT    , "Delete TRACE responses", 0, &config.pingOptions, BIT5, 0, "Delete TRACE response messages after they have been sent");
+  addItem(pingMenu, BOOL_INT_REV, "Keep PING requests"    , 0, &config.pingOptions, BIT2, 0, "Keep a copy of PING request messages after processing");
+//addItem(pingMenu, BOOL_INT_REV, "Keep TRACE requests"   , 0, &config.pingOptions, BIT3, 0, "Keep a copy of TRACE request messages after processing");
+  addItem(pingMenu, BOOL_INT_REV, "Keep PING responses"   , 0, &config.pingOptions, BIT4, 0, "Keep a copy of PING response messages after they have been sent");
+  addItem(pingMenu, BOOL_INT_REV, "Keep TRACE responses"  , 0, &config.pingOptions, BIT5, 0, "Keep a copy of TRACE response messages after they have been sent");
 
   if ((netMenu = createMenu(" Netmail boards ")) == NULL)
     goto nomem;

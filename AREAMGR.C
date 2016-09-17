@@ -241,7 +241,7 @@ s16 multiAkaSelect(void)
    u16      update = 0;
    u16      count;
    u16      currentElem = 0;
-   s16      ch;
+   u16      ch;
    char     tempStr[48];
    u16      offset = 0;
 
@@ -274,7 +274,7 @@ s16 multiAkaSelect(void)
                printChar (' ', 69, 5+count-offset, windowLook.datafg, windowLook.background, MONO_NORM);
          }
       }
-      ch=readKbd();
+      ch = readKbd();
       switch (ch)
       {
          case _K_ENTER_ :
@@ -728,11 +728,11 @@ s16 areaMgr(void)
 	 if (badEchoCount)
 	    ch = _K_INS_;
 	 else
-	    ch=readKbd();
+	    ch = readKbd();
 
 	 newEcho = badEchoCount;
 
-	 if ((areaInfoCount != 0) || (ch == _K_INS_))
+	 if (areaInfoCount != 0 || ch == _K_INS_)
 	 {
 	    am__cp = 0;
 
@@ -824,7 +824,7 @@ s16 areaMgr(void)
                case _K_F4_ :  displayGroups(); /* F4 */
 			      do
                               {
-			       	 ch=toupper(readKbd());
+			       	 ch = toupper(readKbd());
                               }
                               while ((ch < 'A' || ch > 'Z') && ch != _K_ENTER_ && ch != _K_ESC_);
                               removeWindow();

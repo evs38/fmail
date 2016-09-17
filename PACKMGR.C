@@ -83,7 +83,7 @@ s16 packMgr (void)
    u16 elemCount = 0;
    u16 windowBase = 0;
    u16 currentElem = 0;
-   s16      ch;
+   u16      ch;
    fhandle  packHandle;
    tempStrType tempStr;
    packType *pack;

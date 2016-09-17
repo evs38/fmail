@@ -74,7 +74,7 @@ s16 displayGroups(void)
 //---------------------------------------------------------------------------
 s16 askGroup(void)
 {
-   u16      ch;
+   u16 ch;
 
    if (displayGroups() == 0) return 0;
 
@@ -97,7 +97,7 @@ s16 askGroup(void)
 
 s32 getGroups (s32 groups)
 {
-   s16 c;
+   u16 c;
    s32 mask;
 
    if (displayWindow (" Groups ", 15, 7, 76, 21) != 0)

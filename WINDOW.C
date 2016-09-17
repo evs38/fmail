@@ -232,9 +232,9 @@ void locateCursor(int x, int y)
 }
 #endif
 //---------------------------------------------------------------------------
-s16 readKbd(void)
+u16 readKbd(void)
 {
-  s16         ch;
+  int         ch;
   struct time timeStruct;
   u16         attr;
   u8          min = 0xff;
@@ -286,9 +286,16 @@ s16 readKbd(void)
     }
 
     ch = keyRead();
-#if defined(__OS2__) || (__BORLANDC__ >= 0x0500)
-    if (!ch)
+#if defined(__OS2__) || defined(__32BIT__) // || (__BORLANDC__ >= 0x0500)
+    if (ch == -1)  // Error happened in getch()
+    {
+      ch = 0;
+      continue;
+    }
+    if (ch == 0)
       ch = keyRead() << 8;
+    else
+      ch &= 0xFF;
 #else
     if (ch & 0x00ff)
       ch &= 0x00ff;
@@ -2495,7 +2502,7 @@ char *getDestFileName (char *title)
 s16 askChar(char *prompt, u8 *keys)
 {
    u8  *helpPtr;
-   s16 ch;
+   u16 ch;
    u16 sx = (76 - strlen(prompt)) / 2;
 
    if (displayWindow (NULL, sx, 9, sx+strlen(prompt)+3, 13) != 0)
@@ -2517,7 +2524,7 @@ s16 askChar(char *prompt, u8 *keys)
 
 s16 askBoolean(char *prompt, s16 dfault)
 {
-   s16 ch;
+   u16 ch;
    u16 sx = (76 - strlen(prompt)) / 2;
 
    if (displayWindow (NULL, sx, 9, sx+strlen(prompt)+3, 14) == 0)
@@ -2531,7 +2538,7 @@ s16 askBoolean(char *prompt, s16 dfault)
       {
          ch = toupper(readKbd());
       }
-      while (ch != _K_ENTER_ && (ch != _K_ESC_) && (ch != 'Y') && (ch != 'N'));
+      while (ch != _K_ENTER_ && ch != _K_ESC_ && ch != 'Y' && ch != 'N');
 
       removeWindow();
       if (ch != _K_ENTER_)
@@ -2555,11 +2562,10 @@ extern s16 boardEdit;
 
 s16 displayAreas (void)
 {
-
    s16      count;
    u16 x = 0,
             y = 0;
-   s16      ch;
+   u16      ch;
    char     boardStr[5];
 
    boardEdit = 1;

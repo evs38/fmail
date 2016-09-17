@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -79,7 +79,7 @@ s16 nodesList(s16 currentElem)
    u16         elemCount;
    u16         windowBase;
    u16         count;
-   s16         ch;
+   u16         ch;
    tempStrType tempStr;
 
    saveWindowLook();
@@ -137,7 +137,7 @@ s16 nodesList(s16 currentElem)
          printString ("Empty", 38, 10, CYAN, BLUE, MONO_NORM);
       }
 
-      ch=readKbd();
+      ch = readKbd();
       switch (ch)
       {
          case _K_PGUP_ :
@@ -222,7 +222,7 @@ static s16 listData(u16 *totalElem, ldType listDataArray[MAX_AREAS], u16 *totalE
    u16            count;
    u16            windowBase = 0;
    u16            currentElem = 0;
-   s16            ch;
+   u16            ch;
    tempStrType    tempStr;
    s16            xu
                 , xu2;
@@ -776,7 +776,7 @@ s16 nodeMgr(void)
 //          printString ("\x1b\x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
          }
 
-         ch=readKbd();
+         ch = readKbd();
          if ((nodeInfoCount != 0) || (ch == _K_INS_))
          {
             switch (ch)

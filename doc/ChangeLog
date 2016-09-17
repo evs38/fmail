@@ -1,6 +1,15 @@
+2016-09-17  1.71.6.204-Beta
+  * FConfig: PING configuration: Changed 'Delete' to 'Keep' functions, which should be a bit more clear.
+  * FConfig: Fixed keyboard input routine to allow for high ascii characters.
+
+2016-09-02  1.71.5.204-Beta
+  * Limit "To: AreaFix" string matching: Only one extra character allowed instead of unlimited.
+
 2016-08-23  1.71.5.203-Beta
   * Added some more explanation about the ping/trace funtion to FMail.txt.
   * Some extra (debug) logging.
+
+2016-08-23  1.71.4.201-Beta
 
 2016-08-23  1.71.3.200-Beta
   * Added explanation of Ping/trace options to FMail.txt.

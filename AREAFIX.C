@@ -234,15 +234,19 @@ static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
 int toAreaFix(const char *toName)
 {
   const char *helpPtr = toName;
+  int l;
 
   while (isspace(*helpPtr))
     helpPtr++;
 
-  return ((strnicmp (helpPtr, "AREAFIX",  7) == 0) ||
-          (strnicmp (helpPtr, "AREAMGR",  7) == 0) ||
-          (strnicmp (helpPtr, "AREALINK", 8) == 0) ||
-          (strnicmp (helpPtr, "ECHOMGR",  7) == 0) ||
-          (strnicmp (helpPtr, "FMAIL",    5) == 0));
+  l = strlen(helpPtr);
+
+  return (  (strnicmp(helpPtr, "AREAFIX",  7) == 0 && l <= 8)
+         || (strnicmp(helpPtr, "AREAMGR",  7) == 0 && l <= 8)
+         || (strnicmp(helpPtr, "AREALINK", 8) == 0 && l <= 9)
+         || (strnicmp(helpPtr, "ECHOMGR",  7) == 0 && l <= 8)
+         || (strnicmp(helpPtr, "FMAIL",    5) == 0 && l <= 6)
+         );
 }
 //---------------------------------------------------------------------------
 static const char *getAreaNamePtr(const char *echoName)
