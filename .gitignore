@@ -40,3 +40,7 @@
 /test
 /tst.out
 /tmp
+/bcl/*.TAG
+/bcl/*.BCL
+/bcl/NEW_IN.148A
+/bcl/fsc-0057.003

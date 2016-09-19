@@ -8,7 +8,7 @@ This file contains information about FMail releases since 1.60.GPL
 
   https://sourceforge.net/projects/fmail/files/FMail/1.72/
 
-  I decided to slightly change the version nummering. Beta versions will have an
+  I decided to slightly change the version numbering. Beta versions will have an
   uneven second number, and releases an even number. So you won't get releases
   with a high 3th, and even higher 4th (build) number. That's why there is the
   little jump in version numbers this time.
