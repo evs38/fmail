@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -76,10 +76,10 @@ extern configType config;
 //---------------------------------------------------------------------------
 s16 nodesList(s16 currentElem)
 {
-   u16      elemCount = 0;
-   u16      windowBase = 0;
-   u16      count;
-   s16      ch;
+   u16         elemCount;
+   u16         windowBase;
+   u16         count;
+   u16         ch;
    tempStrType tempStr;
 
    saveWindowLook();
@@ -87,18 +87,15 @@ s16 nodesList(s16 currentElem)
    windowLook.actvborderfg = BLUE;
 
    windowBase = max(0, currentElem-MAX_NL_WINSIZE/2);
-   if ((nodeInfoCount >= MAX_NL_WINSIZE) &&
-       (windowBase+MAX_NL_WINSIZE > nodeInfoCount))
-   {
-      windowBase = nodeInfoCount-MAX_NL_WINSIZE;
-   }
+   if (nodeInfoCount >= MAX_NL_WINSIZE && windowBase + MAX_NL_WINSIZE > nodeInfoCount)
+      windowBase = nodeInfoCount - MAX_NL_WINSIZE;
 
    elemCount = nodeInfoCount;
 
    if (displayWindow (" Nodes ", 10, 7, 73, 8+MAX_NL_WINSIZE) != 0)
    {
       restoreWindowLook();
-      return (0);
+      return 0;
    }
 
    do
@@ -140,7 +137,7 @@ s16 nodesList(s16 currentElem)
          printString ("Empty", 38, 10, CYAN, BLUE, MONO_NORM);
       }
 
-      ch=readKbd();
+      ch = readKbd();
       switch (ch)
       {
          case _K_PGUP_ :
@@ -225,28 +222,30 @@ static s16 listData(u16 *totalElem, ldType listDataArray[MAX_AREAS], u16 *totalE
    u16            count;
    u16            windowBase = 0;
    u16            currentElem = 0;
-   s16            ch = 0;
+   u16            ch;
    tempStrType    tempStr;
-   s16            xu, xu2;
+   s16            xu
+                , xu2;
 
-   if ( listDataArray2 != NULL )
-   {  saveWindowLook();
-      windowLook.background = CYAN;
-      windowLook.actvborderfg = BLUE;
+   if (listDataArray2 != NULL)
+   {
+     saveWindowLook();
+     windowLook.background = CYAN;
+     windowLook.actvborderfg = BLUE;
    }
 
-   if (displayWindow (listDataArray2 != NULL ? " Active areas ": " Non-active areas " , 18, 8, 73, 9+MAX_LD_WINSIZE) != 0)
+   if (displayWindow(listDataArray2 != NULL ? " Active areas ": " Non-active areas " , 18, 8, 73, 9+MAX_LD_WINSIZE) != 0)
    {
-      if ( listDataArray2 != NULL )
+      if (listDataArray2 != NULL)
          restoreWindowLook();
-      return (0);
+      return 0;
    }
 
    do
    {
-      for ( count = 0; count < MAX_LD_WINSIZE; count++ )
+      for (count = 0; count < MAX_LD_WINSIZE; count++)
       {
-         if ( windowBase+count < *totalElem )
+         if (windowBase + count < *totalElem)
             strcpy(tempStr, listDataArray[windowBase+count].desc);
          else
             *tempStr = 0;
@@ -259,8 +258,8 @@ static s16 listData(u16 *totalElem, ldType listDataArray[MAX_AREAS], u16 *totalE
                               BLUE, CYAN, MONO_NORM );
       }
 
-      ch=readKbd();
-      switch(ch)
+      ch = readKbd();
+      switch (ch)
       {
          case _K_INS_:     if ( listDataArray2 != NULL )
                            {  xu2 = listData(totalElem2, listDataArray2, NULL, NULL);
@@ -383,12 +382,12 @@ u16 editNM(s16 editType, u16 setdef)
    toggleType   addressToggle;
    toggleType   statusToggle;
    s16          update = 0;
-   s16          total  = 0;
+   s16          total;
    char         addressText[MAX_AKAS+1][34];
    char         tempStr[24];
    char         ch;
-   char        *helpPtr1
-             , *helpPtr2;
+   char        *helpPtr1;
+   const char  *helpPtr2;
 
    groupsSelect.numPtr = (u16*)&tempInfoN.groups;
    groupsSelect.f      = askGroups;
@@ -467,7 +466,7 @@ u16 editNM(s16 editType, u16 setdef)
    addItem(nodeMenu, DATE|DISPLAY, "LastRcvd", 47, &tempInfoN.lastMsgRcvdDat, 0, 0,
                      "Last time a message was received from this node");
    addItem(nodeMenu, NODE, "Via system", 0, &tempInfoN.viaNode, 0, 0,
-                     "Address where to route mail for this node to");
+                     "Address where to send (compressed or not) PKT files for this node to");
    addItem(nodeMenu, DATE|DISPLAY, "LastSent", 47, &tempInfoN.lastMsgSentDat, 0, 0,
                      "Last time a message was sent to this node");
    addItem(nodeMenu, ENUM_INT, "Use AKA", 0, &addressToggle, 0, MAX_AKAS+1,
@@ -573,7 +572,6 @@ u16 editNM(s16 editType, u16 setdef)
                }
                ++helpPtr1;
             }
-            ++helpPtr1;
          }
          while (update);
 
@@ -617,7 +615,7 @@ void noMem(u16 selAreas, u16 selAreas2)
     free(listDataArray2[--selAreas2].desc);
 }
 //---------------------------------------------------------------------------
-s16 nodeMgr (void)
+s16 nodeMgr(void)
 {
    u16             index = 0;
    nodeNumType     tempNode;
@@ -646,19 +644,19 @@ s16 nodeMgr (void)
 
       for (count = 0; count < nodeInfoCount; count++)
       {
-         if ( (nodeInfo[count] = malloc(sizeof(nodeInfoType))) == NULL )
+         if ((nodeInfo[count] = malloc(sizeof(nodeInfoType))) == NULL)
          {
             displayMessage("Not enough memory available");
             nodeInfoCount = 0;
             break;
          }
          getRec(CFG_NODES, count);
-         memcpy (nodeInfo[count], nodeBuf, sizeof(nodeInfoType));
-         nodeInfo[count]->password[16] = 0;
-         nodeInfo[count]->packetPwd[8] = 0;
+         memcpy(nodeInfo[count], nodeBuf, sizeof(nodeInfoType));
+         nodeInfo[count]->password [16] = 0;
+         nodeInfo[count]->packetPwd[ 8] = 0;
          nodeInfo[count]->sysopName[35] = 0;
       }
-      closeConfig (CFG_NODES);
+      closeConfig(CFG_NODES);
    }
    else
    {
@@ -684,7 +682,7 @@ s16 nodeMgr (void)
                break;
             }
             memset(nodeInfo[nodeInfoCount], 0, sizeof(nodeInfoType));
-            nodeInfo[nodeInfoCount]->signature  = 'NO';
+            nodeInfo[nodeInfoCount]->signature  = MC('N','O');
             nodeInfo[nodeInfoCount]->node       = nodeInfoOld.node;
             nodeInfo[nodeInfoCount]->viaNode    = nodeInfoOld.viaNode;
             nodeInfo[nodeInfoCount]->capability = nodeInfoOld.capability;
@@ -692,18 +690,18 @@ s16 nodeMgr (void)
             nodeInfo[nodeInfoCount]->archiver   = nodeInfoOld.archiver;
             nodeInfo[nodeInfoCount]->groups     = nodeInfoOld.groups;
             nodeInfo[nodeInfoCount]->outStatus  = nodeInfoOld.outStatus;
-            memcpy (nodeInfo[nodeInfoCount]->sysopName,   nodeInfoOld.sysopName,35);
-            memcpy (nodeInfo[nodeInfoCount]->password,    nodeInfoOld.password, 17);
-            memcpy (nodeInfo[nodeInfoCount++]->packetPwd, nodeInfoOld.packetPwd, 9);
+            memcpy(nodeInfo[nodeInfoCount]->sysopName,   nodeInfoOld.sysopName,35);
+            memcpy(nodeInfo[nodeInfoCount]->password,    nodeInfoOld.password, 17);
+            memcpy(nodeInfo[nodeInfoCount++]->packetPwd, nodeInfoOld.packetPwd, 9);
          }
 
          close(nodeInfoHandle);
-         if ( nodeInfoCount )
+         if (nodeInfoCount)
             update++;
       }
    }
 
-   memset (&tempInfoN, 0, sizeof(nodeInfoType));
+   memset(&tempInfoN, 0, sizeof(nodeInfoType));
 
    if (editNM(DISPLAY_NODE_WINDOW, 0))
       return 1;
@@ -719,8 +717,7 @@ s16 nodeMgr (void)
             removeWindow();
             if (editNM(DISPLAY_NODE_WINDOW, 0))
                return 1;
-            printString ("**** Empty ****", 17, 6, windowLook.datafg,
-                          windowLook.background, MONO_HIGH);
+            printString ("**** Empty ****", 17, 6, windowLook.datafg, windowLook.background, MONO_HIGH);
 
             printString ("F1 ", 0, 24, BROWN, BLACK, MONO_NORM);
             printString ("Edit  ", 3, 24, MAGENTA, BLACK, MONO_NORM);
@@ -735,8 +732,8 @@ s16 nodeMgr (void)
             printString ("F8 ", 51, 24, YELLOW, BLACK, MONO_NORM);
             printString ("Areas     ", 54, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
             printString ("Ins ", 64, 24, YELLOW, BLACK, MONO_HIGH);
-            printString ("Del      ", 68, 24, BROWN, BLACK, MONO_NORM);
-            printString ("\x1b \x1a", 77, 24, BROWN, BLACK, MONO_NORM);
+            printString ("Del        ", 68, 24, BROWN, BLACK, MONO_NORM);
+//          printString ("\x1b\x1a", 77, 24, BROWN, BLACK, MONO_NORM);
          }
          else
          {
@@ -760,24 +757,26 @@ s16 nodeMgr (void)
             printString ("F5 ", 31, 24, YELLOW, BLACK, MONO_HIGH);
             printString ("Browse  ", 34, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
             if (nodeInfoCount >= MAX_NODES)
-            {  printString ("F6 ", 42, 24, BROWN, BLACK, MONO_HIGH);
-               printString ("Copy  ", 45, 24, MAGENTA, BLACK, MONO_NORM);
+            {
+              printString ("F6 ", 42, 24, BROWN, BLACK, MONO_HIGH);
+              printString ("Copy  ", 45, 24, MAGENTA, BLACK, MONO_NORM);
             }
             else
-            {  printString ("F6 ", 42, 24, YELLOW, BLACK, MONO_HIGH);
-               printString ("Copy  ", 45, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+            {
+              printString ("F6 ", 42, 24, YELLOW, BLACK, MONO_HIGH);
+              printString ("Copy  ", 45, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
             }
             printString ("F8 ", 51, 24, YELLOW, BLACK, MONO_HIGH);
             printString ("Areas     ", 54, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
             if (nodeInfoCount >= MAX_NODES)
-               printString ("Ins ", 64, 24, BROWN, BLACK, MONO_NORM);
+              printString ("Ins ", 64, 24, BROWN, BLACK, MONO_NORM);
             else
-               printString ("Ins ", 64, 24, YELLOW, BLACK, MONO_HIGH);
-            printString ("Del      ", 68, 24, YELLOW, BLACK, MONO_HIGH);
-            printString ("\x1b \x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
+              printString ("Ins ", 64, 24, YELLOW, BLACK, MONO_HIGH);
+            printString ("Del        ", 68, 24, YELLOW, BLACK, MONO_HIGH);
+//          printString ("\x1b\x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
          }
 
-         ch=readKbd();
+         ch = readKbd();
          if ((nodeInfoCount != 0) || (ch == _K_INS_))
          {
             switch (ch)
@@ -1014,7 +1013,7 @@ s16 nodeMgr (void)
                      tempInfoN.capability     = PKT_TYPE_2PLUS;
                      tempInfoN.archiver       = config.defaultArc;
                   }
-                  tempInfoN.signature = 'ND';
+                  tempInfoN.signature = MC('N','D');
                   pos = index;
                   do
                   {

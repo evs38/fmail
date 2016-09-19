@@ -1,9 +1,8 @@
-#ifndef uplinkH
-#define uplinkH
+#ifndef pingH
+#define pingH
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -22,10 +21,10 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------
+
 #include "fmail.h"
 
-u16 openUplinkMsg (nodeNumType *node);
-u16 addUplinkMsg  (u8 *tag, u16 remove);
-u16 closeUplinkMsg(void);
+int toPing(const char *toName);
+int Ping  (internalMsgType *message, int localAkaNum);
 
-#endif  // uplinkH
+#endif  // pingH

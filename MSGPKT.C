@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -42,7 +42,6 @@
 #include "msgpkt.h"
 #include "mtask.h"
 #include "nodeinfo.h"
-#include "output.h"
 #include "utils.h"
 #include "version.h"
 
@@ -83,12 +82,12 @@ extern configType   config;
 //---------------------------------------------------------------------------
 void initPkt(void)
 {
-   if ((pktRdBuf = malloc(PKT_BUFSIZE)) == NULL)
-      logEntry ("Error allocating memory for packet read buffer", LOG_ALWAYS, 2);
+  if ((pktRdBuf = malloc(PKT_BUFSIZE)) == NULL)
+    logEntry ("Error allocating memory for packet read buffer", LOG_ALWAYS, 2);
 
-   pmHdr.two = 2;
+  pmHdr.two = 2;
 
-   PKT_BUFSIZE = (32000>>3) *
+  PKT_BUFSIZE = (32000 >> 3) *
 #if defined(__FMAILX__) || defined(__32BIT__)
                               8;
 #else
@@ -106,47 +105,58 @@ void deInitPkt(void)
 //---------------------------------------------------------------------------
 s16 openPktRd(char *pktName, s16 secure)
 {
-   u16             srcCapability;
-   nodeInfoType    *nodeInfoPtr;
-   char            password[9];
-   tempStrType     tempStr;
-   pktHdrType      msgPktHdr;
-   struct ftime    fileTime;
+   u16           srcCapability;
+   nodeInfoType *nodeInfoPtr;
+   char          password[9];
+   tempStrType   tempStr;
+   pktHdrType    msgPktHdr;
+   struct ftime  fileTime;
 
    startBuf = PKT_BUFSIZE;
    endBuf   = PKT_BUFSIZE;
    pktRdBuf [PKT_BUFSIZE-1] = 0;
+   globVars.remoteCapability = 0;
+   globVars.packetDestAka = 0;
+   globVars.remoteProdCode = 0x0104;
 
-   if ((pktHandle = openP(pktName, O_RDONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) == -1)
-      return (1);
-
-   if (_read (pktHandle, &msgPktHdr, 58) < 58)
+   if ((pktHandle = openP(pktName, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
    {
-      close(pktHandle);
-      strcpy (tempStr, pktName);
-      strcpy (tempStr+strlen(tempStr)-3, "ERR");
-      rename (pktName, tempStr);
-      return (1);
+      sprintf(tempStr, "Error opening packet file: %s", pktName);
+      logEntry(tempStr, LOG_ALWAYS, 0);
+
+      return 1;
    }
 
-   globVars.remoteCapability = 0;
-   globVars.remoteProdCode = (u16)msgPktHdr.prodCodeLo;
-   globVars.packetDestAka = 0;
+   if (_read(pktHandle, &msgPktHdr, 58) < 58)
+   {
+      tempStrType newPktName;
 
-   /* Capability word */
+      close(pktHandle);
+      strcpy(stpcpy(newPktName, pktName) - 3, "ERR");
+      rename(pktName, newPktName);
+
+      sprintf(tempStr, "Error reading packet header in file: %s, renamed to: %s", pktName, newPktName);
+      logEntry(tempStr, LOG_ALWAYS, 0);
+
+      return 1;
+   }
+
+   globVars.remoteProdCode = (u16)msgPktHdr.prodCodeLo;
+
+   // Capability word
 
    srcCapability = msgPktHdr.cwValid;
-   srcCapability = ((srcCapability >> 8) | (((char)srcCapability) << 8)) &
-                   0x7fff;
+   srcCapability = ((srcCapability >> 8) | ((char)srcCapability) << 8) & 0x7fff;
    if (srcCapability != (msgPktHdr.capWord & 0x7fff))
       srcCapability = 0;
 
-   if ((srcCapability & 1) || (msgPktHdr.prodCodeLo == 0x0c) ||
-                              (msgPktHdr.prodCodeLo == 0x1a) ||
-                              (msgPktHdr.prodCodeLo == 0x3f) ||
-                              (msgPktHdr.prodCodeLo == 0x45))
+   if ((srcCapability & 1) || msgPktHdr.prodCodeLo == 0x0c
+                           || msgPktHdr.prodCodeLo == 0x1a
+                           || msgPktHdr.prodCodeLo == 0x3f
+                           || msgPktHdr.prodCodeLo == 0x45
+      )
    {
-      /* 4-d info */
+      // 4-d info
 
       globVars.remoteCapability = srcCapability;
 
@@ -160,20 +170,16 @@ s16 openPktRd(char *pktName, s16 secure)
               ((msgPktHdr.destNet   != config.akaList[globVars.packetDestAka].fakeNet) ||
                (msgPktHdr.destNode  != config.akaList[globVars.packetDestAka].nodeNum.point) ||
                (msgPktHdr.destPoint != 0))))
-      {
          globVars.packetDestAka++;
-      }
-#ifdef DEBUG
-      printString ("Type 2+ dest zone: ");
-      printInt (msgPktHdr.destZone);
-      newLine ();
-#endif
-      /* FSC-0048 rev. 2 */
 
-      if (msgPktHdr.origPoint && (msgPktHdr.origNet == 0xffff))
-      {
+#ifdef _DEBUG0
+      sprintf(tempStr, "Type 2+ dest zone: %d", msgPktHdr.destZone);
+      logEntry(tempStr, LOG_DEBUG, 0);
+#endif
+      // FSC-0048 rev. 2
+
+      if (msgPktHdr.origPoint && msgPktHdr.origNet == 0xffff)
          msgPktHdr.origNet = msgPktHdr.auxNet;
-      }
 
       globVars.packetSrcNode.zone   = msgPktHdr.origZone;
       globVars.packetSrcNode.net    = msgPktHdr.origNet;
@@ -191,10 +197,11 @@ s16 openPktRd(char *pktName, s16 secure)
    }
    else
    {
-      /* Detect FSC-0045 */
+      // Detect FSC-0045
 
-      if ((((FSC45pktHdrType*)&msgPktHdr)->packetType == 2) &&
-          (((FSC45pktHdrType*)&msgPktHdr)->subVersion == 2))
+      if (  ((FSC45pktHdrType*)&msgPktHdr)->packetType == 2
+         && ((FSC45pktHdrType*)&msgPktHdr)->subVersion == 2
+         )
       {
          globVars.remoteCapability = -1;
 
@@ -205,13 +212,11 @@ s16 openPktRd(char *pktName, s16 secure)
                  (((FSC45pktHdrType*)&msgPktHdr)->destNode  != config.akaList[globVars.packetDestAka].nodeNum.node) ||
                  ((((FSC45pktHdrType*)&msgPktHdr)->destPoint != config.akaList[globVars.packetDestAka].nodeNum.point) &&
                   (config.akaList[globVars.packetDestAka].nodeNum.point != 0))))
-         {
             globVars.packetDestAka++;
-         }
-#ifdef DEBUG
-         printString ("FSC-0045 dest AKA: ");
-         printInt (globVars.packetDestAka);
-         newLine ();
+
+#ifdef _DEBUG0
+         sprintf(tempStr, "FSC-0045 dest AKA: %d", globVars.packetDestAka);
+         logEntry(tempStr, LOG_DEBUG, 0);
 #endif
          globVars.packetSrcNode.zone  = ((FSC45pktHdrType*)&msgPktHdr)->origZone;
          globVars.packetSrcNode.net   = ((FSC45pktHdrType*)&msgPktHdr)->origNet;
@@ -224,7 +229,7 @@ s16 openPktRd(char *pktName, s16 secure)
       }
       else
       {
-         /* 2-d / fake-net info */
+         // 2-d / fake-net info
 
          while ((globVars.packetDestAka < MAX_AKAS) &&
                 ((config.akaList[globVars.packetDestAka].nodeNum.zone == 0) ||
@@ -232,13 +237,11 @@ s16 openPktRd(char *pktName, s16 secure)
                   (msgPktHdr.destNode != config.akaList[globVars.packetDestAka].nodeNum.node)) &&
                  ((msgPktHdr.destNet  != config.akaList[globVars.packetDestAka].fakeNet) ||
                   (msgPktHdr.destNode != config.akaList[globVars.packetDestAka].nodeNum.point))))
-         {
             globVars.packetDestAka++;
-         }
-#ifdef DEBUG
-         printString ("Type 2 dest AKA: ");
-         printInt (globVars.packetDestAka);
-         newLine ();
+
+#ifdef _DEBUG0
+         sprintf(tempStr, "Type 2 dest AKA: %d", globVars.packetDestAka);
+         logEntry(tempStr, LOG_DEBUG, 0);
 #endif
          globVars.packetSrcNode.zone  = 0;
          globVars.packetSrcNode.net   = msgPktHdr.origNet;
@@ -251,45 +254,51 @@ s16 openPktRd(char *pktName, s16 secure)
       }
    }
 
-   node4d (&globVars.packetSrcNode);
-   node4d (&globVars.packetDestNode);
+   node4d(&globVars.packetSrcNode);
+   node4d(&globVars.packetDestNode);
 
    if (globVars.packetDestAka == MAX_AKAS)
    {
-      if (config.mailOptions.checkPktDest && (!secure))
+      if (config.mailOptions.checkPktDest && !secure)
       {
          close(pktHandle);
-         strcpy (tempStr, pktName);
-         strcpy (tempStr+strlen(tempStr)-3, "DST");
-         rename (pktName, tempStr);
-         return (2); /* Destination address not found */
+         strcpy(stpcpy(tempStr, pktName) - 3, "DST");
+         rename(pktName, tempStr);
+         sprintf(tempStr, "Packet is addressed to another node (%s) --> packet is renamed to .DST", nodeStr(&globVars.packetDestNode));
+         logEntry(tempStr, LOG_ALWAYS, 0);
+
+         return 2;  // Destination address not found
       }
+      sprintf(tempStr, "Packet is addressed to another node (%s)!", nodeStr(&globVars.packetDestNode));
+      logEntry(tempStr, LOG_ALWAYS, 0);
       globVars.packetDestAka = 0;
    }
 
    nodeInfoPtr = getNodeInfo(&globVars.packetSrcNode);
 
    globVars.password = 0;
-   if (*msgPktHdr.password) globVars.password++;
+   if (*msgPktHdr.password)
+      globVars.password++;
 
-   if ((!nodeInfoPtr->options.ignorePwd) && (!secure))
+   if (!nodeInfoPtr->options.ignorePwd && !secure)
    {
-      strncpy (password, msgPktHdr.password, 8);
+      strncpy(password, msgPktHdr.password, 8);
       password[8] = 0;
-      strupr (password);
+      strupr(password);
       if (*nodeInfoPtr->packetPwd != 0)
       {
-         if (strcmp (nodeInfoPtr->packetPwd, password) != 0)
+         if (strcmp(nodeInfoPtr->packetPwd, password) != 0)
          {
             close(pktHandle);
-            sprintf (tempStr, "Received password \"%s\" from node %s, expected \"%s\"",
+            sprintf(tempStr, "Received password \"%s\" from node %s, expected \"%s\"",
                               password, nodeStr(&globVars.packetSrcNode), nodeInfoPtr->packetPwd);
-            logEntry (tempStr, LOG_ALWAYS, 0);
-            strcpy (tempStr, pktName);
-            strcpy (tempStr+strlen(tempStr)-3, "SEC");
-            rename (pktName, tempStr);
+            logEntry(tempStr, LOG_ALWAYS, 0);
+            strcpy(tempStr, pktName);
+            strcpy(tempStr+strlen(tempStr)-3, "SEC");
+            rename(pktName, tempStr);
+            logEntry("Packet password security violation --> packet is renamed to .SEC", LOG_ALWAYS, 0);
 
-            return 3; /* Password security violation */
+            return 3;  // Password security violation
          }
          else
             globVars.password++;
@@ -319,88 +328,90 @@ s16 openPktRd(char *pktName, s16 secure)
    return 0;
 }
 //---------------------------------------------------------------------------
-s16 bscanstart (void)
+s16 bscanstart(void)
 {
-   u16 offset;
+  u16 offset;
 
-   do
-   {
-      if (endBuf-startBuf < 2)
-      {
-         offset = 0;
-         if (endBuf-startBuf == 1)
-         {
-            pktRdBuf[0] = pktRdBuf[startBuf];
-            offset = 1;
-         }
-         startBuf = 0;
-         oldStart = 0;
-         if ((endBuf = _read (pktHandle, pktRdBuf+offset,
-                              PKT_BUFSIZE-offset) + offset) < 2)
-            return (EOF);
-      }
-   }
-   while (*(u16*)(pktRdBuf+startBuf++) != 2);
-   startBuf++;
-   return (0);
-}
-//---------------------------------------------------------------------------
-s16 bgetw (u16 *w)
-{
-   u16 offset;
-
-   if (endBuf-startBuf < 2)
-   {
+  do
+  {
+    if (endBuf - startBuf < 2)
+    {
       offset = 0;
-      if (endBuf-startBuf == 1)
+      if (endBuf - startBuf == 1)
       {
-         pktRdBuf[0] = pktRdBuf[startBuf];
-         offset = 1;
+        pktRdBuf[0] = pktRdBuf[startBuf];
+        offset = 1;
       }
       startBuf = 0;
       oldStart = 0;
-      if ((endBuf = _read (pktHandle, pktRdBuf+offset,
-                           PKT_BUFSIZE-offset) + offset) < 2)
-         return (EOF);
-   }
-   *w = *(u16*)(pktRdBuf+startBuf);
-   startBuf += 2;
-   return (0);
+      if ((endBuf = _read(pktHandle, pktRdBuf + offset, PKT_BUFSIZE - offset) + offset) < 2)
+        return EOF;
+    }
+  }
+  while (*(u16*)(pktRdBuf + startBuf++) != 2);
+
+  startBuf++;
+
+  return 0;
+}
+//---------------------------------------------------------------------------
+s16 bgetw(u16 *w)
+{
+  u16 offset;
+
+  if (endBuf - startBuf < 2)
+  {
+    offset = 0;
+    if (endBuf - startBuf == 1)
+    {
+      pktRdBuf[0] = pktRdBuf[startBuf];
+      offset = 1;
+    }
+    startBuf = 0;
+    oldStart = 0;
+    if ((endBuf = _read(pktHandle, pktRdBuf + offset, PKT_BUFSIZE - offset) + offset) < 2)
+      return EOF;
+  }
+  *w = *(u16*)(pktRdBuf + startBuf);
+  startBuf += 2;
+
+  return 0;
 }
 //---------------------------------------------------------------------------
 static s16 bgets(char *s, size_t n) // !MSGSIZE
 {
-   size_t sLen = 0;
-   size_t m;
-   char *helpPtr;
+  size_t sLen = 0;
+  size_t m;
+  char *helpPtr;
 
-   while ((helpPtr = memccpy(s + sLen, pktRdBuf + startBuf, 0, m = min(n - sLen, (size_t)endBuf - (size_t)startBuf))) == NULL)
-   {
-      sLen += m;
-      if (sLen == n)
-      {
-         if ( n )
-            s[n-1] = 0;
-         else
-            *s = 0;
-               return EOF;
-      }
-      startBuf = 0;
-      oldStart = 0;
-      endBuf   = _read (pktHandle, pktRdBuf, PKT_BUFSIZE);
-      if (endBuf == 0)
-      {
-         /*--- put extra zero at end of PKT file */
-               pktRdBuf[0] = 0;
-         ++endBuf;
-      }
-   }
+  while ((helpPtr = memccpy(s + sLen, pktRdBuf + startBuf, 0, m = min(n - sLen, (size_t)endBuf - (size_t)startBuf))) == NULL)
+  {
+    sLen += m;
+    if (sLen == n)
+    {
+      if (n)
+        s[n - 1] = 0;
+      else
+        *s = 0;
+
+      return EOF;
+    }
+    startBuf = 0;
+    oldStart = 0;
+    endBuf   = _read(pktHandle, pktRdBuf, PKT_BUFSIZE);
+    if (endBuf == 0)
+    {
+      /*--- put extra zero at end of PKT file */
+      pktRdBuf[0] = 0;
+      ++endBuf;
+    }
+  }
 #ifdef __32BIT__
-   startBuf += helpPtr - s - sLen;
+  startBuf += helpPtr - s - sLen;
 #else
-   startBuf += (u16)helpPtr - (u16)s - (u16)sLen;
+  startBuf += (u16)helpPtr - (u16)s - (u16)sLen;
 #endif
-   return 0;
+  return 0;
 }
 //---------------------------------------------------------------------------
 s16 bgetdate( char *dateStr
@@ -412,8 +423,8 @@ s16 bgetdate( char *dateStr
 
 #pragma messsage("Lengte ivm 2000 verhoogd van 21 naar 23. Nog controleren!")
 
-  if (bgets(dateStr, 23) || strlen (dateStr) < 15)
-   return (EOF);
+  if (bgets(dateStr, 23) || strlen(dateStr) < 15)
+    return EOF;
 
   *seconds = 0;
 
@@ -424,9 +435,7 @@ s16 bgetdate( char *dateStr
   {
     if (sscanf(dateStr, "%hd %s %hd %hd:%hd:%hd", day, monthStr, year, hours, minutes, seconds) < 5)
     {
-      printString(" Error in date: ");
-      printString(dateStr);
-      newLine();
+      printf(" Error in date: %s\n", dateStr);
 
       *day     =  1;
       *month   =  1;
@@ -493,6 +502,7 @@ s16 readPkt(internalMsgType *message)
   *message->okDateStr = 0;
   *message->tinySeen  = 0;
   *message->normSeen  = 0;
+  *message->tinyPath  = 0;
   *message->normPath  = 0;
   memset(&message->srcNode, 0, 2 * sizeof(nodeNumType) + PKT_INFO_SIZE);
 
@@ -500,8 +510,8 @@ s16 readPkt(internalMsgType *message)
   {
     if (check++)
     {
-          startBuf = oldStart;
-          if (check == 2)
+      startBuf = oldStart;
+      if (check == 2)
       {
         newLine();
         logEntry("Skipping garbage in PKT file...", LOG_ALWAYS, 0);
@@ -525,8 +535,8 @@ s16 readPkt(internalMsgType *message)
         || bgets(message->toUserName  , 36)
         || bgets(message->fromUserName, 36)
         || bgets(message->subject     , 72)
-        )
-    ;
+        );
+
   bgets(message->text, TEXT_SIZE - 0x0800);
 
   return 0;
@@ -604,38 +614,38 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
    return 0;
 }
 //---------------------------------------------------------------------------
+// Try to free a file handle of the pkt file with the least msgs
+//
 static s16 closeLuPkt(void)
 {
-   u16 minimum;
-   s16 minIndex;
-   s16 count;
+  u16 minimum;
+  s16 minIndex;
+  s16 count;
 
-   if (forwNodeCount == 0)
-   {
-      logEntry ("ERROR: Not enough file handles available", LOG_ALWAYS, 0);
-      return (1);
-   }
+  if (forwNodeCount == 0)
+  {
+    logEntry ("ERROR: Not enough file handles available", LOG_ALWAYS, 0);
+    return 1;
+  }
 
-   minimum = 32767;
-   minIndex = -1;
-   for (count = forwNodeCount-1; count >= 0; count--)
-   {
-      if ((nodeFileInfo[count]->pktHandle != 0) &&
-          (nodeFileInfo[count]->totalMsgs < minimum))
-      {
-         minimum = nodeFileInfo[count]->totalMsgs;
-         minIndex = count;
-      }
-   }
-   if (minIndex == -1)
-   {
-      logEntry("ERROR: Not enough file handles available", LOG_ALWAYS, 0);
-      return 1;
-   }
-   close(nodeFileInfo[minIndex]->pktHandle);
-   nodeFileInfo[minIndex]->pktHandle = 0;
+  minimum = 32767;
+  minIndex = -1;
+  for (count = forwNodeCount-1; count >= 0; count--)
+    if (nodeFileInfo[count]->pktHandle != 0 && nodeFileInfo[count]->totalMsgs < minimum)
+    {
+       minimum = nodeFileInfo[count]->totalMsgs;
+       minIndex = count;
+    }
 
-   return 0;
+  if (minIndex == -1)
+  {
+    logEntry("ERROR: Not enough file handles available", LOG_ALWAYS, 0);
+    return 1;
+  }
+  close(nodeFileInfo[minIndex]->pktHandle);
+  nodeFileInfo[minIndex]->pktHandle = 0;
+
+  return 0;
 }
 //---------------------------------------------------------------------------
 void RemoveNetKludge(char *text, const char *kludge)
@@ -663,14 +673,35 @@ void RemoveNetKludge(char *text, const char *kludge)
   }
 }
 //---------------------------------------------------------------------------
-s16 writeEchoPkt(internalMsgType *message, s16 tinySeenByArea, echoToNodeType echoToNode)
+char *setSeenByPath( internalMsgType *msg, char *txtEnd
+                   , areaOptionsType areaOptions, nodeOptionsType nodeOptions)
+{
+#ifdef _DEBUG0
+  tempStrType tempStr;
+  
+  sprintf(tempStr, "DEBUG setSeenByPath areaOptions.tinySeenBy:%u nodeOptions.tinySeenBy:%u areaOptions.tinyPath:%u", areaOptions.tinySeenBy, nodeOptions.tinySeenBy, areaOptions.tinyPath);
+  logEntry(tempStr, LOG_DEBUG, 0);
+#endif
+
+  if (NULL == txtEnd)
+    txtEnd = strchr(msg->text, 0);
+
+  txtEnd = stpcpy(txtEnd, areaOptions.tinySeenBy || nodeOptions.tinySeenBy
+                                                 ? msg->tinySeen : msg->normSeen);
+  txtEnd = stpcpy(txtEnd, areaOptions.tinyPath   ? msg->tinyPath : msg->normPath);
+
+  return txtEnd;
+}
+//---------------------------------------------------------------------------
+s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNodeType echoToNode)
 {
   s16        count;
   fhandle    pktHandle;
   fnRecType *fnPtr;
   char       dateStr[24];
   char      *ftsPtr;
-  char      *helpPtr, *helpPtr2;
+  char      *helpPtr
+          , *helpPtr2;
   char      *pktBufStart;
   char      *psbStart;
   udef       pktBufLen;
@@ -692,7 +723,7 @@ s16 writeEchoPkt(internalMsgType *message, s16 tinySeenByArea, echoToNodeType ec
 
   *(psbStart++) = '\r';
 
-  for (count = 0; (count < forwNodeCount); count++)
+  for (count = 0; count < forwNodeCount; count++)
   {
     if ( ETN_READACCESS(echoToNode[ETN_INDEX(count)], count) &&
          (nodeFileInfo[count]->nodePtr->options.active ||
@@ -701,11 +732,11 @@ s16 writeEchoPkt(internalMsgType *message, s16 tinySeenByArea, echoToNodeType ec
       if (nodeFileInfo[count]->pktHandle == 0)
       {
         if (*nodeFileInfo[count]->pktFileName == 0)
-           openPktWr (nodeFileInfo[count]);
+           openPktWr(nodeFileInfo[count]);
         else
         {
-          if ((nodeFileInfo[count]->pktHandle = openP(nodeFileInfo[count]->pktFileName, O_WRONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) != -1)
-            lseek (nodeFileInfo[count]->pktHandle, 0, SEEK_END);
+          if ((nodeFileInfo[count]->pktHandle = openP(nodeFileInfo[count]->pktFileName, O_WRONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) != -1)
+            lseek(nodeFileInfo[count]->pktHandle, 0, SEEK_END);
           else
             nodeFileInfo[count]->pktHandle = 0;
         }
@@ -728,13 +759,7 @@ s16 writeEchoPkt(internalMsgType *message, s16 tinySeenByArea, echoToNodeType ec
       else
         strcpy(helpPtr = ftsPtr - strlen(message->dateStr) - 1, message->dateStr);
 
-      helpPtr2 = psbStart;
-      if (nodeFileInfo[count]->nodePtr->options.tinySeenBy || tinySeenByArea)
-        helpPtr2 = stpcpy(helpPtr2, message->tinySeen);
-      else
-        helpPtr2 = stpcpy(helpPtr2, message->normSeen);
-
-      helpPtr2 = stpcpy(helpPtr2, message->normPath);
+      helpPtr2 = setSeenByPath(message, psbStart, areaOptions, nodeFileInfo[count]->nodePtr->options);
 
       if (  config.akaList[nodeFileInfo[count]->srcAka].nodeNum.zone
          && nodeFileInfo[count]->srcAka != nodeFileInfo[count]->requestedAka
@@ -756,19 +781,19 @@ s16 writeEchoPkt(internalMsgType *message, s16 tinySeenByArea, echoToNodeType ec
       ((pmHdrType*)pktBufStart)->attribute = message->attribute;
       ((pmHdrType*)pktBufStart)->cost      = message->cost;
 
-      if (_write (pktHandle, pktBufStart, pktBufLen) != (int)pktBufLen )
+      if (_write(pktHandle, pktBufStart, pktBufLen) != (int)pktBufLen )
       {
-        printString ("Cannot write to PKT file.\n");
+        puts("Cannot write to PKT file.");
         return 1;
       }
 
       nodeFileInfo[count]->totalMsgs++;
 
-      if (config.maxPktSize != 0 && filelength(pktHandle) >= config.maxPktSize*(s32)1000)
+      if (config.maxPktSize != 0 && filelength(pktHandle) >= config.maxPktSize * (s32)1000)
       {
         if (_write(pktHandle, &zero, 2) != 2)
         {
-          printString("Cannot write to PKT file.\n");
+          puts("Cannot write to PKT file.");
           close(pktHandle);
           return (1);
         }
@@ -872,7 +897,7 @@ s16 validateEchoPktWr(void)
    {
       if (totalPktSize > diskFree(config.outPath))
       {
-         printString("\nFreeing up diskspace...\n");
+         puts("\nFreeing up diskspace...");
 
          return closeEchoPktWr();
       }
@@ -996,9 +1021,9 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
          {
             nfInfo->pktHandle = 0;
             logEntry ("Cannot open netmail PKT file", LOG_ALWAYS, 0);
-            return (1);
+            return 1;
          }
-         lseek (nfInfo->pktHandle, 0, SEEK_END);
+         lseek(nfInfo->pktHandle, 0, SEEK_END);
       }
    }
 
@@ -1012,8 +1037,7 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
    pmHdr.attribute = message->attribute;
    pmHdr.cost      = message->cost;
 
-   error |= (_write (pktHandle, &pmHdr, sizeof(pmHdrType)) !=
-                                        sizeof(pmHdrType));
+   error |= (_write(pktHandle, &pmHdr, sizeof(pmHdrType)) != sizeof(pmHdrType));
 
    if ((nfInfo->nodePtr->options.fixDate) || (*message->dateStr == 0))
    {
@@ -1023,48 +1047,50 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
                            message->day, months+(message->month-1)*3,
                            message->year%100, message->hours,
                            message->minutes,  message->seconds);
-      len = strlen(message->okDateStr)+1;
-      error |= (_write (pktHandle, message->okDateStr, len) != len);
+      len = strlen(message->okDateStr) + 1;
+      error |= (_write(pktHandle, message->okDateStr, len) != len);
    }
    else
    {
-      len = strlen(message->dateStr)+1;
-      error |= (_write (pktHandle, message->dateStr, len) != len);
+      len = strlen(message->dateStr) + 1;
+      error |= (_write(pktHandle, message->dateStr, len) != len);
    }
 
-   len = strlen(message->toUserName)+1;
-   error |= (_write (pktHandle, message->toUserName, len) != len);
+   len = strlen(message->toUserName) + 1;
+   error |= (_write(pktHandle, message->toUserName, len) != len);
 
-   len = strlen(message->fromUserName)+1;
-   error |= (_write (pktHandle, message->fromUserName, len) != len);
+   len = strlen(message->fromUserName) + 1;
+   error |= (_write(pktHandle, message->fromUserName, len) != len);
 
-   len = strlen(message->subject)+1;
-   error |= (_write (pktHandle, message->subject, len) != len);
+   len = strlen(message->subject) + 1;
+   error |= (_write(pktHandle, message->subject, len) != len);
 
-   len = strlen(message->text)+1;
-   error |= (_write (pktHandle, message->text, len) != len);
+   len = strlen(message->text) + 1;
+   error |= (_write(pktHandle, message->text, len) != len);
 
-   if ((tempLen = filelength (pktHandle)) == -1)
+   if ((tempLen = filelength(pktHandle)) == -1)
    {
       close(pktHandle);
       logEntry ("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
       nfInfo->pktHandle = 0;
-      return (1);
+
+      return 1;
    }
 
-   if ((config.maxPktSize != 0) && (tempLen >= config.maxPktSize*(s32)1000))
+   if (config.maxPktSize != 0 && tempLen >= config.maxPktSize * (s32)1000)
    {
-      if (_write (pktHandle, &zero, 2) != 2)
+      if (_write(pktHandle, &zero, 2) != 2)
       {
-         printString("Cannot write to PKT file.\n");
+         puts("Cannot write to PKT file.");
          close(pktHandle);
          nfInfo->pktHandle = 0;
+
          return 1;
       }
       close(pktHandle);
       nfInfo->pktHandle = 0;
-      if ((fnPtr = malloc (sizeof(fnRecType))) == NULL)
-               return 1;
+      if ((fnPtr = malloc(sizeof(fnRecType))) == NULL)
+        return 1;
       memset(fnPtr, 0, sizeof(fnRecType));
       strcpy(fnPtr->fileName, nfInfo->pktFileName);
       fnPtr->nextRec = nfInfo->fnList;
@@ -1080,10 +1106,12 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
    if (error)
    {
       logEntry ("ERROR: Cannot write to PKT file", LOG_ALWAYS, 0);
+
       return 1;
    }
    nfInfo->bytesValid = tempLen;
-   return (0);
+
+   return 0;
 }
 //---------------------------------------------------------------------------
 s16 closeNetPktWr(nodeFileRecType *nfInfo)
@@ -1140,35 +1168,38 @@ s16 closeNetPktWr(nodeFileRecType *nfInfo)
    return 0;
 }
 //---------------------------------------------------------------------------
+// Open functions that try to close pkt files if there are too many files
+// open, before giving up.
+//
 #undef open
 
-       int no_msg;
+       int no_msg = 0;
 static int no_log = 0;
 
 //---------------------------------------------------------------------------
-fhandle openP (const char *pathname, int access, u16 mode)
+fhandle openP(const char *pathname, int access, u16 mode)
 {
   fhandle handle;
-  u16     errcode;
-  u8     *helpPtr;
+  int     errcode;
 
   ++no_log;
   while ((handle = open(pathname, access, mode)) == -1)
   {
     errcode = errno;
-    if ((errno != EMFILE) || (closeLuPkt()))
+    // If there are too many open files, try to close a pkt file
+    if (errno != EMFILE || closeLuPkt())
     {
-      if ( !no_msg && (((config.logInfo & LOG_OPENERR) ||
-           (config.logInfo & LOG_ALWAYS)) && no_log == 1) )
+      if (  !no_msg && no_log == 1
+         && ((config.logInfo & LOG_OPENERR) || (config.logInfo & LOG_ALWAYS))
+         )
       {
         tempStrType tempStr;
-        sprintf(tempStr, "Error opening %s: %s", pathname, strerror(errcode));
-        helpPtr = strchr(tempStr, 0);
-        *--helpPtr = 0;
+        sprintf(tempStr, "Error opening %s: %s", pathname, strError(errcode));
         logEntry(tempStr, LOG_OPENERR, 0);
       }
       --no_log;
       no_msg = 0;
+
       return -1;
     }
   }
@@ -1178,34 +1209,34 @@ fhandle openP (const char *pathname, int access, u16 mode)
   return handle;
 }
 //---------------------------------------------------------------------------
-fhandle fsopenP (const char *pathname, int access, u16 mode)
+fhandle fsopenP(const char *pathname, int access, u16 mode)
 {
   fhandle handle;
-   u16     errcode;
-   u8     *helpPtr;
+  int     errcode;
 
-   ++no_log;
-   while ((handle = fsopen(pathname, access, mode, 1)) == -1)
-   {
+  ++no_log;
+  while ((handle = fsopen(pathname, access, mode, 1)) == -1)
+  {
     errcode = errno;
-      if ((errno != EMFILE) || (closeLuPkt()))
+    // If there are too many open files, try to close a pkt file
+    if (errno != EMFILE || closeLuPkt())
+    {
+      if (  !no_msg && no_log == 1
+         && ((config.logInfo & LOG_OPENERR) || (config.logInfo & LOG_ALWAYS))
+         )
       {
-        if ( !no_msg && (((config.logInfo & LOG_OPENERR) ||
-               (config.logInfo & LOG_ALWAYS)) && no_log == 1) )
-         {
-          tempStrType tempStr;
-            sprintf(tempStr, "Error opening %s: %s", pathname, strerror(errcode));
-            helpPtr = strchr(tempStr, 0);
-            *--helpPtr = 0;
-            logEntry(tempStr, LOG_OPENERR, 0);
-         }
-         --no_log;
-         no_msg = 0;
-               return (-1);
+        tempStrType tempStr;
+        sprintf(tempStr, "Error opening %s: %s", pathname, strError(errcode));
+        logEntry(tempStr, LOG_OPENERR, 0);
       }
-   }
-   --no_log;
-   no_msg = 0;
+      --no_log;
+      no_msg = 0;
+
+      return -1;
+    }
+  }
+  --no_log;
+  no_msg = 0;
 
   return handle;
 }

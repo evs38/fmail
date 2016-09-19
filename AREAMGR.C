@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -207,9 +207,8 @@ u16            am__cp;
 
 extern windowLookType windowLook;
 extern configType     config;
-extern char configPath[128];
-/*extern s32           pow2[32];*/
-u16                   *boardPtr;
+extern char           configPath[128];
+u16                  *boardPtr;
 
 char boardCodeInfo[512];
 
@@ -217,35 +216,36 @@ funcParType multiAkaSelectRec;
 rawEchoType tempInfo, updInfo;
 
 //---------------------------------------------------------------------------
-s16 getSetReset (void)
+s16 getSetReset(void)
 {
-   u16 ch;
+  u16 ch;
 
-   if (displayWindow (NULL, 49, 12, 70, 14) != 0) return (0);
-   printString ("(S)et or (R)eset ?", 51, 13,
-                windowLook.promptfg, windowLook.background, MONO_NORM);
+  if (displayWindow (NULL, 49, 12, 70, 14) != 0)
+    return 0;
 
-   do
-   {
-      ch=readKbd();
-      ch = toupper (ch);
-   }
-   while ((ch != 'R') && (ch != 'S') && (ch != _K_ESC_));
+  printString("(S)et or (R)eset ?", 51, 13, windowLook.promptfg, windowLook.background, MONO_NORM);
 
-   removeWindow ();
-   return (ch);
+  do
+  {
+    ch = toupper(readKbd());
+  }
+  while (ch != 'R' && ch != 'S' && ch != _K_ESC_);
+
+  removeWindow();
+
+  return ch;
 }
 //---------------------------------------------------------------------------
-s16 multiAkaSelect (void)
+s16 multiAkaSelect(void)
 {
    u16      update = 0;
    u16      count;
    u16      currentElem = 0;
-   s16      ch;
+   u16      ch;
    char     tempStr[48];
    u16      offset = 0;
 
-   if (displayWindow (" Other AKAs ", 33, 4, 71, 21) != 0) return (0);
+   if (displayWindow(" Other AKAs ", 33, 4, 71, 21) != 0) return (0);
 
    do
    {
@@ -274,7 +274,7 @@ s16 multiAkaSelect (void)
                printChar (' ', 69, 5+count-offset, windowLook.datafg, windowLook.background, MONO_NORM);
          }
       }
-      ch=readKbd();
+      ch = readKbd();
       switch (ch)
       {
          case _K_ENTER_ :
@@ -307,18 +307,19 @@ s16 multiAkaSelect (void)
    }
    while (ch != _K_ESC_);
 
-   removeWindow ();
-   return (update);
+   removeWindow();
+
+   return update;
 }
 //---------------------------------------------------------------------------
 static void fillAreaInfo(u16 index, rawEchoType *tempInfo)
 {
    memset(areaInfo[index], 0, sizeof(rawEchoTypeX));
-   if ( (areaInfo[index]->areaName = malloc(strlen(tempInfo->areaName)+1)) != NULL )
+   if ( (areaInfo[index]->areaName = malloc(strlen(tempInfo->areaName) + 1)) != NULL )
       strcpy(areaInfo[index]->areaName, tempInfo->areaName);
-   if ( (areaInfo[index]->comment = malloc(strlen(tempInfo->comment)+1)) != NULL )
+   if ( (areaInfo[index]->comment = malloc(strlen(tempInfo->comment) + 1)) != NULL )
       strcpy(areaInfo[index]->comment, tempInfo->comment);
-   if ( (areaInfo[index]->msgBasePath = malloc(strlen(tempInfo->msgBasePath)+1)) != NULL )
+   if ( (areaInfo[index]->msgBasePath = malloc(strlen(tempInfo->msgBasePath) + 1)) != NULL )
       strcpy(areaInfo[index]->msgBasePath, tempInfo->msgBasePath);
    areaInfo[index]->boardNumRA = tempInfo->boardNumRA;
    areaInfo[index]->msgBaseType = tempInfo->msgBaseType;
@@ -337,7 +338,7 @@ static void freeAreaInfo(u16 index)
 //---------------------------------------------------------------------------
 s16 areaMgr(void)
 {
-   u8		*tempPtr; //, *tempPtr2;
+   u8          *tempPtr;
    u16          index = 0;
    u16          pos, idx;
    areaInfoPtr  areaHelpPtr;
@@ -388,9 +389,10 @@ s16 areaMgr(void)
       else
       {
          if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
-         {  displayMessage("Can't convert old Areas file");
-	    close (areaInfoHandle);
-	    return (0);
+         {
+           displayMessage("Can't convert old Areas file");
+           close(areaInfoHandle);
+           return 0;
          }
          lseek (areaInfoHandle, 0, SEEK_SET);
 	 areaInfoCount = 0;
@@ -405,7 +407,7 @@ s16 areaMgr(void)
 	    memcpy (tempInfo.originLine, areaInfoOld.originLine, ORGLINE_LEN-1);
             for ( count = 0; count < MAX_FORWARDOLD; count++ )
                tempInfo.forwards[count].nodeNum = areaInfoOld.export[count];
-	    tempInfo.signature  = 'AE';
+	    tempInfo.signature  = MC('A','E');
 	    tempInfo.group      = areaInfoOld.group;
 	    tempInfo.board      = areaInfoOld.board;
 	    tempInfo.address    = areaInfoOld.address;
@@ -456,33 +458,37 @@ s16 areaMgr(void)
    {
       getRec(CFG_ECHOAREAS, count);
 #if 0
-      if ( areaBuf->board > MBBOARDS )
-	 areaBuf->board = 0;
+      if (areaBuf->board > MBBOARDS)
+        areaBuf->board = 0;
 
       if (areaBuf->board || (!areaBuf->boardNumRA) ||
-	  (boardCodeInfo[(areaBuf->boardNumRA-1)>>3] & (1<<((areaBuf->boardNumRA-1)&7))))
-	 areaBuf->boardNumRA = 0;
+          (boardCodeInfo[(areaBuf->boardNumRA-1)>>3] & (1<<((areaBuf->boardNumRA-1)&7))))
+        areaBuf->boardNumRA = 0;
       else
-	 boardCodeInfo[(areaBuf->boardNumRA-1)>>3] |= (1<<((areaBuf->boardNumRA-1)&7));
+        boardCodeInfo[(areaBuf->boardNumRA-1)>>3] |= (1<<((areaBuf->boardNumRA-1)&7));
 #endif
       // EXPORT ADDRESS SORT ORDER CHECK!!!
       ch = 0;
       do
-      {  findOk = 0;
-	 count2 = 0;
-	 while ( count2 < config.maxForward - 1 && areaBuf->forwards[count2+1].nodeNum.zone )
-         {  if ( nodegreater(areaBuf->forwards[count2].nodeNum, areaBuf->forwards[count2+1].nodeNum) )
-	    {  findOk = 1;
-	       tempNodeX = areaBuf->forwards[count2];
-	       areaBuf->forwards[count2] = areaBuf->forwards[count2+1];
-	       areaBuf->forwards[count2+1] = tempNodeX;
-               ch = 1;
-	    }
-	    ++count2;
-	 }
+      {
+        findOk = 0;
+        count2 = 0;
+        while (count2 < config.maxForward - 1 && areaBuf->forwards[count2+1].nodeNum.zone)
+        {
+          if (nodegreater(areaBuf->forwards[count2].nodeNum, areaBuf->forwards[count2+1].nodeNum))
+          {
+            findOk = 1;
+            tempNodeX = areaBuf->forwards[count2];
+            areaBuf->forwards[count2] = areaBuf->forwards[count2+1];
+            areaBuf->forwards[count2+1] = tempNodeX;
+            ch = 1;
+          }
+          ++count2;
+        }
       }
-      while ( findOk );
-      if ( ch )
+      while (findOk);
+
+      if (ch)
          putRec(CFG_ECHOAREAS, count);
 
       areaBuf->comment[COMMENT_LEN-1] = 0;
@@ -493,18 +499,21 @@ s16 areaMgr(void)
 
       /* 32 AKAs alsoSeenBy */
       if ( !areaBuf->alsoSeenBy && areaBuf->_alsoSeenBy )
-      {  areaBuf->alsoSeenBy = areaBuf->_alsoSeenBy;
-	 areaBuf->_alsoSeenBy = 0;
+      {
+        areaBuf->alsoSeenBy = areaBuf->_alsoSeenBy;
+        areaBuf->_alsoSeenBy = 0;
       }
 
       /* fixes problems reported by Darr Hoag with Global functions Amgr */
       count2 = 0;
       while ( count2 < MAX_FORWARD )
-      {  if ( !areaBuf->forwards[count2].nodeNum.zone )
-	 {   memset(&areaBuf->forwards[count2], 0, (MAX_FORWARD-count2)*sizeof(nodeNumXType));
-	     break;
-	 }
-	 ++count2;
+      {
+        if ( !areaBuf->forwards[count2].nodeNum.zone )
+        {
+          memset(&areaBuf->forwards[count2], 0, (MAX_FORWARD-count2)*sizeof(nodeNumXType));
+          break;
+        }
+        ++count2;
       }
 
       if ( areaBuf->_internalUse != 'Y' )
@@ -591,24 +600,23 @@ s16 areaMgr(void)
             if ( editAM (DISPLAY_ECHO_WINDOW, 0, NULL) )
 	       return (1);
 
-	    printString ("**** Empty ****", 28, 7,
-	    		 windowLook.datafg, windowLook.background, MONO_HIGH);
+	    printString("**** Empty ****", 28, 7, windowLook.datafg, windowLook.background, MONO_HIGH);
 
-	    printString ("F1 ", 0, 24, BROWN, BLACK, MONO_NORM);
-	    printString ("Edit  ", 3, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString ("F3 ", 9, 24, BROWN, BLACK, MONO_NORM);
-	    printString ("Global  ", 12, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString ("F4 ", 20, 24, BROWN, BLACK, MONO_NORM);
-	    printString ("Groups  ", 23, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString ("F5 ", 31, 24, BROWN, BLACK, MONO_NORM);
-	    printString ("Browse  ", 34, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString ("F6 ", 42, 24, BROWN, BLACK, MONO_HIGH);
-	    printString ("Copy  ", 45, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString ("Ins ", 51, 24, YELLOW, BLACK, MONO_HIGH);
-	    printString ("Insert  ", 55, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-	    printString ("Del ", 63, 24, BROWN, BLACK, MONO_NORM);
-	    printString ("Delete    ", 67, 24, MAGENTA, BLACK, MONO_NORM);
-	    printString ("\x1b \x1a", 77, 24, BROWN, BLACK, MONO_NORM);
+	    printString("F1 ", 0, 24, BROWN, BLACK, MONO_NORM);
+	    printString("Edit  ", 3, 24, MAGENTA, BLACK, MONO_NORM);
+	    printString("F3 ", 9, 24, BROWN, BLACK, MONO_NORM);
+	    printString("Global  ", 12, 24, MAGENTA, BLACK, MONO_NORM);
+	    printString("F4 ", 20, 24, BROWN, BLACK, MONO_NORM);
+	    printString("Groups  ", 23, 24, MAGENTA, BLACK, MONO_NORM);
+	    printString("F5 ", 31, 24, BROWN, BLACK, MONO_NORM);
+	    printString("Browse  ", 34, 24, MAGENTA, BLACK, MONO_NORM);
+	    printString("F6 ", 42, 24, BROWN, BLACK, MONO_HIGH);
+	    printString("Copy  ", 45, 24, MAGENTA, BLACK, MONO_NORM);
+	    printString("Ins ", 51, 24, YELLOW, BLACK, MONO_HIGH);
+	    printString("Insert  ", 55, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+	    printString("Del ", 63, 24, BROWN, BLACK, MONO_NORM);
+	    printString("Delete      ", 67, 24, MAGENTA, BLACK, MONO_NORM);
+//    printString("\x1b\x1a", 77, 24, BROWN, BLACK, MONO_NORM);
 	 }
 	 else
 	 {
@@ -656,18 +664,18 @@ s16 areaMgr(void)
 		     if (index == areaInfoCount)
 		     {
 		        sprintf(tempStr, "No areas found in group %c.", '@'+groupSelectMask);
-			displayMessage(tempStr);
-			groupSelectMask = 0;
-			index = 0;
-		     }
-		  }
+            displayMessage(tempStr);
+            groupSelectMask = 0;
+            index = 0;
+               }
+            }
 	       }
 	    }
 	    groupSearch = 0;
-	    sprintf (tempStr, " %*u/%u ", areaInfoCount < 10 ? 1 :
+	    sprintf(tempStr, " %*u/%u ", areaInfoCount < 10 ? 1 :
                                           areaInfoCount < 100 ? 2 : 3,
                                           index+1, areaInfoCount);
-	    printString (tempStr, /*areaMenu->xWidth*/75-strlen(tempStr)+1, /*areaMenu->yWidth*/17+4, YELLOW, LIGHTGRAY, MONO_HIGH);
+	    printString(tempStr, /*areaMenu->xWidth*/75-strlen(tempStr)+1, /*areaMenu->yWidth*/17+5, YELLOW, LIGHTGRAY, MONO_HIGH);
 
 //          tempInfo = *areaInfo[index];
             getRec(CFG_ECHOAREAS, index);
@@ -705,28 +713,26 @@ s16 areaMgr(void)
 	       printString ("Insert  ", 55, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
 	    }
 	    printString ("Del ", 63, 24, YELLOW, BLACK, MONO_HIGH);
-	    printString ("Delete    ", 67, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
-	    printString ("\x1b \x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
+	    printString ("Delete      ", 67, 24, LIGHTMAGENTA, BLACK, MONO_NORM);
+//    printString ("\x1b\x1a", 77, 24, YELLOW, BLACK, MONO_HIGH);
 	 }
 	 if (groupSelectMask)
 	 {
-	    sprintf(tempStr, " Group %c ", '@'+groupSelectMask);
-	    printString(tempStr, 3, 21,
-	    		windowLook.titlefg, windowLook.background, MONO_HIGH);
-	    printString("ÍÍÍ", 12, 21, windowLook.actvborderfg, windowLook.background, MONO_HIGH);
+	    sprintf(tempStr, " Group %c ", '@' + groupSelectMask);
+	    printString(tempStr,  3, 22, windowLook.titlefg     , windowLook.background, MONO_HIGH);
+	    printString("ÄÄÄ"  , 12, 22, windowLook.actvborderfg, windowLook.background, MONO_HIGH);
 	 }
 	 else
-	    printString(" All groups ", 3, 21,
-	          	windowLook.titlefg, windowLook.background, MONO_HIGH);
+	    printString(" All groups ", 3, 22, windowLook.titlefg, windowLook.background, MONO_HIGH);
 
 	 if (badEchoCount)
 	    ch = _K_INS_;
 	 else
-	    ch=readKbd();
+	    ch = readKbd();
 
 	 newEcho = badEchoCount;
 
-	 if ((areaInfoCount != 0) || (ch == _K_INS_))
+	 if (areaInfoCount != 0 || ch == _K_INS_)
 	 {
 	    am__cp = 0;
 
@@ -818,7 +824,7 @@ s16 areaMgr(void)
                case _K_F4_ :  displayGroups(); /* F4 */
 			      do
                               {
-			       	 ch=toupper(readKbd());
+			       	 ch = toupper(readKbd());
                               }
                               while ((ch < 'A' || ch > 'Z') && ch != _K_ENTER_ && ch != _K_ESC_);
                               removeWindow();
@@ -1092,33 +1098,24 @@ s16 areaMgr(void)
             }
          }
       }
-      while ((ch != _K_ESC_) && (ch != _K_F7_) && (ch != _K_F10_));
-//    if ( ch == _K_F7_ || ch == _K_F10_ )
-//       ch = 'Y';
-//    else
-//       if (update)
-//          ch = askBoolean ("Save changes in area setup ?", 'Y');
-//       else
-//          ch = 0;
+      while (ch != _K_ESC_ && ch != _K_F7_ && ch != _K_F10_);
    }
-// while (ch == _K_ESC_);
 
    closeConfig(CFG_ECHOAREAS);
 
-   removeWindow ();
+   removeWindow();
 
-//   if (ch == 'Y')
-   if ( update )
+   if (update)
    {
-      working ();
+      working();
 
       /* remove old style config file */
       if (*areaInfoPath) unlink (areaInfoPath);
 
       if (openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
       {
-	 headerType areaHeader2;
-	 fhandle    fml102handle;
+         headerType areaHeader2;
+         fhandle    fml102handle;
          nodeNumType *nodeNumBuf;
 
          if ( (nodeNumBuf = malloc(MAX_FORWARDOLD * sizeof(nodeNumType))) == NULL )
@@ -1175,11 +1172,6 @@ error:
    {  freeAreaInfo(count);
       free (areaInfo[count]);
    }
-
-// free (gSwMenu);
-// free (gMnMenu);
-// free (gNdMenu);
-// free (aglMenu);
 
    return update;
 }

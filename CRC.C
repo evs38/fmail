@@ -96,7 +96,7 @@ const s32 crc32tab[256] =
    0xb40bbe37L, 0xc30c8ea1L, 0x5a05df1bL, 0x2d02ef8dL
 };
 //---------------------------------------------------------------------------
-u32 crc32(char *string)
+u32 crc32(const char *string)
 {
   u32 crc = 0xFFFFFFFFUL;
 
@@ -106,7 +106,7 @@ u32 crc32(char *string)
   return crc;
 }
 //---------------------------------------------------------------------------
-u32 crc32old(char *string)
+u32 crc32old(const char *string)
 {
   s32 crc = 0xFFFFFFFFL;
 
@@ -116,7 +116,7 @@ u32 crc32old(char *string)
   return crc;
 }
 //---------------------------------------------------------------------------
-u32 crc32len(char *string, s16 len)
+u32 crc32len(const char *string, s16 len)
 {
   u32 crc = 0xFFFFFFFFUL;
 
@@ -139,7 +139,7 @@ u32 crc32lennc(char *string, s16 len)
 }
 #endif
 //---------------------------------------------------------------------------
-u32 crc32alpha(char *string)
+u32 crc32alpha(const char *string)
 {
   u32 crc = 0xFFFFFFFFUL;
 
@@ -156,7 +156,7 @@ u32 crc32alpha(char *string)
   return crc;
 }
 //---------------------------------------------------------------------------
-u32 crc32t(char *string, char terminator)
+u32 crc32t(const char *string, char terminator)
 {
   u32 crc = 0xFFFFFFFFUL;
 
@@ -168,13 +168,13 @@ u32 crc32t(char *string, char terminator)
 //---------------------------------------------------------------------------
 // converts to lowercase
 //
-u32 crc32jam(char *string)
+u32 crc32jam(const char *string)
 {
   u32 crc = 0xFFFFFFFFUL;
 
   while (*string)
     crc = crc32tab[((u8)crc) ^ ((u8)tolower(*(string++)))] ^ (crc >> 8);
 
-  return (crc);
+  return crc;
 }
 //---------------------------------------------------------------------------

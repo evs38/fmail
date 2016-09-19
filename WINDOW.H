@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -169,7 +169,7 @@ typedef struct
 typedef struct
 {
   u16      entryType;
-  uchar    *prompt;
+  uchar   *prompt;
   uchar    key;
   u16      offset;
 #ifndef __32BIT__
@@ -178,8 +178,9 @@ typedef struct
   void     *data;
 #endif
   u16      selected;
-  u16      par1, par2;
-  uchar    *comment;
+  u16      par1
+         , par2;
+  uchar   *comment;
 } menuEntryType;
 
 typedef struct
@@ -217,50 +218,52 @@ typedef struct
 } windowMemType;
 
 
-
-#define testInit() if(initMagic != 0x4657) initWindow(0);
-
-
-#define showCharNA(px,py,chr)  \
-   screen[(py)*columns+px].ch = chr
+#define testInit() if (initMagic != 0x4657) initWindow(0);
 
 
-#define showChar(px,py,chr,att,matt)  \
-{                                     \
-   screen[(py)*columns+px].ch = chr;    \
-   if(color)                         \
-      screen[(py)*columns+(px)].attr = att; \
-   else                               \
-      screen[(py)*columns+(px)].attr = matt; \
+#ifndef __32BIT__
+#define showCharNA(px, py, chr)  screen[(py) * columns + (px)].ch = (chr)
+
+#define showChar(px, py, chr, att, matt)         \
+{                                                \
+  screen[(py) * columns + (px)].ch = (chr);      \
+  if (color)                                     \
+    screen[(py) * columns + (px)].attr = (att);  \
+  else                                           \
+    screen[(py) * columns + (px)].attr = (matt); \
 }
 
-
-#define getChar(px,py)(screen[(py)*columns+px].ch)
-
-#define getColor(px,py,att,matt)(screen[(py)*columns+px].attr)
-
-
-#define changeColor(px,py,att,matt)  \
-{                                    \
-   if(color)                        \
-      screen[(py)*columns+px].attr = att; \
-   else                              \
-      screen[(py)*columns+px].attr = matt; \
+#define shadow(px, py)                           \
+{                                                \
+  if (color)                                     \
+    screen[(py) * columns + px].attr = DARKGRAY; \
 }
 
-
-#define shadow(px,py)                    \
+#define changeColor(px, py, att, matt)   \
 {                                        \
-   if(color)                            \
-      screen[(py)*columns+px].attr = DARKGRAY; \
+  if (color)                             \
+    screen[(py)*columns+px].attr = att;  \
+  else                                   \
+    screen[(py)*columns+px].attr = matt; \
 }
 
+#define getChar(px, py)             (screen[(py) * columns + (px)].ch)
 
-#define getAttr(fgc,bgc,att)   \
-{                              \
-   att =((fgc & 0x0f) |       \
-	((bgc & 0x0f) << 4)); \
-}
+#if 0
+#define getColor(px, py, att, matt) (screen[(py) * columns + (px)].attr)
+#endif
+#else
+//void  showCharNA (int x, int y, int chr);
+void  showChar   (int x, int y, int chr, int att, int matt);
+void  shadow     (int x, int y);
+void  changeColor(int x, int y, int att, int matt);
+uchar getChar    (int x, int y);
+#if 0
+uchar getColor   (int x, int y, int att, int matt);
+#endif
+#endif
+
+#define calcAttr(fgc, bgc)  (((fgc) & 0x0F) | (((bgc) & 0x0F) << 4))
 
 #ifdef __OS2__
 
@@ -275,8 +278,7 @@ typedef struct
    VioSetCurType(&vci, 0); \
 }
 
-#define locateCursor(px,py) \
-   VioSetCurPos(py, px, 0);
+#define locateCursor(px,py)  VioSetCurPos(py, px, 0);
 
 #define smallCursor()      \
 {                          \
@@ -300,29 +302,23 @@ typedef struct
 
 #else
 
-#define removeCursor    \
+void locateCursor(int x, int y);
+
+#ifndef __32BIT__
+#define removeCursor()  \
 {                       \
    _BH = 0x00;          \
    _DX = 0x0101;        \
    _AH = 0x02;          \
-   geninterrupt(0x10); \
+   geninterrupt(0x10);  \
    _CX = 0x2000;        \
    _AH = 0x01;          \
-   geninterrupt(0x10); \
-}
-
-#define locateCursor(px,py) \
-{                           \
-   _DH = py;                \
-   _DL = px;                \
-   _AH = 0x02;              \
-   _BH = 0;                 \
-   geninterrupt(0x10);     \
+   geninterrupt(0x10);  \
 }
 
 #define smallCursor()   \
 {                       \
-   if(cga)             \
+   if (cga)             \
    {                    \
       _CH = 6;          \
       _CL = 7;          \
@@ -333,12 +329,12 @@ typedef struct
      _CL = 12;          \
    }                    \
    _AH = 0x01;          \
-   geninterrupt(0x10); \
+   geninterrupt(0x10);  \
 }
 
 #define largeCursor()   \
 {                       \
-   if(cga)             \
+   if (cga)             \
    {                    \
       _CH = 4;          \
       _CL = 7;          \
@@ -349,12 +345,17 @@ typedef struct
      _CL = 12;          \
    }                    \
    _AH = 0x01;          \
-   geninterrupt(0x10); \
+   geninterrupt(0x10);  \
 }
+#else
+#define removeCursor() _setcursortype(_NOCURSOR)
+#define smallCursor()  _setcursortype(_NORMALCURSOR)
+#define largeCursor()  _setcursortype(_SOLIDCURSOR)
 
 #endif
+#endif
 
-s16  readKbd(void);
+u16  readKbd(void);
 void initWindow(u16 mode);
 menuType *createMenu(char *title);
 s16  displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey);
@@ -375,9 +376,7 @@ void printChar(char ch, u16 sx,  u16 sy,
                          u16 fgc, u16 bgc,
                          u16 mAttr);
 
-void printString(char *string, u16 sx,  u16 sy,
-                                u16 fgc, u16 bgc,
-                                u16 mAttr);
+void printString(const char *string, u16 sx, u16 sy, u16 fgc, u16 bgc, u16 mAttr);
 
 void printStringFill(char *string, char ch, s16 num,
                             u16 x, u16 y,
@@ -392,7 +391,7 @@ void fillRectangle(char ch, u16 sx, u16 sy,
                              u16 mAttr);
 
 nodeNumType getNodeNum(char *title, u16 sx, u16 sy, u16 aka);
-char *nodeStr(nodeNumType *nodeNum);
+const char *nodeStr(const nodeNumType *nodeNum);
 char *getSourceFileName(char *title);
 char *getDestFileName(char *title);
 void displayMessage(char *msg);

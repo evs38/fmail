@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -20,6 +20,18 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------
+
+#ifdef __WIN32__
+#pragma message "Compiling in 32 bit mode"
+#endif
+
+#ifdef _Windows
+#pragma message "Compiling for Windows"
+#endif
+
+#ifdef __MSDOS__
+#pragma message "__MSDOS__ is defined"
+#endif
 
 #ifdef __OS2__
 #define INCL_DOSPROCESS
@@ -62,24 +74,24 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 extern  u16 allowConversion;
 
 #ifdef __32BIT__
-#define WaitForKey kbhit()
-#define GetKey     getch()
+#define WaitForKey() kbhit()
+#define GetKey()     getch()
 #else
-#define WaitForKey bioskey(0)
-#define GetKey     bioskey(1)
+#define WaitForKey() bioskey(0)
+#define GetKey()     bioskey(1)
 #endif
 
-#ifndef __FMAILX__
+#if !(defined(__FMAILX__) || defined(__32BIT) || defined(__WIN32__))
 extern unsigned cdecl _stklen = 16384;
 #endif
 
 extern uplinkNodeStrType uplinkNodeStr;
 #ifndef __32BIT__
 extern screenCharType far *screen;
+char promptStr[128];
 #endif
-extern s16  color;
+extern s16 color;
 
-char        promptStr[128];
 
 u16 defaultEnumRA;
 s16 boardEdit = 0;
@@ -130,39 +142,39 @@ struct  COUNTRY
 
 int cdecl main(int argc, char *argv[])
 {
-  s16      ch;
-  menuType *mainMenu;
-  menuType *arcMenu;
-  menuType *arc32Menu;
-  menuType *deArcMenu;
-  menuType *deArc32Menu;
-  menuType *sysMiscMenu;
-  menuType *systemMenu;
-  menuType *logMenu;
-  menuType *miscMenu;
-  menuType *userMenu;
-  menuType *pmailMenu;
-  menuType *pathMenu;
-  menuType *mailMenu;
-  menuType *mbMenu;
-  menuType *internetMenu;
+  s16       ch;
+  menuType *mainMenu     = NULL;
+  menuType *arcMenu      = NULL;
+  menuType *arc32Menu    = NULL;
+  menuType *deArcMenu    = NULL;
+  menuType *deArc32Menu  = NULL;
+  menuType *sysMiscMenu  = NULL;
+  menuType *systemMenu   = NULL;
+  menuType *logMenu      = NULL;
+  menuType *miscMenu     = NULL;
+  menuType *userMenu     = NULL;
+  menuType *pmailMenu    = NULL;
+  menuType *pathMenu     = NULL;
+  menuType *mailMenu     = NULL;
+  menuType *mbMenu       = NULL;
+  menuType *internetMenu = NULL;
+  menuType *mgrMenu      = NULL;
+  menuType *pingMenu     = NULL;
+  menuType *netMenu      = NULL;
+  menuType *address1Menu = NULL;
+  menuType *address2Menu = NULL;
+  menuType *uplMenu      = NULL;
+  menuType *groupMenu    = NULL;
+  menuType *genMenu      = NULL;
+  menuType *warningMenu  = NULL;
+  menuType *autoExpMenu  = NULL;
+  menuType *anImpMenu    = NULL;
+  menuType *impExpMenu   = NULL;
 #ifndef __FMAILX__
 #ifndef __32BIT__
-  menuType *swapMenu;
+  menuType *swapMenu     = NULL;
 #endif
 #endif
-  /* menuType *akaMatchMenu; */
-  menuType *mgrMenu;
-  menuType *netMenu;
-  menuType *address1Menu;
-  menuType *address2Menu;
-  menuType *uplMenu;
-  menuType *groupMenu;
-  menuType *genMenu;
-  menuType *warningMenu;
-  menuType *autoExpMenu;
-  menuType *anImpMenu;
-  menuType *impExpMenu;
   toggleType bbsToggle;
   toggleType logStyleToggle;
   toggleType tearToggle;
@@ -179,9 +191,11 @@ int cdecl main(int argc, char *argv[])
   u16         mode = 0;
   tempStrType configFileName;
   char        versionStr[80];
-  fhandle     tempHandle;
-  tempStrType tempStr, tempStr2;
-  char        *helpPtr;
+  fhandle     tempHandle
+            , fmailLocHandle = -1;
+  tempStrType tempStr
+            , tempStr2;
+  char       *helpPtr;
   u16         count;
   toggleType  mailerToggle;
 
@@ -197,17 +211,20 @@ int cdecl main(int argc, char *argv[])
 
   allowConversion = 1;
 
-  strcpy (promptStr, "PROMPT=Enter the command \"EXIT\" to return to FSetup.$_");
-  if (((helpPtr = getenv("PROMPT")) != NULL) && (strlen(helpPtr) <= 64))
-    strcat (promptStr, helpPtr);
+#ifndef __32BIT__
+  strcpy(promptStr, "PROMPT=Enter the command \"EXIT\" to return to "FSNAME".$_");
+  if ((helpPtr = getenv("PROMPT")) != NULL && strlen(helpPtr) <= 64)
+    strcat(promptStr, helpPtr);
   else
-    strcat (promptStr, "$n$g");
+    strcat(promptStr, "$n$g");
   putenv(promptStr);
+#endif
 
 #ifndef __WIN32__
   country(0, &countryInfo);
 #else
   countryInfo.co_tmsep[0] = ':';
+  countryInfo.co_time = 1;  // 24 hour format
 #endif
 
   for (count = 0; count < MAX_AKAS; count++)
@@ -222,7 +239,7 @@ int cdecl main(int argc, char *argv[])
   boardSelect[MAX_AKAS+2].numPtr = &config.recBoard;
   boardSelect[MAX_AKAS+2].f      = (function)badduprecDisplayAreas;
 
-  if (((helpPtr = getenv("FMAIL")) == NULL) || (*helpPtr == 0))
+  if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0)
   {
     strcpy (configPath, argv[0]);
     *(strrchr(configPath, '\\') + 1) = 0;
@@ -237,13 +254,13 @@ int cdecl main(int argc, char *argv[])
   memset(&config, 0, sizeof(configType));
   strcpy(stpcpy(configFileName, configPath), dCFGFNAME);
 
-  if (((configHandle = open(configFileName, O_BINARY|O_RDWR|O_DENYNONE)) == -1) ||
+  if (((configHandle = open(configFileName, O_BINARY | O_RDWR)) == -1) ||
       ((count = _read(configHandle, &config, sizeof (configType))) == 0) ||
       (close(configHandle) == -1))
   {
     memset(&config, 0, sizeof(configType));
 
-    time (&config.creationDate);
+    time(&config.creationDate);
     config.creationDate ^= 0xe534a17bL;
 
     config.versionMajor = CONFIG_MAJOR;
@@ -311,7 +328,7 @@ int cdecl main(int argc, char *argv[])
     config.unRar.memRequired = 0;
     config.unJar.memRequired = 0;
   }
-  if ( count == 0 )
+  if (count == 0)
   {
     strcpy (config.arc32.programName, "PKArc.Com -a");
 #ifdef __FMAILX__
@@ -361,7 +378,7 @@ int cdecl main(int argc, char *argv[])
     config.unRar32.memRequired = 0;
     config.unJar32.memRequired = 0;
   }
-  else if ( count <= 8192 )
+  else if (count <= 8192)
   {
     strcpy (config.arc32.programName, config.arc.programName);
 #ifdef __FMAILX__
@@ -452,35 +469,35 @@ int cdecl main(int argc, char *argv[])
     update = 1;
   }
 
-  if ( config.maxForward < 64 )
+  if (config.maxForward < 64)
     config.maxForward = 64;
-  if ( config.maxMsgSize < 45 )
+  if (config.maxMsgSize < 45)
     config.maxMsgSize = 45;
-  if ( config.recBoard > MBBOARDS )
+  if (config.recBoard > MBBOARDS)
     config.recBoard = 0;
-  if ( config.badBoard > MBBOARDS )
+  if (config.badBoard > MBBOARDS)
     config.badBoard = 0;
-  if ( config.dupBoard > MBBOARDS )
+  if (config.dupBoard > MBBOARDS)
     config.dupBoard = 0;
 
 #ifdef GOLDBASE
   config.bbsProgram = BBS_QBBS;
 #endif
 
-  if ( config.tearType == 2 )
+  if (config.tearType == 2)
     config.tearType = 3;
-  if ( config.tearType == 4 )
+  if (config.tearType == 4)
     config.tearType = 5;
   if (config.recBoard > MBBOARDS)
     config.recBoard = 0;
 
-  if ((config.bbsProgram == BBS_RA1X) && config.genOptions._RA2)
+  if (config.bbsProgram == BBS_RA1X && config.genOptions._RA2)
   {
     config.bbsProgram = BBS_RA20;
     config.genOptions._RA2 = 0;
   }
 
-  memset (&echoDefaultsRec, 0, RAWECHO_SIZE);
+  memset(&echoDefaultsRec, 0, RAWECHO_SIZE);
   echoDefaultsRec.options.security = 1;
   if (openConfig(CFG_AREADEF, &adefHeader, (void*)&adefBuf))
   {
@@ -500,14 +517,14 @@ int cdecl main(int argc, char *argv[])
 
   if (argc > 1)
   {
-    if (stricmp (argv[1], "/M") == 0)
+    if (stricmp(argv[1], "/M") == 0)
       mode = 1;
-    if (stricmp (argv[1], "/C") == 0)
+    if (stricmp(argv[1], "/C") == 0)
       mode = 2;
 #ifndef __32BIT__
 #ifdef __FMAILX__
-    if ( !stricmp (argv[1], "/OS2") || !stricmp (argv[1], "/WIN") ||
-         !stricmp (argv[1], "/X32") || !stricmp (argv[1], "/32") )
+    if ( !stricmp(argv[1], "/OS2") || !stricmp (argv[1], "/WIN") ||
+         !stricmp(argv[1], "/X32") || !stricmp (argv[1], "/32") )
       xOS2 = 1;
 #endif
 #endif
@@ -616,22 +633,6 @@ int cdecl main(int argc, char *argv[])
   bbsToggle.text[7] = "EleBBS";
   bbsToggle.retval[7] = BBS_ELEB;
 
-#if 0
-  /* original */
-  tearToggle.data = &config.tearType;
-  tearToggle.text[0] = "Default";
-  tearToggle.retval[0] = 0;
-  tearToggle.text[1] = "Custom";
-  tearToggle.retval[1] = 1;
-  tearToggle.text[2] = "Empty";
-  tearToggle.retval[2] = 2;
-  tearToggle.text[3] = "Empty + TID";
-  tearToggle.retval[3] = 3;
-  tearToggle.text[4] = "Absent";
-  tearToggle.retval[4] = 4;
-  tearToggle.text[5] = "Absent + TID";
-  tearToggle.retval[5] = 5;
-#endif
   tearToggle.data = &config.tearType;
   tearToggle.text[0] = "Default";
   tearToggle.retval[0] = 0;
@@ -654,27 +655,27 @@ int cdecl main(int argc, char *argv[])
   windowLook.mono_attr    = MONO_NORM;
   windowLook.wAttr        = NO_SAVE; // WB_DOUBLE_H | NO_SAVE;
 
-  if (displayWindow (NULL, 0, 0, 79, 3) != 0)
+  if (displayWindow(NULL, 0, 0, 79, 3) != 0)
   {
-    displayMessage ("Not enough memory available");
-    deInit (5);
-    return(1);
+    displayMessage("Not enough memory available");
+    deInit(5);
+    return 1;
   }
 #ifndef __32BIT__
   if (!color)
     screen[81].attr = 0;
 #endif
-  sprintf(versionStr, "%s - Setup Utility", VersionStr());
+  sprintf(versionStr, "%s - Configuration utility", VersionStr());
 
-  printString (versionStr, 3, 1, YELLOW, RED, MONO_HIGH);
+  printString(versionStr, 3, 1, YELLOW, RED, MONO_HIGH);
   sprintf(tempStr, "Copyright (C) 1991-%s by FMail Developers - All rights reserved", __DATE__ + 7);
-  printString (tempStr, 3, 2, YELLOW, RED, MONO_HIGH);
+  printString(tempStr, 3, 2, YELLOW, RED, MONO_HIGH);
 
-  fillRectangle ('Ü', 0, 4, 79, 4, BLUE, BLACK, 0);
-  fillRectangle ('ß', 0, 23, 79, 23, BLUE, BLACK, 0);
-  fillRectangle (' ', 0, 24, 79, 24, YELLOW, BLACK, MONO_NORM);
+  fillRectangle('Ü', 0, 4, 79, 4, BLUE, BLACK, 0);
+  fillRectangle('ß', 0, 23, 79, 23, BLUE, BLACK, 0);
+  fillRectangle(' ', 0, 24, 79, 24, YELLOW, BLACK, MONO_NORM);
 
-  fillRectangle (' ', 0, 5, 79, 22, BLACK, BLUE, MONO_NORM);
+  fillRectangle(' ', 0, 5, 79, 22, BLACK, BLUE, MONO_NORM);
 
   switch (config.colorSet)
   {
@@ -744,64 +745,68 @@ int cdecl main(int argc, char *argv[])
 
   if (_osmajor < 3)
   {
-    displayMessage ("FSetup requires at least DOS 3.0");
-    fillRectangle (' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
-    deInit (5);
-    return (0);
+    displayMessage(FSNAME" requires at least DOS 3.0");
+    fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
+    deInit(5);
+    return 0;
   }
 
   strcpy(tempStr2, strcpy(tempStr, config.bbsPath));
-  strcat (tempStr, "fmail.loc");
+  strcat(tempStr, "fmail.loc");
   if ((helpPtr = strrchr(tempStr2, '\\')) != NULL)
     *helpPtr = 0;
 
-  if  ((!access(tempStr2, 0)) &&
-       ((tempHandle = open(tempStr, O_WRONLY|O_DENYWRITE|O_BINARY|O_CREAT|O_TRUNC,
-                           S_IREAD|S_IWRITE)) == -1) &&
-       (errno != ENOFILE))
+  if  (  !access(tempStr2, 0)
+      && (fmailLocHandle = open(tempStr, O_WRONLY | O_DENYWRITE | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1
+      && errno != ENOFILE
+      )
   {
-    displayWindow (NULL, 7, 10, 73, 14);
-    printString ("Waiting for another copy of FMail, FTools or FSetup to finish", 10, 12, WHITE, LIGHTGRAY, MONO_HIGH);
+    displayWindow(NULL, 7, 10, 73, 14);
+    printString("Waiting for another copy of FMail, FTools or "FSNAME" to finish", 10, 12, WHITE, LIGHTGRAY, MONO_HIGH);
 
-    time (&time1);
+    time(&time1);
     time2 = time1;
 
     ch = 0;
-    while (((tempHandle = open(tempStr,
-                               O_WRONLY|O_DENYALL|O_BINARY|O_CREAT|O_TRUNC,
-                               S_IREAD|S_IWRITE)) == -1) &&
-           (!config.activTimeOut || time2-time1 < config.activTimeOut) && ((ch = GetKey & 0xff) != 27))
+    while (  (fmailLocHandle = open(tempStr, O_WRONLY | O_DENYALL | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1
+          && (!config.activTimeOut || time2 - time1 < config.activTimeOut)
+          && (ch = GetKey() & 0xff) != 27
+          )
     {
       if (ch != 0 && ch != -1)
-        WaitForKey;
+        WaitForKey();
       else
       {
-        time2a = time2+1;
-        while ( time(&time2) <= time2a )
+        time2a = time2 + 1;
+        while (time(&time2) <= time2a)
           returnTimeSlice(1);
       }
     }
-    if (ch != 0 && ch != -1) WaitForKey;
+    if (ch != 0 && ch != -1)
+      WaitForKey();
 
-    if (tempHandle == -1)
+    if (fmailLocHandle == -1)
     {
       removeWindow();
       if (ch != 27)
-        printStringFill ("Another copy did not finish in time. Exiting...", ' ', 76, 3, 2, WHITE, RED, MONO_HIGH);
-      deInit (5);
+        printStringFill("Another copy did not finish in time. Exiting...", ' ', 76, 3, 2, WHITE, RED, MONO_HIGH);
+      deInit(5);
       return 0;
     }
     removeWindow();
   }
 
-  if ((config.versionMajor != CONFIG_MAJOR) ||
-      (config.versionMinor < 92) ||
-      (config.versionMinor > CONFIG_MINOR))
+  if (  config.versionMajor != CONFIG_MAJOR
+     || config.versionMinor < 92
+     || config.versionMinor > CONFIG_MINOR
+     )
   {
-    displayMessage (dCFGFNAME" was not created by FSetup version 0.90/0.92/0.94/0.96");
-    fillRectangle (' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
-    deInit (5);
-    return (0);
+    displayMessage(dCFGFNAME" was not created by "FSNAME" version 0.90/0.92/0.94/0.96");
+    fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
+    deInit(5);
+    if (fmailLocHandle != -1)
+      close(fmailLocHandle);
+    return 0;
   }
 
   if (config.versionMinor != CONFIG_MINOR)
@@ -810,52 +815,48 @@ int cdecl main(int argc, char *argv[])
     config.versionMinor = CONFIG_MINOR;
   }
 
-  defaultEnumRA =  (echoDefaultsRec.attrRA & BIT3) ?
-                   ((echoDefaultsRec.attrRA & BIT5) ? 1 : 2) : 0;
+  defaultEnumRA = (echoDefaultsRec.attrRA & BIT3)
+                ? ((echoDefaultsRec.attrRA & BIT5) ? 1 : 2) : 0;
 
   strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
-  if ((tempHandle = open(tempStr, O_BINARY|O_RDONLY|O_DENYNONE)) != -1)
+  if ((tempHandle = open(tempStr, O_BINARY | O_RDONLY)) != -1)
   {
-    badEchoCount = (read(tempHandle, badEchos,
-                          MAX_BAD_ECHOS*sizeof(badEchoType))+1)/sizeof(badEchoType);
-    close (tempHandle);
+    badEchoCount = read(tempHandle, badEchos, MAX_BAD_ECHOS * sizeof(badEchoType)) / sizeof(badEchoType);
+    close(tempHandle);
     if (badEchoCount)
     {
-      printStringFill ("Install new areas names found by FMail when it was tossing",
-                       ' ', 80, 0, 24, YELLOW, BLACK, MONO_NORM);
-      if ((ch = askBoolean ("New areas found. Install in AreaManager ?",
-                            'Y')) == 'Y')
-      {
+      printStringFill("Install new areas names found by FMail when it was tossing"
+                     , ' ', 80, 0, 24, YELLOW, BLACK, MONO_NORM);
+      if ((ch = askBoolean("New areas found. Install in AreaManager ?", 'Y')) == 'Y')
         areaMgr ();
-      }
+
       if (ch == 'N')
-      {
-        unlink (tempStr);
-      }
+        unlink(tempStr);
+
       badEchoCount = 0;
     }
   }
 
   if ((warningMenu = createMenu(" WARNING ")) == NULL)
   {
-    displayMessage ("Not enough memory available");
-    deInit (5);
-    return(1);
+    displayMessage("Not enough memory available");
+    deInit(5);
+    if (fmailLocHandle != -1)
+      close(fmailLocHandle);
+    return 1;
   }
-  addItem(warningMenu, DISPLAY,
-           "FSetup's AutoExport feature overwrites existing", 0, NULL, 0, 0, NULL);
-  addItem(warningMenu, DISPLAY,
-           "area configuration files! Any information stored", 0, NULL, 0, 0, NULL);
-  addItem(warningMenu, DISPLAY,
-           "in those files not present in FSetup's Area Manager", 0, NULL, 0, 0, NULL);
-  addItem(warningMenu, DISPLAY,
-           "will be lost.                Press ESC to continue.", 0, NULL, 0, 0, NULL);
+  addItem(warningMenu, DISPLAY, FSNAME"'s AutoExport feature overwrites existing", 0, NULL, 0, 0, NULL);
+  addItem(warningMenu, DISPLAY, "area configuration files! Any information stored", 0, NULL, 0, 0, NULL);
+  addItem(warningMenu, DISPLAY, "in those files not present in "FSNAME"'s Area Manager", 0, NULL, 0, 0, NULL);
+  addItem(warningMenu, DISPLAY, "will be lost.                Press ESC to continue.", 0, NULL, 0, 0, NULL);
 
   if ((autoExpMenu = createMenu(" AutoExport ")) == NULL)
   {
-    displayMessage ("Not enough memory available");
-    deInit (5);
-    return(1);
+    displayMessage("Not enough memory available");
+    deInit(5);
+    if (fmailLocHandle != -1)
+      close(fmailLocHandle);
+    return 1;
   }
   addItem(autoExpMenu, NEW_WINDOW, "* WARNING *", 0, warningMenu, 6, 3,
            "Read this message before using AutoExport !");
@@ -864,12 +865,12 @@ int cdecl main(int argc, char *argv[])
            "CHANGE SOMETHING IN AREAMGR AND NODEMGR TO CREATE AREA AND NODE FILES !!!");
   addItem(autoExpMenu, PATH, "Areas.BBS path", 0, config.autoAreasBBSPath, sizeof(pathType)-1, 0,
            "Directory to create Areas.BBS in");
-  addItem(autoExpMenu, BOOL_INT, "ÈÍ Include PT", 0, &config.genOptions, BIT8, 0,
+  addItem(autoExpMenu, BOOL_INT, "ÈÍ> Include PT", 0, &config.genOptions, BIT8, 0,
            "Include pass through areas");
   addItem(autoExpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(autoExpMenu, PATH, "Folder.FD/IM path", 0, config.autoFolderFdPath, sizeof(pathType)-1, 0,
            "Directory to create Folder.FD or IMFolder.CFG in");
-  addItem(autoExpMenu, BOOL_INT, "ÈÍ Use comment", 0, &config.genOptions, BIT7, 0,
+  addItem(autoExpMenu, BOOL_INT, "ÈÍ> Use comment", 0, &config.genOptions, BIT7, 0,
            "Use comment instead of area tag for Folder.FD or IMFolder.CFG");
   addItem(autoExpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(autoExpMenu, PATH, "Areas.GLD path", 0, config.autoGoldEdAreasPath, sizeof(pathType)-1, 0,
@@ -877,9 +878,9 @@ int cdecl main(int argc, char *argv[])
   addItem(autoExpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(autoExpMenu, PATH, "BBS area file path", 0, config.autoRAPath, sizeof(pathType)-1, 0,
            "Directory to create MESSAGES.RA / BOARDS.BBS / MESSAGES.PB in");
-  addItem(autoExpMenu, BOOL_INT, "ÌÍ Include B/D/R", 0, &config.genOptions, BIT11, 0,
+  addItem(autoExpMenu, BOOL_INT, "ÌÍ> Include B/D/R", 0, &config.genOptions, BIT11, 0,
            "Include the Bad msg board, the Duplicate msg board and the Recovery board");
-  addItem(autoExpMenu, BOOL_INT, "ÈÍ Use comment", 0, &config.genOptions, BIT9, 0,
+  addItem(autoExpMenu, BOOL_INT, "ÈÍ> Use comment", 0, &config.genOptions, BIT9, 0,
            "Use comment instead of area tag for MESSAGES.RA / BOARDS.BBS");
 
   if ((anImpMenu = createMenu(" Import config ")) == NULL)
@@ -1231,7 +1232,7 @@ int cdecl main(int argc, char *argv[])
            "Log inbound mail packet filenames and origin/destination nodes");
   addItem(logMenu, BOOL_INT, "Program execution    ", 32, &config.logInfo, BIT13, 0,
            "Log information about programs being started (e.g. compression programs)");
-  addItem(logMenu, BOOL_INT, "ÈÍ Extended info", 0, &config.logInfo, BIT3, 0,
+  addItem(logMenu, BOOL_INT, "ÈÍ> Extended info", 0, &config.logInfo, BIT3, 0,
            "Log extended packet info, such as program name, type, size, date and time");
   addItem(logMenu, BOOL_INT, "File open errors     ", 32, &config.logInfo, LOG_OPENERR, 0,
            "Log info about files that could not be opened by FMail (NOT ALWAYS REAL ERRORS!)");
@@ -1260,25 +1261,25 @@ int cdecl main(int argc, char *argv[])
            "Never use the ARCmail 0.60 naming convention");
   addItem(mailMenu, BOOL_INT, "Dupe detection        ", 28, &config.mailOptions, BIT8, 0,
            "Detect and remove duplicate messages");
-  addItem(mailMenu, BOOL_INT, "ÈÍ Out-of-zone", 0, &config.mailOptions, BIT10, 0,
+  addItem(mailMenu, BOOL_INT, "ÈÍ> Out-of-zone", 0, &config.mailOptions, BIT10, 0,
            "Use ARCmail 0.60 naming convention for out-of-zone mail");
-  addItem(mailMenu, BOOL_INT, "ÌÍ Ignore MSGID      ", 28, &config.mailOptions, BIT9, 0,
+  addItem(mailMenu, BOOL_INT, "ÌÍ> Ignore MSGID      ", 28, &config.mailOptions, BIT9, 0,
            "Do not use MSGIDs for dupe detection");
   addItem(mailMenu, BOOL_INT, "Ext. bundle names", 0, &config.mailOptions, BIT11, 0,
            "Use 0-Z in stead of only 0-9 for mail bundle name extensions");
 #ifdef __32BIT__
-  addItem(mailMenu, NUM_INT, "ÈÍ Dup recs (x1024)  ", 28, &config.kDupRecs, 4, 9999,
+  addItem(mailMenu, NUM_INT, "ÈÍ> Dup recs (x1024)  ", 28, &config.kDupRecs, 4, 9999,
            "Number of messages x 1024 of which dup checking information is stored");
 #else
 #ifdef __FMAILX__
   if (xOS2)
-    addItem(mailMenu, NUM_INT, "ÈÍ Dup recs (x1024)  ", 28, &config.kDupRecs, 4, 9999,
+    addItem(mailMenu, NUM_INT, "ÈÍ> Dup recs (x1024)  ", 28, &config.kDupRecs, 4, 9999,
              "Number of messages x 1024 of which dup checking information is stored");
   else
-    addItem(mailMenu, DISPLAY, "ÈÍ Use EMS           ", 28, &config.genOptions, BIT0, 0,
+    addItem(mailMenu, DISPLAY, "ÈÍ> Use EMS           ", 28, &config.genOptions, BIT0, 0,
              "Use 64 kb of EMS memory to store message signatures in");
 #else
-  addItem(mailMenu, BOOL_INT, "ÈÍ Use EMS           ", 28, &config.genOptions, BIT0, 0,
+  addItem(mailMenu, BOOL_INT, "ÈÍ> Use EMS           ", 28, &config.genOptions, BIT0, 0,
            "Use 64 kb of EMS memory to store message signatures in");
 #endif
 #endif
@@ -1335,9 +1336,21 @@ int cdecl main(int argc, char *argv[])
            "Allow nodes to use %+ALL");
   addItem(mgrMenu, BOOL_INT, "Auto-disconnect", 0, &config.mgrOptions, BIT4, 0,
            "Automatically disconnect passthru areas with only one link");
-/* addItem(mgrMenu, BOOL_INT, "ÈÍ Remove record", 0, &config.mgrOptions, BIT5, 0,
+/* addItem(mgrMenu, BOOL_INT, "ÈÍ> Remove record", 0, &config.mgrOptions, BIT5, 0,
   	    "Immediatly remove an auto-disconnected area from the Area Manager");
 */
+
+  if ((pingMenu = createMenu(" Ping/trace options ")) == NULL)
+    goto nomem;
+
+  addItem(pingMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
+  addItem(pingMenu, BOOL_INT_REV, "Enable PING"           , 0, &config.pingOptions, BIT0, 0, "Enable the PING function");
+  addItem(pingMenu, BOOL_INT_REV, "Enable TRACE"          , 0, &config.pingOptions, BIT1, 0, "Enable the TRACE function");
+  addItem(pingMenu, BOOL_INT_REV, "Keep PING requests"    , 0, &config.pingOptions, BIT2, 0, "Keep a copy of PING request messages after processing");
+//addItem(pingMenu, BOOL_INT_REV, "Keep TRACE requests"   , 0, &config.pingOptions, BIT3, 0, "Keep a copy of TRACE request messages after processing");
+  addItem(pingMenu, BOOL_INT_REV, "Keep PING responses"   , 0, &config.pingOptions, BIT4, 0, "Keep a copy of PING response messages after they have been sent");
+  addItem(pingMenu, BOOL_INT_REV, "Keep TRACE responses"  , 0, &config.pingOptions, BIT5, 0, "Keep a copy of TRACE response messages after they have been sent");
+
   if ((netMenu = createMenu(" Netmail boards ")) == NULL)
     goto nomem;
 
@@ -1427,7 +1440,7 @@ int cdecl main(int argc, char *argv[])
   addItem(mbMenu, BOOL_INT  , "Message base sharing  ", 32, &config.mbOptions       , BIT10,     0, "Enable the message base locking system");
   addItem(mbMenu, BOOL_INT  , "Sort new messages"     ,  0, &config.mbOptions       , BIT0 ,     0, "Sort the messages that have been tossed into the message base");
   addItem(mbMenu, BOOL_INT  , "Scan always           ", 32, &config.mbOptions       , BIT8 ,     0, "Do not use ECHOMAIL.BBS or NETMAIL.BBS");
-  addItem(mbMenu, BOOL_INT  , "ÈÍ Use subject"       ,  0, &config.mbOptions       , BIT1 ,     0, "Apart from time/date also use the subject to sort");
+  addItem(mbMenu, BOOL_INT  , "ÈÍ> Use subject"       ,  0, &config.mbOptions       , BIT1 ,     0, "Apart from time/date also use the subject to sort");
   addItem(mbMenu, BOOL_INT  , "Quick toss            ", 32, &config.mbOptions       , BIT12,     0, "Do not update message base directory entries after tossing a packet");
   addItem(mbMenu, DISPLAY   , NULL                    ,  0, NULL                    ,     0,     0, NULL);
   addItem(mbMenu, FILE_NAME , "Tossed Areas List"     ,  0, config.tossedAreasList , sizeof(pathType)-3, 0, "List of echomail areas in which mail has been tossed");
@@ -1495,9 +1508,9 @@ int cdecl main(int argc, char *argv[])
 
   addItem(swapMenu, BOOL_INT, "Swapping", 0, &config.genOptions, BIT2, 0,
            "Swap FMail out of memory before executing de-/compression programs");
-  addItem(swapMenu, BOOL_INT, "ÌÍ Use EMS", 0, &config.genOptions, BIT3, 0,
+  addItem(swapMenu, BOOL_INT, "ÌÍ> Use EMS", 0, &config.genOptions, BIT3, 0,
            "Use EMS memory if possible instead of the harddisk");
-  addItem(swapMenu, BOOL_INT, "ÈÍ Use XMS", 0, &config.genOptions, BIT4, 0,
+  addItem(swapMenu, BOOL_INT, "ÈÍ> Use XMS", 0, &config.genOptions, BIT4, 0,
            "Use XMS memory if possible instead of the harddisk");
   addItem(swapMenu, PATH, "Swap file path", 0, config.swapPath, sizeof(pathType)-1, 0,
            "Where the swap file will be located");
@@ -1581,7 +1594,7 @@ int cdecl main(int argc, char *argv[])
   addItem(genMenu, TEXT, "SysOp name", 0, &config.sysopName, sizeof(config.sysopName)-1, 0, "Name of the SysOp");
   addItem(genMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(genMenu, ENUM_INT, "Mailer", 0, &mailerToggle, 0, 6, "Mailer used");
-  addItem(genMenu, BOOL_INT, "ÈÍ Busy flags", 0, &config.mailOptions, BIT4, 0
+  addItem(genMenu, BOOL_INT, "ÈÍ> Busy flags", 0, &config.mailOptions, BIT4, 0
           , "Create busy flags when mail is being compressed");
   addItem(genMenu,
 #ifdef GOLDBASE
@@ -1591,12 +1604,12 @@ int cdecl main(int argc, char *argv[])
 #endif
            "BBS program", 0, &bbsToggle, 0, 8,
            "BBS program program used (used by AutoExport)");
-  /* addItem(genMenu, BOOL_INT, "ÈÍ RA 2", 0, &config.genOptions, BIT15, 0,
+  /* addItem(genMenu, BOOL_INT, "ÈÍ> RA 2", 0, &config.genOptions, BIT15, 0,
               "If you are using RemoteAccess, are you using version 2.00 or higher?");
   */
   addItem(genMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(genMenu, ENUM_INT, "Tearline      ", 0, &tearToggle, 0, 5, "Tearline type");
-  addItem(genMenu, TEXT  , "ÈÍ Custom    ", 0, &config.tearLine, 24, 0, "Custom tearline");
+  addItem(genMenu, TEXT  , "ÈÍ> Custom    ", 0, &config.tearLine, 24, 0, "Custom tearline");
   addItem(genMenu, BOOL_INT, "ReTear        ", 0, &config.mbOptions, BIT3, 0, "Replace an existing tear line");
 
   if ((userMenu = createMenu(" Users ")) == NULL)
@@ -1616,9 +1629,9 @@ int cdecl main(int argc, char *argv[])
 
   addItem(pmailMenu, PATH, "Pers. mail path", 0, config.pmailPath, sizeof(pathType)-1, 0,
            "Where copies of echo messages directed to the SysOp will be stored (optional)");
-  addItem(pmailMenu, TEXT|UPCASE, "ÌÍ Topic 1", 0, config.topic1, 15, 0,
+  addItem(pmailMenu, TEXT|UPCASE, "ÌÍ> Topic 1", 0, config.topic1, 15, 0,
            "Scan subject line of messages for a topic");
-  addItem(pmailMenu, TEXT|UPCASE, "ÈÍ Topic 2", 0, config.topic2, 15, 0,
+  addItem(pmailMenu, TEXT|UPCASE, "ÈÍ> Topic 2", 0, config.topic2, 15, 0,
            "Scan subject line of messages for a topic");
   addItem(pmailMenu, BOOL_INT, "Include netmail", 0, &config.mailOptions, BIT12, 0,
            "Also scan netmail messages for personal mail");
@@ -1674,7 +1687,7 @@ int cdecl main(int argc, char *argv[])
   addItem(sysMiscMenu, BOOL_INT, "Monochrome", 0, &config.genOptions, BIT6, 0,
            "Do not use color even if a color card is detected (same as /M switch)");
   addItem(sysMiscMenu, ENUM_INT, "Color set", 0, &colorToggle, 0, 3,
-           "Color set used by FSetup (has no effect in monochrome mode)");
+           "Color set used by "FSNAME" (has no effect in monochrome mode)");
 
   if ((systemMenu = createMenu(" System info ")) == NULL)
     goto nomem;
@@ -1732,6 +1745,8 @@ int cdecl main(int argc, char *argv[])
            "Mailflow related options");
   addItem(miscMenu, NEW_WINDOW, "Mgr options", 0, mgrMenu, 2, -1,
            "Mgr related options");
+  addItem(miscMenu, NEW_WINDOW, "Ping/trace options", 0, pingMenu, 2, -1,
+           "Ping/trace related options");
   addItem(miscMenu, NEW_WINDOW, "Personal mail", 0, pmailMenu, 2, 2,
            "Personal mail settings");
   addItem(miscMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
@@ -1747,10 +1762,12 @@ int cdecl main(int argc, char *argv[])
   if ((mainMenu = createMenu(" Main ")) == NULL)
   {
 nomem:
-    free (autoExpMenu);
+    free(autoExpMenu);
     displayMessage ("Not enough memory available");
-    deInit (5);
-    return(1);
+    deInit(5);
+    if (fmailLocHandle != -1)
+      close(fmailLocHandle);
+    return 1;
   }
   addItem(mainMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(mainMenu, NEW_WINDOW, "Miscellaneous", 0, miscMenu, 2, 2,
@@ -1773,15 +1790,15 @@ nomem:
 
   do
   {
-    update |= runMenu (mainMenu, 3, 6);
+    update |= runMenu(mainMenu, 3, 6);
     if (update)
-      ch = askBoolean ("Save changes ?", 'Y');
+      ch = askBoolean("Save changes ?", 'Y');
     else
       ch = 'N';
   }
-  while ((ch != 'Y') && (ch != 'N'));
+  while (ch != 'Y' && ch != 'N');
 
-  working ();
+  working();
 
   if (defaultEnumRA)
     echoDefaultsRec.attrRA |= BIT3;
@@ -1854,9 +1871,47 @@ nomem:
       closeConfig(CFG_AREADEF);
     }
   }
-  autoUpdate ();
+  autoUpdate();
 
-  deInit (5);
-  return (0);
+  deInit(5);
+
+  if (mainMenu    ) free(mainMenu    );
+  if (arcMenu     ) free(arcMenu     );
+  if (arc32Menu   ) free(arc32Menu   );
+  if (deArcMenu   ) free(deArcMenu   );
+  if (deArc32Menu ) free(deArc32Menu );
+  if (sysMiscMenu ) free(sysMiscMenu );
+  if (systemMenu  ) free(systemMenu  );
+  if (logMenu     ) free(logMenu     );
+  if (miscMenu    ) free(miscMenu    );
+  if (userMenu    ) free(userMenu    );
+  if (pmailMenu   ) free(pmailMenu   );
+  if (pathMenu    ) free(pathMenu    );
+  if (mailMenu    ) free(mailMenu    );
+  if (mbMenu      ) free(mbMenu      );
+  if (internetMenu) free(internetMenu);
+  if (mgrMenu     ) free(mgrMenu     );
+  if (pingMenu    ) free(pingMenu    );
+  if (netMenu     ) free(netMenu     );
+  if (address1Menu) free(address1Menu);
+  if (address2Menu) free(address2Menu);
+  if (uplMenu     ) free(uplMenu     );
+  if (groupMenu   ) free(groupMenu   );
+  if (genMenu     ) free(genMenu     );
+  if (warningMenu ) free(warningMenu );
+  if (autoExpMenu ) free(autoExpMenu );
+  if (anImpMenu   ) free(anImpMenu   );
+  if (impExpMenu  ) free(impExpMenu  );
+#ifndef __FMAILX__
+#ifndef __32BIT__
+  if (swapMenu    ) free(swapMenu    );
+#endif
+#endif
+
+  if (fmailLocHandle != -1)
+    close(fmailLocHandle);
+
+  return 0;
 }
+//---------------------------------------------------------------------------
 

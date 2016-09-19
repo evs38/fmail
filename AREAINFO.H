@@ -55,16 +55,16 @@ typedef u16 *echoToNodePtrType;
 //---------------------------------------------------------------------------
 typedef struct
 {
-  uchar          *areaName;
-  uchar          *oldAreaName;
+  char           *areaName;
+  char           *oldAreaName;
   u16             writeLevel;
   u16             board;
-  uchar          *JAMdirPtr;
+  char           *JAMdirPtr;
   uchar           address;
   u32             alsoSeenBy;
   areaOptionsType options;
   uchar           outStatus;
-  uchar          *originLine;
+  char           *originLine;
   u32             areaNameCRC;
   u16             msgCount;
   u16             dupCount;
@@ -93,8 +93,8 @@ typedef struct
   tempStrType   pktFileName;
   s16           pktHandle;
   u16           fromNodeSec
-            	, fromNodeDup
-            	, fromNodeMsg;
+              , fromNodeDup
+              , fromNodeMsg;
   u16           totalMsgs;
 
 } nodeFileRecType;

@@ -1,24 +1,25 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #ifdef __OS2__
 
@@ -35,7 +36,7 @@ void returnTimeSlice(u16 arg)
 #ifdef FMAIL
    if ( !arg && !config.genOptions.timeSliceFM )
       return;
-#elif !defined FSETUP
+#elif !defined(FSETUP)
    if ( !arg && !config.genOptions.timeSliceFT )
       return;
 #else
@@ -59,15 +60,19 @@ void returnTimeSlice(u16 arg)
 
 void returnTimeSlice(u16 arg)
 {
-#ifndef FMAIL
-   if ( !arg || !config.genOptions.timeSliceFT )
-      return;
+#if defined(FTOOLS)
+#define SLEEPTIME 0
+  if (!arg || !config.genOptions.timeSliceFT)
+    return;
+#elif defined(FMAIL)
+#define SLEEPTIME 0
+  if (!arg || !config.genOptions.timeSliceFM)
+    return;
 #else
-   if ( !arg || !config.genOptions.timeSliceFM )
-      return;
+#define SLEEPTIME 10
 #endif
 #ifdef __WIN32__
-  Sleep(0);
+  Sleep(SLEEPTIME);  // milliseconds
 #else
   sleep(1);
 #endif  
@@ -137,7 +142,7 @@ void returnTimeSlice(u16 arg)
    switch ( multitasker )
    {
       case DESQVIEW  : _AX = 0x1000;
-		       geninterrupt(0x15);
+                       geninterrupt(0x15);
                        break;
       case WINDOWS   :
       case OS2       : _AX = 0x1680;

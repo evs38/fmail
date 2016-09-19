@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2015  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -40,161 +40,147 @@
 #include "utils.h"
 #include "version.h"
 
-
-
+//---------------------------------------------------------------------------
 nodeInfoType *nodeInfo[MAX_NODES];
 nodeInfoType defaultNodeInfo;
-
 
 u16 nodeCount;
 
 extern configType config;
 
-
-
-void initNodeInfo (void)
+//---------------------------------------------------------------------------
+void initNodeInfo(void)
 {
-   u16          count;
-   headerType   *nodeHeader;
-   nodeInfoType *nodeBuf;
+  u16           count;
+  headerType   *nodeHeader;
+  nodeInfoType *nodeBuf;
 
-   if ( !openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf) )
-      logEntry ("Bad or missing "dNODFNAME, LOG_ALWAYS, 2);
+  if (!openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf))
+    logEntry("Bad or missing "dNODFNAME, LOG_ALWAYS, 2);
 
-   nodeCount = min(MAX_NODES,(u16)(nodeHeader->totalRecords));
+  nodeCount = min(MAX_NODES, (u16)(nodeHeader->totalRecords));
 
-   for (count=0; count<nodeCount; count++)
-   {
-      if ((nodeInfo[count] = malloc(sizeof(nodeInfoType))) == NULL)
-         logEntry ("Not enough memory available", LOG_ALWAYS, 2);
-      getRec(CFG_NODES, count);
-      memcpy(nodeInfo[count], nodeBuf, sizeof(nodeInfoType));
-      nodeInfo[count]->password[16] = 0;
-      nodeInfo[count]->packetPwd[8] = 0;
-      nodeInfo[count]->sysopName[35] = 0;
-   }
-   closeConfig(CFG_NODES);
+  for (count = 0; count < nodeCount; count++)
+  {
+    if ((nodeInfo[count] = malloc(sizeof(nodeInfoType))) == NULL)
+      logEntry ("Not enough memory available", LOG_ALWAYS, 2);
 
-   memset (&defaultNodeInfo, 0, sizeof(nodeInfoType));
-   defaultNodeInfo.options.active = 1;
-   defaultNodeInfo.capability     = PKT_TYPE_2PLUS;
-   defaultNodeInfo.archiver       = config.defaultArc;
+    getRec(CFG_NODES, count);
+    memcpy(nodeInfo[count], nodeBuf, sizeof(nodeInfoType));
+    nodeInfo[count]->password[16] = 0;
+    nodeInfo[count]->packetPwd[8] = 0;
+    nodeInfo[count]->sysopName[35] = 0;
+  }
+  for (; count < MAX_NODES; count++)
+    nodeInfo[count] = NULL;
+
+  closeConfig(CFG_NODES);
+
+  memset(&defaultNodeInfo, 0, sizeof(nodeInfoType));
+  defaultNodeInfo.options.active = 1;
+  defaultNodeInfo.capability     = PKT_TYPE_2PLUS;
+  defaultNodeInfo.archiver       = config.defaultArc;
 }
-
-
-
-nodeInfoType *getNodeInfo (nodeNumType *nodeNum)
+//---------------------------------------------------------------------------
+nodeInfoType *getNodeInfo(nodeNumType *nodeNum)
 {
-   u16 count = 0;
+  u16 count = 0;
 
-   if (nodeNum->zone == 0)
-   {
-      while ((count < nodeCount) &&
-             (memcmp (&nodeNum->net, &(nodeInfo[count]->node.net),
-                                     sizeof(nodeNumType)-2) != 0))
-      {
-         count++;
-      }
-   }
-   else
-   {
-      while ((count < nodeCount) &&
-             (memcmp (nodeNum, &(nodeInfo[count]->node),
-                               sizeof(nodeNumType)) != 0))
-      {
-         count++;
-      }
-   }
-   if (count < nodeCount)
-   {
-      return (nodeInfo[count]);
-   }
-   return (&defaultNodeInfo);
+  if (nodeNum->zone == 0)
+    while (count < nodeCount && memcmp(&nodeNum->net, &(nodeInfo[count]->node.net), sizeof(nodeNumType) - 2) != 0)
+      count++;
+  else
+    while (count < nodeCount && memcmp(nodeNum, &(nodeInfo[count]->node), sizeof(nodeNumType)) != 0)
+      count++;
+
+  if (count < nodeCount)
+    return nodeInfo[count];
+
+  return &defaultNodeInfo;
 }
-
-
+//---------------------------------------------------------------------------
 extern u32 totalBundleSize[MAX_NODES];
 extern time_t startTime;
 
 void closeNodeInfo(void)
 {
-   headerType   *nodeHeader;
-   nodeInfoType *nodeBuf;
-   u16          count
+  headerType   *nodeHeader;
+  nodeInfoType *nodeBuf;
+  u16           count
               , count2;
 
-   /* verwerk bundle datum via-node in node zelf */
-   for ( count = 0; count < nodeCount; count++ )
-   {
-      for ( count2 = 0; count2 < nodeCount; count2++ )
+  // verwerk bundle datum via-node in node zelf
+  for (count = 0; count < nodeCount; count++)
+    for (count2 = 0; count2 < nodeCount; count2++)
+      if (memcmp(&(nodeInfo[count]->node), &(nodeInfo[count2]->viaNode), sizeof(nodeNumType)) == 0)
       {
-         if ( memcmp(&(nodeInfo[count]->node), &(nodeInfo[count2]->viaNode), sizeof(nodeNumType)) == 0 )
-         {
-            nodeInfo[count2]->lastNewBundleDat = nodeInfo[count]->lastNewBundleDat;
-            nodeInfo[count2]->referenceLNBDat = nodeInfo[count]->referenceLNBDat;
-         }
+        nodeInfo[count2]->lastNewBundleDat = nodeInfo[count]->lastNewBundleDat;
+        nodeInfo[count2]->referenceLNBDat  = nodeInfo[count]->referenceLNBDat;
       }
-   }
 
-   if (openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf))
-   {
-      strcpy (message->fromUserName, "FMail AutoPassive");
-      strcpy (message->subject,      "Status of system changed to Passive");
-      message->srcNode   = config.akaList[0].nodeNum;
-      message->attribute = PRIVATE;
+  if (openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf))
+  {
+    strcpy(message->fromUserName, "FMail AutoPassive");
+    strcpy(message->subject,      "Status of system changed to Passive");
+    message->srcNode   = config.akaList[0].nodeNum;
+    message->attribute = PRIVATE;
 
-      chgNumRec(CFG_NODES, nodeCount);
-      for (count=0; count<nodeCount; count++)
+    chgNumRec(CFG_NODES, nodeCount);
+    for (count = 0; count < nodeCount; count++)
+    {
+      if (nodeInfo[count] == NULL)  // Fail safe, shouldn't happen.
+        continue;
+
+      memcpy(nodeBuf, nodeInfo[count], sizeof(nodeInfoType));
+      if (nodeBuf->options.active && nodeBuf->lastNewBundleDat == nodeBuf->referenceLNBDat)
       {
-         memcpy(nodeBuf, nodeInfo[count], sizeof(nodeInfoType));
-         if ( nodeBuf->options.active &&
-              nodeBuf->lastNewBundleDat == nodeBuf->referenceLNBDat )
-         {
-            if (nodeBuf->passiveSize && totalBundleSize[count] / 1024ul > nodeBuf->passiveSize * 100ul)
-            {
-               message->destNode = config.akaList[0].nodeNum;
-               strcpy(message->toUserName, config.sysopName);
-               sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r%s"
-                      , nodeStr(&nodeBuf->node), nodeBuf->sysopName, (u32)nodeBuf->passiveSize*100L, totalBundleSize[count]/1024
-                      , TearlineStr()
-                      );
-               writeMsgLocal(message, NETMSG, 1);
-               sprintf(message->text, "The status of your system %s has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r"
-                                      "You can reactivate your system by sending a message containing %ACTIVE to FMail.\r\r%s"
-                      , nodeStr(&nodeBuf->node), (u32)nodeBuf->passiveSize*100L, totalBundleSize[count]/1024
-                      , TearlineStr()
-                      );
-               message->destNode = nodeBuf->node;
-               strcpy(message->toUserName, nodeBuf->sysopName);
-               writeMsgLocal (message, NETMSG, 1);
-               nodeBuf->options.active = 0;
-            }
-            else if ( nodeBuf->passiveDays && nodeBuf->referenceLNBDat &&
-            		      startTime-nodeBuf->referenceLNBDat >= (u32)nodeBuf->passiveDays*86400L )
-            {
-              message->destNode = config.akaList[0].nodeNum;
-              strcpy(message->toUserName, config.sysopName);
-              sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the system did not poll for at least %u days.\r\r%s"
-                     , nodeStr(&nodeBuf->node), nodeBuf->sysopName, nodeBuf->passiveDays
-                     , TearlineStr()
-                     );
-              writeMsgLocal (message, NETMSG, 1);
-              sprintf(message->text, "The status of your system %s has been changed to Passive because you did not poll for at least %u days.\r\r"
-                                     "You can reactivate your system by sending a message containing %ACTIVE to FMail.\r\r%s"
-                     , nodeStr(&nodeBuf->node), nodeBuf->passiveDays
-                     , TearlineStr()
-                     );
-              message->destNode = nodeBuf->node;
-              strcpy(message->toUserName, nodeBuf->sysopName);
-              writeMsgLocal(message, NETMSG, 1);
-              nodeBuf->options.active = 0;
-            }
-         }
-         putRec(CFG_NODES,count);
+        if (nodeBuf->passiveSize && totalBundleSize[count] / 1024ul > nodeBuf->passiveSize * 100ul)
+        {
+          message->destNode = config.akaList[0].nodeNum;
+          strcpy(message->toUserName, config.sysopName);
+          sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r%s"
+                , nodeStr(&nodeBuf->node), nodeBuf->sysopName, (u32)nodeBuf->passiveSize*100L, totalBundleSize[count]/1024
+                , TearlineStr()
+                );
+          writeMsgLocal(message, NETMSG, 1);
+          sprintf(message->text, "The status of your system %s has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r"
+                                "You can reactivate your system by sending a message containing %ACTIVE to FMail.\r\r%s"
+                , nodeStr(&nodeBuf->node), (u32)nodeBuf->passiveSize*100L, totalBundleSize[count]/1024
+                , TearlineStr()
+                );
+          message->destNode = nodeBuf->node;
+          strcpy(message->toUserName, nodeBuf->sysopName);
+          writeMsgLocal (message, NETMSG, 1);
+          nodeBuf->options.active = 0;
+        }
+        else
+          if (  nodeBuf->passiveDays && nodeBuf->referenceLNBDat
+             && startTime-nodeBuf->referenceLNBDat >= (u32)nodeBuf->passiveDays*86400L)
+          {
+            message->destNode = config.akaList[0].nodeNum;
+            strcpy(message->toUserName, config.sysopName);
+            sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the system did not poll for at least %u days.\r\r%s"
+                   , nodeStr(&nodeBuf->node), nodeBuf->sysopName, nodeBuf->passiveDays
+                   , TearlineStr()
+                   );
+            writeMsgLocal (message, NETMSG, 1);
+            sprintf(message->text, "The status of your system %s has been changed to Passive because you did not poll for at least %u days.\r\r"
+                                   "You can reactivate your system by sending a message containing %ACTIVE to FMail.\r\r%s"
+                   , nodeStr(&nodeBuf->node), nodeBuf->passiveDays
+                   , TearlineStr()
+                   );
+            message->destNode = nodeBuf->node;
+            strcpy(message->toUserName, nodeBuf->sysopName);
+            writeMsgLocal(message, NETMSG, 1);
+            nodeBuf->options.active = 0;
+          }
       }
-      closeConfig(CFG_NODES);
-   }
+      putRec(CFG_NODES, count);
+    }
+    closeConfig(CFG_NODES);
+  }
+  // Free used memory
+  for (count = 0; count < nodeCount; count++)
+    freeNull(nodeInfo[count]);
 }
-
-
-
+//---------------------------------------------------------------------------

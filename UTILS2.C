@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include <ctype.h>
+#include <direct.h>  // _chdrive()
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -42,7 +43,7 @@ char *findCLiStr(char *s1, const char *s2)
 
   helpPtr = s1;
 
-  while ((helpPtr = stristr(helpPtr+1, s2)) != NULL)
+  while ((helpPtr = stristr(helpPtr + 1, s2)) != NULL)
     if (*(helpPtr - 1) == '\r' || *(helpPtr - 1) == '\n')
       return helpPtr;
 
@@ -59,23 +60,34 @@ char *insertLine(char *pos, const char *line)
   return pos + s;
 }
 //---------------------------------------------------------------------------
-u16  nodeStrIndex = 0;
-char nodeNameStr[2][24];
+u16  nodeStrIndex = -1;
+char nodeNameStr[NO_NodeStrIndex][24];  // 65535:65535/65535.65535  4 * 5 + 3 + 1 = 24
 
-char *nodeStr(nodeNumType *nodeNum)
+
+char *tmpNodeStr(void)
 {
-  char *tempPtr;
-
-  tempPtr = nodeNameStr[nodeStrIndex = !nodeStrIndex];
-  if (nodeNum->zone != 0)
-    tempPtr += sprintf(tempPtr, "%u:", nodeNum->zone);
-
-  tempPtr += sprintf(tempPtr, "%u/%u", nodeNum->net, nodeNum->node);
-
-  if (nodeNum->point != 0)
-    sprintf(tempPtr, ".%u", nodeNum->point);
+  if (++nodeStrIndex >= NO_NodeStrIndex)
+    nodeStrIndex = 0;
 
   return nodeNameStr[nodeStrIndex];
+}
+//---------------------------------------------------------------------------
+const char *nodeStr(const nodeNumType *nodeNum)
+{
+  char *t1 = tmpNodeStr()
+     , *t2 ;
+
+  if (nodeNum->zone != 0)
+    t2 = t1 + sprintf(t1, "%u:", nodeNum->zone);
+  else
+    t2 = t1;
+
+  if (nodeNum->point != 0)
+    sprintf(t2, "%u/%u.%u", nodeNum->net, nodeNum->node, nodeNum->point);
+  else
+    sprintf(t2, "%u/%u"   , nodeNum->net, nodeNum->node);
+
+  return t1;
 }
 //---------------------------------------------------------------------------
 char *stristr(const char *str1, const char *str2)
@@ -145,4 +157,17 @@ void MakeJamAreaPath(rawEchoType *echo)
   }
 }
 //---------------------------------------------------------------------------
-
+int ChDir(const char *path)
+{
+#if defined(__MSDOS__) && !defined(__WIN32__)
+  if (path[1] == ':')
+  {
+    char drive = toupper(path[0]);
+    if (drive >= 'A' && drive <= 'Z')
+      if (0 != _chdrive(drive - 'A' + 1))
+        return -1;
+  }
+#endif
+  return chdir(path);
+}
+//---------------------------------------------------------------------------

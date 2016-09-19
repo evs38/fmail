@@ -1,24 +1,27 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
+#ifndef msgraH
+#define msgraH
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 #define CS_SECURITY 0xc6cad720L
 
@@ -45,7 +48,8 @@ typedef struct
    uchar    sysopFlags[4];
    uchar    originLength;
    uchar    origin[60];
-   uchar    akaAddress;     } messageRaType;
+   uchar    akaAddress;
+} messageRaType;
 
 
 typedef struct
@@ -87,7 +91,7 @@ typedef struct
    uchar    attribute2;  /* Bit 0 : Include in all groups */
    u16      netReply; /* FJ */
    uchar     freeSpace[7];
-                               } messageRa2Type;
+} messageRa2Type;
 
 /* RA 2
   MESSAGErecord  = record
@@ -184,19 +188,23 @@ typedef struct
 
 
 typedef struct
-{  uchar wtLength;
-   uchar WhoTo[35];   } msgToIdxRec;
+{
+  uchar wtLength;
+  uchar WhoTo[35];
+} msgToIdxRec;
 
 typedef struct
 {
-   uchar txtLength;
-   uchar txtStr[255]; } msgTxtRec;
+  uchar txtLength;
+  uchar txtStr[255];
+} msgTxtRec;
 
 #ifdef GOLDBASE
 
 typedef struct
-{  u32           MsgNum,
-		 ReplyTo,
+{
+   u32           MsgNum,
+                 ReplyTo,
                  SeeAlsoNum;
    u16           TRead;
    u32           StartRec;
@@ -224,22 +232,28 @@ typedef struct
    u32           subjCrc;
    u32           wrTime;
    s32           recTime;
-   u32           checkSum;    } msgHdrRec;
+   u32           checkSum;
+} msgHdrRec;
 
 typedef struct
-{  u32   MsgNum;
-   u16   Board;   } msgIdxRec;
+{
+  u32 MsgNum;
+  u16 Board;
+} msgIdxRec;
 
 typedef struct
-  { u32  LowMsg,
-         HighMsg,
-         TotalActive;
-    u16  ActiveMsgs[MBBOARDS]; } infoRecType;
+{
+  u32 LowMsg
+    , HighMsg
+    , TotalActive;
+  u16  ActiveMsgs[MBBOARDS];
+} infoRecType;
 
 #else
 
 typedef struct
-{  u16           MsgNum,
+{
+   u16           MsgNum,
                  ReplyTo,
                  SeeAlsoNum,
                  TRead,
@@ -268,47 +282,54 @@ typedef struct
    u32           subjCrc;
    u32           wrTime;
    s32           recTime;
-   u32           checkSum;    } msgHdrRec;
+   u32           checkSum;
+} msgHdrRec;
 
 typedef struct
-{  u16   MsgNum;
-   uchar Board;   } msgIdxRec;
+{
+  u16   MsgNum;
+  uchar Board;
+} msgIdxRec;
 
 typedef struct
-  { u16  LowMsg,
-         HighMsg,
-         TotalActive,
-         ActiveMsgs[MBBOARDS]; } infoRecType;
+{
+  u16 LowMsg
+    , HighMsg
+    , TotalActive
+    , ActiveMsgs[MBBOARDS];
+} infoRecType;
 
 #endif
 
-s16  multiUpdate    (void);
+//---------------------------------------------------------------------------
+s16  multiUpdate      (void);
 
-void readMsgInfo    (u16);
-void writeMsgInfo   (u16);
+void readMsgInfo      (u16);
+void writeMsgInfo     (u16);
 
-char *expandName    (char *fileName, u16 orgName);
-void initBBS        (void);
+char *expandNameHudson(char *fileName, int orgName);
+void initBBS          (void);
 
-s16  testMBUnlockNow(void);
-s16  lockMB         (void);
-void unlockMB       (void);
+int  testMBUnlockNow  (void);
+int  lockMB           (void);
+void unlockMB         (void);
 
-void openBBSWr      (u16 orgName);
-s16  writeBBS       (internalMsgType *message, u16 boardNum, u16 impSeenBy);
-s16  validate1BBS   (void);
-void validate2BBS   (u16);
-void closeBBSWr     (u16);
+void openBBSWr        (u16 orgName);
+s16  writeBBS         (internalMsgType *message, u16 boardNum, u16 impSeenBy);
+s16  validate1BBS     (void);
+void validate2BBS     (u16);
+void closeBBSWr       (u16);
 
-//void openBBSRd    (void);
 #ifndef GOLDBASE
-s16  scanBBS        (u16 index, internalMsgType *message, u16 rescan);
+s16  scanBBS          (u16 index, internalMsgType *message, u16 rescan);
 #else
-s16  scanBBS        (u32 index, internalMsgType *message, u16 rescan);
+s16  scanBBS          (u32 index, internalMsgType *message, u16 rescan);
 #endif
-s16  updateCurrHdrBBS(internalMsgType *message);
-void moveBadBBS     (void);
-//void closeBBSRd   (void);
+s16  updateCurrHdrBBS (internalMsgType *message);
+void moveBadBBS       (void);
 
-s16 rescan (nodeInfoType *nodeInfo, char *areaName,
-            u16 maxRescan, fhandle msgHandle1, fhandle msgHandle2);
+s16 rescan            (nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle msgHandle1, fhandle msgHandle2);
+
+//---------------------------------------------------------------------------
+#endif  // msgraH
+

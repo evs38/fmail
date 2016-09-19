@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------------
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -20,8 +20,11 @@
 //
 // ----------------------------------------------------------------------------
 
+#ifdef __BORLANDC__
 #include <alloc.h>
+#endif  // __BORLANDC__
 #include <dir.h>
+#include <dirent.h>    // opendir()
 #include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -33,6 +36,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef __MINGW32__
+#include <windef.h>    // min() max()
+#endif // __MINGW32__
 
 #include "archive.h"
 
@@ -43,7 +49,8 @@
 #include "msgmsg.h"
 #include "msgpkt.h"
 #include "nodeinfo.h"
-#include "output.h"
+#include "spec.h"
+#include "stpcpy.h"
 #include "utils.h"
 
 #ifndef __FMAILX__
@@ -67,18 +74,18 @@ extern configType config;
 extern fAttInfoType fAttInfo[MAX_ATTACH];
 extern u16 fAttCount;
 
-extern const char   *months;
+extern const char *months;
 
 // ----------------------------------------------------------------------------
 static s16 checkExist(char *entry, char *prog, char *par)
 {
   tempStrType tempStr;
-  char       *helpPtr;
+  const char *helpPtr;
 
-  if (((helpPtr = strtok(entry, " ")) == NULL)
-      || ((access(helpPtr, 4) != 0)
-          && ((helpPtr = searchpath(helpPtr)) == NULL))
-      || (strnicmp(helpPtr, config.inPath, strlen(config.inPath)) == 0))
+  if (  (helpPtr = strtok(entry, " ")) == NULL
+     || (access(helpPtr, 4) != 0 && (helpPtr = _searchpath(helpPtr)) == NULL)
+     || strnicmp(helpPtr, config.inPath, strlen(config.inPath)) == 0
+     )
   {
     sprintf(tempStr, "%s not found", entry);
     logEntry(tempStr, LOG_ALWAYS, 0);
@@ -86,9 +93,9 @@ static s16 checkExist(char *entry, char *prog, char *par)
   }
   strcpy(prog, helpPtr);
   if ((helpPtr = strtok(NULL, "")) == NULL)
-    helpPtr = "";
-
-  strcpy(par, helpPtr);
+    *par = 0;
+  else
+    strcpy(par, helpPtr);
 
   return 0;
 }
@@ -148,23 +155,23 @@ static u8 archiveType(char *fullFileName)
   return 0xFF;
 }
 // ----------------------------------------------------------------------------
-#if !defined _Windows && !defined __OS2__
+#if !defined __WIN32__ && !defined __OS2__
 static s16 _Cdecl spawnlo(const char *overlay_path, const char *prog_name, ...)
 {
   return __spawnv(overlay_path, prog_name, _va_ptr, 0);
 }
 #endif
 // ----------------------------------------------------------------------------
-static s16 execute(char *arcType, char *program, char *parameters, char *archiveName, char *pktName, char *privPath
+static s16 execute(const char *arcType, const char *program, const char *parameters, const char *archiveName, char *pktName, const char *privPath
 #if !defined __FMAILX__ && !defined __32BIT__
                   , u16 memReq
 #endif
                   )
 {
   s16         dosExitCode = -1;
-  uchar       tempStr[MAX_PARSIZE];
+  char        tempStr[MAX_PARSIZE];
   tempStrType tempPath;
-  uchar      *helpPtr;
+  char       *helpPtr;
   u16         len = 0;
   clock_t     ct = clock();
 #if !defined __FMAILX__ && !defined __32BIT__
@@ -180,8 +187,8 @@ static s16 execute(char *arcType, char *program, char *parameters, char *archive
       logEntry(tempStr, LOG_ALWAYS, 0);
       return 1;
     }
-    strcpy( tempStr,                      helpPtr + 2);
-    strcpy( stpcpy(helpPtr, archiveName), tempStr);
+    strcpy(tempStr,                      helpPtr + 2);
+    strcpy(stpcpy(helpPtr, archiveName), tempStr);
   }
   if ((helpPtr = strstr(parameters, "\%f")) != NULL)
   {
@@ -228,16 +235,14 @@ static s16 execute(char *arcType, char *program, char *parameters, char *archive
   sprintf(tempStr, "Executing %s %s", program, parameters);
   logEntry(tempStr, LOG_EXEC | LOG_NOSCRN, 0);
 
-  sprintf(tempStr, "<-- %s Start -->\n", arcType);
-  printString(tempStr);
-	showCursor();
+  printf("<-- %s Start -->\n", arcType);
 
 #if !defined __FMAILX__ && !defined __32BIT__
   if ((config.genOptions.swap)
       && ((memReq == 0) || ((coreleft() >> 10) < memReq)))
   {
 #ifdef DEBUG
-    printString("SPAWNLO\n");
+    puts("SPAWNLO");
 #endif
     if (ems)
     {
@@ -280,39 +285,31 @@ static s16 execute(char *arcType, char *program, char *parameters, char *archive
   if (dosExitCode == -1)
   {
     dosExitCode = spawnl(P_WAIT, program, program, parameters, NULL);
-    flush();
+    // flush();
   }
 
 #endif
 #else
-  sprintf(tempStr, "Running %s utility in an OS/2 shell...", arcType);
-  printString(tempStr);
-  updateCurrLine();
-  if ((dosExitCode = spawnl(P_WAIT, program, program, parameters, NULL)) == -1
-      && errno == ENOEXEC)
+  printf("Running %s utility in an OS/2 shell...", arcType);
+  if (  (dosExitCode = spawnl(P_WAIT, program, program, parameters, NULL)) == -1
+     && errno == ENOEXEC)
   {
     static char *cmdPtr = NULL;
 
-    gotoTab(0);
+    putchar('\r');
     if (cmdPtr == NULL && (cmdPtr = getenv("OS2_SHELL")) == NULL)
     {
       logEntry("Can't find command shell (OS2_SHELL environment var)", LOG_ALWAYS, 0);
       return 1;
     }
-    sprintf(tempStr, "Running %s utility in a DOS shell...\n", arcType);
-    printString(tempStr);
+    printf("Running %s utility in a DOS shell...\n", arcType);
     dosExitCode = spawnl(P_WAIT, cmdPtr, cmdPtr, "/C", program, parameters, NULL);
   }
   else
-  {
-    newLine();
-    newLine();
-  }
+    puts("\n");
 #endif
-	noCursor();
-  sprintf(tempStr, "<-- %s End [%.2f] -->\n", arcType, (clock() - ct) / CLK_TCK);
-  printString(tempStr);
-  flush();
+  printf("<-- %s End [%.2f] -->\n", arcType, ((double)(clock() - ct)) / CLK_TCK);
+  // flush();
   if (dosExitCode == -1)
   {
     sprintf(tempStr, "Cannot execute %s utility: ", arcType);
@@ -350,27 +347,30 @@ static s16 execute(char *arcType, char *program, char *parameters, char *archive
   return 0;
 }
 // ----------------------------------------------------------------------------
-void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
+void unpackArc(const struct bt *bp)
 {
-  tempStrType tempStr;
+  tempStrType tempStr
+            , fullFileName
+            , arcPath
+            , unpackPathStr
+            , dirStr
+            , pathStr;
   s16 temp;
-  char         *extPtr;
-  tempStrType arcPath;
-  char pathStr[64];
+  char *extPtr;
   char parStr[MAX_PARSIZE];
   char procStr1[64];
   char procStr2[MAX_PARSIZE];
-  tempStrType unpackPathStr;
-  char dirStr[128];
-  struct ffblk ffblkPkt;
   s16 arcType;
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
   u16 memReq;
 #endif
+
   *arcPath = 0;
+  strcpy(stpcpy(fullFileName, config.inPath), bp->fname);
+
   switch (arcType = archiveType(fullFileName))
   {
-  case  0:      /* ARC */
+  case  0:      // ARC
 #ifdef __32BIT__
     strcpy(arcPath, config.unArc32.programName);
 #else
@@ -379,10 +379,10 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unArc.memRequired;
 #endif
-    extPtr = "arc";
+    extPtr = (char*)"arc";
     break;
 
-  case  1:      /* ZIP */
+  case  1:      // ZIP
 #ifdef __32BIT__
     strcpy(arcPath, config.unZip32.programName);
 #else
@@ -391,10 +391,10 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unZip.memRequired;
 #endif
-    extPtr = "zip";
+    extPtr = (char*)"zip";
     break;
 
-  case  2:      /* LZH */
+  case  2:      // LZH
 #ifdef __32BIT__
     strcpy(arcPath, config.unLzh32.programName);
 #else
@@ -403,10 +403,10 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unLzh.memRequired;
 #endif
-    extPtr = "lzh";
+    extPtr = (char*)"lzh";
     break;
 
-  case  3:      /* PAK */
+  case  3:      // PAK
 #ifdef __32BIT__
     strcpy(arcPath, config.unPak32.programName);
 #else
@@ -415,10 +415,10 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unPak.memRequired;
 #endif
-    extPtr = "pak";
+    extPtr = (char*)"pak";
     break;
 
-  case  4:      /* ZOO */
+  case  4:      // ZOO
 #ifdef __32BIT__
     strcpy(arcPath, config.unZoo32.programName);
 #else
@@ -427,10 +427,10 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unZoo.memRequired;
 #endif
-    extPtr = "zoo";
+    extPtr = (char*)"zoo";
     break;
 
-  case  5:      /* ARJ */
+  case  5:      // ARJ
 #ifdef __32BIT__
     strcpy(arcPath, config.unArj32.programName);
 #else
@@ -439,10 +439,10 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unArj.memRequired;
 #endif
-    extPtr = "arj";
+    extPtr = (char*)"arj";
     break;
 
-  case  6:      /* SQZ */
+  case  6:      // SQZ
 #ifdef __32BIT__
     strcpy(arcPath, config.unSqz32.programName);
 #else
@@ -451,10 +451,10 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unSqz.memRequired;
 #endif
-    extPtr = "sqz";
+    extPtr = (char*)"sqz";
     break;
 
-  case  8:      /* UC2 */
+  case  8:      // UC2
 #ifdef __32BIT__
     strcpy(arcPath, config.unUc232.programName);
 #else
@@ -463,10 +463,10 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unUc2.memRequired;
 #endif
-    extPtr = "uc2";
+    extPtr = (char*)"uc2";
     break;
 
-  case  9:      /* RAR */
+  case  9:      // RAR
 #ifdef __32BIT__
     strcpy(arcPath, config.unRar32.programName);
 #else
@@ -475,10 +475,10 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unRar.memRequired;
 #endif
-    extPtr = "rar";
+    extPtr = (char*)"rar";
     break;
 
-  case 10:      /* JAR */
+  case 10:      // JAR
 #ifdef __32BIT__
     strcpy(arcPath, config.unJar32.programName);
 #else
@@ -487,7 +487,7 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.unJar.memRequired;
 #endif
-    extPtr = "jar";
+    extPtr = (char*)"jar";
     break;
 
   case 0xFE:
@@ -502,9 +502,9 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
     if (!*config.GUS.programName)
     {
       if (arcType == 0xFF)
-        sprintf(tempStr,  "Unknown archiving utility used for %s",                    fullFileName);
+        sprintf(tempStr, "Unknown archiving utility used for %s"                  , fullFileName);
       else
-        sprintf(tempStr,  "Archive decompression program for %s method not defined",  extPtr);
+        sprintf(tempStr, "Archive decompression program for %s method not defined", extPtr);
 
       logEntry(tempStr, LOG_ALWAYS, 0);
 
@@ -514,7 +514,7 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
     memReq = config.GUS.memRequired;
 #endif
-    extPtr = "gus";
+    extPtr = (char*)"gus";
   }
   if (checkExist(arcPath, pathStr, parStr))
   {
@@ -524,18 +524,15 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
   }
   sprintf(tempStr, "Decompressing %s (%s)", fullFileName, extPtr);
   logEntry(tempStr, LOG_INBOUND, 0);
-  sprintf(tempStr, "Archive info: %ld, %04u-%02u-%02u %02u:%02u:%02u"
-         , ffblkArc->ff_fsize
-         , ((ffblkArc->ff_fdate >> 9) & 0x7f) + 1980
-         , ((ffblkArc->ff_fdate >> 5) & 0x0f)
-         , ffblkArc->ff_fdate & 0x1f
-         , (ffblkArc->ff_ftime >> 11) & 0x1f
-         , (ffblkArc->ff_ftime >> 5) & 0x3f
-         , (ffblkArc->ff_ftime & 0x1f) << 1
-         );
-  logEntry(tempStr, LOG_INBOUND, 0);
-
-  strcpy(unpackPathStr, config.inPath);  /* pktPath */
+  {
+    struct tm *tm = localtime(&bp->mtime);
+    sprintf(tempStr, "Archive info: %ld, %04u-%02u-%02u %02u:%02u:%02u"
+                   , bp->size
+                   , tm->tm_year + 1900, tm->tm_mon +1, tm->tm_mday
+                   , tm->tm_hour, tm->tm_min, tm->tm_sec);
+    logEntry(tempStr, LOG_INBOUND, 0);
+  }
+  strcpy(unpackPathStr, config.inPath);  // pktPath
 
   // preprocessor
 #ifdef __32BIT__
@@ -556,14 +553,13 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
 #endif
     }
   }
-  if (arcType == 4)  /* ZOO */
+  if (arcType == 4)  // ZOO
   {
     if ((temp = strlen(unpackPathStr)) > 3)
       unpackPathStr[temp - 1] = 0;
 
-    getcwd(dirStr, 128);
-    setdisk(*unpackPathStr - 'A');
-    chdir(unpackPathStr);
+    getcwd(dirStr, dTEMPSTRLEN);
+    ChDir(unpackPathStr);
     *unpackPathStr = 0;
   }
   if (arcType == 8)  // UC2
@@ -577,23 +573,21 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
   if (execute(extPtr, pathStr, parStr, fullFileName, unpackPathStr, NULL, memReq))
 #endif
   {
-     if (arcType == 4)  // ZOO
-     {
-       setdisk(*dirStr - 'A');
-       chdir(dirStr);
-     }
-     delete(config.inPath, "*.pkt");   /* was pktPath */
-     sprintf(tempStr, "Cannot unpack bundle %s", fullFileName);
-     logEntry(tempStr, LOG_ALWAYS, 0);
-     newLine();
-     return;
+    if (arcType == 4)  // ZOO
+      ChDir(dirStr);
+
+    Delete(config.inPath, "*.pkt");
+    sprintf(tempStr, "Cannot unpack bundle %s", fullFileName);
+    logEntry(tempStr, LOG_ALWAYS, 0);
+    newLine();
+    return;
   }
   if (arcType == 4)  // ZOO
   {
     if (strlen(unpackPathStr) > 3)
       strcat(unpackPathStr, "\\");
-    setdisk(*dirStr - 'A');
-    chdir(dirStr);
+
+    ChDir(dirStr);
   }
   if (arcType == 8) // UC2
     strcpy(unpackPathStr, unpackPathStr + 1);
@@ -618,19 +612,26 @@ void unpackArc(char *fullFileName, struct ffblk *ffblkArc)
     }
   }
 
-  strcpy(tempStr, config.inPath);   /* was pktPath */
-  strcat(tempStr, "*.pkt");
-  strcpy(dirStr, config.inPath);
-  strcat(dirStr, "*.bcl");
-  if (findfirst(tempStr, &ffblkPkt, 0) == -1 && findfirst(dirStr, &ffblkPkt, 0) == -1)
+  if (!existPattern(config.inPath, "*.pkt") && !existPattern(config.inPath, "*.bcl"))
   {
-    sprintf(tempStr, "No PKT or BCL file(s) found after un%sing file %s"
-            , extPtr, fullFileName);
+    sprintf(tempStr, "No PKT or BCL file(s) found after un%sing file %s", extPtr, fullFileName);
     logEntry(tempStr, LOG_ALWAYS, 0);
     newLine();
     return;
   }
   unlink(fullFileName);
+}
+// ----------------------------------------------------------------------------
+s16 handleNoCompress(const char *pktName, const char *qqqName, nodeNumType *destNode)
+{
+  tempStrType tempStr;
+
+  sprintf(tempStr, "Node %s is on line: cannot compress mail", nodeStr(destNode));
+  logEntry(tempStr, LOG_ALWAYS, 0);
+  rename(pktName, qqqName);
+  newLine();
+
+  return 1;
 }
 // ----------------------------------------------------------------------------
 s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInfo)
@@ -644,30 +645,31 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   u16           maxArc
               , okArc;
   u8            archiver = 0xFF;
-  struct ffblk  ffblkArc;
   char          nodeName[32];
-  struct ffblk  semaBlk;
+  DIR           *dir;
+  struct dirent *ent;
   tempStrType   arcPath
               , tempStr
               , pktName
               , semaName;
   char         *helpPtr
+              ,*helpPtr2
               , pathStr [64]
               , parStr  [MAX_PARSIZE]
               , procStr1[64]
               , procStr2[MAX_PARSIZE];
-  s16           doneArc;
   fhandle       tempHandle
               , semaHandle = -1;
   s32           arcSize;
-  uchar        *exto
-             , *extn;
+  const char   *exto
+             , *extn
+             , *cPtr;
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
   u16           memReq;
 #endif
 
 #ifdef _DEBUG
-  sprintf(tempStr, "[packArc Debug] file %s  %s -> %s  outStatus:%d", qqqName, nodeStr(srcNode), nodeStr(destNode), nodeInfo->outStatus);
+  sprintf(tempStr, "DEBUG packArc: file %s  %s -> %s  outStatus:%d", qqqName, nodeStr(srcNode), nodeStr(destNode), nodeInfo->outStatus);
   logEntry(tempStr, LOG_DEBUG, 0);
 #endif
 
@@ -722,46 +724,39 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   // Check/create semaphore's for different mailers
   if (config.mailer == dMT_FrontDoor)
   {
-    count = sprintf(semaName, "%s%08lx.`fm", config.semaphorePath, crc32(nodeStr(destNode))) - 2;
+    helpPtr = stpcpy(semaName, config.semaphorePath);
+    count = sprintf(helpPtr, "%08lx.`FM", crc32(nodeStr(destNode))) - 2;
     unlink(semaName);
-    *(u16 *)(semaName + count) = '*';
-    if (findfirst(semaName, &semaBlk, FA_RDONLY | FA_HIDDEN | FA_SYSTEM | /*FA_LABEL|*/ FA_DIREC) == 0)
-    {
-      sprintf(tempStr, "Node %s is on line: cannot compress mail", nodeStr(destNode));
-      logEntry(tempStr, LOG_ALWAYS, 0);
-      rename(pktName, qqqName);
-      newLine();
+    *(u16 *)(helpPtr + count) = '*';
+    if (existPattern(config.semaphorePath, helpPtr))
+      return handleNoCompress(pktName, qqqName, destNode);
 
-      return 1;
-    }
     if (config.mailOptions.createSema)
     {
-      strcpy(semaName + count, "fm");
-      semaHandle = openP(semaName, O_RDWR | O_CREAT | O_TRUNC | O_DENYALL, S_IREAD | S_IWRITE);          /* Originally _creat */
+      strcpy(helpPtr + count, "FM");
+      if ((semaHandle = openP(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
+        return handleNoCompress(pktName, qqqName, destNode);
     }
   }
   else
   {
     if (config.mailer == dMT_InterMail)
     {
-      sprintf(semaName, "%sx%07lx.fm", config.semaphorePath, crc32len((char *)destNode, 8) / 16);
+      helpPtr2 = stpcpy(semaName, config.semaphorePath);
+      sprintf(semaName, "X%07lX.FM", crc32len((char *)destNode, 8) / 16);
       helpPtr = strrchr(semaName, '.');
       *helpPtr = *(helpPtr - 1);
       *(helpPtr - 1) = '.';
       unlink(semaName);
       *(u16 *)(helpPtr + 1) = '*';
-      if (findfirst(semaName, &semaBlk, FA_RDONLY | FA_HIDDEN | FA_SYSTEM | /*FA_LABEL|*/ FA_DIREC) == 0)
-      {
-        sprintf(tempStr, "Node %s is on line: cannot compress mail", nodeStr(destNode));
-        logEntry(tempStr, LOG_ALWAYS, 0);
-        rename(pktName, qqqName);
-        newLine();
-        return 1;
-      }
+      if (existPattern(config.semaphorePath, helpPtr2))
+        return handleNoCompress(pktName, qqqName, destNode);
+
       if (config.mailOptions.createSema)
       {
-        strcpy(helpPtr + 1, "fm");
-        semaHandle = openP(semaName, O_RDWR | O_CREAT | O_TRUNC | O_DENYALL, S_IREAD | S_IWRITE);           /* Originally _creat */
+        strcpy(helpPtr + 1, "FM");
+        if ((semaHandle = openP(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
+          return handleNoCompress(pktName, qqqName, destNode);
       }
     }
     else
@@ -772,27 +767,20 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
         {
           archivePtr += sprintf(archivePtr - 1, ".%03hx", destNode->zone);
           mkdir(semaName);
-          strcpy(archivePtr - 1, "\\");
+          *(archivePtr - 1) = '\\';
         }
         if (destNode->point)
         {
           archivePtr += sprintf(archivePtr, "%04hx%04hx.pnt", destNode->net, destNode->node);
           mkdir(semaName);
-          sprintf(archivePtr, "\\%08hx.bsy",    destNode->point);
+          sprintf(archivePtr, "\\%08hx.bsy", destNode->point);
         }
         else
           sprintf(archivePtr, "%04hx%04hx.bsy", destNode->net, destNode->node);
 
-        if (findfirst(semaName, &semaBlk, FA_RDONLY | FA_HIDDEN | FA_SYSTEM | /*FA_LABEL|*/ FA_DIREC) == 0)
-        {
-          sprintf(tempStr, "Node %s is on line: cannot compress mail", nodeStr(destNode));
-          logEntry(tempStr, LOG_ALWAYS, 0);
-          rename(pktName, qqqName);
-          newLine();
-          return 1;
-        }
-        if (config.mailOptions.createSema)
-          semaHandle = openP(semaName, O_RDWR | O_CREAT | O_TRUNC | O_DENYALL, S_IREAD | S_IWRITE);  // Originally _creat
+        // Don't use config.mailOptions.createSema! FTS-5005 specifies it needs to be set
+        if ((semaHandle = openP(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
+          return handleNoCompress(pktName, qqqName, destNode);
       }
   }
 
@@ -851,12 +839,12 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
                || !(nodeInfo->capability & PKT_TYPE_2PLUS))
               && (srcNode->point == 0)
               && (destNode->point == 0)))
-        extPtr = archivePtr + sprintf(archivePtr, "%04hX%04hX"                // Keep archive name uppercase, because an external archiver might change it to uppercase
+        extPtr = archivePtr + sprintf( archivePtr, "%04hX%04hX"                // Keep archive name uppercase, because an external archiver might change it to uppercase
                                      , (*srcNode).net  - (*destNode).net
                                      , (*srcNode).node - (*destNode).node);
       else
       {
-        sprintf(nodeName, "%hu:%hu/%hu.%hu", destNode->zone
+        sprintf( nodeName, "%hu:%hu/%hu.%hu", destNode->zone
                , config.akaList[0].nodeNum.point + destNode->net
                , destNode->node - config.akaList[0].nodeNum.net
                , config.akaList[0].nodeNum.node  + destNode->point);
@@ -868,24 +856,39 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
       // Search for existing archive files
       maxArc = '0' - 1;
       okArc = 0;
-      doneArc = findfirst(archiveStr, &ffblkArc, 0);
 
-      while (!doneArc)
+      *(archivePtr - 1) = 0;
+      dir = opendir(archiveStr);
+      *(archivePtr - 1) = '\\';
+      if (dir != NULL)
       {
-        maxArc = max(ffblkArc.ff_name[11], maxArc);
-        if ((config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
-            && ((ffblkArc.ff_fsize > 0)
-                && ((config.maxBundleSize == 0)
-                    || ((ffblkArc.ff_fsize >> 10) < config.maxBundleSize))))
-          okArc = max(ffblkArc.ff_name[11], okArc);
-        if ((ffblkArc.ff_fsize == 0)
-            && ((!config.mailOptions.extNames) && (ffblkArc.ff_name[11] == '9'))
-            || (config.mailOptions.extNames && (ffblkArc.ff_name[11] == 'Z')))
-        {
-          extPtr[3] = ffblkArc.ff_name[11];
-          unlink(archiveStr);
-        }
-        doneArc = findnext(&ffblkArc);
+        while ((ent = readdir(dir)) != NULL)
+          if (match_spec(archivePtr, ent->d_name))
+          {
+            char ep3 = extPtr[3] = ent->d_name[11];
+            off_t fsize = fileSize(archiveStr);
+
+            maxArc = max(ep3, maxArc);
+            if (  (config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
+               && (  fsize > 0
+                  && (  config.maxBundleSize == 0
+                     || (fsize >> 10) < config.maxBundleSize
+                     )
+                  )
+               )
+              okArc = max(ep3, okArc);
+
+            if (fsize == 0
+               && ( (!config.mailOptions.extNames && ep3 == '9')
+                  || (config.mailOptions.extNames && ep3 == 'Z')
+                  )
+               )
+              unlink(archiveStr);
+
+            extPtr[3] = '?';  // Needed for match_spec()
+          }
+
+        closedir(dir);
       }
 
       fnPtr = archivePtr;
@@ -934,7 +937,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
         memReq = config.arc.memRequired;
 #endif
-        extPtr = "arc";
+        cPtr = "arc";
         break;
 
       case  1:      // ZIP
@@ -946,7 +949,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
         memReq = config.zip.memRequired;
 #endif
-        extPtr = "zip";
+        cPtr = "zip";
         break;
 
       case  2:      // LZH
@@ -958,7 +961,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
         memReq = config.lzh.memRequired;
 #endif
-        extPtr = "lzh";
+        cPtr = "lzh";
         break;
 
       case  3:      // PAK
@@ -970,7 +973,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
         memReq = config.pak.memRequired;
 #endif
-        extPtr = "pak";
+        cPtr = "pak";
         break;
 
       case  4:      // ZOO
@@ -982,7 +985,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
         memReq = config.zoo.memRequired;
 #endif
-        extPtr = "zoo";
+        cPtr = "zoo";
         break;
 
       case  5:      // ARJ
@@ -994,7 +997,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
         memReq = config.arj.memRequired;
 #endif
-        extPtr = "arj";
+        cPtr = "arj";
         break;
 
       case  6:      // SQZ
@@ -1006,7 +1009,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
         memReq = config.sqz.memRequired;
 #endif
-        extPtr = "sqz";
+        cPtr = "sqz";
         break;
 
       case  7:      // User
@@ -1018,7 +1021,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
         memReq = config.customArc.memRequired;
 #endif
-        extPtr = "Custom";
+        cPtr = "Custom";
         break;
 
       case  8:      // UC2
@@ -1030,7 +1033,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
         memReq = config.uc2.memRequired;
 #endif
-        extPtr = "uc2";
+        cPtr = "uc2";
         break;
 
       case  9:      // RAR
@@ -1042,7 +1045,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
         memReq = config.rar.memRequired;
 #endif
-        extPtr = "rar";
+        cPtr = "rar";
         break;
 
       case 10:      // JAR
@@ -1054,7 +1057,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
         memReq = config.jar.memRequired;
 #endif
-        extPtr = "jar";
+        cPtr = "jar";
         break;
 
       default:
@@ -1073,9 +1076,9 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     if (!*arcPath || checkExist(arcPath, pathStr, parStr))
     {
       if (!*arcPath)
-        sprintf(tempStr, "Archive decompression program for %s method not defined", extPtr);
+        sprintf(tempStr, "Archive compression program for %s method not defined", cPtr);
       else
-        sprintf(tempStr, "Archive compression program for %s method not found",     extPtr);
+        sprintf(tempStr, "Archive compression program for %s method not found"  , cPtr);
 
       logEntry(tempStr, LOG_ALWAYS, 0);
       if (semaHandle >= 0)
@@ -1120,7 +1123,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   if (nodeInfo->archiver != 0xFF)
   {
 #if (defined __FMAILX__ || defined __32BIT__)
-    if (execute(extPtr, pathStr, parStr, archiveStr, pktName, nodeInfo->pktOutPath))
+    if (execute(cPtr, pathStr, parStr, archiveStr, pktName, nodeInfo->pktOutPath))
 #else
     if (execute(extPtr, pathStr, parStr, archiveStr, pktName, nodeInfo->pktOutPath, memReq))
 #endif
@@ -1203,18 +1206,28 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     {
       strcpy(tempStr, archiveStr);
       if (destNode->point)
-        archivePtr += sprintf(archivePtr, "%08hx", destNode->point);
+        extPtr = archivePtr + sprintf(archivePtr, "%08hx", destNode->point);
       else
-        archivePtr += sprintf(archivePtr, "%04hx%04hx", destNode->net, destNode->node);
+        extPtr = archivePtr + sprintf(archivePtr, "%04hx%04hx", destNode->net, destNode->node);
 
-      strcpy(archivePtr, ".?lo");
-      if (findfirst(archiveStr, &ffblkArc, 0) == -1)
-        sprintf(archivePtr, ".%clo"
+      strcpy(extPtr, ".?lo");
+
+      ent = NULL;
+      if ((dir = opendir(config.outPath)) != NULL)
+      {
+        while ((ent = readdir(dir)) != NULL)
+          if (match_spec(archivePtr, ent->d_name))
+          {
+            strcpy(extPtr, strchr(ent->d_name, '.'));
+            break;
+          }
+        closedir(dir);
+      }
+      if (ent == NULL)
+        sprintf(  extPtr, ".%clo"
                ,  nodeInfo->outStatus == 1  ? 'h'
                : (nodeInfo->outStatus == 2) ? 'c'
                : (nodeInfo->outStatus >= 3 && nodeInfo->outStatus <= 5) ? 'c' : 'f');
-      else
-        strcpy(archivePtr, strchr(ffblkArc.ff_name, '.'));
 
       if ((tempHandle = openP(archiveStr, O_RDWR | O_CREAT | O_APPEND | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
       {
@@ -1274,7 +1287,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     close(semaHandle);
     unlink(semaName);
   }
-  flush();
+  // flush();
   return 0;
 }
 //---------------------------------------------------------------------------
@@ -1282,30 +1295,34 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 //
 void retryArc(void)
 {
-  tempStrType tempStr;
-  nodeNumType srcNode
-            , destNode;
-  pktHdrType msgPktHdr;
-  fhandle pktHandle;
-  s16 donePkt;
-  struct ffblk ffblkPkt;
-  nodeNumType destNode4d;
+  tempStrType    tempStr;
+  nodeNumType    srcNode
+               , destNode;
+  pktHdrType     msgPktHdr;
+  fhandle        pktHandle;
+  // s16 donePkt = 0;
+  // struct _finddata_t fd;
+  // long fdHandle;
+  DIR           *dir;
+  struct dirent *ent;
+  nodeNumType    destNode4d;
+  int            logged = 0;
 
   strcpy(tempStr, config.outPath);
   strcat(tempStr, "*.qqq");
 
-  donePkt = findfirst(tempStr, &ffblkPkt, 0);
-
-  if (!donePkt)
+  if ((dir = opendir(config.outPath)) != NULL)
   {
-    logEntry("Retrying to compress outgoing mailpacket(s)", LOG_OUTBOUND, 0);
-
-    while (!donePkt && !breakPressed)
-    {
-      if (!(ffblkPkt.ff_attrib & FA_SPEC))
+    while ((ent = readdir(dir)) != NULL && !breakPressed)
+      if (match_spec("*.qqq", ent->d_name))
       {
-        strcpy(tempStr, config.outPath);
-        strcat(tempStr, ffblkPkt.ff_name);
+        if (!logged)
+        {
+          logEntry("Retrying to compress outgoing mailpacket(s)", LOG_OUTBOUND, 0);
+          logged = 1;
+        }
+
+        strcpy(stpcpy(tempStr, config.outPath), ent->d_name);
 
         if ( (pktHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1
            && _read(pktHandle, &msgPktHdr, sizeof(pktHdrType)) == sizeof(pktHdrType)
@@ -1327,9 +1344,9 @@ void retryArc(void)
           packArc(tempStr, &srcNode, &destNode, getNodeInfo(&destNode4d));
         }
       }
-      donePkt = findnext(&ffblkPkt);
-    }
+
     newLine();
+    closedir(dir);
   }
 }
 // ----------------------------------------------------------------------------

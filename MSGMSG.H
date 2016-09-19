@@ -43,10 +43,10 @@ typedef struct
 //---------------------------------------------------------------------------
 typedef struct
 {
-  uchar      fromUserName[36];
-  uchar      toUserName  [36];
-  uchar      subject     [72];
-  uchar      dateTime    [20];
+  char       fromUserName[36];
+  char       toUserName  [36];
+  char       subject     [72];
+  char       dateTime    [20];
   u16        timesRead;
   u16        destNode;
   u16        origNode;
@@ -65,7 +65,7 @@ typedef struct
 
 typedef struct
 {
-  uchar       fileName[13];
+  char        fileName[13];
   nodeNumType origNode;
   nodeNumType destNode;
 

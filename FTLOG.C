@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -38,7 +38,6 @@
 #include "areainfo.h"
 #include "dups.h"
 #include "msgpkt.h"
-#include "output.h"
 #include "version.h"
 
 //---------------------------------------------------------------------------
@@ -81,11 +80,11 @@ char *expandName(char *fileName)
 {
   static tempStrType tempStr[2];
   static tempIndex = 0;
+  char *ts = tempStr[tempIndex = 1 - tempIndex];
 
-  strcpy(tempStr[tempIndex = 1 - tempIndex], config.bbsPath);
-  strcat(tempStr[tempIndex], fileName);
+  strcpy(stpcpy(ts, config.bbsPath), fileName);
 
-  return tempStr[tempIndex];
+  return ts;
 }
 //---------------------------------------------------------------------------
 void writeLogLine(fhandle logHandle, const char *s)
@@ -187,7 +186,7 @@ void initLog(char *s, s32 switches)
 
   if ((logHandle = openP(config.logName, O_RDWR | O_CREAT | O_APPEND | O_TEXT | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
   {
-    printString ("WARNING: Can't open log file\n\n");
+    puts("WARNING: Can't open log file\n");
     config.logInfo = 0;
   }
   else
@@ -266,10 +265,7 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
   tempStrType tempStr;
 
   if (!(entryType & LOG_NOSCRN))
-  {
-    printString(s);
-    newLine();
-  }
+    puts(s);
 
   if (  (  ((config.logInfo | LOG_ALWAYS) & entryType) == 0
         && ( config.logInfo & LOG_DEBUG              ) == 0
@@ -279,9 +275,7 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
   {
     if (errorLevel)
     {
-      sprintf(tempStr, "Exiting with errorlevel %u\n", errorLevel);
-      printString(tempStr);
-      showCursor();
+      printf("Exiting with errorlevel %u\n", errorLevel);
 
       exit(errorLevel);
     }
@@ -298,8 +292,8 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
       writeLogLine(logHandle, tempStr);
 
     close(logHandle);
-    printString(tempStr);
-    showCursor();
+    putStr(tempStr);
+
     unlink(expandName("MSGHDR.$$$"));
     unlink(expandName("MSGIDX.$$$"));
     unlink(expandName("MSGTOIDX.$$$"));

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,35 +21,29 @@
 //
 //---------------------------------------------------------------------------
 
-
 #ifdef __OS2__
 #define INCL_NOMAPI
 #define INCL_VIO
 #include <os2.h>
 #endif
 
-/* os2 */
-
-#if (__BORLANDC__ < 0x0452) || ((__BORLANDC__ >= 0x0500) && defined(__32BIT__))
-#define __SegB000       0xb000
-#define __SegB800       0xb800
+#ifndef __32BIT__
+#if (__BORLANDC__ < 0x0452)
+#define __SegB000  0xb000
+#define __SegB800  0xb800
 #endif
-
-#if (__BORLANDC__ >= 0x0500) && defined(__32BIT__)
-#define MK_FP(seg,ofs) ((void *)((char *)(seg) + (ofs)))
-#define FP_SEG(fp)     ((void *)(fp))
 #endif
 
 #include <ctype.h>
 #include <dir.h>
 #include <dos.h>
 #include <io.h>
-#include <process.h>
+#include <process.h>  // spawnl()
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#if defined(__OS2__) || (__BORLANDC__ >= 0x0500)
+#if defined(__OS2__) || defined(__32BIT__)
 #include <conio.h>
 #else
 #include <bios.h>
@@ -67,12 +61,13 @@
 #include "jam.h"
 #include "mtask.h"
 #include "os.h"
+#include "utils.h"
 
 #include "nodeinfo.h"
 #include "areainfo.h"
 
 #ifdef DEBUG
-        #include "alloc.h"
+#include "alloc.h"
 #endif
 
 extern char boardCodeInfo[512];
@@ -80,17 +75,17 @@ extern char boardCodeInfo[512];
 #define columns 80
 
 
-#if defined(__OS2__) || (__BORLANDC__ >= 0x0500)
-#define keyWaiting kbhit()
-#define keyRead    getch()
+#if defined(__OS2__) || defined(__32BIT__)
+#define keyWaiting() kbhit()
+#define keyRead()    getch()
 #else
-#define keyWaiting bioskey(1)
-#define keyRead    bioskey(0)
+#define keyWaiting() bioskey(1)
+#define keyRead()    bioskey(0)
 #endif
 
 
-s16 askGroup (void);
-s16 askGroups (void);
+s16 askGroup(void);
+s16 askGroups(void);
 
 extern configType config;
 extern rawEchoType tempInfo;
@@ -103,20 +98,20 @@ extern windowLookType windowLook;
 #ifndef __32BIT__
 screenCharType far *screen;
 #else
-screenCharType *screen;
+//screenCharType *screen;
 #endif
 
 const char *months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 static s16 initMagic  = 0;
-       s16 color      = 0;
+       s16 color      = 1;
 #ifndef __OS2__
 static s16 cga        = 0;
 static u16 oldCursor;
 
-static s16 videoModeDOS;
-static s16 videoModeFSetup;
+static s16 videoModeDOS    = 0;
+static s16 videoModeFSetup = 0;
 #endif
 
 #ifdef __OS2__
@@ -124,9 +119,6 @@ static VIOMODEINFO vmiNew, vmiOrg;
 #endif
 
 
-/*
-union REGS regs;
-*/
 static windowMemType  windowStack[MAX_WINDOWS];
 static u16            windowSP = 0;
 
@@ -160,379 +152,477 @@ struct  COUNTRY
   extern struct country countryInfo;
 #endif
 
-s16 readKbd (void)
+//---------------------------------------------------------------------------
+#ifdef __32BIT__
+//---------------------------------------------------------------------------
+#if 0
+void showCharNA(int x, int y, int chr)
 {
-   s16      ch;
-   u16      count;
-   u16      y;
-   u16      px, py;
-#ifndef __OS2__
-   u16      cursor;
-#endif
-   char *comspecPtr;
-   char dirStr[128];
-   screenCharType *helpPtr;
-   struct time timeStruct;
-   u16      attr;
-   u8       min = 0xff;
-
-#ifdef __OS2__
-   VIOCURSORINFO vci;
-
-   VioShowBuf(0, 8000, 0);
-#endif
-
-   getAttr (WHITE, RED, attr);
-   do
-   {
-      while ( !keyWaiting )
-      {
-         gettime(&timeStruct);
-         if ( timeStruct.ti_min == min )
-         {  returnTimeSlice(1);
-            continue;
-         }
-         min = timeStruct.ti_min;
-         if (!countryInfo.co_time)
-         {
-            showChar(77, 1, timeStruct.ti_hour<12?'a':'p', attr, MONO_NORM);
-            if ((timeStruct.ti_hour %= 12) == 0)
-               timeStruct.ti_hour += 12;
-         }
-         showChar (72, 1, (timeStruct.ti_hour/10)?'0'+timeStruct.ti_hour/10:' ', attr, MONO_NORM);
-         showChar (73, 1, '0'+timeStruct.ti_hour%10, attr, MONO_NORM);
-         showChar (74, 1, countryInfo.co_tmsep[0], attr, MONO_NORM);
-         showChar (75, 1, '0'+timeStruct.ti_min/10, attr, MONO_NORM);
-         showChar (76, 1, '0'+timeStruct.ti_min%10, attr, MONO_NORM);
-#ifdef __OS2__
-         VioShowBuf(0, 8000, 0);
-#endif
-      }
-//      VioShowBuf(0, 8000, 0);
-
-      ch = keyRead;
-#if defined(__OS2__) || (__BORLANDC__ >= 0x0500)
-   if ( !ch )
-         ch = keyRead<<8;
-#else
-   if (ch & 0x00ff)
-           ch &= 0x00ff;
-#endif
-   if (ch == _K_ALTZ_)
-      {
-         if (((comspecPtr = getenv("COMSPEC")) != NULL) &&
-             (windowSP < MAX_WINDOWS) &&
-             ((helpPtr = malloc (4000)) != NULL))
-         {
-            count = 0;
-            for (y = 0; y <= 24; y++)
-            {
-               memcpy (&helpPtr[80*count++], &(screen[y*columns]), 160);
-                 }
-            fillRectangle (' ', 0, 0, 79, 24, LIGHTGRAY, BLACK, LIGHTGRAY);
-
-#ifdef __OS2__
-            VioScrollUp(0, 0, 0xFFFF, 0xFFFF, 0xFFFF, " \x7", 0);
-            VioGetCurPos(&py, &px, 0);
-            VioGetCurType(&vci, 0);
-            VioSetMode(&vmiOrg, 0);
-#else
-            _BH = 0;
-            _AH = 0x03;
-            geninterrupt (0x10);
-            px = _DL;
-            py = _DH;
-
-            _AH = 0x03;
-            _BH = 0x00;
-            geninterrupt (0x10);
-            cursor = _CX;
-#endif
-            locateCursor (0,0);
-            smallCursor ();
-
-            getcwd (dirStr, 128);
-
-#ifndef __OS2__
-            if (videoModeDOS != videoModeFSetup)
-            {
-               _AL = videoModeDOS;
-               _AH = 0x00;
-               geninterrupt (0x10);
-               locateCursor (0, 0);
-            }
-#endif
-            spawnl(P_WAIT, comspecPtr, comspecPtr, NULL);
-
-            setdisk (*dirStr - 'A');
-            chdir (dirStr);
-
-#ifdef __OS2__
-            VioSetMode(&vmiNew, 0);
-            VioSetCurType(&vci, 0);
-#else
-            _AL = videoModeFSetup;
-            _AH = 0x00;
-            geninterrupt (0x10);
-
-            _CX = cursor;
-            _AH = 0x01;
-            geninterrupt (0x10);
-#endif
-            locateCursor (px, py);
-
-            count = 0;
-            for (y = 0; y <= 24; y++)
-            {
-               memcpy (&(screen[y*columns]), &helpPtr[80*count++], 160);
-            }
-            free (helpPtr);
-#ifdef __OS2__
-            VioShowBuf(0, 8000, 0);
-#endif
-         }
-         ch = 0;
-      }
-   }
-   while (ch == 0);
-   return(ch);
+  gotoxy(x + 1, y + 1);
+  putch(chr);
 }
-
-void initWindow (u16 mode)
+#endif
+//---------------------------------------------------------------------------
+void showChar(int x, int y, int chr, int att, int matt)
 {
+  uchar buf[2];
+
+  x++;
+  y++;
+  buf[0] = chr;
+  buf[1] = color ? att : matt;
+  puttext(x, y, x, y, buf);
+}
+//---------------------------------------------------------------------------
+void shadow(int x, int y)
+{
+  if (color)
+    changeColor(x, y, DARKGRAY, DARKGRAY);
+}
+//---------------------------------------------------------------------------
+void changeColor(int x, int y, int att, int matt)
+{
+  uchar buf[2];
+
+  x++;
+  y++;
+  gettext(x, y, x, y, buf);
+  buf[1] = color ? att : matt;
+  puttext(x, y, x, y, buf);
+}
+//---------------------------------------------------------------------------
+uchar getChar(int x, int y)
+{
+  uchar buf[2];
+
+  x++;
+  y++;
+  gettext(x, y, x, y, buf);
+
+  return buf[0];
+}
+//---------------------------------------------------------------------------
+#if 0
+uchar getColor(int x, int y, int att, int matt)
+{
+  uchar buf[2];
+
+  x++;
+  y++;
+  gettext(x, y, x, y, buf);
+
+  return buf[1];
+}
+#endif
+//---------------------------------------------------------------------------
+void locateCursor(int x, int y)
+{
+  gotoxy(x + 1, y + 1);
+  _setcursortype(_NORMALCURSOR);
+}
+//---------------------------------------------------------------------------
+#else  // __32BIT__
+void locateCursor(int x, int y)
+{
+  _DH = y;
+  _DL = x;
+  _AH = 0x02;
+  _BH = 0;
+  geninterrupt(0x10);
+}
+#endif
+//---------------------------------------------------------------------------
+u16 readKbd(void)
+{
+  int         ch;
+  struct time timeStruct;
+  u16         attr;
+  u8          min = 0xff;
+#ifdef __32BIT__
+  struct text_info txti;
+#endif
 
 #ifdef __OS2__
-   ULONG   ulLVB = 0;
-   PVOID16 p16;
-   USHORT  usLen = 0;
+  VIOCURSORINFO vci;
 
-   mode = mode;
-   VioGetBuf(&ulLVB, &usLen, 0);
-   p16 = (PVOID16)ulLVB;
-   screen = (screenCharType *)p16;
+  VioShowBuf(0, 8000, 0);
+#endif
 
-   vmiOrg.cb = sizeof(vmiOrg);
-   VioGetMode(&vmiOrg, 0);
-   vmiNew = vmiOrg;
-   vmiNew.fbType &= 1;
-   vmiNew.col = 80;
-   vmiNew.row = 25;
-   VioSetMode(&vmiNew, 0);
+  attr = calcAttr(WHITE, RED);
+  do
+  {
+    while (!keyWaiting())
+    {
+      gettime(&timeStruct);
+      if (timeStruct.ti_min == min)
+      {
+        returnTimeSlice(1);
+        continue;
+      }
+#ifdef __32BIT__
+      // Get current cursor postion and attr
+      gettextinfo(&txti);
+#endif
+      min = timeStruct.ti_min;
+      if (!countryInfo.co_time)
+      {
+        showChar(77, 1, timeStruct.ti_hour < 12 ? 'a' : 'p', attr, MONO_NORM);
+        if ((timeStruct.ti_hour %= 12) == 0)
+          timeStruct.ti_hour += 12;
+      }
+      showChar(72, 1, (timeStruct.ti_hour / 10) ? '0' + timeStruct.ti_hour / 10 : ' ', attr, MONO_NORM);
+      showChar(73, 1, '0' + timeStruct.ti_hour % 10, attr, MONO_NORM);
+      showChar(74, 1, countryInfo.co_tmsep[0], attr, MONO_NORM);
+      showChar(75, 1, '0' + timeStruct.ti_min / 10, attr, MONO_NORM);
+      showChar(76, 1, '0' + timeStruct.ti_min % 10, attr, MONO_NORM);
+#ifdef __OS2__
+      VioShowBuf(0, 8000, 0);
+#endif
+#ifdef __32BIT__
+      // Restore cursor postion and attr
+      gotoxy(txti.curx, txti.cury);
+      textattr(txti.attribute);
+#endif
+    }
+
+    ch = keyRead();
+#if defined(__OS2__) || defined(__32BIT__) // || (__BORLANDC__ >= 0x0500)
+    if (ch == -1)  // Error happened in getch()
+    {
+      ch = 0;
+      continue;
+    }
+    if (ch == 0)
+      ch = keyRead() << 8;
+    else
+      ch &= 0xFF;
 #else
-   getMultiTasker();
+    if (ch & 0x00ff)
+      ch &= 0x00ff;
+#endif
+#if !defined(__32BIT__) || defined(__OS2__)
+    if (ch == _K_ALTZ_)
+    {
+      char           *comspecPtr;
+      screenCharType *helpPtr;
 
+      if (((comspecPtr = getenv("COMSPEC")) != NULL) &&
+          (windowSP < MAX_WINDOWS) &&
+          ((helpPtr = malloc (4000)) != NULL))
+      {
+        u16  px
+           , py
+           , y
+           , count = 0;
+        char dirStr[128];
+#ifndef __OS2__
+        u16 cursor;
+#endif
+        for (y = 0; y <= 24; y++)
+          memcpy(&helpPtr[80 * count++], &(screen[y * columns]), 160);
+        fillRectangle(' ', 0, 0, 79, 24, LIGHTGRAY, BLACK, LIGHTGRAY);
+
+#ifdef __OS2__
+        VioScrollUp(0, 0, 0xFFFF, 0xFFFF, 0xFFFF, " \x7", 0);
+        VioGetCurPos(&py, &px, 0);
+        VioGetCurType(&vci, 0);
+        VioSetMode(&vmiOrg, 0);
+#else
+        _BH = 0;
+        _AH = 0x03;
+        geninterrupt(0x10);
+        px = _DL;
+        py = _DH;
+
+        _AH = 0x03;
+        _BH = 0x00;
+        geninterrupt(0x10);
+        cursor = _CX;
+#endif
+        locateCursor(0, 0);
+        smallCursor();
+
+        getcwd(dirStr, 128);
+
+#ifndef __OS2__
+        if (videoModeDOS != videoModeFSetup)
+        {
+          _AL = videoModeDOS;
+          _AH = 0x00;
+          geninterrupt(0x10);
+          locateCursor(0, 0);
+        }
+#endif
+        spawnl(P_WAIT, comspecPtr, comspecPtr, NULL);
+
+        ChDir(dirStr);
+
+#ifdef __OS2__
+        VioSetMode(&vmiNew, 0);
+        VioSetCurType(&vci, 0);
+#else
+        _AL = videoModeFSetup;
+        _AH = 0x00;
+        geninterrupt (0x10);
+
+        _CX = cursor;
+        _AH = 0x01;
+        geninterrupt (0x10);
+#endif
+        locateCursor(px, py);
+
+        count = 0;
+        for (y = 0; y <= 24; y++)
+          memcpy(&(screen[y * columns]), &helpPtr[80 * count++], 160);
+        free(helpPtr);
+#ifdef __OS2__
+        VioShowBuf(0, 8000, 0);
+#endif
+      }
+      ch = 0;
+    }
+#endif
+  }
+  while (ch == 0);
+
+  return ch;
+}
+//---------------------------------------------------------------------------
+void initWindow(u16 mode)
+{
+#ifdef __OS2__
+  ULONG   ulLVB = 0;
+  PVOID16 p16;
+  USHORT  usLen = 0;
+
+  mode = mode;
+  VioGetBuf(&ulLVB, &usLen, 0);
+  p16 = (PVOID16)ulLVB;
+  screen = (screenCharType *)p16;
+
+  vmiOrg.cb = sizeof(vmiOrg);
+  VioGetMode(&vmiOrg, 0);
+  vmiNew = vmiOrg;
+  vmiNew.fbType &= 1;
+  vmiNew.col = 80;
+  vmiNew.row = 25;
+  VioSetMode(&vmiNew, 0);
+#else
+  getMultiTasker();
+
+#ifndef __32BIT__
 /* Get cursor format */
-
-   _AH = 0x03;
-   _BH = 0x00;
-   geninterrupt (0x10);
-   oldCursor = _CX;
-
+  _AH = 0x03;
+  _BH = 0x00;
+  geninterrupt(0x10);
+  oldCursor = _CX;
 /* Page 0 */
-
-   _AH = 0x05;
-   _AL = 0x00;
-   geninterrupt (0x10);
+  _AH = 0x05;
+  _AL = 0x00;
+  geninterrupt(0x10);
 
 /* Get video mode */
+  _AH = 0x0f;
+  geninterrupt(0x10);
 
-   _AH = 0x0f;
-   geninterrupt (0x10);
+  videoModeDOS = videoModeFSetup = _AL & 0x7f;
 
-        videoModeDOS = videoModeFSetup = _AL & 0x7f;
+  screen = MK_FP (__SegB000, 0x0000);
 
-        screen = MK_FP (__SegB000, 0x0000);
+  if (videoModeDOS < 7) /* CGA */
+  {
+    cga--;
 
-        if (videoModeDOS < 7) /* CGA */
-        {
-                cga--;
+    if (videoModeDOS == BW40 || videoModeDOS == C40)
+    {
+      _AL = (videoModeFSetup += 2);
+      _AH = 0;
+      geninterrupt(0x10);
+    }
 
-                if ((videoModeDOS == 0) || (videoModeDOS == 1))
-                {
-                        _AL = (videoModeFSetup += 2);
-                        _AH = 0;
-                        geninterrupt (0x10);
-                }
+    screen = MK_FP (__SegB800, 0x0000);
+  }
+  else
+  {
+    if (videoModeDOS > 7) /* High resolution modes */
+    {
+      /* Cursor home */
 
-                screen = MK_FP (__SegB800, 0x0000);
-        }
-   else
-   {
-      if (videoModeDOS > 7) /* High resolution modes */
-                {
-         /* Cursor home */
+      _AH = 0x02;
+      _BH = 0x00;
+      _DX = 0x0000;
+      geninterrupt (0x10);
 
-         _AH = 0x02;
-         _BH = 0x00;
-         _DX = 0x0000;
-         geninterrupt (0x10);
+      /* Display 'ò' */
 
-         /* Display 'ò' */
+      _AH = 0x09;
+      _AL = 'ò';
+      _BH = 0x00;
+      _BL = 0x00;
+      _CX = 0x01;
+      geninterrupt (0x10);
 
-         _AH = 0x09;
-         _AL = 'ò';
-         _BH = 0x00;
-         _BL = 0x00;
-         _CX = 0x01;
-         geninterrupt (0x10);
+      if (screen[0].ch == 'ò')
+      {
+        /* Display ' ' */
 
-         if (screen[0].ch == 'ò')
-         {
-            /* Display ' ' */
+        _AH = 0x09;
+        _AL = ' ';
+        _BH = 0x00;
+        _BL = 0x00;
+        _CX = 0x01;
+        geninterrupt (0x10);
 
-            _AH = 0x09;
-            _AL = ' ';
-            _BH = 0x00;
-            _BL = 0x00;
-            _CX = 0x01;
-            geninterrupt (0x10);
+        if (screen[0].ch != ' ')
+          cga--;
+      }
+      else
+        cga--;
 
-            if (screen[0].ch != ' ')
-               cga--;
-         }
-         else
-         {
-            cga--;
-                        }
+      if (cga)
+      {
+        screen = MK_FP (__SegB800, 0x0000);
+        videoModeFSetup = C80;
+      }
+      else
+        videoModeFSetup = MONO;
 
-         if (cga)
-         {
-/*                              screen = MK_FP (0xb800, 0x0000); */
-                                screen = MK_FP (__SegB800, 0x0000);
-                                videoModeFSetup = 0x03;
-                        }
-                        else
-                                videoModeFSetup = 0x07;
+      _AL = videoModeFSetup;
+      _AH = 0;
+      geninterrupt(0x10);
+    }
+  }
 
-                        _AL = videoModeFSetup;
-                        _AH = 0;
-                        geninterrupt (0x10);
-                }
-        }
-
-        if (FP_SEG (screen) == __SegB800)
-        {
-                if (videoModeFSetup != 2)
-         color--;
-   }
-#ifndef __FMAILX__
-#ifndef __32BIT__
-   _ES = FP_SEG (screen);
-   _DI = FP_OFF (screen);
-   _AH = 0xfe;
-   geninterrupt (0x10);
-   screen = MK_FP (_ES, _DI);
-#endif
-#endif
-   if (mode == 1)
+  if (FP_SEG(screen) == __SegB800)
+  {
+    if (videoModeFSetup == BW80)
       color = 0;
-   if (mode == 2)
-      color = -1;
-//#endif
+  }
+#ifndef __FMAILX__
+  _ES = FP_SEG(screen);
+  _DI = FP_OFF(screen);
+  _AH = 0xfe;
+  geninterrupt(0x10);
+  screen = MK_FP(_ES, _DI);
+#endif
+#endif
+  if (mode == 1)
+    color = 0;
+  if (mode == 2)
+    color = 1;
+#ifdef __32BIT__
+  textmode(color ? C80 : BW80);  // X28
+  textcolor(WHITE);
+  textbackground(BLACK);
+  clrscr();
+#endif
+
    /* install new abort/retry/ignore/fail handler */
 #ifndef __32BIT__
 #ifndef __FMAILX__
-   _os_install_msghandler(); /* macro */
+  _os_install_msghandler(); /* macro */
 #endif
 #endif
-/* origARIFhandler = getvect(0x24);
-   setvect(0x24, (inthandler)newARIFhandler);
-*/
 #endif
+  removeCursor();
 
-   removeCursor;
-
-   initMagic = 0x4657;
+  initMagic = 0x4657;
 }
-
-
-
-void deInit (u16 cursorLine)
+//---------------------------------------------------------------------------
+void deInit(u16 cursorLine)
 {
-   u16      pos=6;
-   u16      attr;
+#ifdef __32BIT__
+  textmode(LASTMODE);
+  clrscr();
+  locateCursor(0, 0);
+#else  // __32BIT__
+  u16 pos = 6;
 
-   getAttr (YELLOW, RED, attr);
-   while(pos--)
-      showChar (72+pos, 1, ' ', attr, MONO_NORM);
-#ifndef __OS2__
-   if (videoModeDOS != videoModeFSetup)
-   {
-      _AL = videoModeDOS;
-      _AH = 0x00;
-      geninterrupt (0x10);
-      locateCursor (0, 0);
-   }
-   else
-      locateCursor (0, cursorLine);
-   _CX = oldCursor;
-   _AH = 0x01;
-   geninterrupt (0x10);
-#else
-   locateCursor(0, cursorLine);
-#endif
-   /* restore original abort/retry/ignore/fail handler */
-/* setvect(0x24, (inthandler)origARIFhandler);*/
-#ifndef __32BIT__
-#ifndef __FMAILX__
-   _os_uninstall_msghandler(); /* macro */
-#endif
-#endif
+  while (pos--)
+    showChar(72 + pos, 1, ' ', calcAttr(YELLOW, RED), MONO_NORM);
 #ifdef __OS2__
-   if ( vmiOrg.col == 80 && vmiOrg.row == 25 )
-   {  fillRectangle (' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
-      VioShowBuf(0, 8000, 0);
-   }
-   else
-   {  VioSetMode(&vmiOrg, 0);
-      VioScrollUp(0, 0, 0xFFFF, 0xFFFF, 0xFFFF, " \x7", 0);
-   }
+  locateCursor(0, cursorLine);
+#else  // __OS2__
+  if (videoModeDOS != videoModeFSetup)
+  {
+    _AL = videoModeDOS;
+    _AH = 0x00;
+    geninterrupt(0x10);
+    locateCursor(0, 0);
+  }
+  else
+    locateCursor(0, cursorLine);
+  _CX = oldCursor;
+  _AH = 0x01;
+  geninterrupt(0x10);
+#endif  // __OS2__
+#ifndef __FMAILX__
+  /* restore original abort/retry/ignore/fail handler */
+  _os_uninstall_msghandler(); /* macro */
+#endif  // __FMAILX__
+#ifdef __OS2__
+  if ( vmiOrg.col == 80 && vmiOrg.row == 25 )
+  {
+    fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
+    VioShowBuf(0, 8000, 0);
+  }
+  else
+  {
+    VioSetMode(&vmiOrg, 0);
+    VioScrollUp(0, 0, 0xFFFF, 0xFFFF, 0xFFFF, " \x7", 0);
+  }
+#endif  // __OS2__
+  fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
+#endif  // __32BIT__
+}
+//---------------------------------------------------------------------------
+void printStringFill( char *string, char ch, s16 num, u16 x, u16 y
+                    , u16 fgc, u16 bgc, u16 mAttr)
+{
+  int attr = calcAttr(fgc, bgc);
+  gotoxy(x + 1, y + 1);
+  textattr(color ? attr : mAttr);
+
+  if (string != NULL)
+  {
+#if 1
+    int l = strlen(string);
+    if (l > num)
+    {
+      l = num;
+      string[l] = 0;
+    }
+    cputs(string);
+    x += l;
+    num -= l;
 #else
-   fillRectangle (' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
-#endif
-}
-
-
-
-void printStringFill (char *string, char ch, s16 num,
-                      u16 x, u16 y,
-                      u16 fgc, u16 bgc,
-                      u16 mAttr)
-{
-   u16 attr;
-
-   getAttr (fgc, bgc, attr);
-
-   if (string != NULL)
-   {
-      while (*string)
-      {
-         showChar (x, y, *(string++), attr, mAttr);
-         x++;
-         num--;
-      }
-   }
-   while (num-- > 0)
-   {
-      showChar (x, y, ch, attr, mAttr);
+    while (*string)
+    {
+      showChar(x, y, *(string++), attr, mAttr);
       x++;
-   }
+      num--;
+    }
+#endif
+  }
+  while (num-- > 0)
+  {
+    showChar(x, y, ch, attr, mAttr);
+    x++;
+  }
 }
-
-
-
-static s16 checkPackNode (char *nodeString, u16 *valid,
-                          s16 wildCards, s16 numSign)
+//---------------------------------------------------------------------------
+static s16 checkPackNode(char *nodeString, u16 *valid, s16 wildCards, s16 numSign)
 {
-   u16 count=0;
-   u16 pointFound=0;
-   u16 lastLevel=0;
+   u16 count;
+   u16 pointFound = 0;
+   u16 lastLevel  = 0;
 
    if ((*nodeString=='*') && (nodeString[1]==0)) return (0);
 
    if (*nodeString=='.')
    {
-      if (*valid<3) return(-1);
+      if (*valid < 3)
+        return -1;
       lastLevel = *valid = 3;
       pointFound++;
       nodeString++;
@@ -540,7 +630,7 @@ static s16 checkPackNode (char *nodeString, u16 *valid,
 
    while (*nodeString)
    {
-      count=0;
+      count = 0;
       while ((isdigit(*nodeString)) ||
              (wildCards && ((*nodeString=='?') || (*nodeString=='*'))) ||
              (numSign   && *nodeString=='#'))
@@ -567,43 +657,45 @@ static s16 checkPackNode (char *nodeString, u16 *valid,
                     pointFound++;
                     break;
          case 0   : if (!pointFound)
-                    { if (*valid<2) return(-1);
+                    {
+                      if (*valid < 2)
+                        return -1;
                       *valid = 3;
                     }
                     else
-                    { if (*valid<3) return(-1);
+                    {
+                      if (*valid < 3)
+                        return -1;
                       *valid = 4;
                     }
-                    return(0);
-         default  : return(-1);
+                    return 0;
+         default  : return -1;
       }
       nodeString++;
    }
-   return (-1);
+   return -1;
 }
-
-
-
-s16 groupToChar (s32 group)
+//---------------------------------------------------------------------------
+s16 groupToChar(s32 group)
 {
-   s16 c = 'A';
+  s16 c = 'A';
 
-   if ( group )
-      while ( !(group & BIT0) )
-      {  group >>= 1;
-         c++;
-      }
-   return c;
+  if (group)
+    while ( !(group & BIT0) )
+    {
+      group >>= 1;
+      c++;
+    }
+  return c;
 }
+//---------------------------------------------------------------------------
+u16 es__8c = 0;
 
-
-u16     es__8c = 0;
-
-u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
+u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
 {
    s16      redo;
    s16      error;
-   u16      sPos;
+   size_t   sPos;
    u16      defaultValid;
    u16      numSign;
    u16      ch;
@@ -637,9 +729,9 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
                              windowLook.editfg, windowLook.editbg, MONO_NORM);
             update = 0;
          }
-         locateCursor (x+sPos, y);
+         locateCursor(x + sPos, y);
 
-         ch=readKbd();
+         ch = readKbd();
 
          if (ch == _K_CTLY_)                           /* CTRL-Y */
          {
@@ -673,7 +765,8 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
          if (ch == _K_CLEFT_)                           /* Ctrl Left arrow */
          {
             clear = 0;
-            while (sPos && (tempStr[--sPos] == ' ')) {}
+            while (sPos && (tempStr[--sPos] == ' '))
+            {}
             while (sPos && (tempStr[sPos-1] != ' '))
             {
                sPos--;
@@ -692,9 +785,9 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
          {
             clear = 0;
             if ((insert = !insert) == 0)
-                smallCursor()
+               smallCursor();
             else
-               largeCursor()
+               largeCursor();
          }
          else
          if (ch == _K_DEL_)                           /* Delete */
@@ -773,9 +866,9 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
                update++;
             }
             else
-               if (strlen(tempStr) < width-1)
+               if (strlen(tempStr) < (size_t)width - 1)
                {
-                  memmove (&tempStr[sPos+1], &tempStr[sPos], width-1-sPos);
+                  memmove(&tempStr[sPos+1], &tempStr[sPos], width - 1 - sPos);
                   if ( (fieldType & UPCASE) &&
                        (!config.genOptions.lfn || !(fieldType & LFN)) )
                      tempStr[sPos++] = toupper(ch);
@@ -785,9 +878,10 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
                }
          }
       }
-      while ((ch != _K_ENTER_) && (ch != _K_ESC_));
+      while (ch != _K_ENTER_ && ch != _K_ESC_)
+        ;
 
-      removeCursor;
+      removeCursor();
 
       /* Remove trailing spaces */
 
@@ -883,9 +977,9 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
                   }
                }
 
-               while ((!error) && ((helpPtr = strtok(NULL, " ")) != NULL))
+               while (!error && (helpPtr = strtok(NULL, " ")) != NULL)
                {
-                   if ((*(helpPtr++) != '/') ||
+                  if ((*(helpPtr++) != '/') ||
                        ((*helpPtr != 'C') &&
                         (*helpPtr != 'H') &&
                         (*helpPtr != 'I') &&
@@ -893,11 +987,11 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
                         (*helpPtr != 'O')) ||
                         ((*(++helpPtr) != ' ') &&
                          (*helpPtr != 0)))
-                   {
-                      redo = (askBoolean ("Illegal switch. Edit ?", 'Y') == 'Y');
-                      error = 1;
-                   }
-                  helpPtr = strtok(NULL, " ");
+                  {
+                    redo = (askBoolean ("Illegal switch. Edit ?", 'Y') == 'Y');
+                    error = 1;
+                  }
+                  strtok(NULL, " ");
                }
             }
          } else
@@ -905,13 +999,10 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
          if (((fieldType & MASK) == PATH) || ((fieldType & MASK) == FILE_NAME) ||
              ((fieldType & MASK) == MB_NAME))
          {
-            for (sPos=0; sPos < strlen (tempStr); sPos++)
-            {
+            for (sPos = 0; sPos < strlen(tempStr); sPos++)
                if (tempStr[sPos] == '/')
-               {
                   tempStr[sPos] = '\\';
-               }
-            }
+
             strcpy (testStr, tempStr);
             if ((fieldType & MASK) == FILE_NAME)
             {
@@ -932,7 +1023,7 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
                   }
                   else
                   {
-//#ifndef __32BIT__
+#ifndef __32BIT__
                      if ( (!config.genOptions.lfn || !(fieldType & LFN)) &&
                           ((helpPtr != NULL && strlen(helpPtr+1) > 8) ||
                            (helpPtr == NULL && strlen(testStr) > 8)) )
@@ -942,7 +1033,7 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
                         es__8c = 1;
                      }
                      else
-//#endif
+#endif
                         if (helpPtr != NULL)
                            *(helpPtr+1) = 0;
                   }
@@ -994,9 +1085,9 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
                }
             }
             if ((!redo) && ((fieldType & MASK) == FILE_NAME) &&
-                ((/*(*/fsfindfirst(tempStr, &ffblkTest, FA_DIREC, fieldType & LFN) == 0) &&
-                  (ffblkTest.ff_attrib & FA_DIREC)) ) /* ||
-                 (strlen(tempStr) == 2))) */
+                ((fsfindfirst(tempStr, &ffblkTest, FA_DIREC, fieldType & LFN) == 0) &&
+                  (ffblkTest.ff_attrib & FA_DIREC))
+               )
             {
                 error = 1;
                 redo = (askBoolean ("Missing filename. Edit filename ?", 'Y') == 'Y');
@@ -1019,7 +1110,7 @@ u16 editString (char *string, u16 width, u16 x, u16 y, u16 fieldType)
             *tempStr = 0;
             sPos = 0;
          }
-         strcpy (string, tempStr);
+         strcpy(string, tempStr);
       }
       update++;
    }
@@ -1047,31 +1138,30 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
    u16      attr, attr2;
    const char *NoYes[2] = { "No", "Yes" };
 
-   if ((sx + menu->xWidth >= 80) || (menu->yWidth >= 25))
-      return;
+   if (sx + menu->xWidth >= 80 || menu->yWidth >= 25)
+     return;
+
    if (sy + menu->yWidth >= 25)
-      sy = 24 - menu->yWidth;
+     sy = 24 - menu->yWidth;
 
    py = sy;
    for (count = 0; count < menu->entryCount; count++)
    {
       if (menu->menuEntry[count].entryType & DISPLAY)
-         getAttr (DARKGRAY, windowLook.background, attr)
+         attr = calcAttr(DARKGRAY, windowLook.background);
       else
       {
-         getAttr (windowLook.promptfg, windowLook.background, attr);
-         getAttr (windowLook.promptkeyfg, windowLook.background, attr2);
+         attr  = calcAttr(windowLook.promptfg   , windowLook.background);
+         attr2 = calcAttr(windowLook.promptkeyfg, windowLook.background);
       }
 
       if ((menu->menuEntry[count].entryType & MASK) != EXTRA_TEXT)
       {
          if (menu->menuEntry[count].offset)
-         {
-            px = sx+menu->menuEntry[count].offset+2;
-         }
+            px = sx + menu->menuEntry[count].offset + 2;
          else
          {
-            px = sx+2;
+            px = sx + 2;
             py++;
          }
          if (menu->menuEntry[count].prompt != NULL)
@@ -1082,11 +1172,11 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
             while (*helpPtr)
             {
                if (temp || (*helpPtr != menu->menuEntry[count].key))
-               {  showChar (px, py, *(helpPtr++), attr, MONO_NORM);
-               }
+                 showChar(px, py, *(helpPtr++), attr, MONO_NORM);
                else
-               {  showChar (px, py, *(helpPtr++), attr2, MONO_HIGH);
-                  temp = 1;
+               {
+                 showChar(px, py, *(helpPtr++), attr2, MONO_HIGH);
+                 temp = 1;
                }
                px++;
             }
@@ -1094,7 +1184,7 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
       }
    }
 
-   py = sy;
+  py = sy;
 
   for (count = 0; count < menu->entryCount; count++)
   {
@@ -1117,35 +1207,24 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
                         *tempStr = 0;
                         while ((exportCount < MAX_FORWARD) && (tempInfo.forwards[exportCount].nodeNum.zone != 0))
                         {
-                           strcpy (tempStr2, nodeStr (&tempInfo.forwards[exportCount].nodeNum));
-                           helpPtr = tempStr2;
+                           strcpy(tempStr2, nodeStr (&tempInfo.forwards[exportCount].nodeNum));
 
                            if (lastZone != tempInfo.forwards[exportCount].nodeNum.zone)
-                           {
                               helpPtr = tempStr2;
-                           }
                            else
                            {
                               if (lastNet != tempInfo.forwards[exportCount].nodeNum.net)
-                              {
-                                 helpPtr = strchr (tempStr2, ':') + 1;
-                              }
+                                 helpPtr = strchr(tempStr2, ':') + 1;
                               else
                               {
                                  if (lastNode != tempInfo.forwards[exportCount].nodeNum.node)
-                                 {
-                                    helpPtr = strchr (tempStr2, '/') + 1;
-                                 }
+                                    helpPtr = strchr(tempStr2, '/') + 1;
                                  else
                                  {
                                     if (tempInfo.forwards[exportCount].nodeNum.point == 0)
-                                    {
-                                       helpPtr = strchr (tempStr2, 0);
-                                    }
+                                       helpPtr = strchr(tempStr2, 0);
                                     else
-                                    {
-                                       helpPtr = strchr (tempStr2, '.');
-                                    }
+                                       helpPtr = strchr(tempStr2, '.');
                                  }
                               }
                            }
@@ -1156,9 +1235,8 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
                            if (strlen (tempStr) + strlen (helpPtr) + 3 < ORGLINE_LEN)
                            {
                               if (strlen (tempStr) > 0)
-                              {
                                  strcat (tempStr, " ");
-                              }
+
                               strcat (tempStr, helpPtr);
                               exportCount++;
                            }
@@ -1301,249 +1379,230 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
 //---------------------------------------------------------------------------
 void fillRectangle(char ch, u16 sx, u16 sy, u16 ex, u16 ey, u16 fgc, u16 bgc, u16 mAttr)
 {
-   u16      count;
-   u16      attr;
-   u16      width;
-   char     line[160];
+  u16  count;
+  u16  width;
+  char line[160];
 
-   testInit ();
+  testInit();
 
-   if ((width = (ex - sx + 1) * 2) > 160)
-      return;
-   memset (line, ch, width);
-   if (color)
-   {
-      getAttr (fgc, bgc, attr);
-      for (count = 1; count < width; count += 2)
-         line[count] = attr;
-   }
-   else
-      for (count = 1; count < width; count += 2)
-         line[count] = mAttr;
+  if ((width = (ex - sx + 1) * 2) > 160)
+    return;
 
-//#ifndef __32BIT__
-   for (count = sy; count <= ey; count++)
-      memcpy (&(screen[count*columns+sx]), line, width);
-//#else
-//  for (count = sy; count <= ey; count++)
-//  for (attr = 0; attr < width; attr+=2)
-//      showChar(sx+(attr>>1), count, line[attr], line[attr+1], line[attr+1]);
-//#endif
+  memset(line, ch, width);
+  if (color)
+  {
+    u16 attr = calcAttr(fgc, bgc);
+    for (count = 1; count < width; count += 2)
+      line[count] = attr;
+  }
+  else
+    for (count = 1; count < width; count += 2)
+      line[count] = mAttr;
+
+  for (count = sy; count <= ey; count++)
+#ifndef __32BIT__
+    memcpy(&(screen[count * columns + sx]), line, width);
+#else
+    puttext(sx + 1, count + 1, ex + 1, count + 1, line);
+#endif
 }
-
-
-
-s16 displayWindow (char *title, u16 sx, u16 sy, u16 ex, u16 ey)
+//---------------------------------------------------------------------------
+s16 displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey)
 {
-   u16       x, y;
-   u16       nx;
-   char      attr;
-   u16       count;
-   u16       borderIndex;
-   screenCharType *helpPtr;
+  u16       x, y;
+  u16       nx;
+  u16       count;
+  u16       borderIndex;
+  int       attr;
+  screenCharType *helpPtr;
 
-   testInit();
+  testInit();
 
-   if (windowSP >= MAX_WINDOWS)
-   {
-      return(1);
-   }
-   if ((!(windowLook.wAttr & NO_SAVE)) &&
-       ((helpPtr = malloc (2*(ex-sx+3)*(ey-sy+2))) == NULL))
-   {
-      displayMessage ("Not enough memory available");
-      return(1);
-   }
+  if (windowSP >= MAX_WINDOWS)
+    return 1;
 
-   if (windowSP != 0)
-   {
-      getAttr (windowStack[windowSP-1].inactvborderfg,
-               windowStack[windowSP-1].background, attr);
+  if (  !(windowLook.wAttr & NO_SAVE)
+     && (helpPtr = malloc(2 * (ex - sx + 3) * (ey - sy + 2))) == NULL
+     )
+  {
+    displayMessage("Not enough memory available");
+    return 1;
+  }
 
-      for (x = windowStack[windowSP-1].sx;
-           x < windowStack[windowSP-1].ex-1; x++)
-      {
-//#ifndef __32BIT__
-         if (screen[windowStack[windowSP-1].sy*columns+x].ch >= 128)
-         {
-            changeColor (x, windowStack[windowSP-1].sy, attr, MONO_NORM);
-         }
-         if (screen[(windowStack[windowSP-1].ey-1)*columns+x].ch >= 128)
-         {
-            changeColor (x, windowStack[windowSP-1].ey-1, attr, MONO_NORM);
-         }
-//#endif
-      }
-      for (y = windowStack[windowSP-1].sy;
-           y < windowStack[windowSP-1].ey; y++)
-      {
-         changeColor (windowStack[windowSP-1].sx, y, attr, MONO_NORM);
-         changeColor (windowStack[windowSP-1].ex-2, y, attr, MONO_NORM);
-      }
-   }
+  if (windowSP != 0)
+  {
+    attr = calcAttr(windowStack[windowSP - 1].inactvborderfg, windowStack[windowSP - 1].background);
 
-   borderIndex = windowLook.wAttr & 0x03;
-   if (!(windowLook.wAttr & NO_SAVE))
-   {
-      nx = ex-sx+3;
-      count = 0;
-//#ifndef __32BIT__
-      for (y = sy; y <= ey+1; y++)
-         memcpy (&helpPtr[nx*count++], &(screen[y*columns+sx]), nx<<1);
-//#endif
-      windowStack[windowSP].sx = sx;
-      windowStack[windowSP].ex = ex+2;
-      windowStack[windowSP].sy = sy;
-      windowStack[windowSP].ey = ey+1;
-      windowStack[windowSP].inactvborderfg = windowLook.inactvborderfg;
-      windowStack[windowSP].background     = windowLook.background;
-      windowStack[windowSP++].oldScreen = helpPtr;
-   }
-   fillRectangle (' ', sx+1, sy+1, ex-1, ey-1,
-                       windowLook.editfg, windowLook.background,
-                       windowLook.mono_attr);
-   getAttr (windowLook.actvborderfg, windowLook.background, attr);
-   for (x = sx+1; x < ex; x++)
-   {
-      showChar (x, sy, border[borderIndex][0], attr, windowLook.mono_attr);
-      showChar (x, ey, border[borderIndex][0], attr, windowLook.mono_attr);
-   }
-   for (y = sy+1; y < ey; y++)
-   {
-      showChar (sx, y, border[borderIndex][1], attr, windowLook.mono_attr);
-      showChar (ex, y, border[borderIndex][1], attr, windowLook.mono_attr);
-   }
-   showChar (sx, sy, border[borderIndex][2], attr, windowLook.mono_attr);
-   showChar (ex, sy, border[borderIndex][3], attr, windowLook.mono_attr);
-   showChar (sx, ey, border[borderIndex][4], attr, windowLook.mono_attr);
-   showChar (ex, ey, border[borderIndex][5], attr, windowLook.mono_attr);
-   if ((title != NULL) && (strlen(title) > 0))
-   {
-      if (windowLook.wAttr & TITLE_RIGHT)
-         nx = ex - strlen(title);
+    for (x = windowStack[windowSP - 1].sx; x < windowStack[windowSP - 1].ex - 1; x++)
+    {
+      if (getChar(x, windowStack[windowSP - 1].sy) >= 128)
+        changeColor(x, windowStack[windowSP - 1].sy, attr, MONO_NORM);
+
+      if (getChar(x, windowStack[windowSP - 1].ey - 1) >= 128)
+        changeColor(x, windowStack[windowSP-1].ey-1, attr, MONO_NORM);
+    }
+    for (y = windowStack[windowSP - 1].sy; y < windowStack[windowSP - 1].ey; y++)
+    {
+      changeColor(windowStack[windowSP-1].sx, y, attr, MONO_NORM);
+      changeColor(windowStack[windowSP-1].ex-2, y, attr, MONO_NORM);
+    }
+  }
+
+  borderIndex = windowLook.wAttr & 0x03;
+  if (!(windowLook.wAttr & NO_SAVE))
+  {
+#ifndef __32BIT__
+    nx = ex - sx + 3;
+    count = 0;
+    for (y = sy; y <= ey + 1; y++)
+      memcpy(&helpPtr[nx * count++], &(screen[y * columns + sx]), nx << 1);
+#else
+    gettext(sx + 1, sy + 1, ex + 3, ey + 2, helpPtr);
+#endif
+    windowStack[windowSP].sx = sx;
+    windowStack[windowSP].ex = ex + 2;
+    windowStack[windowSP].sy = sy;
+    windowStack[windowSP].ey = ey + 1;
+    windowStack[windowSP].inactvborderfg = windowLook.inactvborderfg;
+    windowStack[windowSP].background     = windowLook.background;
+    windowStack[windowSP++].oldScreen = helpPtr;
+  }
+  fillRectangle(' ', sx + 1, sy + 1, ex - 1, ey - 1
+               , windowLook.editfg, windowLook.background, windowLook.mono_attr);
+  attr = calcAttr(windowLook.actvborderfg, windowLook.background);
+  for (x = sx + 1; x < ex; x++)
+  {
+    showChar (x, sy, border[borderIndex][0], attr, windowLook.mono_attr);
+    showChar (x, ey, border[borderIndex][0], attr, windowLook.mono_attr);
+  }
+  for (y = sy + 1; y < ey; y++)
+  {
+    showChar (sx, y, border[borderIndex][1], attr, windowLook.mono_attr);
+    showChar (ex, y, border[borderIndex][1], attr, windowLook.mono_attr);
+  }
+  showChar (sx, sy, border[borderIndex][2], attr, windowLook.mono_attr);
+  showChar (ex, sy, border[borderIndex][3], attr, windowLook.mono_attr);
+  showChar (sx, ey, border[borderIndex][4], attr, windowLook.mono_attr);
+  showChar (ex, ey, border[borderIndex][5], attr, windowLook.mono_attr);
+  if (title != NULL && strlen(title) > 0)
+  {
+    if (windowLook.wAttr & TITLE_RIGHT)
+      nx = ex - strlen(title);
+    else
+      if (windowLook.wAttr & TITLE_LEFT)
+        nx = sx + 1;
       else
-         if (windowLook.wAttr & TITLE_LEFT)
-            nx = sx + 1;
-         else
-            nx = sx + (ex-sx-strlen(title))/2;
+        nx = sx + (ex-sx-strlen(title))/2;
 
-      getAttr (windowLook.titlefg, windowLook.titlebg, attr);
+    attr = calcAttr(windowLook.titlefg, windowLook.titlebg);
 
-      while (*title)
-      {
-         showChar (nx, sy, *(title++), attr, windowLook.mono_attr);
-         nx++;
-      }
-   }
-   if (windowLook.wAttr & SHADOW)
-   {
-      for (x = ex+1; x <= ex+2; x++)
-      for (y = sy+1; y <= ey+1; y++)
-         shadow (x, y);
-      for (x = sx+2; x <= ex+2; x++)
-         shadow (x, ey+1);
-   }
-   return(0);
+    while (*title)
+    {
+      showChar(nx, sy, *(title++), attr, windowLook.mono_attr);
+      nx++;
+    }
+  }
+  if (windowLook.wAttr & SHADOW)
+  {
+    for (x = ex + 1; x <= ex + 2; x++)
+      for (y = sy + 1; y <= ey + 1; y++)
+        shadow(x, y);
+      for (x = sx + 2; x <= ex + 2; x++)
+        shadow(x, ey + 1);
+  }
+  return 0;
 }
-
-
-void removeWindow (void)
+//---------------------------------------------------------------------------
+void removeWindow(void)
 {
-   u16            x, y, nx;
-   u16            count;
-   char           attr;
-   screenCharType *helpPtr;
+  u16             x, y, nx;
+  u16             count;
+  screenCharType *helpPtr;
 
-   if ((windowSP == 0) ||
-       ((helpPtr = windowStack[--windowSP].oldScreen) == NULL))
-      return;
+  if (windowSP == 0 || (helpPtr = windowStack[--windowSP].oldScreen) == NULL)
+    return;
 
-   nx = windowStack[windowSP].ex -
-        windowStack[windowSP].sx + 1;
+#ifndef __32BIT__
+  nx = windowStack[windowSP].ex - windowStack[windowSP].sx + 1;
+  count = 0;
+  for (y =  windowStack[windowSP].sy; y <= windowStack[windowSP].ey; y++)
+    memcpy(&(screen[y * columns + windowStack[windowSP].sx]), &helpPtr[nx * count++], nx << 1);
+#else
+  puttext( windowStack[windowSP].sx + 1, windowStack[windowSP].sy + 1
+         , windowStack[windowSP].ex + 1, windowStack[windowSP].ey + 1, helpPtr);
+#endif
+  free(helpPtr);
 
-   count = 0;
-   for (y =  windowStack[windowSP].sy;
-        y <= windowStack[windowSP].ey; y++)
-      memcpy (&(screen[y*columns+windowStack[windowSP].sx]),
-              &helpPtr[nx*count++], nx<<1);
+  if (windowSP != 0)
+  {
+    int attr = calcAttr(windowLook.actvborderfg, windowLook.background);
 
-   free (helpPtr);
+    for (x = windowStack[windowSP-1].sx; x < windowStack[windowSP-1].ex - 1; x++)
+    {
+      if (getChar(x, windowStack[windowSP - 1].sy) >= 128)
+        changeColor(x, windowStack[windowSP - 1].sy, attr, MONO_HIGH);
 
-   if (windowSP != 0)
-   {
-      getAttr (windowLook.actvborderfg, windowLook.background, attr);
-
-      for (x = windowStack[windowSP-1].sx;
-           x < windowStack[windowSP-1].ex-1; x++)
-      {
-//#ifndef __32BIT__
-         if (screen[windowStack[windowSP-1].sy*columns+x].ch >= 128)
-         {
-            changeColor (x, windowStack[windowSP-1].sy, attr, MONO_HIGH);
-         }
-         changeColor (x, windowStack[windowSP-1].ey-1, attr, MONO_HIGH);
-//#endif
-      }
-      for (y =  windowStack[windowSP-1].sy;
-           y < windowStack[windowSP-1].ey; y++)
-      {
-         changeColor (windowStack[windowSP-1].sx, y, attr, MONO_HIGH);
-         changeColor (windowStack[windowSP-1].ex-2, y, attr, MONO_HIGH);
-      }
-   }
+      changeColor(x, windowStack[windowSP - 1].ey - 1, attr, MONO_HIGH);
+    }
+    for (y = windowStack[windowSP - 1].sy; y < windowStack[windowSP - 1].ey; y++)
+    {
+      changeColor(windowStack[windowSP - 1].sx    , y, attr, MONO_HIGH);
+      changeColor(windowStack[windowSP - 1].ex - 2, y, attr, MONO_HIGH);
+    }
+  }
 }
 //---------------------------------------------------------------------------
 menuType *createMenu(char *title)
 {
-   menuType *menu;
+  menuType *menu;
 
-   if ((menu = malloc(sizeof(menuType))) == NULL)
-      return NULL;
+  if ((menu = malloc(sizeof(menuType))) == NULL)
+    return NULL;
 
-   menu->title      = title;
-   menu->xWidth     = 2;
-   menu->yWidth     = 2;
-   menu->pdEdge     = 2;
-   menu->zDataSize  = 0;
-   menu->entryCount = 0;
+  menu->title      = title;
+  menu->xWidth     = 2;
+  menu->yWidth     = 2;
+  menu->pdEdge     = 2;
+  menu->zDataSize  = 0;
+  menu->entryCount = 0;
 
-   return menu;
+  return menu;
 }
 //---------------------------------------------------------------------------
 s16 addItem( menuType *menu, u16 entryType, char *prompt, u16 offset
            , void *data, u16 par1, u16 par2, char *comment)
 {
-   u16 promptSize = 0;
-   u16 dataSize   = 0;
-   u16 count;
+  u16 promptSize = 0;
+  u16 dataSize   = 0;
+  u16 count;
 
-   if (menu->entryCount == MAX_ENTRIES)
-      return -1;
+  if (menu->entryCount == MAX_ENTRIES)
+    return -1;
 
-   if (prompt == NULL)
-      menu->menuEntry[menu->entryCount].key = 0;
-   else
-   {
-      promptSize = strlen(prompt);
-      count = 0;
-      while (prompt[count] && !isupper(prompt[count]))
-         count++;
-      if (prompt[count])
-         menu->menuEntry[menu->entryCount].key = prompt[count];
-   }
+  if (prompt == NULL)
+    menu->menuEntry[menu->entryCount].key = 0;
+  else
+  {
+    promptSize = strlen(prompt);
+    count = 0;
+    while (prompt[count] && !isupper(prompt[count]))
+      count++;
+    if (prompt[count])
+      menu->menuEntry[menu->entryCount].key = prompt[count];
+  }
 
-   menu->menuEntry[menu->entryCount].entryType = entryType;
-   menu->menuEntry[menu->entryCount].prompt    = prompt;
-   menu->menuEntry[menu->entryCount].offset    = offset;
-   menu->menuEntry[menu->entryCount].data      = data;
-   menu->menuEntry[menu->entryCount].selected  = 0;
-   menu->menuEntry[menu->entryCount].par1      = par1;
-   menu->menuEntry[menu->entryCount].par2      = par2;
-   menu->menuEntry[menu->entryCount].comment   = comment;
+  menu->menuEntry[menu->entryCount].entryType = entryType;
+  menu->menuEntry[menu->entryCount].prompt    = prompt;
+  menu->menuEntry[menu->entryCount].offset    = offset;
+  menu->menuEntry[menu->entryCount].data      = data;
+  menu->menuEntry[menu->entryCount].selected  = 0;
+  menu->menuEntry[menu->entryCount].par1      = par1;
+  menu->menuEntry[menu->entryCount].par2      = par2;
+  menu->menuEntry[menu->entryCount].comment   = comment;
 
-   switch (entryType & MASK)
-   {
-      case EXTRA_TEXT:
+  switch (entryType & MASK)
+  {
+    case EXTRA_TEXT:
       case TEXT      :
       case WORD      :
       case EMAIL     :
@@ -1567,7 +1626,7 @@ s16 addItem( menuType *menu, u16 entryType, char *prompt, u16 offset
       case BOOL_INT  : dataSize = 3;
                        break;
       case ENUM_INT  : for (count = 0; count < par2; count++)
-                         if (strlen((*(toggleType*)data).text[count]) > dataSize)
+                         if (strlen((*(toggleType*)data).text[count]) > (size_t)dataSize)
                            dataSize = strlen((*(toggleType*)data).text[count]);
                        menu->menuEntry[menu->entryCount].par1 = dataSize;
                        break;
@@ -1584,109 +1643,110 @@ s16 addItem( menuType *menu, u16 entryType, char *prompt, u16 offset
                           menu->menuEntry[menu->entryCount].par2 = 24;
                        }
                        break;
-   }
+  }
 
-   if (offset)
+  if (offset)
     menu->xWidth = max(menu->xWidth, promptSize + dataSize + offset + (dataSize ? 6 : 4));
-   else
-   {
-      if (dataSize)
-        dataSize += 2;
+  else
+  {
+    if (dataSize)
+      dataSize += 2;
 
-      menu->zDataSize = max (menu->zDataSize, dataSize);
-      menu->pdEdge    = max (menu->pdEdge, promptSize+4);
-      menu->xWidth    = max (menu->xWidth, menu->pdEdge+menu->zDataSize);
+    menu->zDataSize = max (menu->zDataSize, dataSize);
+    menu->pdEdge    = max (menu->pdEdge, promptSize+4);
+    menu->xWidth    = max (menu->xWidth, menu->pdEdge+menu->zDataSize);
 
-      if ((entryType & MASK) != EXTRA_TEXT)
-        menu->yWidth++;
-   }
-   menu->entryCount++;
-   return 0;
+    if ((entryType & MASK) != EXTRA_TEXT)
+      menu->yWidth++;
+  }
+  menu->entryCount++;
+
+  return 0;
 }
 //---------------------------------------------------------------------------
 s16 displayMenu(menuType *menu, u16 sx, u16 sy)
 {
-   testInit ();
+  testInit();
 
-   if ((sx+menu->xWidth >= 80) || (menu->yWidth >= 25))
-      return 1;
-   if (sy+menu->yWidth >= 25)
-      sy = 24 - menu->yWidth;
-   if (displayWindow(menu->title, sx, sy, sx + menu->xWidth - 1, sy + menu->yWidth - 1) != 0)
-      return 1;
-   displayData(menu, sx, sy, 1);
-   return 0;
+  if (sx + menu->xWidth >= 80 || menu->yWidth >= 25)
+    return 1;
+
+  if (sy + menu->yWidth >= 25)
+    sy = 24 - menu->yWidth;
+
+  if (displayWindow(menu->title, sx, sy, sx + menu->xWidth - 1, sy + menu->yWidth - 1) != 0)
+    return 1;
+
+  displayData(menu, sx, sy, 1);
+
+  return 0;
 }
 //---------------------------------------------------------------------------
-static nodeNumType convertNodeStr (char *ns, u16 aka)
+static nodeNumType convertNodeStr(char *ns, u16 aka)
 {
-   nodeNumType tempNode;
-   s16         temp;
+  nodeNumType tempNode;
+  s16         temp;
 
-   tempNode.point = 0;
+  tempNode.point = 0;
 
-   if (sscanf (ns, "%hu:%hu/%hu.%hu",
-                   &tempNode.zone, &tempNode.net,
-                   &tempNode.node, &tempNode.point) >= 3)
-   {
-      return (tempNode);
-   }
-   if (config.akaList[aka].nodeNum.zone == 0)
-   {
-      if (config.akaList[aka=0].nodeNum.zone == 0)
-      {
-         displayMessage ("Main AKA not defined Í No default zone/net/node available");
-         memset (&tempNode, 0, sizeof(nodeNumType));
-         return (tempNode);
-     }
-   }
-   tempNode.zone = config.akaList[aka].nodeNum.zone;
-   if (sscanf (ns, "%hu/%hu.%hu",
-                   &tempNode.net, &tempNode.node, &tempNode.point) >= 2)
-   {
-      return (tempNode);
-   }
-   tempNode.net = config.akaList[aka].nodeNum.net;
-   if (((temp = sscanf (ns, "%hu.%hu", &tempNode.node, &tempNode.point)) > 1) ||
-       ((temp == 1) && (strchr(ns, ':') == 0) && (strchr(ns, '/') == 0)))
-   {
-      return (tempNode);
-   }
-   tempNode.node = config.akaList[aka].nodeNum.node;
-   if (sscanf (ns, ".%hu", &tempNode.point) <= 0)
-   {
-      if (*ns != 0)
-         displayMessage ("Invalid node number");
-      memset (&tempNode, 0, sizeof(nodeNumType));
-   }
-   return (tempNode);
+  if (sscanf(ns, "%hu:%hu/%hu.%hu",
+                 &tempNode.zone, &tempNode.net,
+                 &tempNode.node, &tempNode.point) >= 3)
+    return tempNode;
+
+  if (config.akaList[aka].nodeNum.zone == 0)
+  {
+    if (config.akaList[aka=0].nodeNum.zone == 0)
+    {
+      displayMessage ("Main AKA not defined -> No default zone/net/node available");
+      memset(&tempNode, 0, sizeof(nodeNumType));
+
+      return tempNode;
+    }
+  }
+  tempNode.zone = config.akaList[aka].nodeNum.zone;
+  if (sscanf(ns, "%hu/%hu.%hu",
+                 &tempNode.net, &tempNode.node, &tempNode.point) >= 2)
+    return tempNode;
+
+  tempNode.net = config.akaList[aka].nodeNum.net;
+  if (  (temp = sscanf(ns, "%hu.%hu", &tempNode.node, &tempNode.point)) > 1
+    || (temp == 1 && strchr(ns, ':') == 0 && strchr(ns, '/') == 0)
+    )
+    return tempNode;
+
+  tempNode.node = config.akaList[aka].nodeNum.node;
+  if (sscanf(ns, ".%hu", &tempNode.point) <= 0)
+  {
+    if (*ns != 0)
+      displayMessage("Invalid node number");
+    memset(&tempNode, 0, sizeof(nodeNumType));
+  }
+  return tempNode;
 }
-
-
-
+//---------------------------------------------------------------------------
 nodeNumType getNodeNum (char *title,  u16 sx, u16 sy, u16 aka)
 {
-   char        tempStr[25];
+  char tempStr[25];
 
-   *tempStr = 0;
-   if (displayWindow (title, sx, sy, sx+26, sy+2) == 0)
-   {
-      editString (tempStr, 24, sx+2, sy+1, NODE);
-      removeWindow ();
-        }
-        return (convertNodeStr(tempStr, aka));
+  *tempStr = 0;
+  if (displayWindow(title, sx, sy, sx + 26, sy + 2) == 0)
+  {
+    editString(tempStr, 24, sx + 2, sy + 1, NODE);
+    removeWindow();
+  }
+
+  return convertNodeStr(tempStr, aka);
 }
-
-
-
+//---------------------------------------------------------------------------
 void processed (u16 updated, u16 total)
 {
-        char tempStr[64];
+  char tempStr[64];
 
-        sprintf (tempStr, "%u of %u selected records changed", updated, total);
-        displayMessage (tempStr);
+  sprintf(tempStr, "%u of %u selected records changed", updated, total);
+  displayMessage(tempStr);
 }
-
+//---------------------------------------------------------------------------
 extern funcParType multiAkaSelectRec;
 extern u32         alsoSeenBy;
 extern char        tempToggleRA;
@@ -1834,122 +1894,104 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
    char        *helpPtr;
    u16          aboutIndex;
    u16          maxEntryIndex;
-   char        *title;
-   u16          nx = 0;
    struct ffblk ffblk;
 
-   esc = esc;
-
-#ifdef DEBUG
-   sprintf(tempStr, " %lu ", coreleft());
-   printString(tempStr, 70, 2, YELLOW, RED, MONO_HIGH);
+#ifdef _DEBUG0
+  sprintf(tempStr, " %lu ", coreleft());
+  printString(tempStr, 70, 2, YELLOW, RED, MONO_HIGH);
 #endif
 
-   if ((sx + menu->xWidth >= 80) || (menu->yWidth >= 25))
-      return 1;
-   if (sy + menu->yWidth >= 25)
-      sy = 24 - menu->yWidth;
+  if (sx + menu->xWidth >= 80 || menu->yWidth >= 25)
+    return 1;
+  if (sy + menu->yWidth >= 25)
+    sy = 24 - menu->yWidth;
 
-   if (displayMenu(menu, sx, sy) != 0)
-      return 0;
+  if (displayMenu(menu, sx, sy) != 0)
+    return 0;
 
-   if (setdef)
-   {
-      title = "Change global";
-      getAttr (windowLook.titlefg, windowLook.titlebg, attr);
-      while (*title)
-      {
-        showChar(nx, sy, *(title++), attr, windowLook.mono_attr);
-        nx++;
-      }
-      getAttr(windowLook.promptfg, windowLook.background, attr);
-      py = sy + 1;
-      for (count = 0; count < menu->entryCount; count++)
-      {
-         if (menu->menuEntry[count].offset != 0)
-           py--;
-         showChar( sx + 1 + menu->menuEntry[count].offset, py
-                 , menu->menuEntry[count].selected ? '*' : ' ', attr, windowLook.mono_attr);
-         py++;
-      }
-   }
+  if (setdef)
+  {
+    printString("Change global", 4, sy, windowLook.titlefg, windowLook.titlebg, windowLook.mono_attr);
+    attr = calcAttr(windowLook.promptfg, windowLook.background);
+    py = sy + 1;
+    for (count = 0; count < menu->entryCount; count++)
+    {
+      if (menu->menuEntry[count].offset != 0)
+        py--;
+      showChar( sx + 1 + menu->menuEntry[count].offset, py
+              , menu->menuEntry[count].selected ? '*' : ' ', attr, windowLook.mono_attr);
+      py++;
+    }
+  }
 
-   if (dataPtr != NULL)
-      count = *dataPtr;
-   else
-      count = 0;
+  count = dataPtr != NULL ? *dataPtr : 0;
 
-   while ((menu->menuEntry[count].entryType & NO_EDIT) &&
-          (count < menu->entryCount))
-      count++;
-   if (count == menu->entryCount)
-   {
-      do
-      {
-        ch = readKbd();
-      }
-      while (ch != _K_ESC_);
+  while ((menu->menuEntry[count].entryType & NO_EDIT) && count < menu->entryCount)
+    count++;
 
-      removeWindow();
+  if (count == menu->entryCount)
+  {
+    do
+    {
+      ch = readKbd();
+    }
+    while (ch != _K_ESC_);
 
-      return update;
-   }
+    removeWindow();
 
-   do
-   {
-      py = sy+1;
-      for (count2 = 0; count2 < count; count2++)
-      {
-         if (menu->menuEntry[count2].offset == 0)
-            py++;
-      }
-      if (menu->menuEntry[count].offset)
-         py--;
+    return update;
+  }
+
+  do
+  {
+    py = sy + 1;
+    for (count2 = 0; count2 < count; count2++)
+      if (menu->menuEntry[count2].offset == 0)
+        py++;
+
+    if (menu->menuEntry[count].offset)
+      py--;
 /*--- display asterisks */
-      getAttr (windowLook.promptfg, windowLook.background, attr);
-      if ( menu->menuEntry[count].selected )
-      {  showChar(sx+1+menu->menuEntry[count].offset, py, '*', attr, windowLook.mono_attr);
-      }
-      else
-      {  showChar(sx+1+menu->menuEntry[count].offset, py, ' ', attr, windowLook.mono_attr);
-      }
-      getAttr (windowLook.scrollfg, windowLook.scrollbg, attr);
-      if (menu->menuEntry[count].offset)
-      {
+    attr = calcAttr(windowLook.promptfg, windowLook.background);
+    if (menu->menuEntry[count].selected )
+      showChar(sx + 1 + menu->menuEntry[count].offset, py, '*', attr, windowLook.mono_attr);
+    else
+      showChar(sx + 1 + menu->menuEntry[count].offset, py, ' ', attr, windowLook.mono_attr);
+
+    attr = calcAttr(windowLook.scrollfg, windowLook.scrollbg);
+    if (menu->menuEntry[count].offset)
+    {
          editX = sx + menu->menuEntry[count].offset +
                       strlen(menu->menuEntry[count].prompt) + 4;
 
-         for (px = sx+1+menu->menuEntry[count].offset;
-              px < sx+3+menu->menuEntry[count].offset+strlen(menu->menuEntry[count].prompt); px++)
-                        {
-            changeColor (px, py, attr, MONO_INV);
-         }
-      }
-      else
-      {
+         for ( px = sx + 1u + menu->menuEntry[count].offset
+             ; (size_t)px < sx + 3u + menu->menuEntry[count].offset + strlen(menu->menuEntry[count].prompt); px++)
+            changeColor(px, py, attr, MONO_INV);
+    }
+    else
+    {
          editX = sx + menu->pdEdge;
-         for (px = sx+1; px < editX-1; px++)
-         {
-            changeColor (px, py, attr, MONO_INV);
-         }
-      }
-      printStringFill (menu->menuEntry[count].comment, ' ', 80, 0, 24,
-                       windowLook.commentfg, windowLook.commentbg,
-                       MONO_NORM);
+         for (px = sx + 1; px < editX - 1; px++)
+            changeColor(px, py, attr, MONO_INV);
+    }
+      printStringFill( menu->menuEntry[count].comment, ' ', 79, 0, 24
+                     , windowLook.commentfg, windowLook.commentbg, MONO_NORM);
       aboutIndex = 0;
       do
       {
-         ch = readKbd();
+        ch = readKbd();
       } while (ch == aboutTable[aboutIndex] && ++aboutIndex < 5);
 
       if (aboutIndex == 5)
-         displayMessage("This program was compiled on "__DATE__);
+        displayMessage("This program was compiled on "__DATE__);
 
       if ( setdef && (menu->menuEntry[count].entryType & MASK) != FUNCTION )
-      {  update = 1;
-         if ( ch == _K_INS_ )
-            menu->menuEntry[count].selected = 1;
-         else if ( ch == _K_DEL_ )
+      {
+        update = 1;
+        if ( ch == _K_INS_ )
+          menu->menuEntry[count].selected = 1;
+        else
+          if ( ch == _K_DEL_ )
             menu->menuEntry[count].selected = 0;
       }
       if (  ch == _K_ENTER_
@@ -2127,12 +2169,6 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
                   update = 1;
                }
                free(tempMenu);
-#if 0
-               if ( (u8*)(((toggleType*)(menu->menuEntry[count].data))->data) == &tempInfoN.archiver
-                  && tempInfoN.archiver != 0xFF
-                  )
-                  *tempInfoN.pktOutPath = 0;
-#endif
                break;
             }
             case WSELECT    : removeWindow ();
@@ -2202,7 +2238,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
                               break;
          }
          displayData (menu, sx, sy, 1);
-#ifdef DEBUG
+#ifdef _DEBUG0
          sprintf (tempStr, " %lu ", coreleft());
          printString (tempStr, 70, 2, YELLOW, RED, MONO_HIGH);
 #endif
@@ -2213,30 +2249,30 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
           (ch == _K_CPGUP_) || (ch == _K_CPGDN_) ||
           (ch < 256 && isgraph(ch)) || (ch == _K_ESC_))
       {
-         getAttr (windowLook.promptfg, windowLook.background, attr);
-         getAttr (windowLook.promptkeyfg, windowLook.background, attr2);
+         attr  = calcAttr(windowLook.promptfg   , windowLook.background);
+         attr2 = calcAttr(windowLook.promptkeyfg, windowLook.background);
          more = 0;
          if (menu->menuEntry[count].offset)
          {
-            for (px = sx+1+menu->menuEntry[count].offset;
-                 px < sx+3+menu->menuEntry[count].offset+strlen(menu->menuEntry[count].prompt); px++)
+            for ( px = sx + 1u + menu->menuEntry[count].offset
+                ; (size_t)px < sx + 3u + menu->menuEntry[count].offset + strlen(menu->menuEntry[count].prompt); px++)
             if (more || (getChar(px, py) != menu->menuEntry[count].key))
-            {  changeColor (px, py, attr, MONO_NORM);
-            }
+              changeColor(px, py, attr, MONO_NORM);
             else
-            {  changeColor (px, py, attr2, MONO_HIGH);
-               more = 1;
+            {
+              changeColor(px, py, attr2, MONO_HIGH);
+              more = 1;
             }
          }
          else
          {
             for (px = sx+1; px < sx+menu->pdEdge-1; px++)
             if (more || (getChar(px, py) != menu->menuEntry[count].key))
-            {  changeColor (px, py, attr, MONO_NORM);
-            }
+              changeColor (px, py, attr, MONO_NORM);
             else
-            {  changeColor (px, py, attr2, MONO_HIGH);
-               more = 1;
+            {
+              changeColor (px, py, attr2, MONO_HIGH);
+              more = 1;
             }
          }
          maxEntryIndex = menu->entryCount-1;
@@ -2356,11 +2392,11 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
       }
     }
   }
-  while ((ch != _K_ESC_) && (ch != _K_F7_) && (ch != _K_F10_));
+  while (ch != _K_ESC_ && ch != _K_F7_ && ch != _K_F10_);
 
   removeWindow();
 
-  if ((ch != _K_ESC_) && (dataPtr != NULL))
+  if (ch != _K_ESC_ && dataPtr != NULL)
     *dataPtr = count;
 
   return update;
@@ -2368,52 +2404,42 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
 //---------------------------------------------------------------------------
 void printChar(char ch, u16 sx, u16 sy, u16 fgc, u16 bgc, u16 mAttr)
 {
-  u16 attr;
-
-  getAttr(fgc, bgc, attr);
-  showChar(sx, sy, ch, attr, mAttr);
+  showChar(sx, sy, ch, calcAttr(fgc, bgc), mAttr);
 }
 //---------------------------------------------------------------------------
-void printString (char *string, u16 sx, u16 sy, u16 fgc, u16 bgc, u16 mAttr)
+void printString(const char *string, u16 sx, u16 sy, u16 fgc, u16 bgc, u16 mAttr)
 {
-   u16 attr;
+  if (string != NULL)
+  {
+#ifndef __32BIT__
+    u16 attr = calcAttr(fgc, bgc);
 
-   if (string != NULL)
-   {
-      getAttr (fgc, bgc, attr);
-
-      while (*string)
-      {
-         showChar (sx, sy, *(string++), attr, mAttr);
-         sx++;
-      }
-   }
+    while (*string)
+    {
+      showChar(sx, sy, *(string++), attr, mAttr);
+      sx++;
+    }
+#else
+    gotoxy(sx + 1, sy + 1);
+    textattr(color ? calcAttr(fgc, bgc) : mAttr);
+    cputs(string);
+#endif
+  }
 }
-
-
-
-void displayMessage (char *msg)
+//---------------------------------------------------------------------------
+void displayMessage(char *msg)
 {
-   s16 recursive = 0;
-   u16 sx = (76 - strlen(msg)) / 2;
+  u16 sx = (76 - strlen(msg)) / 2;
 
-   if (recursive == 0)
-   {
-      recursive++;
-      fillRectangle (' ', 0, 24, 79, 24, BLACK, BLACK, MONO_NORM);
-                if (displayWindow (NULL, sx, 9, sx+strlen(msg)+3, 13) == 0)
-      {
-         printString (msg, sx+2, 11, windowLook.promptfg,
-                                     windowLook.background, MONO_NORM);
-         readKbd();
-         removeWindow ();
-      }
-      recursive = 0;
-   }
+  fillRectangle(' ', 0, 24, 78, 24, BLACK, BLACK, MONO_NORM);
+  if (displayWindow(NULL, sx, 9, sx + strlen(msg) + 3, 13) == 0)
+  {
+    printString(msg, sx + 2, 11, windowLook.promptfg, windowLook.background, MONO_NORM);
+    readKbd();
+    removeWindow();
+  }
 }
-
-
-
+//---------------------------------------------------------------------------
 char fileNameStr[65];
 
 char *getSourceFileName (char *title)
@@ -2476,61 +2502,56 @@ char *getDestFileName (char *title)
 s16 askChar(char *prompt, u8 *keys)
 {
    u8  *helpPtr;
-   s16 ch;
+   u16 ch;
    u16 sx = (76 - strlen(prompt)) / 2;
 
    if (displayWindow (NULL, sx, 9, sx+strlen(prompt)+3, 13) != 0)
-      return 0;
-   printString (prompt, sx+2, 11,
-                windowLook.atttextfg, windowLook.background, MONO_HIGH);
+     return 0;
+   printString (prompt, sx+2, 11, windowLook.atttextfg, windowLook.background, MONO_HIGH);
    do
-   {  ch=readKbd();
-      ch = toupper(ch);
+   {
+     ch = toupper(readKbd());
    }
-   while ((ch != _K_ESC_) && (helpPtr = strchr(keys, ch)) == NULL);
-   removeWindow ();
+   while (ch != _K_ESC_ && (helpPtr = strchr(keys, ch)) == NULL);
+   removeWindow();
    if (ch == _K_ESC_)
       return 0;
+
    return *helpPtr;
 }
 
 
 
-s16 askBoolean (char *prompt, s16 dfault)
+s16 askBoolean(char *prompt, s16 dfault)
 {
-   s16 ch;
+   u16 ch;
    u16 sx = (76 - strlen(prompt)) / 2;
 
    if (displayWindow (NULL, sx, 9, sx+strlen(prompt)+3, 14) == 0)
    {
-      printString (prompt, sx+2, 11,
-                   windowLook.atttextfg, windowLook.background, MONO_HIGH);
+      printString(prompt, sx+2, 11, windowLook.atttextfg, windowLook.background, MONO_HIGH);
       if (dfault == 'Y')
-         printString ("[Y/n]", 37, 12,
-                      windowLook.atttextfg, windowLook.background, MONO_HIGH);
-                else
-         printString ("[y/N]", 37, 12,
-                      windowLook.atttextfg, windowLook.background, MONO_HIGH);
+         printString("[Y/n]", 37, 12, windowLook.atttextfg, windowLook.background, MONO_HIGH);
+      else
+         printString("[y/N]", 37, 12, windowLook.atttextfg, windowLook.background, MONO_HIGH);
       do
       {
-         ch=readKbd();
-         ch = toupper(ch);
+         ch = toupper(readKbd());
       }
-      while ((ch != _K_ENTER_) && (ch != _K_ESC_) && (ch != 'Y') && (ch != 'N'));
+      while (ch != _K_ENTER_ && ch != _K_ESC_ && ch != 'Y' && ch != 'N');
 
-      removeWindow ();
+      removeWindow();
       if (ch != _K_ENTER_)
-         return (ch);
+         return ch;
    }
-   return (dfault);
+   return dfault;
 }
 
 
 
-void working (void)
+void working(void)
 {
-   printStringFill ("Working...", ' ', 80, 0, 24,
-                    LIGHTRED, BLACK|COLOR_BLINK, MONO_NORM_BLINK);
+  printStringFill("Working...", ' ', 79, 0, 24, LIGHTRED, BLACK | COLOR_BLINK, MONO_NORM_BLINK);
 }
 
 
@@ -2541,16 +2562,13 @@ extern s16 boardEdit;
 
 s16 displayAreas (void)
 {
-
    s16      count;
    u16 x = 0,
             y = 0;
-   s16      ch;
+   u16      ch;
    char     boardStr[5];
 
    boardEdit = 1;
-
-/* if ((u16)displayAreasSelect > MBBOARDS) displayAreasSelect = 0; */
 
    if (displayAreasSelect > 0 && displayAreasSelect <= MBBOARDS)
       displayAreasArray[displayAreasSelect-1] = 0;
@@ -2577,37 +2595,35 @@ s16 displayAreas (void)
          y++;
       }
    }
-   printString ("None", 59, 20, WHITE, windowLook.background, MONO_HIGH);
+   printString("None", 59, 20, WHITE, windowLook.background, MONO_HIGH);
 
-   printStringFill ("Select board number (None = Don't import messages into the message base)", ' ', 80,
-                    0, 24, windowLook.commentfg, windowLook.commentbg, MONO_NORM);
+   printStringFill("Select board number (None = Don't import messages into the message base)", ' '
+                  , 79, 0, 24, windowLook.commentfg, windowLook.commentbg, MONO_NORM);
 
    if ((count = displayAreasSelect-1) == -1)
-      count = MBBOARDS;
+     count = MBBOARDS;
 
    if ((count < 0) || (count > MBBOARDS))
-      count = 0;
+     count = 0;
 
    if (count < MBBOARDS && displayAreasArray[count])
    {
-      count = 0;
-      while ((displayAreasArray[count]) && (count < MBBOARDS))
-      {
-         count++;
-      }
+     count = 0;
+     while ((displayAreasArray[count]) && (count < MBBOARDS))
+       count++;
    }
 
    do
    {
       if (count == MBBOARDS)
-         sprintf (boardStr, "None", count+1);
+        sprintf(boardStr, "None", count+1);
       else
-         sprintf (boardStr, "%3u", count+1);
+        sprintf(boardStr, "%3u", count+1);
 
-      printString (boardStr, 7+(4*(count%17)), 9+(count/17),
+      printString(boardStr, 7 + (4 * (count % 17)), 9 + (count / 17),
                    windowLook.scrollfg, windowLook.scrollbg, MONO_HIGH_BLINK);
 
-      ch=readKbd();
+      ch = readKbd();
 
       printString (boardStr, 7+(4*(count%17)), 9+(count/17),
                    WHITE, windowLook.background, MONO_HIGH);
@@ -2636,8 +2652,8 @@ s16 displayAreas (void)
           removeWindow();
       }
       else
-      switch (ch)
-      {
+        switch (ch)
+        {
          case _K_LEFT_ :
                        do
                        {
@@ -2694,7 +2710,7 @@ s16 displayAreas (void)
    }
    while ((ch != _K_ENTER_) && (ch != _K_ESC_));
 
-   removeWindow ();
+   removeWindow();
 
    if (ch == _K_ENTER_)
    {
@@ -2783,3 +2799,8 @@ void askRemoveJAM(char *msgBasePath)
    }
 }
 //---------------------------------------------------------------------------
+
+
+
+
+

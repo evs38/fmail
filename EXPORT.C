@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -43,7 +43,7 @@
 #include "version.h"
 #include "window.h"
 
-const char *bar = "ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ";
+const char *bar = "================================================================================";
 
 const char *arcName[12] = {"None", "ARC", "ZIP", "LZH", "PAK", "ZOO", "ARJ", "SQZ", "Custom", "UC2", "RAR", "JAR"};
 #ifndef __FMAILX__
@@ -258,8 +258,8 @@ s16 listNodeEcho (void)
          {
             if (!display)
             {
-               fprintf (textFile, "  Conference               Comment                                        Group\n"
-                                  "ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ\n");
+               fprintf(textFile, "  Conference               Comment                                        Group\n"
+                                 "-------------------------------------------------------------------------------\n");
                display++;
             }
 
@@ -322,7 +322,7 @@ s16 listHudsonBoards(void)
             if ((areaInfo[count2]->board != 0) &&
                 (areaInfo[count2]->board == count1))
             {
-               fprintf (textFile, (strlen(areaInfo[count2]->areaName) < ECHONAME_LEN_OLD)?"%3u %-24s %s\n":"%3u %s\n                             %s\n",
+               fprintf(textFile, (strlen(areaInfo[count2]->areaName) < ECHONAME_LEN_OLD) ? "%3u %-24s %s\n" : "%3u %s\n                             %s\n",
                                   count1,
                                   areaInfo[count2]->areaName,
                                   areaInfo[count2]->comment);
@@ -435,7 +435,6 @@ s16 listPtAreas (void)
    u16         count;
    FILE        *textFile;
    char        *fileNamePtr;
-   s16         display = 0;
    time_t      timer;
 
    time (&timer);
@@ -453,9 +452,9 @@ s16 listPtAreas (void)
 
       if ((textFile = fopen(fileNamePtr, "wt")) == NULL)
       {
-         displayMessage ("Can't open output file");
-         freeAreaInfo ();
-         return (0);
+         displayMessage("Can't open output file");
+         freeAreaInfo();
+         return 0;
       }
       fprintf (textFile, "\n%s  -  List of passthrough areas  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
@@ -469,7 +468,6 @@ s16 listPtAreas (void)
             fprintf (textFile, (strlen(areaInfo[count]->areaName) < ECHONAME_LEN_OLD)?"%-24s   %s\n":"%s\n                           %s\n",
                                areaInfo[count]->areaName,
                                areaInfo[count]->comment);
-            display++;
          }
       }
 
@@ -527,20 +525,21 @@ s16 listPackConfig (void)
 
 s16 listAreaConfig (void)
 {
-   u16         count1,
-               count2,
-               exportCount,
-	       rows1, rows2;
-   u32         bitField;
-   FILE        *textFile;
-   char        *fileNamePtr;
-   time_t      timer;
+   u16    count1
+        , count2
+        , exportCount
+        , rows1
+        , rows2;
+   u32    bitField;
+   FILE  *textFile;
+   char  *fileNamePtr;
+   time_t timer;
 
-   time (&timer);
+   time(&timer);
 
    if (!readAreaInfo())
    {
-      fileNamePtr = getDestFileName (" Destination file ");
+      fileNamePtr = getDestFileName(" Destination file ");
       if (*fileNamePtr == 0)
       {
          freeAreaInfo ();
@@ -551,25 +550,28 @@ s16 listAreaConfig (void)
 
      if ((textFile = fopen(fileNamePtr, "wt")) == NULL)
       {
-         displayMessage ("Can't open output file");
-         freeAreaInfo ();
-         return (0);
-      }
-      fprintf (textFile, "\n%s  -  Area configuration  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
+         displayMessage("Can't open output file");
+         freeAreaInfo();
 
-      fprintf (textFile, "Switches:  A - Active                       D - Use arrival date when purging\n"
-                         "           L - Local                        N - Do not delete messages that\n"
-                         "           S - Secure                           have not been read by the SysOp\n"
-                         "           P - Allow private messages\n"
-                         "           R - Rescan allowed\n"
-                         "           U - Use SEEN-BYs\n"
-                         "           T - Tiny SEEN-BYs\n"
-                         "           I - Import SEEN-BYs\n");
+         return 0;
+      }
+      fprintf(textFile, "\n%s  -  Area configuration  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
+
+      fprintf(textFile, "Switches:  A - Active                       D - Use arrival date when purging\n"
+                        "           L - Local                        N - Do not delete messages that\n"
+                        "           S - Secure                           have not been read by the SysOp\n"
+                        "           P - Allow private messages\n"
+                        "           R - Rescan allowed\n"
+                        "           U - Use SEEN-BYs\n"
+                        "           T - Tiny SEEN-BYs\n"
+                        "           I - Import SEEN-BYs\n"
+                        "           Y - Tiny PATH\n"
+             );
 
 
       for (count1 = 0; count1 < areaInfoCount; count1++)
       {
-         fprintf (textFile, "\nÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ\n\n"
+         fprintf(textFile, "\n-------------------------------------------------------------------------------\n\n"
                             "Area        : %-50s        Group %c\n\n",
                             areaInfo[count1]->areaName,
                             getGroupChar (areaInfo[count1]->group));
@@ -596,7 +598,7 @@ s16 listAreaConfig (void)
          else
             fprintf (textFile, "%u\n", areaInfo[count1]->boardNumRA);
 
-         fprintf (textFile, "Switches    : %c%c%c%c%c%c%c%c %c%c\n",
+         fprintf (textFile, "Switches    : %c%c%c%c%c%c%c%c%c %c%c\n",
                   areaInfo[count1]->options.active       ? 'A':'-',
                   areaInfo[count1]->options.local        ? 'L':'-',
                   areaInfo[count1]->options.security     ? 'S':'-',
@@ -605,6 +607,7 @@ s16 listAreaConfig (void)
                   areaInfo[count1]->options.checkSeenBy  ? 'U':'-',
                   areaInfo[count1]->options.tinySeenBy   ? 'T':'-',
                   areaInfo[count1]->options.impSeenBy    ? 'I':'-',
+                  areaInfo[count1]->options.tinyPath     ? 'Y':'-',
                   areaInfo[count1]->options.arrivalDate  ? 'D':'-',
                   areaInfo[count1]->options.sysopRead    ? 'N':'-');
 
@@ -693,7 +696,7 @@ s16 listAreaConfig (void)
          }
          if (exportCount != 0)
          {
-            fprintf (textFile, "\nExport\n");
+            fputs("\nExport\n", textFile);
             rows1 = (exportCount+2)/3;
             rows2 = (exportCount+1)/3;
             for (count2 = 0; count2 < rows1; count2++)
@@ -717,22 +720,20 @@ s16 listAreaConfig (void)
                                      areaInfo[count1]->forwards[count2+rows1+rows2].flags.locked ? 'L': ' ',
                                      nodeStr(&areaInfo[count1]->forwards[count2+rows1+rows2].nodeNum));
             }
-            fputc ('\n', textFile);
+            fputc('\n', textFile);
          }
       }
       if (areaInfoCount == 0)
-         fprintf (textFile, "\nThere are no areas defined.\n");
+         fputs("\nThere are no areas defined.\n", textFile);
       else
-         fprintf (textFile, "\nÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ\n");
+         fputs("\n-------------------------------------------------------------------------------\n", textFile);
 
-      fclose (textFile);
-      freeAreaInfo ();
+      fclose(textFile);
+      freeAreaInfo();
    }
-   return (0);
+   return 0;
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 listNodeConfig (void)
 {
    FILE        *textFile;
@@ -759,24 +760,25 @@ s16 listNodeConfig (void)
    openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf);
    nodeInfoCount = nodeHeader->totalRecords;
 
-   fprintf (textFile, "\n%s  -  Node configuration  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
+   fprintf(textFile, "\n%s  -  Node configuration  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
-   fprintf (textFile, "Switches:  A - Active\n"
-                      "           P - Pack netmail\n"
-                      "           R - Route point\n"
-                      "           F - Forward requests\n"
-                      "           N - Notify\n"
-                      "           M - Remote maintenance\n"
-                      "           S - Allow rescan\n"
-                      "           D - Reformat date\n"
-                      "           T - Tiny SEEN-BY\n");
+   fprintf(textFile, "Switches:  A - Active\n"
+                     "           P - Pack netmail\n"
+                     "           R - Route point\n"
+                     "           F - Forward requests\n"
+                     "           N - Notify\n"
+                     "           M - Remote maintenance\n"
+                     "           S - Allow rescan\n"
+                     "           D - Reformat date\n"
+                     "           T - Tiny SEEN-BY\n"
+          );
 
    for (count = 0; count < nodeInfoCount; count++)
    {
       getRec(CFG_NODES, count);
 
-      fprintf (textFile, "\nÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ\n");
-      fprintf (textFile, "\nSystem           : %s\n", nodeStr(&(nodeBuf->node)));
+      fprintf(textFile, "\n-------------------------------------------------------------------------------\n"
+                        "\nSystem           : %s\n", nodeStr(&(nodeBuf->node)));
       if (nodeBuf->viaNode.zone)
          fprintf (textFile, "Via system       : %s\n", nodeStr(&(nodeBuf->viaNode)));
       if (*nodeBuf->sysopName)
@@ -790,111 +792,109 @@ s16 listNodeConfig (void)
       fprintf (textFile, "Capability       : ");
       switch (nodeBuf->capability)
       {
-         case 0  : fprintf (textFile, "Stone Age");
+         case 0  : fputs("Stone Age", textFile);
                    break;
-         case 1  : fprintf (textFile, "Type 2+");
+         case 1  : fputs("Type 2+", textFile);
                    break;
-         default : fprintf (textFile, "** unknown **");
+         default : fputs("** unknown **", textFile);
                    break;
       }
-      fprintf (textFile, "\nArchiver         : ");
+      fputs("\nArchiver         : ", textFile);
       switch (nodeBuf->archiver)
       {
-         case 0  : fprintf (textFile, "ARC");
+         case 0  : fputs("ARC", textFile);
                    break;
-         case 1  : fprintf (textFile, "ZIP");
+         case 1  : fputs("ZIP", textFile);
                    break;
-         case 2  : fprintf (textFile, "LZH");
+         case 2  : fputs("LZH", textFile);
                    break;
-         case 3  : fprintf (textFile, "PAK");
+         case 3  : fputs("PAK", textFile);
                    break;
-         case 4  : fprintf (textFile, "ZOO");
+         case 4  : fputs("ZOO", textFile);
                    break;
-         case 5  : fprintf (textFile, "ARJ");
+         case 5  : fputs("ARJ", textFile);
                    break;
-         case 6  : fprintf (textFile, "SQZ");
+         case 6  : fputs("SQZ", textFile);
                    break;
-         case 8  : fprintf (textFile, "UC2");
+         case 8  : fputs("UC2", textFile);
                    break;
-         case 9  : fprintf (textFile, "RAR");
+         case 9  : fputs("RAR", textFile);
                    break;
-         case 10 : fprintf (textFile, "JAR");
+         case 10 : fputs("JAR", textFile);
                    break;
-         case 0xFF:fprintf (textFile, "None");
+         case 0xFF:fputs("None", textFile);
                    break;
-         default : fprintf (textFile, "** unknown **");
+         default : fputs("** unknown **", textFile);
                    break;
       }
-      fprintf (textFile, "\nFile Att status  : ");
+      fputs("\nFile Att status  : ", textFile);
       switch (nodeBuf->outStatus)
       {
-         case 0  : fprintf (textFile, "None");
+         case 0  : fputs("None", textFile);
                    break;
-         case 1  : fprintf (textFile, "Hold");
+         case 1  : fputs("Hold", textFile);
                    break;
-         case 2  : fprintf (textFile, "Crash");
+         case 2  : fputs("Crash", textFile);
                    break;
-         case 3  : fprintf (textFile, "Hold/Direct");
+         case 3  : fputs("Hold/Direct", textFile);
                    break;
-         case 4  : fprintf (textFile, "Crash/Direct");
+         case 4  : fputs("Crash/Direct", textFile);
                    break;
-         case 5  : fprintf (textFile, "Direct");
+         case 5  : fputs("Direct", textFile);
                    break;
-         default : fprintf (textFile, "** unknown **");
+         default : fputs("** unknown **", textFile);
                    break;
       }
 
-      fprintf (textFile, "\nSwitches         : %c%c%c%c%c%c%c%c%c\n",
-                         nodeBuf->options.active      ? 'A':'-',
-                         nodeBuf->options.packNetmail ? 'P':'-',
-                         nodeBuf->options.routeToPoint? 'R':'-',
-                         nodeBuf->options.forwardReq  ? 'F':'-',
-                         nodeBuf->options.notify      ? 'N':'-',
-                         nodeBuf->options.remMaint    ? 'M':'-',
-                         nodeBuf->options.allowRescan ? 'S':'-',
-                         nodeBuf->options.fixDate     ? 'D':'-',
-                         nodeBuf->options.tinySeenBy  ? 'T':'-');
+      fprintf(textFile, "\nSwitches         : %c%c%c%c%c%c%c%c%c\n"
+                      , nodeBuf->options.active      ? 'A':'-'
+                      , nodeBuf->options.packNetmail ? 'P':'-'
+                      , nodeBuf->options.routeToPoint? 'R':'-'
+                      , nodeBuf->options.forwardReq  ? 'F':'-'
+                      , nodeBuf->options.notify      ? 'N':'-'
+                      , nodeBuf->options.remMaint    ? 'M':'-'
+                      , nodeBuf->options.allowRescan ? 'S':'-'
+                      , nodeBuf->options.fixDate     ? 'D':'-'
+                      , nodeBuf->options.tinySeenBy  ? 'T':'-'
+             );
 
-      fprintf (textFile, "AreaMgr password : %s\n", nodeBuf->password);
-      fprintf (textFile, "Packet password  : %s\n", nodeBuf->packetPwd);
-      fprintf (textFile, "ÈÍ Ignore pwd   : %s\n", nodeBuf->options.ignorePwd ? "Yes":"No");
+      fprintf(textFile, "AreaMgr password : %s\n", nodeBuf->password);
+      fprintf(textFile, "Packet password  : %s\n", nodeBuf->packetPwd);
+      fprintf(textFile, "ÈÍ> Ignore pwd   : %s\n", nodeBuf->options.ignorePwd ? "Yes":"No");
    }
    if (nodeInfoCount == 0)
-   {
-      fprintf (textFile, "\nThere are no nodes defined.\n");
-   }
+      fputs("\nThere are no nodes defined.\n", textFile);
    else
-   {
-      fprintf (textFile, "\nÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ\n");
-   }
-   fclose (textFile);
+      fputs("\n-------------------------------------------------------------------------------\n", textFile);
+
+   fclose(textFile);
    closeConfig(CFG_NODES);
 
-   return (0);
+   return 0;
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 listGeneralConfig (void)
 {
-   FILE     *textFile;
-   char     *fileNamePtr;
-   u16      count, count2;
+   FILE    *textFile;
+   char    *fileNamePtr;
+   u16      count
+          , count2;
    time_t   timer;
    char     numStr[8];
+   int      archiver = config.defaultArc;
 
-   time (&timer);
+   time(&timer);
 
-   fileNamePtr = getDestFileName (" Destination file ");
+   fileNamePtr = getDestFileName(" Destination file ");
    if (*fileNamePtr == 0)
-      return (0);
+      return 0;
 
-   working ();
+   working();
 
    if ((textFile = fopen(fileNamePtr, "wt")) == NULL)
    {
       displayMessage ("Can't open output file");
-      return (0);
+      return 0;
    }
    fprintf (textFile, "\n%s  -  General configuration  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
@@ -902,8 +902,8 @@ s16 listGeneralConfig (void)
    fprintf (textFile, "Mailer             : %s\n", mailerName[config.mailer]);
    fprintf (textFile, "BBS program        : %s\n\n", bbsName[config.bbsProgram]);
    fprintf (textFile, "Pers. mail path    : %s\n", *config.pmailPath ? config.pmailPath : "Not defined");
-   fprintf (textFile, "ÌÍ Topic 1        : %s\n", config.topic1);
-   fprintf (textFile, "ÈÍ Topic 2        : %s\n", config.topic2);
+   fprintf (textFile, "+-> Topic 1        : %s\n", config.topic1);
+   fprintf (textFile, "+-> Topic 2        : %s\n", config.topic2);
    fprintf (textFile, "Include netmail    : %s\n\n", config.mailOptions.persNetmail ? "Yes" : "No");
    fprintf (textFile, "Incl.sent by SysOp : %s\n\n", config.mbOptions.persSent ? "Yes" : "No");
 
@@ -914,7 +914,7 @@ s16 listGeneralConfig (void)
    fprintf (textFile, "Dup detection      : %s\n", config.mailOptions.dupDetection ? "Yes":"No");
 #ifndef __FMAILX__
 #ifndef __32BIT__
-   fprintf (textFile, "ÈÍ Use 64k EMS    : %s\n", config.genOptions.useEMS ? "Yes":"No");
+   fprintf (textFile, "+-> Use 64k EMS    : %s\n", config.genOptions.useEMS ? "Yes":"No");
 #endif
 #endif
    fprintf (textFile, "Maximum PKT size   : ");
@@ -952,7 +952,7 @@ s16 listGeneralConfig (void)
    fprintf (textFile, "Auto-disconnect    : %s\n\n", config.mgrOptions.autoDiscArea  ? "Yes":"No");
 
    fprintf (textFile, "Sort new messages  : %s\n", config.mbOptions.sortNew ? "Yes":"No");
-   fprintf (textFile, "ÈÍ Use subject    : %s\n", config.mbOptions.sortSubject ? "Yes":"No");
+   fprintf (textFile, "+-> Use subject    : %s\n", config.mbOptions.sortSubject ? "Yes":"No");
    fprintf (textFile, "Update reply chains: %s\n", config.mbOptions.updateChains? "Yes":"No");
    fprintf (textFile, "Quick toss         : %s\n", config.mbOptions.quickToss ? "Yes":"No");
    fprintf (textFile, "Scan Always        : %s\n", config.mbOptions.scanAlways ? "Yes":"No");
@@ -966,8 +966,8 @@ s16 listGeneralConfig (void)
 #ifndef __FMAILX__
 #ifndef __32BIT__
    fprintf (textFile, "Swapping           : %s\n", config.genOptions.swap ? "Yes":"No");
-   fprintf (textFile, "ÌÍ Use EMS        : %s\n", config.genOptions.swapEMS ? "Yes":"No");
-   fprintf (textFile, "ÈÍ Use XMS        : %s\n", config.genOptions.swapXMS ? "Yes":"No");
+   fprintf (textFile, "+-> Use EMS        : %s\n", config.genOptions.swapEMS ? "Yes":"No");
+   fprintf (textFile, "+-> Use XMS        : %s\n", config.genOptions.swapXMS ? "Yes":"No");
    fprintf (textFile, "Swap file path     : %s\n\n", *config.swapPath ? config.swapPath : "Not defined");
    fprintf (textFile, "FMail Buffer size  : %s\n", bufSizeName[config.bufSize]);
    fprintf (textFile, "FTools buffer size : %s\n", bufSizeName[config.ftBufSize]);
@@ -1007,10 +1007,15 @@ s16 listGeneralConfig (void)
    fprintf(textFile, "Incoming mail      : %s\n", config.inPath);
    fprintf(textFile, "Outgoing mail      : %s\n\n", config.outPath);
 
-   fprintf(textFile, "Local PKTs         : %s\n", *config.securePath?config.securePath:"Not defined");
-   fprintf(textFile, "Semaphore          : %s\n", *config.semaphorePath?config.semaphorePath:"Not defined");
-   fprintf(textFile, "Sent netmail       : %s\n", *config.sentPath?config.sentPath:"Not defined");
-   fprintf(textFile, "Rcvd netmail       : %s\n", *config.rcvdPath?config.rcvdPath:"Not defined");
+   fprintf(textFile, "Local PKTs         : %s\n", *config.securePath ? config.securePath : "Not defined");
+   fprintf(textFile, "Semaphore          : %s\n", *config.semaphorePath ? config.semaphorePath : "Not defined");
+   fprintf(textFile, "Sent netmail       : %s\n", *config.sentPath ? config.sentPath : "Not defined");
+   fprintf(textFile, "Rcvd netmail       : %s\n", *config.rcvdPath ? config.rcvdPath : "Not defined");
+
+   if (archiver > 10)
+     archiver = 0;
+   else
+     archiver++;
 
    fprintf(textFile, "\nCompression programs (16-bit FMail)\n\n"
 		      "           Default : %s\n"
@@ -1025,18 +1030,18 @@ s16 listGeneralConfig (void)
           "           RAR     : %s\n"
           "           JAR     : %s\n"
           "           -?-     : %s\n",
-		      arcName[config.defaultArc + 1],
-		      *config.arc.programName ? config.arc.programName:"Not defined",
-		      *config.zip.programName ? config.zip.programName:"Not defined",
-		      *config.lzh.programName ? config.lzh.programName:"Not defined",
-		      *config.pak.programName ? config.pak.programName:"Not defined",
-		      *config.zoo.programName ? config.zoo.programName:"Not defined",
-          *config.arj.programName ? config.arj.programName:"Not defined",
-          *config.sqz.programName ? config.sqz.programName:"Not defined",
-          *config.uc2.programName ? config.uc2.programName:"Not defined",
-          *config.rar.programName ? config.rar.programName:"Not defined",
-          *config.jar.programName ? config.jar.programName:"Not defined",
-          *config.customArc.programName ? config.customArc.programName:"Not defined");
+		      arcName[archiver],
+		      *config.arc.programName ? config.arc.programName : "Not defined",
+		      *config.zip.programName ? config.zip.programName : "Not defined",
+		      *config.lzh.programName ? config.lzh.programName : "Not defined",
+		      *config.pak.programName ? config.pak.programName : "Not defined",
+		      *config.zoo.programName ? config.zoo.programName : "Not defined",
+          *config.arj.programName ? config.arj.programName : "Not defined",
+          *config.sqz.programName ? config.sqz.programName : "Not defined",
+          *config.uc2.programName ? config.uc2.programName : "Not defined",
+          *config.rar.programName ? config.rar.programName : "Not defined",
+          *config.jar.programName ? config.jar.programName : "Not defined",
+          *config.customArc.programName ? config.customArc.programName : "Not defined");
 
    fprintf(textFile, "\nCompression programs (32-bit FMail)\n\n"
 		      "           Default : %s\n"
@@ -1051,18 +1056,18 @@ s16 listGeneralConfig (void)
           "           RAR     : %s\n"
           "           JAR     : %s\n"
           "           -?-     : %s\n",
-		      arcName[config.defaultArc + 1],
-          *config.arc.programName ? config.arc32.programName:"Not defined",
-          *config.zip.programName ? config.zip32.programName:"Not defined",
-          *config.lzh.programName ? config.lzh32.programName:"Not defined",
-          *config.pak.programName ? config.pak32.programName:"Not defined",
-          *config.zoo.programName ? config.zoo32.programName:"Not defined",
-          *config.arj.programName ? config.arj32.programName:"Not defined",
-          *config.sqz.programName ? config.sqz32.programName:"Not defined",
-          *config.uc2.programName ? config.uc232.programName:"Not defined",
-          *config.rar.programName ? config.rar32.programName:"Not defined",
-          *config.jar.programName ? config.jar32.programName:"Not defined",
-          *config.customArc.programName ? config.customArc32.programName:"Not defined");
+		      arcName[archiver],
+          *config.arc.programName ? config.arc32.programName : "Not defined",
+          *config.zip.programName ? config.zip32.programName : "Not defined",
+          *config.lzh.programName ? config.lzh32.programName : "Not defined",
+          *config.pak.programName ? config.pak32.programName : "Not defined",
+          *config.zoo.programName ? config.zoo32.programName : "Not defined",
+          *config.arj.programName ? config.arj32.programName : "Not defined",
+          *config.sqz.programName ? config.sqz32.programName : "Not defined",
+          *config.uc2.programName ? config.uc232.programName : "Not defined",
+          *config.rar.programName ? config.rar32.programName : "Not defined",
+          *config.jar.programName ? config.jar32.programName : "Not defined",
+          *config.customArc.programName ? config.customArc32.programName : "Not defined");
 
    fprintf(textFile, "\nDecompression programs (16-bit FMail)\n\n"
 		      "           ARC     : %s\n"
@@ -1112,7 +1117,7 @@ s16 listGeneralConfig (void)
           *config.unJar.programName ? config.unJar32.programName:"Not defined",
           *config.GUS.programName ? config.GUS32.programName:"Not defined");
 
-   fclose (textFile);
-   return (0);
+   fclose(textFile);
+   return 0;
 }
 //---------------------------------------------------------------------------

@@ -25,7 +25,7 @@
 
 #include "fmail.h"
 
-s16 toAreaFix(char *toName);
-s16 areaFix  (internalMsgType *message);
+int toAreaFix(const char *toName);
+int areaFix  (internalMsgType *message);
 
 #endif  // areafixH

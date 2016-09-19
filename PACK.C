@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //  This file is part of FMail.
 //
@@ -22,6 +22,7 @@
 
 #include <ctype.h>
 #include <dir.h>
+#include <dirent.h>    // opendir()
 #include <dos.h>
 #include <fcntl.h>
 #include <io.h>
@@ -39,7 +40,7 @@
 #include "msgmsg.h"
 #include "msgpkt.h"
 #include "nodeinfo.h"
-#include "output.h"
+#include "spec.h"
 #include "utils.h"
 
 
@@ -64,7 +65,7 @@ typedef netRecType netListType[MAXNETREC];
 extern configType       config;
 extern internalMsgType *message;
 extern globVarsType     globVars;
-extern char	            configPath[128];
+extern char             configPath[128];
 
 static s16              errorDisplay=0;
 static u16              netIndex;
@@ -77,7 +78,7 @@ s16 packValid(nodeNumType *node, char *packedNodes)
   tempStrType tempStr;
   char       *helpPtr
            , *helpPtr2;
-  char       *stringNode;
+  char        stringNode[32];
   char        nodeTempStr[32];
   size_t      count;
 
@@ -92,7 +93,7 @@ s16 packValid(nodeNumType *node, char *packedNodes)
   while (helpPtr != NULL)
   {
     if (*(u16*)helpPtr == '*' || strchr(helpPtr, ':') != NULL)
-      strcpy(nodeTempStr,helpPtr);
+      strcpy(nodeTempStr, helpPtr);
     else
     {
       if (strchr(helpPtr, '/') != NULL)
@@ -120,11 +121,11 @@ s16 packValid(nodeNumType *node, char *packedNodes)
         }
       }
     }
-    stringNode = nodeStr(node);
+    strcpy(stringNode, nodeStr(node));
 
     for (count = 0; count < strlen(nodeTempStr); count++)
     {
-      if ((nodeTempStr[count] == '?') && isdigit(stringNode[count]))
+      if (nodeTempStr[count] == '?' && isdigit(stringNode[count]))
         stringNode[count] = '?';
 
       if (nodeTempStr[count] == '*')
@@ -134,8 +135,7 @@ s16 packValid(nodeNumType *node, char *packedNodes)
 
         nodeTempStr[count] = 0;
         stringNode[count] = 0;
-        if (count && (nodeTempStr[count - 1] == '.') &&
-            (stringNode[count - 1] == 0))
+        if (count && nodeTempStr[count - 1] == '.' && stringNode[count - 1] == 0)
           nodeTempStr[count - 1] = 0;
 
         break;
@@ -291,7 +291,8 @@ s16 pack(s16 argc, char *argv[], s32 switches)
                 , count2;
   tempStrType     tempStr;
   char           *helpPtr;
-  struct ffblk    ffblkMsg;
+  DIR            *dir;
+  struct dirent  *ent;
   fhandle         fileHandle;
   packType       *pack;
   nodeFileRecType nodeFileInfo;
@@ -315,54 +316,57 @@ s16 pack(s16 argc, char *argv[], s32 switches)
       logEntry("Can't read "dPCKFNAME, LOG_ALWAYS, 1);
   }
 
-  printString("Packing messages...\n\n");
+  puts("Packing messages...\n");
 
   netIndex = 0;
 
-  strcpy(stpcpy(tempStr, config.netPath), "*.msg");
-
-  doneMsg = findfirst(tempStr, &ffblkMsg, 0);
-
-  while (!doneMsg)
+  if ((dir = opendir(config.netPath)) != NULL)
   {
-    msgNum = strtoul(ffblkMsg.ff_name, &helpPtr, 10);
-
-    if ((msgNum != 0) && (netIndex < MAXNETREC) &&
-        (*helpPtr == '.') &&
-        (!(ffblkMsg.ff_attrib & FA_SPEC)) &&
-        (readMsg(message, msgNum) == 0) &&
-        (message->attribute & (IN_TRANSIT | LOCAL)) &&
-        !(message->attribute & FILE_ATT))
+    while ((ent = readdir(dir)) != NULL)
     {
-      count = 0;
-      while (count < MAX_AKAS
-            && (  (config.akaList[count].nodeNum.zone == 0)
-               || (memcmp(&config.akaList[count].nodeNum, &message->destNode, sizeof(nodeNumType)) != 0)
-               )
-            )
-        count++;
-
-      if (count == MAX_AKAS)
+      if (match_spec("*.msg", ent->d_name))
       {
-        low  = 0;
-        high = netIndex;
-        while (low < high)
-        {
-          mid = (low + high) >> 1;
-          if (msgNum > (*netList)[mid].msgNum)
-            low  = mid + 1;
-          else
-            high = mid;
-        }
-        memmove(&((*netList)[low + 1]), &((*netList)[low]), (netIndex++ - low) * sizeof(netRecType));
+        msgNum = strtoul(ent->d_name, &helpPtr, 10);
 
-        (*netList)[low].msgNum    = msgNum;
-        (*netList)[low].destNode  = message->destNode;
-        (*netList)[low].attribute = message->attribute;
-        (*netList)[low].flags     = getFlags(message->text);
+        if (  msgNum != 0
+           && netIndex < MAXNETREC
+           && *helpPtr == '.'
+           && readMsg(message, msgNum) == 0
+           && (message->attribute & (IN_TRANSIT | LOCAL))
+           && !(message->attribute & FILE_ATT)
+           )
+        {
+          count = 0;
+          while (count < MAX_AKAS
+                && (  (config.akaList[count].nodeNum.zone == 0)
+                   || (memcmp(&config.akaList[count].nodeNum, &message->destNode, sizeof(nodeNumType)) != 0)
+                   )
+                )
+            count++;
+
+          if (count == MAX_AKAS)
+          {
+            low  = 0;
+            high = netIndex;
+            while (low < high)
+            {
+              mid = (low + high) >> 1;
+              if (msgNum > (*netList)[mid].msgNum)
+                low  = mid + 1;
+              else
+                high = mid;
+            }
+            memmove(&((*netList)[low + 1]), &((*netList)[low]), (netIndex++ - low) * sizeof(netRecType));
+
+            (*netList)[low].msgNum    = msgNum;
+            (*netList)[low].destNode  = message->destNode;
+            (*netList)[low].attribute = message->attribute;
+            (*netList)[low].flags     = getFlags(message->text);
+          }
+        }
       }
     }
-    doneMsg = findnext(&ffblkMsg);
+    closedir(dir);
   }
 
   if (argc > 2)
@@ -439,7 +443,7 @@ s16 pack(s16 argc, char *argv[], s32 switches)
               )
           count2++;
 
-        addVia(message->text, count2 < MAX_AKAS ? count2 : nodeFileInfo.srcAka);
+        addVia(message->text, count2 < MAX_AKAS ? count2 : nodeFileInfo.srcAka, 1);
 
         if (writeNetPktValid(message, &nodeFileInfo))
           diskError = DERR_PACK;

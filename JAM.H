@@ -41,15 +41,15 @@ extern "C" {
 #define EXT_IDX         "j"BASE_EXT_IDX
 #define EXT_LRD         "j"BASE_EXT_LRD
 
-#define EXT_BCK_HDR     "!"BASE_EXT_HDR
-#define EXT_BCK_TXT     "!"BASE_EXT_TXT
-#define EXT_BCK_IDX     "!"BASE_EXT_IDX
-#define EXT_BCK_LRD     "!"BASE_EXT_LRD
+#define EXT_ORG_HDR     "~"BASE_EXT_HDR
+#define EXT_ORG_TXT     "~"BASE_EXT_TXT
+#define EXT_ORG_IDX     "~"BASE_EXT_IDX
+#define EXT_ORG_LRD     "~"BASE_EXT_LRD
 
-#define EXT_NEW_HDR     "$"BASE_EXT_HDR
-#define EXT_NEW_TXT     "$"BASE_EXT_TXT
-#define EXT_NEW_IDX     "$"BASE_EXT_IDX
-#define EXT_NEW_LRD     "$"BASE_EXT_LRD
+#define EXT_OLD_HDR     "o"BASE_EXT_HDR
+#define EXT_OLD_TXT     "o"BASE_EXT_TXT
+#define EXT_OLD_IDX     "o"BASE_EXT_IDX
+#define EXT_OLD_LRD     "o"BASE_EXT_LRD
 
 #define EXT_HDRFILE     "."EXT_HDR
 #define EXT_TXTFILE     "."EXT_TXT
@@ -64,7 +64,6 @@ extern "C" {
 
 /*
 **  Header file information block, stored first in all .JHR files
-/* os2 */
 */
 typedef struct
     {
@@ -115,7 +114,7 @@ typedef struct
 **  Message header
 */
 typedef struct
-    {
+{
     CHAR8   Signature[4];              /* <J><A><M> followed by <NUL> */
     UINT16  Revision;                  /* CURRENTREVLEV */
     UINT16  ReservedWord;              /* Reserved */
@@ -136,8 +135,8 @@ typedef struct
     UINT32  TxtLen;                    /* Length of message text */
     UINT32  PasswordCRC;               /* CRC-32 of password to access msg */
     UINT32  Cost;                      /* Cost of message */
-    }
-    JAMHDR, _JAMDATA * JAMHDRptr;
+
+}   JAMHDR, _JAMDATA * JAMHDRptr;
 
 /*
 **  Message header subfield types

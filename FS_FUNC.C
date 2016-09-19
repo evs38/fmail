@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -74,7 +74,7 @@ s16 displayGroups(void)
 //---------------------------------------------------------------------------
 s16 askGroup(void)
 {
-   u16      ch;
+   u16 ch;
 
    if (displayGroups() == 0) return 0;
 
@@ -97,7 +97,7 @@ s16 askGroup(void)
 
 s32 getGroups (s32 groups)
 {
-   s16 c;
+   u16 c;
    s32 mask;
 
    if (displayWindow (" Groups ", 15, 7, 76, 21) != 0)
@@ -168,16 +168,16 @@ s16 askGroups(void)
 
 
 
-s16 netmailMenu (u16 v)
+s16 netmailMenu(u16 v)
 {
-   s16      update = 0;
+   s16 update;
 
    memset(&tempInfo, 0, RAWECHO_SIZE);
 
    if (v == 0)
-      strcpy (tempInfo.areaName, "Netmail Main");
+      strcpy(tempInfo.areaName, "Netmail Main");
    else
-      sprintf (tempInfo.areaName, "Netmail AKA %u", v);
+      sprintf(tempInfo.areaName, "Netmail AKA %u", v);
 
    tempInfo.board               = config.netmailBoard[v];
    tempInfo.groupRA             = config.groupRA[v];
@@ -208,8 +208,8 @@ s16 netmailMenu (u16 v)
    tempInfo.msgs                = config.msgsAKA[v];
    tempInfo.options             = config.optionsAKA[v];
 
-   memcpy (tempInfo.qwkName, config.qwkName[v], 13);
-   memcpy (tempInfo.comment, config.descrAKA[v], 51);
+   memcpy(tempInfo.qwkName, config.qwkName[v], 13);
+   memcpy(tempInfo.comment, config.descrAKA[v], 51);
 
    update = editAM(EDIT_NETMAIL, 0, NULL);
 
@@ -242,10 +242,10 @@ s16 netmailMenu (u16 v)
    config.msgsAKA[v]               = tempInfo.msgs;
    config.optionsAKA[v]            = tempInfo.options;
 
-   memcpy (config.qwkName[v],  tempInfo.qwkName, 13);
-   memcpy (config.descrAKA[v], tempInfo.comment, 51);
+   memcpy(config.qwkName[v],  tempInfo.qwkName, 13);
+   memcpy(config.descrAKA[v], tempInfo.comment, 51);
 
-   return (update);
+   return update;
 }
 
 
@@ -254,15 +254,15 @@ extern rawEchoType echoDefaultsRec;
 
 s16 defaultBBS (void)
 {
-   s16      update = 0;
+   s16 update;
 
-   memcpy (&tempInfo, &echoDefaultsRec, RAWECHO_SIZE);
+   memcpy(&tempInfo, &echoDefaultsRec, RAWECHO_SIZE);
 
    update = editAM(EDIT_ECHO_DEFAULT, 0, NULL);
 
-   memcpy (&echoDefaultsRec, &tempInfo, RAWECHO_SIZE);
+   memcpy(&echoDefaultsRec, &tempInfo, RAWECHO_SIZE);
 
-   return (update);
+   return update;
 }
 
 
@@ -271,11 +271,11 @@ uplinkNodeStrType uplinkNodeStr;
 
 s16 uplinkMenu (u16 v)
 {
-   menuType *uplMenu;
-   s16      update = 0;
-   u16      count;
-   char     title[20];
-   char     addressText[MAX_AKAS+1][34];
+  menuType *uplMenu;
+  s16       update;
+  u16       count;
+  char      title[20];
+  char      addressText[MAX_AKAS+1][34];
 
    toggleType fileTypeToggle;
    toggleType addressToggle;
@@ -339,7 +339,7 @@ s16 uplinkMenu (u16 v)
 
    uplinkNodeStr[v][27] = 0;
 
-   return (update);
+   return update;
 }
 
 
@@ -443,13 +443,13 @@ s16 badduprecDisplayAreas (u16 *v)
 
 
 
-s16 echoOnly (s16 editType, s16 code)
+s16 echoOnly(s16 editType, s16 code)
 {
    if ((editType == EDIT_ECHO)   || (editType == DISPLAY_ECHO_DATA) ||
        (editType == EDIT_ECHO_GLOBAL) || (editType == DISPLAY_ECHO_WINDOW))
-      return (code);
+      return code;
    else
-      return (DISPLAY);
+      return DISPLAY;
 }
 
 
@@ -995,7 +995,7 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    toggleType  QBBSToggle;
    toggleType  addressToggle;
    s16         temp;
-   char        addressText[MAX_AKAS+1][34];
+   char        addressText[MAX_AKAS + 1][34];
    u16         count, total;
    static s32  groupCode;
 
@@ -1031,10 +1031,10 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    boardTypeToggle.retval[2] = 2;
 
    if ( editType == EDIT_ECHO_DEFAULT )
-		RAToggle.data = (char*)&defaultEnumRA;
-	else
-	{
-		RAToggle.data = (char*)&tempToggleRA;
+      RAToggle.data = (char*)&defaultEnumRA;
+   else
+   {
+      RAToggle.data = (char*)&tempToggleRA;
       tempToggleRA = (tempInfo.attrRA & BIT3) ?
                      (tempInfo.attrRA & BIT5) ? 1 : 2 : 0;
    }
@@ -1053,11 +1053,13 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    RAToggle2.text[2] = "Public";
    RAToggle2.retval[2] = 2;
    if ( config.bbsProgram == BBS_PROB )
-   {  RAToggle2.text[3] = "To-all";
+   {
+      RAToggle2.text[3] = "To-all";
       RAToggle2.retval[3] = 3;
    }
    else
-   {  RAToggle2.text[3] = "Read-only";
+   {
+      RAToggle2.text[3] = "Read-only";
       RAToggle2.retval[3] = 3;
       RAToggle2.text[4] = "No-reply";
       RAToggle2.retval[4] = 4;
@@ -1303,7 +1305,7 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
                      "Group of areas to which this area belongs (A-Z)");
    addItem(areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Use SeenBy", 0, &tempInfo.options, BIT6, 0,
-                     "Use SEEN-BYs for duplicate prevention (normally NOT necessary)");
+                     "Use SEEN-BYs for duplicate prevention (Should normally be on)");
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Security    ", 18, &tempInfo.options, BIT2, 0,
                      "Check origin of incoming mailbundles");
    addItem(areaMenu, NUM_INT, "# Messages ", 37, &tempInfo.msgs, 4, 9999,
@@ -1311,24 +1313,26 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    addItem(areaMenu, BOOL_INT, "Arrival date", 56, &tempInfo.options, BIT14, 0,
                      "Use the date that a message arrived on your system when deleting messages");
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Tiny SeenBy", 0, &tempInfo.options, BIT1, 0,
-                     "Remove all SEEN-BYs except of your own downlinks (should normally NOT be used)");
+                     "Remove all SEEN-BYs except of your own links (should normally NOT be used)");
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Private     ", 18, &tempInfo.options, BIT4, 0,
                      "Allow private (privileged) messages");
    addItem(areaMenu, NUM_INT, "# Days old ", 37, &tempInfo.days, 3, 999,
                      "Delete messages older than a number of days (1-999, 0 = no maximum)");
    addItem(areaMenu, BOOL_INT, "Keep SysOp  ", 56, &tempInfo.options, BIT15, 0,
                      "Do not remove messages that have not been read by the SysOp (user #1)");
-   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Imp. SeenBy", 0, &tempInfo.options, BIT5, 0,
-                     "Import SEEN-BYs into the message base");
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Tiny Path", 0, &tempInfo.options, BIT7, 0,
+                     "Remove all PATHs except of your own system (should normally NOT be used)");
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT_REV), "Allow rescan", 18, &tempInfo.options, BIT3, 0,
                      "Allow rescans for this area");
    addItem(areaMenu, NUM_INT, "# Days rcvd", 37, &tempInfo.daysRcvd, 3, 999,
                      "Delete received messages older than a number of days (1-999, 0 = no maximum)");
+   addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Imp. SB/Pth", 0, &tempInfo.options, BIT5, 0,
+                     "Import SEEN-BYs and PATH lines into the message base");
    addItem(areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
    addItem(areaMenu, echoOnly(editType, ENUM_INT), "Origin AKA", 0, &addressToggle, 0, MAX_AKAS,
                      "Address used for origin line and as packet origin address");
    if ( !(editType & EDIT_ECHO_DEFAULT) )
-          addItem (areaMenu, DATE|DISPLAY, "LastScanned", 47, &tempInfo.lastMsgScanDat, 0, 0,
+     addItem (areaMenu, DATE|DISPLAY, "LastScanned", 47, &tempInfo.lastMsgScanDat, 0, 0,
                       "Last time a message was scanned from this area");
    addItem (areaMenu, echoOnly(editType,FUNC_PAR), "Other AKAs", 0, &multiAkaSelectRec, 0, 4,
                       "AKAs added to SEEN-BY lines");
@@ -1344,9 +1348,11 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
       addItem (areaMenu, FUNCTION, "Export", 0, gndFun, 2, 2,
                       "Nodes to which the echo area is exported");
 
-   if ((editType == EDIT_ECHO) || (editType == DISPLAY_ECHO_WINDOW) ||
-       (editType == DISPLAY_ECHO_DATA))
-      addItem (areaMenu, echoOnly(editType,EXTRA_TEXT|NO_EDIT), NULL, 0, NULL, ORGLINE_LEN-1, 0, "");
+   if (  editType == EDIT_ECHO
+      || editType == DISPLAY_ECHO_WINDOW
+      || editType == DISPLAY_ECHO_DATA
+      )
+      addItem(areaMenu, echoOnly(editType, EXTRA_TEXT | NO_EDIT), NULL, 0, NULL, ORGLINE_LEN - 1, 0, "");
 
    switch (editType)
    {
@@ -1354,12 +1360,12 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
         temp = displayMenu(areaMenu, 1, 5);
         break;
       case DISPLAY_ECHO_DATA   :
-               displayData(areaMenu, 1, 5, 0);
+        displayData(areaMenu, 1, 5, 0);
         temp = 0;
         break;
       case EDIT_GLOB_BBS       :
         temp = runMenuD   (raMenu  , 2, 7, NULL, setdef);
-				break;
+        break;
       case EDIT_ECHO           :
         temp = runMenuD   (areaMenu, 1, 5, NULL, setdef);
         break;
@@ -1367,33 +1373,33 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
         temp = runMenuD   (areaMenu, 1, 5, NULL, setdef);
         break;
       case EDIT_ECHO_GLOBAL    :
-               runMenuD   (areaMenu, 1, 5, NULL, setdef);
+        runMenuD   (areaMenu, 1, 5, NULL, setdef);
         temp = 0;
         break;
       case EDIT_ECHO_DEFAULT   :
         temp = runMenuD   (areaMenu, 1, 5, NULL, setdef);
-				break;
+        break;
    }
    if (editType == EDIT_ECHO_DEFAULT)
    {
       if (defaultEnumRA)
-       	 tempInfo.attrRA |= BIT3;
+         tempInfo.attrRA |= BIT3;
       else
          tempInfo.attrRA &= ~BIT3;
       if (defaultEnumRA == 1)
          tempInfo.attrRA |= BIT5;
       else
-       	 tempInfo.attrRA &= ~BIT5;
+         tempInfo.attrRA &= ~BIT5;
    }
    else
    {  if (tempToggleRA)
-   	 tempInfo.attrRA |= BIT3;
+        tempInfo.attrRA |= BIT3;
       else
-       	 tempInfo.attrRA &= ~BIT3;
+        tempInfo.attrRA &= ~BIT3;
       if (tempToggleRA == 1)
-         tempInfo.attrRA |= BIT5;
+        tempInfo.attrRA |= BIT5;
       else
-         tempInfo.attrRA &= ~BIT5;
+        tempInfo.attrRA &= ~BIT5;
    }
    tempInfo.alsoSeenBy = alsoSeenBy;
 
@@ -1419,7 +1425,7 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
                   ++total;
                   getRec(CFG_ECHOAREAS, count);
                   memcpy(&tempInfo, areaBuf, RAWECHO_SIZE);
-		              temp += changeGlobal(areaMenu, &tempInfo, &updInfo)
+                  temp += changeGlobal(areaMenu, &tempInfo, &updInfo)
                         | changeGlobal(raMenu  , &tempInfo, &updInfo);
                   memcpy(areaBuf, &tempInfo, RAWECHO_SIZE);
                   putRec(CFG_ECHOAREAS, count);

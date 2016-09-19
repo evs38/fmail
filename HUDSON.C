@@ -1,25 +1,26 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
- 
 #include <stdio.h>
 #include <string.h>
 #include <dir.h>
@@ -29,15 +30,14 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <time.h>
+
 #include "fmail.h"
+
 #include "ftlog.h"
-#include "output.h"
-#include "areainfo.h" /* needed for utils.h */
+#include "areainfo.h" // needed for utils.h
 #include "utils.h"
 #include "crc.h"
 #include "hudson.h"
-
-
 
 extern configType config;
 extern time_t     startTime;
@@ -49,119 +49,9 @@ fhandle msgIdxHandle;
 
 fhandle lockHandle;
 
-
-char *expandNameH (char *fileName)
-{
-   static tempStrType expandStr;
-
-   strcpy (expandStr, config.bbsPath);
-   strcat (expandStr, fileName);
-   strcat (expandStr, "."MBEXTN);
-   return (expandStr);
-}
-
-
-
-s16 testMBUnlockNow (void)
-{
-   static s16 time, date;
-   tempStrType tempStr;
-   struct ffblk ffblkMBU;
-   s16 unlock = 0;
-
-   if (config.mbOptions.mbSharing)
-   {
-      strcpy (tempStr, config.bbsPath);
-      strcat (tempStr, "MBUNLOCK.NOW");
-      if (findfirst (tempStr, &ffblkMBU, 0))
-      {
-         time = 0;
-         date = 0;
-      }
-      else
-      {
-         unlock = ((time != ffblkMBU.ff_ftime) || (date != ffblkMBU.ff_fdate));
-         time = ffblkMBU.ff_ftime;
-         date = ffblkMBU.ff_fdate;
-      }
-   }
-   return (unlock);
-}
-
-
-
-void setMBUnlockNow (void)
-{
-   tempStrType tempStr;
-
-   if (config.mbOptions.mbSharing)
-   {
-      strcpy (tempStr, config.bbsPath);
-      strcat (tempStr, "MBUNLOCK.NOW");
-      close (open(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE));
-      testMBUnlockNow ();
-   }
-}
-
-
-
-
-s16 lockMB (void)
-{
-   tempStrType tempStr;
-   time_t      time1,
-               time2;
-
-   strcpy (tempStr, config.bbsPath);
-   strcat (tempStr, "MSGINFO."MBEXTN);
-
-   if ((lockHandle = open(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                                   S_IREAD|S_IWRITE)) == -1)
-   {
-      logEntry ("Can't open file MsgInfo."MBEXTN" for output", LOG_ALWAYS, 0);
-      return (1);
-   }
-
-   testMBUnlockNow ();
-   if ((lock (lockHandle, sizeof(infoRecType) + 1, 1) == -1) &&
-       (_doserrno == 0x21))
-   {
-      printString ("Retrying to lock the message base\n\n");
-      setMBUnlockNow ();
-      time (&time1);
-
-      do
-      {
-         time (&time2);
-         _doserrno = 0;
-      }
-      while ((lock (lockHandle, sizeof(infoRecType) + 1, 1) == -1) &&
-             (_doserrno == 0x21) &&
-             (time2-time1 < 15));
-      if (_doserrno == 0x21)
-      {
-         logEntry ("Can't lock the message base for update", LOG_ALWAYS, 0);
-         close (lockHandle);
-         return (1);
-      }
-   }
-   return (0);
-}
-
-
-
-void unlockMB (void)
-{
-   if (config.mbOptions.mbSharing)
-   {
-      unlock (lockHandle, sizeof(infoRecType) + 1, 1);
-   }
-   close (lockHandle);
-}
-
-
-
-void openBBSWr ()
+#include "hudson_shared.c"
+//---------------------------------------------------------------------------
+void openBBSWr(void)
 {
    if ((msgHdrHandle = open(expandNameH("MSGHDR"),
                             O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
@@ -195,9 +85,7 @@ void openBBSWr ()
    }
    lseek (msgIdxHandle, 0, SEEK_END);
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 {
    msgHdrRec   msgRa;
@@ -231,7 +119,7 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 		msgRa.SeeAlsoNum = 0;
 		msgRa.TRead      = 0;
 		msgRa.NetAttr    = 0;
-    msgRa.StartRec   = 
+    msgRa.StartRec   =
     msgTxtRecNum     = (u16)(filelength(msgTxtHandle) >> 8);
 		msgRa.Board      = boardNum;
     msgHdrRecNum = (u16)(filelength(msgHdrHandle)/sizeof(msgHdrRec));
@@ -314,6 +202,9 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
          close (mailBBSHandle);
       }
 
+      if (config.mbOptions.removeRe)
+         removeRe(message->subject);
+
       msgRa.wtLength = strlen(message->toUserName);
       strncpy (msgRa.WhoTo, message->toUserName, 35);
       msgRa.wfLength = strlen(message->fromUserName);
@@ -323,13 +214,9 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 
       if ((msgRa.sjLength) <= 56)
       {
-         msgRa.subjCrc    = crc32alpha(config.mbOptions.removeRe?
-                                       message->subject:removeRe(message->subject));
-
+         msgRa.subjCrc    = crc32alpha(message->subject);
          msgRa.wrTime     = msgRa.recTime = startTime;
-
          time(&msgRa.recTime);
-
          msgRa.checkSum = CS_SECURITY ^ msgRa.subjCrc
                                       ^ msgRa.wrTime
                                       ^ msgRa.recTime;
@@ -338,38 +225,33 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
       msgIdx.MsgNum = msgRa.MsgNum;
       msgIdx.Board  = msgRa.Board;
 
-      if ((_write (msgHdrHandle, &msgRa,
-                                 sizeof(msgHdrRec)) != sizeof(msgHdrRec)) ||
-          (_write (msgIdxHandle, &msgIdx,
-                                 sizeof(msgIdxRec)) != sizeof(msgIdxRec)) ||
-          (_write (msgToIdxHandle, &msgRa.wtLength,
-                                   sizeof(msgToIdxRec)) != sizeof(msgToIdxRec)))
+      if ((_write(msgHdrHandle, &msgRa , sizeof(msgHdrRec)) != sizeof(msgHdrRec)) ||
+          (_write(msgIdxHandle, &msgIdx, sizeof(msgIdxRec)) != sizeof(msgIdxRec)) ||
+          (_write(msgToIdxHandle, &msgRa.wtLength, sizeof(msgToIdxRec)) != sizeof(msgToIdxRec)))
       {
          unlockMB();
-         return (1);
+         return 1;
       }
 
       infoRec.ActiveMsgs[msgRa.Board-1]++;
       infoRec.TotalActive++;
 
       if ((lseek(msgInfoHandle, 0, SEEK_SET) == -1) ||
-          (write (msgInfoHandle, &infoRec, sizeof(infoRecType)) == -1))
-      {
-         logEntry ("Can't open file MsgInfo."MBEXTN" for output", LOG_ALWAYS, 1);
-      }
-      close (msgInfoHandle);
+          (write(msgInfoHandle, &infoRec, sizeof(infoRecType)) == -1))
+         logEntry("Can't open file MsgInfo."MBEXTN" for output", LOG_ALWAYS, 1);
+
+      close(msgInfoHandle);
 
       unlockMB();
   }
-    return (0);
+  return 0;
 }
-
-
-
-void closeBBS (void)
+//---------------------------------------------------------------------------
+void closeBBS(void)
 {
-   close (msgHdrHandle);
-   close (msgTxtHandle);
-   close (msgIdxHandle);
-   close (msgToIdxHandle);
+   close(msgHdrHandle);
+   close(msgTxtHandle);
+   close(msgIdxHandle);
+   close(msgToIdxHandle);
 }
+//---------------------------------------------------------------------------

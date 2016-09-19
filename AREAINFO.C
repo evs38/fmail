@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -27,6 +27,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __MINGW32__
+#include <windef.h>  // min() max()
+#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -37,7 +40,6 @@
 #include "log.h"
 #include "msgmsg.h"
 #include "nodeinfo.h"
-#include "output.h"
 #include "time.h"
 #include "utils.h"
 #include "version.h"
@@ -46,25 +48,22 @@
 struct orgLineListType
 {
   struct orgLineListType *next;
-  char originLine[ORGLINE_LEN];
+  char   originLine[ORGLINE_LEN];
 };
 
 static struct orgLineListType *orgLineListPtr = NULL;
 
-u16      echoCount;
-u16      forwNodeCount = 0;
+u16 echoCount;
+u16 forwNodeCount = 0;
 
-cookedEchoType    *echoAreaList;
+cookedEchoType   *echoAreaList;
 echoToNodePtrType echoToNode[MAX_AREAS];
 nodeFileType      nodeFileInfo;
 
-extern time_t startTime;
-
-extern configType   config;
-
+extern time_t           startTime;
+extern configType       config;
 extern internalMsgType *message;
-
-extern u16 status;
+extern u16              status;
 
 //---------------------------------------------------------------------------
 s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
@@ -72,10 +71,10 @@ s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
    tempStrType tempStr;
    s16         errorDisplay = 0;
 
-   memset (nfInfo, 0, sizeof(nodeFileRecType));
+   memset(nfInfo, 0, sizeof(nodeFileRecType));
 
    nfInfo->destNode = nfInfo->destNode4d = *destNode;
-   nfInfo->nodePtr  = getNodeInfo (destNode);
+   nfInfo->nodePtr  = getNodeInfo(destNode);
    nfInfo->requestedAka = srcAka;
 
    if (nfInfo->nodePtr->useAka && nfInfo->nodePtr->useAka <= MAX_AKAS &&
@@ -122,8 +121,10 @@ s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
 void initAreaInfo(void)
 {
    tempStrType   tempStr;
-   char		 *helpPtr;
-   s16           c, count, count2;
+   char		      *helpPtr;
+   s16           c
+               , count
+               , count2;
    u16           autoDisconnectCount = 0;
    u16           error = 0;
    s16           errorDisplay = 0;
@@ -136,22 +137,20 @@ void initAreaInfo(void)
    echoCount = 0;
    forwNodeCount = 0;
 
-   if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
-      logEntry ("Bad or missing "dARFNAME, LOG_ALWAYS, 1);
+  if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
+    logEntry("Bad or missing "dARFNAME, LOG_ALWAYS, 1);
 
-   if ( (echoAreaList = malloc(sizeof(cookedEchoType)*areaHeader->totalRecords+1)) == NULL )
-   {
-      logEntry ("Not enough memory available", LOG_ALWAYS, 2);
-   }
-   memset (echoAreaList, 0, sizeof(cookedEchoType)*areaHeader->totalRecords);
+  if ((echoAreaList = (cookedEchoType*)malloc(sizeof(cookedEchoType) * areaHeader->totalRecords + 1)) == NULL)
+    logEntry("Not enough memory available", LOG_ALWAYS, 2);
+
+  memset(echoAreaList, 0, sizeof(cookedEchoType) * areaHeader->totalRecords);
 
    for (echoCount = 0; echoCount < areaHeader->totalRecords; echoCount++)
    {
       getRec(CFG_ECHOAREAS, echoCount);
       if (*areaBuf->areaName == 0)
-      {
-	       logEntry ("One or more area tags are not defined. Please run FSetup.", LOG_ALWAYS, 4);
-      }
+	       logEntry("One or more area tags are not defined. Please run FSetup.", LOG_ALWAYS, 4);
+
       areaBuf->areaName[ECHONAME_LEN-1] = 0;
       areaBuf->comment[COMMENT_LEN-1] = 0;
       areaBuf->originLine[ORGLINE_LEN-1] = 0;
@@ -168,45 +167,38 @@ void initAreaInfo(void)
 
       if (config.akaList[areaBuf->address].nodeNum.zone == 0)
       {
-	 error = 1;
-	 sprintf (tempStr, "ERROR: Origin address of area %s (AKA %u) is not defined",
-			   areaBuf->areaName,
-			   areaBuf->address);
-	 logEntry (tempStr, LOG_ALWAYS, 0);
-	 errorDisplay++;
+        error = 1;
+        sprintf(tempStr, "ERROR: Origin address of area %s (AKA %u) is not defined",
+        areaBuf->areaName,
+        areaBuf->address);
+        logEntry(tempStr, LOG_ALWAYS, 0);
+        errorDisplay++;
       }
 
       if (*areaBuf->comment == '^')
       {
-	 if ((echoAreaList[echoCount].oldAreaName = malloc(strlen(areaBuf->comment))) == NULL)
-	 {
-	    logEntry ("Not enough memory available", LOG_ALWAYS, 2);
-	 }
-	 strupr (areaBuf->comment);
-         strcpy (echoAreaList[echoCount].oldAreaName, areaBuf->comment+1);
+        if ((echoAreaList[echoCount].oldAreaName = (char*)malloc(strlen(areaBuf->comment))) == NULL)
+          logEntry("Not enough memory available", LOG_ALWAYS, 2);
+
+        strupr(areaBuf->comment);
+        strcpy(echoAreaList[echoCount].oldAreaName, areaBuf->comment + 1);
       }
       else
-      {
-	 echoAreaList[echoCount].oldAreaName = "";
-      }
-      if (((echoAreaList[echoCount].areaName = malloc(strlen(areaBuf->areaName)+1)) == NULL) ||
-          ((echoToNode[echoCount] = malloc(sizeof(echoToNodeType))) == NULL))
-      {
-	 logEntry ("Not enough memory available", LOG_ALWAYS, 2);
-      }
-      memset (echoToNode[echoCount], 0, sizeof(echoToNodeType));
-      strcpy (echoAreaList[echoCount].areaName, areaBuf->areaName);
-/*
-printString("\nJAM path generation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n";
-sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
-*/
+        echoAreaList[echoCount].oldAreaName = (char*)"";
+
+      if (((echoAreaList[echoCount].areaName = (char*)malloc(strlen(areaBuf->areaName)+1)) == NULL) ||
+          ((echoToNode[echoCount] = (echoToNodePtrType)malloc(sizeof(echoToNodeType))) == NULL))
+        logEntry("Not enough memory available", LOG_ALWAYS, 2);
+
+      memset(echoToNode[echoCount], 0, sizeof(echoToNodeType));
+      strcpy(echoAreaList[echoCount].areaName, areaBuf->areaName);
+
       if (*areaBuf->msgBasePath)
       {
-	 if ((echoAreaList[echoCount].JAMdirPtr = malloc(strlen(areaBuf->msgBasePath)+1)) == NULL)
-	 {
-	    logEntry ("Not enough memory available", LOG_ALWAYS, 2);
-	 }
-	 strcpy (echoAreaList[echoCount].JAMdirPtr, areaBuf->msgBasePath);
+        if ((echoAreaList[echoCount].JAMdirPtr = (char*)malloc(strlen(areaBuf->msgBasePath)+1)) == NULL)
+          logEntry ("Not enough memory available", LOG_ALWAYS, 2);
+
+        strcpy(echoAreaList[echoCount].JAMdirPtr, areaBuf->msgBasePath);
       }
 
       echoAreaList[echoCount].writeLevel  = areaBuf->writeLevel;
@@ -226,19 +218,17 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
       }
       if (olHelpPtr == NULL)
       {
-	 if ((olHelpPtr = malloc(5+strlen(areaBuf->originLine))) == NULL)
-         {
-	    logEntry ("Not enough memory available", LOG_ALWAYS, 2);
-	 }
-	 strcpy (olHelpPtr->originLine, areaBuf->originLine);
-         olHelpPtr->next = orgLineListPtr;
-         orgLineListPtr = olHelpPtr;
+        if ((olHelpPtr = (struct orgLineListType *)malloc(5 + strlen(areaBuf->originLine))) == NULL)
+          logEntry ("Not enough memory available", LOG_ALWAYS, 2);
+
+        strcpy(olHelpPtr->originLine, areaBuf->originLine);
+        olHelpPtr->next = orgLineListPtr;
+        orgLineListPtr = olHelpPtr;
       }
       echoAreaList[echoCount].originLine = olHelpPtr->originLine;
 
       count = 0;
-      while ((count < MAX_FORWARD) &&
-	           (areaBuf->forwards[count].nodeNum.zone != 0))
+      while (count < MAX_FORWARD && areaBuf->forwards[count].nodeNum.zone != 0)
       {
          if ( areaBuf->forwards[count].flags.locked )
          {  count++;
@@ -279,25 +269,30 @@ sprintf(areaBuf->msgBasePath, "E:\\JMB\\M%u", echoCount);
             }
             if (c == forwNodeCount)
             {
-               if ((nodeFileInfo[forwNodeCount] = malloc(sizeof(nodeFileRecType))) == NULL)
+               if ((nodeFileInfo[forwNodeCount] = (nodeFileRecType*)malloc(sizeof(nodeFileRecType))) == NULL)
                {
                   logEntry ("Not enough memory available", LOG_ALWAYS, 2);
                }
-               errorDisplay |= makeNFInfo(nodeFileInfo[forwNodeCount++],
-                                          areaBuf->address,
-                                           &(areaBuf->forwards[count].nodeNum));
+               errorDisplay |= makeNFInfo( nodeFileInfo[forwNodeCount++]
+                                         , areaBuf->address, &(areaBuf->forwards[count].nodeNum));
             }
-            if ( !(areaBuf->forwards[count].flags.readOnly &&
-                   areaBuf->forwards[count].flags.writeOnly) )
-            {  if ( areaBuf->forwards[count].flags.readOnly )
+            if ( !(  areaBuf->forwards[count].flags.readOnly
+                  && areaBuf->forwards[count].flags.writeOnly
+                  )
+               )
+            {
+               if (areaBuf->forwards[count].flags.readOnly)
                   echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SETRO(c);
-               else if ( areaBuf->forwards[count].flags.writeOnly )
-                  echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SETWO(c);
                else
-                  echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SET(c);
+                  if (areaBuf->forwards[count].flags.writeOnly)
+                     echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SETWO(c);
+                  else
+                     echoToNode[echoCount][ETN_INDEX(c)] |= ETN_SET(c);
+
                echoAreaList[echoCount].echoToNodeCount++;
-               if ( !areaBuf->forwards[count].flags.writeOnly &&
-                    nodeFileInfo[c]->nodePtr->useAka )
+               if ( !areaBuf->forwards[count].flags.writeOnly
+                  && nodeFileInfo[c]->nodePtr->useAka
+                  )
                   echoAreaList[echoCount].alsoSeenBy |= 1L << (nodeFileInfo[c]->nodePtr->useAka - 1);
             }
          }
@@ -423,7 +418,7 @@ void deInitAreaInfo(void)
       orgLineListPtr = orgLineListPtr->next;
       free (helpPtr);
    }
-   if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
+   if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
       logEntry ("Bad or missing "dARFNAME, LOG_ALWAYS, 1);
    for (count = 0; count < areaHeader->totalRecords; count++)
    {

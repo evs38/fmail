@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -31,16 +31,16 @@
 
 #include "areainfo.h"
 #include "config.h"
+#include "log.h"
 #include "msgmsg.h"
 #include "msgpkt.h"
 #include "mtask.h"
-#include "output.h"
 #include "utils.h"
 
 
-extern cookedEchoType    *echoAreaList;
-
+extern cookedEchoType *echoAreaList;
 extern char jam_subfields[_JAM_MAXSUBLENTOT];
+extern echoToNodePtrType echoToNode[MAX_AREAS];
 
 //---------------------------------------------------------------------------
 u32 jam_scan(u16 echoIndex, u32 jam_msgnum, u16 scanOne, internalMsgType *message)
@@ -94,7 +94,7 @@ u32 jam_scan(u16 echoIndex, u32 jam_msgnum, u16 scanOne, internalMsgType *messag
     if (scanOne)
     {
       jam_close(jam_code);
-      gotoTab(0);
+      putchar('\r');
 
       return 0;
     }
@@ -120,19 +120,22 @@ u32 jam_update(u16 echoIndex, u32 jam_msgnum, internalMsgType *message)
       return 0;
 
    if ( jam_msgnum < jam_hdrinforec->BaseMsgNum )
-   {  jam_close(jam_code);
+   {
+      jam_close(jam_code);
       return 0;
    }
 
    if ( !jam_getlock(jam_code) )
-   {  jam_close(jam_code);
+   {
+      jam_close(jam_code);
       return 0;
    }
 
    if ( jam_getidx(jam_code, &jam_idxrec, jam_msgnum+1-jam_hdrinforec->BaseMsgNum) &&
         jam_idxrec.HdrOffset != MAXU32 &&
         jam_gethdr(jam_code, jam_idxrec.HdrOffset, &jam_msghdrrec, jam_subfields, NULL) )
-   {  if ( config.mbOptions.scanUpdate )
+   {
+      if ( config.mbOptions.scanUpdate )
       {
          jam_msghdrrec.Attribute |= MSG_DELETED;
          txtlen = jam_msghdrrec.TxtLen;
@@ -147,12 +150,14 @@ u32 jam_update(u16 echoIndex, u32 jam_msgnum, internalMsgType *message)
          jam_updidx(jam_code, &jam_idxrec);
       }
       else
-      {  jam_msghdrrec.Attribute |= MSG_SENT;
+      {
+         jam_msghdrrec.Attribute |= MSG_SENT;
          jam_puthdr(jam_code, jam_idxrec.HdrOffset, &jam_msghdrrec);
       }
    }
    jam_freelock(jam_code);
    jam_close(jam_code);
+
    return 1;
 }
 //---------------------------------------------------------------------------
@@ -162,7 +167,8 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   JAMHDRINFO     *jam_hdrinforec;
   JAMHDR          jam_msghdrrec;
   JAMIDXREC       jam_idxrec;
-  tempStrType     tempstr;
+  tempStrType     tempStr
+                , tempStr2;
   u32             msgCount = 0;
   u32             count;
   nodeFileRecType nfInfo;
@@ -171,10 +177,11 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   if (!(jam_code = jam_open(echoAreaList[echoIndex].JAMdirPtr, &jam_hdrinforec)))
     return 0;
 
-  printString("Scanning for messages in area ");
-  printString(echoAreaList[echoIndex].areaName);
-  printString("...\n");
-  sprintf(tempstr, "AREA:%s\r\1RESCANNED %s\r", echoAreaList[echoIndex].areaName, nodeStr(&config.akaList[echoAreaList[echoIndex].address].nodeNum));
+  sprintf(tempStr,"Scanning for messages in JAM area: %s", echoAreaList[echoIndex].areaName);
+  logEntry(tempStr, LOG_ALWAYS, 0);
+
+  sprintf(tempStr2, "AREA:%s\r\1RESCANNED", echoAreaList[echoIndex].areaName);
+  setViaStr(tempStr, tempStr2, echoAreaList[echoIndex].address);
   makeNFInfo(&nfInfo, echoAreaList[echoIndex].address, &nodeInfo->node);
   count = jam_hdrinforec->ActiveMsgs;
   found = jam_getidx(jam_code, &jam_idxrec, 0);
@@ -183,7 +190,7 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   {
     if (jam_idxrec.HdrOffset != MAXU32)
     {
-      returnTimeSlice(0);
+      // returnTimeSlice(0);
       if (count-- <= maxRescan)
       {
         memset(message, 0, INTMSG_SIZE);
@@ -195,8 +202,10 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
           jam_gettxt(jam_code, jam_msghdrrec.TxtOffset, jam_msghdrrec.TxtLen, message->text);
           removeLfSr(message->text);
           jam_getsubfields(jam_code, jam_subfields, jam_msghdrrec.SubfieldLen, message);
-          insertLine(message->text, tempstr);
-          message->srcNode  = config.akaList[echoAreaList[echoIndex].address].nodeNum;
+          insertLine(message->text, tempStr);
+          addPathSeenBy(message, echoToNode[echoIndex], echoIndex, &nodeInfo->node);
+          setSeenByPath(message, NULL, echoAreaList[echoIndex].options, nodeInfo->options);
+          message->srcNode  = *getAkaNodeNum(echoAreaList[echoIndex].address, 1);
           message->destNode = nodeInfo->node;
           writeNetPktValid(message, &nfInfo);
           msgCount++;
@@ -211,4 +220,3 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   return msgCount;
 }
 //---------------------------------------------------------------------------
-

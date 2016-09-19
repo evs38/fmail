@@ -30,6 +30,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef __MINGW32__
+#include <windef.h>  // min() max()
+#endif // __MINGW32__
 
 #include "areafix.h"
 
@@ -44,8 +47,8 @@
 #include "msgpkt.h"
 #include "msgra.h"
 #include "nodeinfo.h"
-#include "output.h"
 #include "pack.h"
+#include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
 
@@ -74,8 +77,8 @@ typedef struct
   char        remove;
   signed char uplink ;
   s16         maxRescan;
-  char        *areaName;
-}  areaFixType;
+  const char *areaName;
+} areaFixType;
 
 typedef struct
 {
@@ -97,30 +100,30 @@ extern configType config;
 extern char *version;
 
 //---------------------------------------------------------------------------
-char getGroupCode (s32 groupCode)
+int getGroupCode(s32 groupCode)
 {
-  char count = 0;
+  int count = 0;
 
-  while ((groupCode>>=1) != 0)
-  {
+  while ((groupCode >>= 1) != 0)
     count++;
-  }
-  return (count);
+
+  return count;
 }
 //---------------------------------------------------------------------------
 static char descrStr[ECHONAME_LEN];
 
-static s16 checkForward (char *areaName, nodeInfoType *nodeInfoPtr)
+static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
 {
   s16      found = -1;
   u16      count;
   fhandle  textHandle;
   char     fileStr[129];
   char     fileStr2[129];
-  char     *helpPtr,
-  *copyPtr;
+  char     *helpPtr
+         , *copyPtr
+         , *tag
+         , *descr;
   tempStrType tempStr;
-  u8       *tag, *descr;
 
   if (nodeInfoPtr->options.forwardReq)
   {
@@ -135,28 +138,25 @@ static s16 checkForward (char *areaName, nodeInfoType *nodeInfoPtr)
       else if (config.uplinkReq[count].node.zone &&
                ((nodeInfoPtr->groups & config.uplinkReq[count].groups) != 0))
       {
-        if ( config.uplinkReq[count].options.unconditional )
+        if (config.uplinkReq[count].options.unconditional)
           found = count;
-        else if ( !*config.uplinkReq[count].fileName )
+        else if (!*config.uplinkReq[count].fileName)
           continue;
-        else if ( config.uplinkReq[count].fileType == 2 )
+        else if (config.uplinkReq[count].fileType == 2)
         {
-          if ( openBCL(&config.uplinkReq[count]) )
+          if (openBCL(&config.uplinkReq[count]))
           {
-            while ( found == -1 && readBCL(&tag, &descr) )
-            {
-              if ( !strcmp(areaName, tag) )
+            while (found == -1 && readBCL(&tag, &descr))
+              if (!strcmp(areaName, tag))
                 found = count;
-            }
+
             closeBCL();
           }
         }
         else
         {
-          strcpy (stpcpy (fileStr, configPath),
-                  config.uplinkReq[count].fileName);
-          if ((textHandle = openP(fileStr,
-                                  O_RDONLY|O_BINARY|O_DENYNONE,S_IREAD|S_IWRITE)) == -1)
+          strcpy(stpcpy(fileStr, configPath), config.uplinkReq[count].fileName);
+          if ((textHandle = openP(fileStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
           {
             sprintf(fileStr, "Uplink areas file %s not found in FMail system dir",
                     config.uplinkReq[count].fileName);
@@ -231,72 +231,66 @@ static s16 checkForward (char *areaName, nodeInfoType *nodeInfoPtr)
   return(found);
 }
 //---------------------------------------------------------------------------
-s16 toAreaFix (char *toName)
+int toAreaFix(const char *toName)
 {
-  char *helpPtr = toName;
+  const char *helpPtr = toName;
+  int l;
 
-  while (*helpPtr == ' ') helpPtr++;
+  while (isspace(*helpPtr))
+    helpPtr++;
 
-  return ((strnicmp (helpPtr, "AREAFIX",  7) == 0) ||
-          (strnicmp (helpPtr, "AREAMGR",  7) == 0) ||
-          (strnicmp (helpPtr, "AREALINK", 8) == 0) ||
-          (strnicmp (helpPtr, "ECHOMGR",  7) == 0) ||
-          (strnicmp (helpPtr, "FMAIL",    5) == 0));
+  l = strlen(helpPtr);
+
+  return (  (strnicmp(helpPtr, "AREAFIX",  7) == 0 && l <= 8)
+         || (strnicmp(helpPtr, "AREAMGR",  7) == 0 && l <= 8)
+         || (strnicmp(helpPtr, "AREALINK", 8) == 0 && l <= 9)
+         || (strnicmp(helpPtr, "ECHOMGR",  7) == 0 && l <= 8)
+         || (strnicmp(helpPtr, "FMAIL",    5) == 0 && l <= 6)
+         );
 }
 //---------------------------------------------------------------------------
-static char *getAreaNamePtr (char *echoName)
+static const char *getAreaNamePtr(const char *echoName)
 {
   u16         count;
-  char        *helpPtr;
+  char       *helpPtr;
   tempStrType tempStr;
 
-  strncpy (tempStr, echoName, ECHONAME_LEN-1);
+  strncpy(tempStr, echoName, ECHONAME_LEN - 1);
   tempStr[ECHONAME_LEN] = 0;
-  if ((helpPtr = strchr (strupr(tempStr), ' ')) != NULL)
-  {
+  if ((helpPtr = strchr(strupr(tempStr), ' ')) != NULL)
     *helpPtr = 0;
-  }
-  if ((helpPtr = strchr (strupr(tempStr), ',')) != NULL)
-  {
-    *helpPtr = 0;
-  }
 
-  if (*tempStr == 0 || strchr(tempStr, '?') != NULL ||
-      strchr(tempStr, '*') != NULL) return (NULL);
+  if ((helpPtr = strchr(strupr(tempStr), ',')) != NULL)
+    *helpPtr = 0;
+
+  if (*tempStr == 0 || strchr(tempStr, '?') != NULL
+     ||  strchr(tempStr, '*') != NULL)
+    return NULL;
 
   count = 0;
-  while ((count < echoCount) &&
-         stricmp(tempStr, echoAreaList[count].areaName) != 0)
-  {
+  while (count < echoCount && stricmp(tempStr, echoAreaList[count].areaName) != 0)
     count++;
-  }
+
   if (count < echoCount)
-  {
-    return (echoAreaList[count].areaName);
-  }
+    return echoAreaList[count].areaName;
 
   count = 0;
-  while ((count < badAreaCount) &&
-         (stricmp ((*badAreaList)[count], tempStr) != 0))
-  {
+  while (count < badAreaCount && stricmp((*badAreaList)[count], tempStr) != 0)
     count++;
-  }
+
   if (count < badAreaCount)
-  {
-    return ((*badAreaList)[count]);
-  }
+    return (*badAreaList)[count];
 
   if (badAreaCount < MAX_BADAREA)
-  {
-    return (strcpy ((*badAreaList)[badAreaCount++], tempStr));
-  }
-  return ("[unknown area]");
+    return strcpy((*badAreaList)[badAreaCount++], tempStr);
+
+  return "[unknown area]";
 }
 //---------------------------------------------------------------------------
 // send message that doesn't contain any kludges in the text body yet
 //
 static void sendMsg( internalMsgType *message, char *replyStr
-                   , nodeInfoType *nodeInfoPtr,  s32 *msgNum1
+                   , nodeInfoType *nodeInfoPtr , s32 *msgNum1
                    , nodeInfoType *nodeInfoPtr2, s32 *msgNum2
                    )
 {
@@ -304,23 +298,11 @@ static void sendMsg( internalMsgType *message, char *replyStr
   char       *helpPtr;
   u16         count;
   nodeNumType tempNode;
-  struct time timeRec;
-  struct date dateRec;
 
-  *message->dateStr = 0;
+  setCurDateMsg(message);
 
-  gettime (&timeRec);
-  getdate (&dateRec);
-
-  message->year      = dateRec.da_year;
-  message->month     = dateRec.da_mon;
-  message->day       = dateRec.da_day;
-  message->hours     = timeRec.ti_hour;
-  message->minutes   = timeRec.ti_min;
-  message->seconds   = timeRec.ti_sec;
-
-  sprintf(tempStr, "\1PID: %s\r", PIDStr());
-  insertLine(message->text, tempStr);
+  helpPtr = addTZUTCKludge(message->text);
+  addPIDKludge(helpPtr);
 
   *msgNum1 = 0;
   *msgNum2 = 0;
@@ -329,12 +311,12 @@ static void sendMsg( internalMsgType *message, char *replyStr
 
   for (count = 0; count < 2; count++)
   {
-    if ((count == 0 && nodeInfoPtr  != NULL) || (count == 1 && nodeInfoPtr2 != NULL))
+    if ((count == 0 && nodeInfoPtr != NULL) || (count == 1 && nodeInfoPtr2 != NULL))
     {
       if (count)
       {
         nodeInfoPtr = nodeInfoPtr2;
-        strcpy (message->text, helpPtr);
+        strcpy(message->text, helpPtr);
       }
       if (nodeInfoPtr->node.zone)
         message->destNode = nodeInfoPtr->node;
@@ -353,31 +335,10 @@ static void sendMsg( internalMsgType *message, char *replyStr
       if (!config.mgrOptions.keepReceipt)
         message->attribute |= KILLSENT;
 
-      /* INTL kludge */
+      helpPtr = addINTLKludge  (message, helpPtr);
+      helpPtr = addPointKludges(message, helpPtr);
 
-      sprintf (tempStr, "\1INTL %u:%u/%u %u:%u/%u\r",
-               message->destNode.zone, message->destNode.net, message->destNode.node,
-               message->srcNode.zone, message->srcNode.net, message->srcNode.node);
-      helpPtr = insertLine (helpPtr, tempStr);
-
-      /* TOPT kludge */
-
-      if (message->destNode.point != 0)
-      {
-        sprintf (tempStr, "\1TOPT %u\r", message->destNode.point);
-        helpPtr = insertLine (helpPtr, tempStr);
-      }
-
-      /* FMPT kludge */
-
-      if (message->srcNode.point != 0)
-      {
-        sprintf(tempStr, "\1FMPT %u\r", message->srcNode.point);
-        helpPtr = insertLine (helpPtr, tempStr);
-      }
-
-      /* FLAGS */
-
+      // FLAGS
       switch (nodeInfoPtr->outStatus)
       {
         case 1 :
@@ -397,18 +358,10 @@ static void sendMsg( internalMsgType *message, char *replyStr
           break;
       }
 
-      /* MSGID kludge */
-
-      sprintf(tempStr, "\1MSGID: %s %08lx\r", nodeStr(&message->srcNode), uniqueID());
-      helpPtr = insertLine(helpPtr, tempStr);
-
-      /* REPLY kludge */
+      helpPtr = addMSGIDKludge(message, helpPtr);
 
       if (*replyStr != 0)
-      {
-        sprintf(tempStr, "\x1REPLY: %s\r", replyStr);
-        helpPtr = insertLine(helpPtr, tempStr);
-      }
+        helpPtr = addKludge(helpPtr, "REPLY:", replyStr);
 
       if (count)
         *msgNum2 = writeMsg(message, NETMSG, 1);
@@ -420,12 +373,12 @@ static void sendMsg( internalMsgType *message, char *replyStr
   }
 }
 //---------------------------------------------------------------------------
-s16 areaFix(internalMsgType *message)
+int areaFix(internalMsgType *message)
 {
-  nodeInfoType    *nodeInfoPtr;
-  nodeInfoType    *remMaintPtr;
-  char            *helpPtr;
-  char            *helpPtr2;
+  nodeInfoType   *nodeInfoPtr;
+  nodeInfoType   *remMaintPtr;
+  char           *helpPtr;
+  const char     *helpPtr2;
   s16             allType;
   u16             removeArea, updateArea;
   s16             bytesRead;
@@ -460,40 +413,43 @@ s16 areaFix(internalMsgType *message)
   nodeNumType     tempNode;
   tempStrType     tempStr;
   u16             areaSortListIndex;
-  char            oldGroupCode;
+  int             oldGroupCode;
   u32             tempGroups;
   areaSortListType *areaSortList;
-  headerType	   *areaHeader, *adefHeader;
-  rawEchoType	   *areaBuf,    *adefBuf;
+  headerType	   *areaHeader
+               , *adefHeader;
+  rawEchoType	   *areaBuf
+               , *adefBuf;
   udef            komma;
-  u8              *tag, *descr;
+  char           *tag
+               , *descr;
 
-  if ((areaSortList = malloc(sizeof(areaSortListType))) == NULL )
+  if ((areaSortList = (areaSortListType*)malloc(sizeof(areaSortListType))) == NULL )
   {
-    mgrLogEntry ("Not enough memory available for AreaFix");
+    mgrLogEntry("Not enough memory available for AreaFix");
     return -1;
   }
 
 #if defined(__FMAILX__) || defined(__32BIT__)
-  if ((areaFixList = malloc(sizeof(areaFixListType))) == NULL )
+  if ((areaFixList = (areaFixListType*)malloc(sizeof(areaFixListType))) == NULL )
   {
-    mgrLogEntry ("Not enough memory available for AreaFix");
+    mgrLogEntry("Not enough memory available for AreaFix");
     free(areaSortList);
     return -1;
   }
-  if ((badAreaList = malloc(sizeof(badAreaListType))) == NULL )
+  if ((badAreaList = (badAreaListType*)malloc(sizeof(badAreaListType))) == NULL )
   {
-    mgrLogEntry ("Not enough memory available for AreaFix");
+    mgrLogEntry("Not enough memory available for AreaFix");
     free(areaSortList);
     free(areaFixList);
     return -1;
   }
 #else
-  areaFixList = (areaFixListType*)(message->text+TEXT_SIZE-sizeof(areaFixListType));
-  badAreaList = (badAreaListType*)(message->text+TEXT_SIZE-sizeof(areaFixListType)-sizeof(badAreaListType));
+  areaFixList = (areaFixListType*)(message->text + TEXT_SIZE - sizeof(areaFixListType));
+  badAreaList = (badAreaListType*)(message->text + TEXT_SIZE - sizeof(areaFixListType) - sizeof(badAreaListType));
 #endif
 
-  if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
+  if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
   {
     free(areaSortList);
 #if defined(__FMAILX__) || defined(__32BIT__)
@@ -509,7 +465,7 @@ s16 areaFix(internalMsgType *message)
 
   if ((helpPtr = findCLStr(message->text, "\x1MSGID: ")) != NULL)
   {
-    memcpy (replyStr, helpPtr + 8, sizeof(tempStrType)-1);
+    memcpy(replyStr, helpPtr + 8, sizeof(tempStrType) - 1);
     if ((helpPtr = strchr(replyStr, 0x0d)) != NULL)
       *helpPtr = 0;
   }
@@ -831,7 +787,7 @@ s16 areaFix(internalMsgType *message)
               compare = 1;
               count = 0;
               while ((count < areaFixCount) &&
-                     ((compare = stricmp (helpPtr2, (*areaFixList)[count].areaName)) > 0))
+                     ((compare = stricmp(helpPtr2, (*areaFixList)[count].areaName)) > 0))
               {
                 count++;
               }
@@ -839,7 +795,7 @@ s16 areaFix(internalMsgType *message)
               {
                 if (compare != 0)
                 {
-                  memmove (&(*areaFixList)[count+1],
+                  memmove (&(*areaFixList)[count + 1],
                            &(*areaFixList)[count],
                            ((areaFixCount++) - count) * sizeof(areaFixType));
                   (*areaFixList)[count].areaName = helpPtr2;
@@ -935,7 +891,7 @@ s16 areaFix(internalMsgType *message)
         }
         if (c < MAX_AREAFIX)
         {
-          memmove (&(*areaSortList)[c+1], &(*areaSortList)[c], sizeof(areaSortType)*(min(areaCount,MAX_AREAFIX)-c));
+          memmove(&(*areaSortList)[c+1], &(*areaSortList)[c], sizeof(areaSortType)*(min(areaCount, MAX_AREAFIX) - c));
           (*areaSortList)[c].index = areaCount;
           (*areaSortList)[c].groupChar = getGroupCode(areaBuf->group);
         }
@@ -1078,7 +1034,7 @@ s16 areaFix(internalMsgType *message)
           sprintf(helpPtr, "\r*** Listing is continued in the next message ***\r");
           sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
           sprintf(message->subject, "FMail AreaMgr confirmation report for %s (continued)", nodeStr(&nodeInfoPtr->node));
-          helpPtr = message->text + sprintf (message->text, "*** Following list is a continuation of the previous message ***\r");
+          helpPtr = message->text + sprintf(message->text, "*** Following list is a continuation of the previous message ***\r");
           *(helpPtr++) = '\r';
           bufCount = MAX_DISPLAY;
         }
@@ -1362,18 +1318,17 @@ s16 areaFix(internalMsgType *message)
     helpPtr = stpcpy(helpPtr, "\rUse %HELP in a message to FMail for more information.\r\r");
   }
 Send:
-  strcpy (tempStr, configPath);
-  strcat (tempStr, "areamgr.txt");
+  strcpy(stpcpy(tempStr, configPath), "areamgr.txt");
 
   ++no_msg;
-  if ((helpHandle = openP(tempStr, O_RDONLY|O_BINARY, 0)) != -1)
+  if ((helpHandle = openP(tempStr, O_RDONLY | O_BINARY, 0)) != -1)
   {
-    bytesRead = read (helpHandle, helpPtr, 32767);
-    close (helpHandle);
-    if ( bytesRead >= 0 )
-      *(helpPtr+bytesRead) = 0;
+    bytesRead = read(helpHandle, helpPtr, 0x7FFF);
+    close(helpHandle);
+    if (bytesRead >= 0)
+      *(helpPtr + bytesRead) = 0;
   }
-  sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+  sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
 
   // Send uplink requests
 
@@ -1394,7 +1349,7 @@ Send:
 
           memset(&rawEchoInfo2, 0, RAWECHO_SIZE);
 
-          if (openConfig(CFG_AREADEF, &adefHeader, (void*)&adefBuf))
+          if (openConfig(CFG_AREADEF, &adefHeader, (void**)&adefBuf))
           {
             if (getRec(CFG_AREADEF, 0))
               memcpy(&rawEchoInfo2, adefBuf, RAWECHO_SIZE);
@@ -1837,18 +1792,17 @@ Send:
       }
     }
     if (!availCount)
-    {
-      strcpy (helpPtr, "\r--- You are active for all areas ---\r");
-    }
-    sendMsg (message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
-  }
-  closeConfig (CFG_ECHOAREAS);
+      strcpy(helpPtr, "\r--- You are active for all areas ---\r");
 
-  /* Binary Conference Listing */
+    sendMsg(message, replyStr, nodeInfoPtr, &msgNum1, remMaintPtr, &msgNum2);
+  }
+  closeConfig(CFG_ECHOAREAS);
+
+  // Binary Conference Listing
   if (replyBCL)
     send_bcl(&message->srcNode, &message->destNode, nodeInfoPtr);
 
-  free (areaSortList);
+  free(areaSortList);
 #if defined(__FMAILX__) || defined(__32BIT__)
   free(areaFixList);
   free(badAreaList);

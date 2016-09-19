@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -34,7 +34,6 @@
 
 #include "areainfo.h"
 #include "log.h"
-#include "output.h"
 #include "smtp.h"
 #include "utils.h"
 
@@ -105,10 +104,10 @@ static void addsbuf(char *data)
 //       They must be synchronized with eResponse entries.
 static int response_code[4] =
 {
-	250,              // GENERIC_SUCCESS
-        220,              // CONNECT_SUCCESS
-        354,              // DATA_SUCCESS
-        221               // QUIT_SUCCESS
+  250,              // GENERIC_SUCCESS
+  220,              // CONNECT_SUCCESS
+  354,              // DATA_SUCCESS
+  221               // QUIT_SUCCESS
 };
 
 static char *response_text[4] =

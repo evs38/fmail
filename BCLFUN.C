@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,7 +21,7 @@
 //
 //---------------------------------------------------------------------------
 
-#include <dir.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
@@ -40,7 +40,7 @@
 #include "msgpkt.h"
 #include "mtask.h"
 #include "nodeinfo.h"
-#include "output.h"
+#include "spec.h"
 #include "utils.h"
 #include "version.h"
 
@@ -65,7 +65,7 @@ udef openBCL(uplinkReqType *uplinkReq)
   }
   tempNode.point = 0;
   if (  memcmp(bcl_header.FingerPrint, "BCL", 4)
-     || sscanf (bcl_header.Origin, "%hu:%hu/%hu.%hu", &tempNode.zone, &tempNode.net, &tempNode.node, &tempNode.point) < 3 )
+     || sscanf(bcl_header.Origin, "%hu:%hu/%hu.%hu", &tempNode.zone, &tempNode.net, &tempNode.node, &tempNode.point) < 3 )
   {
     close(bclHandle);
     return 0;
@@ -73,15 +73,15 @@ udef openBCL(uplinkReqType *uplinkReq)
   return 1;
 }
 //---------------------------------------------------------------------------
-udef readBCL(u8 **tag, u8 **descr)
+udef readBCL(char **tag, char **descr)
 {
-  static u8  buf[256];
+  static char buf[256];
 
-  if ( eof(bclHandle) )
+  if (eof(bclHandle))
     return 0;
-  if ( read(bclHandle, &bcl, sizeof(bcl_type)) != sizeof(bcl_type) )
+  if (read(bclHandle, &bcl, sizeof(bcl_type)) != sizeof(bcl_type) )
     return 0;
-  if ( read(bclHandle, buf, bcl.EntryLength - sizeof(bcl_type)) != (int)(bcl.EntryLength - sizeof(bcl_type)) )
+  if (read(bclHandle, buf, bcl.EntryLength - sizeof(bcl_type)) != (int)(bcl.EntryLength - sizeof(bcl_type)))
     return 0;
 
   *tag = buf;
@@ -95,7 +95,7 @@ udef closeBCL(void)
   return close(bclHandle);
 }
 //---------------------------------------------------------------------------
-void LogFileDetails(char *fname, char *txt)
+void LogFileDetails(const char *fname, const char *txt)
 {
   struct stat statbuf;
   tempStrType tempStr;
@@ -113,15 +113,16 @@ void LogFileDetails(char *fname, char *txt)
   logEntry(tempStr, LOG_ALWAYS, 0);
 }
 //---------------------------------------------------------------------------
-udef process_bcl(u8 *fileName)
+udef process_bcl(char *fileName)
 {
   fhandle     handle;
-  tempStrType tempStr, tempStr2;
-  u8          newFileName[13];
+  tempStrType tempStr
+            , tempStr2;
+  char        newFileName[13];
   u16         index;
   nodeNumType tempNode;
 
-  sprintf (tempStr, "%s%s", config.inPath, fileName);
+  sprintf(tempStr, "%s%s", config.inPath, fileName);
   if ( (handle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1
      || read(handle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header)
      )
@@ -184,19 +185,19 @@ void ChkAutoBCL(void)
 //---------------------------------------------------------------------------
 udef ScanNewBCL(void)
 {
-  tempStrType  tempStr;
-  struct ffblk ffblk;
-  int  done;
-  udef count = 0;
+  udef           count = 0;
+  DIR           *dir;
+  struct dirent *ent;
 
   logEntry("Scan for received BCL files", LOG_DEBUG, 0);
 
-  sprintf(tempStr, "%s*.BCL", config.inPath);
-  done = findfirst(tempStr, &ffblk, 0);
-  while (!done)
+  if ((dir = opendir(config.inPath)) != NULL)
   {
-    count += process_bcl(ffblk.ff_name);
-    done = findnext(&ffblk);
+    while ((ent = readdir(dir)) != NULL)
+      if (match_spec("*.bcl", ent->d_name))
+        count += process_bcl(ent->d_name);
+
+    closedir(dir);
   }
   if (count)
     newLine();
@@ -212,7 +213,7 @@ void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInf
   headerType  *areaHeader;
   rawEchoType *areaBuf;
 
-  if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
+  if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
     return;
 
   sprintf(tempStr, "%s%08lX.$$$", config.outPath, uniqueID());

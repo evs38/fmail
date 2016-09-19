@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2015 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -35,7 +35,6 @@
 #include "ftools.h"
 #include "ispathch.h"
 #include "log.h"
-#include "output.h"
 #include "update.h"
 #include "utils.h"
 
@@ -115,9 +114,9 @@ void addNew(s32 switches)
     ++areaInfoCount;
   }
   strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
-  if ((tempHandle = open(tempStr, O_BINARY | O_RDONLY | O_DENYNONE)) != -1)
+  if ((tempHandle = open(tempStr, O_BINARY | O_RDONLY)) != -1)
   {
-    badEchoCount = (read(tempHandle, badEchos, MAX_BAD_ECHOS * sizeof(badEchoType)) + 1) / sizeof(badEchoType);
+    badEchoCount = (read(tempHandle, badEchos, MAX_BAD_ECHOS * sizeof(badEchoType))) / sizeof(badEchoType);
     close(tempHandle);
     while (badEchoCount--)
     {

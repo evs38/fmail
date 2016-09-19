@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,15 +21,23 @@
 //
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <io.h>
+#include <conio.h>
 #include <dos.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
 #include <time.h>
+#ifdef _DEBUG
+#include <dir.h>      // mkdir
+#include <windows.h>  // CopyFile DeleteFile MoveFile
+#if 0
+#define _COMPOLD_
+#endif
+#endif
 
 #include "fmail.h"
 
@@ -41,9 +49,11 @@
 #include "jam.h"
 #include "log.h"
 #include "nodeinfo.h"
-#include "output.h"
 #include "utils.h"
 
+#ifdef __BORLANDC__
+#define ftruncate(h, s) chsize((h), (s))
+#endif
 
 extern configType config;
 extern s32        startTime;
@@ -51,14 +61,11 @@ extern s32        startTime;
 //---------------------------------------------------------------------------
 s16 JAMremoveRe(char *buf, u32 *bufsize)
 {
-  u32         size,
-              slen,
-              totalsize = 0;
+  u32         size
+            , slen
+            , totalsize = 0;
   tempStrType tempStr;
   char       *helpPtr;
-
-  if (*bufsize >= 65536L)
-    return 0;
 
   while (((JAMBINSUBFIELD *)buf)->LoID != JAMSFLD_SUBJECT)
   {
@@ -72,7 +79,7 @@ s16 JAMremoveRe(char *buf, u32 *bufsize)
   buf += sizeof(JAMBINSUBFIELD);
   totalsize += sizeof(JAMBINSUBFIELD);
   memset(tempStr, 0, sizeof(tempStrType));
-  memcpy(tempStr, buf, min(size,100));
+  memcpy(tempStr, buf, min(size, sizeof(tempStrType)));
   helpPtr = tempStr;
   while (  !strnicmp(helpPtr, "RE:", 3)
         || !strnicmp(helpPtr, "(R)", 3)
@@ -80,7 +87,7 @@ s16 JAMremoveRe(char *buf, u32 *bufsize)
         )
   {
     helpPtr += 3;
-    if (*(helpPtr-1) == '^')
+    if (*(helpPtr - 1) == '^')
       while (*helpPtr && *helpPtr != ':')
         ++helpPtr;
 
@@ -91,20 +98,17 @@ s16 JAMremoveRe(char *buf, u32 *bufsize)
   if (slen < size)
   {
     size -= slen;
-    memmove(buf, buf+size, (*bufsize) - totalsize - size);
+    memmove(buf, buf + size, *bufsize - totalsize - size);
     *bufsize -= size;
     buf -= sizeof(JAMBINSUBFIELD);
-#ifdef __32BIT__
     ((JAMBINSUBFIELD *)buf)->DatLen -= size;
-#else
-    (u16)(((JAMBINSUBFIELD *)buf)->DatLen) -= size;
-#endif
+
     return 1;
   }
   return 0;
 }
 //---------------------------------------------------------------------------
-char *expJAMname(char *basename, char *ext)
+const char *expJAMname(const char *basename, const char *ext)
 {
   static tempStrType tempStr[2];
   static u16 count = 0;
@@ -116,31 +120,681 @@ char *expJAMname(char *basename, char *ext)
   return tempStr[count];
 }
 //---------------------------------------------------------------------------
+// return values:
+//   0 = everything ok
+//  -1 = filesize == 0
+// -10 = fileerror
+// -20 = not enough memory
+//
+int InitFileBufs(fhandle h, char **inbuf, char **outbuf, u32 *size)
+{
+  struct stat s;
 
-#define TXTBUFSIZE 0x7000 /* moet 16-voud zijn i.v.m. lastread buf */
-#define LRSIZE     0x3ff0 /* 'record' is u16, max 7ff0 */
-#define MSGIDNUM   0x3ff0 /* 'record' is u32 */
+  if (fstat(h, &s) != 0)
+  {
+    *size = 0;
+    // *inbuf  = NULL;
+    // *outbuf = NULL;
+    return -10;
+  }
 
+  *size = s.st_size;
+  if (s.st_size <= 0)
+    return -1;
+
+  *outbuf = malloc(*size);
+  if (*outbuf == NULL)
+    return -20;
+
+  memset(*outbuf, 0, *size);
+
+  *inbuf = malloc(*size);
+  if (*inbuf == NULL)
+    return -20;
+
+  if (read(h, *inbuf, *size) != (int)*size)
+    return -10;
+
+  return 0;
+}
+//---------------------------------------------------------------------------
+int InitBuf(u32 **buf, u32 size)
+{
+  if (size > 0)
+  {
+    size *= sizeof(u32);
+
+    if ((*buf = (u32*)malloc(size)) == NULL)
+      return -1;
+
+    memset(*buf, 0, size);
+  }
+  return 0;
+}
+//---------------------------------------------------------------------------
+void writedata(const char *fn, const char *data, size_t n)
+{
+  fhandle h;
+  if ((h = fsopen(fn, O_CREAT | O_TRUNC | O_WRONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) != -1)
+  {
+    if (n > 0)
+      write(h, data, n);
+    fsclose(h);
+  }
+}
+//---------------------------------------------------------------------------
+int writefile(fhandle h, char *obuf, int os, char *buf, int s)
+{
+  if (s == os && (s <= 0 || 0 == memcmp(obuf, buf, s)))
+    return 0;  // If data isn't changed, don't write it.
+
+  if (  0 != lseek(h, 0, SEEK_SET)
+     || (s >  0 && s != write(h, buf, s))
+     || (s < os && 0 != ftruncate(h, s))
+     )
+  {
+    tempStrType tstr;
+    sprintf(tstr, "*** Problem writing JAM base file (your fucked!) [%s]", strError(errno));
+    logEntry(tstr, LOG_ALWAYS, 2);
+    return 1;
+  }
+  return 0;
+}
+//---------------------------------------------------------------------------
+char *memwrite(char *dest, u32 *offset, const char *src, u32 n, u32 *high, u32 max)
+{
+  if (*offset + n > max)
+    logEntry("*** Buffer error on JAM bases maintenance", LOG_ALWAYS, 2);
+
+  dest += *offset;
+  memcpy(dest, src, n);
+  *offset += n;
+  if (*offset > *high)
+    *high = *offset;
+
+  return dest;
+}
+//---------------------------------------------------------------------------
+#ifdef _COMPOLD_
+#define TXTBUFSIZE 0x7000 // moet 16-voud zijn i.v.m. lastread buf
+#define LRSIZE     0x3ff0  // 'record' is u16, max 7ff0
+#define MSGIDNUM   0x3ff0  // 'record' is u32
 
 static JAMHDRINFO  headerInfo;
 static JAMHDR      headerRec;
 static JAMIDXREC   indexRec;
-static char       *buf = NULL;
-static u16        *lrBuf = NULL;
+static char       *buf      = NULL;
+static u16        *lrBuf    = NULL;
 static u32        *msgidBuf = NULL;
 static u32        *replyBuf = NULL;
 
+s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name);
+
+//---------------------------------------------------------------------------
+void logComb(const char *fs, const char *ds)
+{
+  tempStrType ts;
+  sprintf(ts, fs, ds);
+  newLine();
+  logEntry(ts, LOG_DEBUG, 0);
+}
+//---------------------------------------------------------------------------
+int compareFileToBuf(const char *fname, const char *buf, u32 size)
+{
+  fhandle h;
+  int rv = -1;
+
+  if ((h = fsopen(fname, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE, 1)) != -1)
+  {
+    struct stat s;
+
+    if (fstat(h, &s) == 0)
+    {
+      if ((off_t)size == s.st_size)
+      {
+        if (size > 0)
+        {
+          char *ibuf = malloc(size);
+          if (ibuf != NULL)
+          {
+            if (read(h, ibuf, size) == (int)size)
+            {
+              if (memcmp(buf, ibuf, size))
+                logComb("*** Differ %s", fname);
+              else
+                rv = 0;
+            }
+            else
+              logComb("*** Read error %s", fname);
+
+            free(ibuf);
+          }
+          else
+            logComb("*** Can't alloc buffer %s", fname);
+        }
+        else
+          rv = 0;
+      }
+      else
+        logComb("*** Size differs %s", fname);
+    }
+    else
+      logComb("*** Can't fstat %s", fname);
+  }
+  else
+    logComb("*** Can't open %s", fname);
+
+  fsclose(h);
+
+  return rv;
+}
+//---------------------------------------------------------------------------
+#endif
+//---------------------------------------------------------------------------
+struct data
+{
+  fhandle hJHR
+        , hJDT
+        , hJDX
+        , hJLR;
+  char   *ibJHR
+       , *ibJDT
+       , *ibJDX
+       , *ibJLR
+       , *obJHR
+       , *obJDT
+       , *obJDX
+       , *obJLR;
+  u32    *lrBuf
+       , *msgidBuf
+       , *replyBuf;
+};
+//---------------------------------------------------------------------------
+void CleanUp(struct data *d)
+{
+  if (d->hJDX != -1) { fsclose(d->hJDX); d->hJDX = -1; }
+  if (d->hJLR != -1) { fsclose(d->hJLR); d->hJLR = -1; }
+  if (d->hJDT != -1) { fsclose(d->hJDT); d->hJDT = -1; }
+  if (d->hJHR != -1) { fsclose(d->hJHR); d->hJHR = -1; } // Close JHR last, because of the lock
+
+  freeNull(d->ibJHR   );
+  freeNull(d->ibJDT   );
+  freeNull(d->ibJDX   );
+  freeNull(d->ibJLR   );
+  freeNull(d->obJHR   );
+  freeNull(d->obJDT   );
+  freeNull(d->obJDX   );
+  freeNull(d->obJLR   );
+  freeNull(d->lrBuf   );
+  freeNull(d->msgidBuf);
+  freeNull(d->replyBuf);
+}
+//---------------------------------------------------------------------------
 // SW_K - Delete all messages in board
-// SW_B - Keep backup files
+// SW_B - Keep backup files   ??? On tossing this is the toss from bad option!?
 // SW_D - Delete selected messages
 // SW_R - Remove Re:
 // SW_P - Pack message base: WERKT NIET WEGENS DOORLOPEN INDEX (0xFFFFFFFF!)
-
 //---------------------------------------------------------------------------
-s16 JAMmaint(rawEchoType *areaPtr, s32 switches, uchar *name, s32 *spaceSaved)
+s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSaved)
 {
   s16           JAMerror = 0;
   u16           tabPos;
+  struct data   d = { -1, -1, -1, -1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+  u32           reply1st
+              , replyNext
+              , replyTo
+              , count
+              , msgNum    = 0
+              , msgNumNew = 0
+              , keepSysOpCRC
+              , keepSysOpMsgNum
+              , oldBaseMsgNum
+              , maxMsg
+              , curMsg
+              , temp
+              , delCount
+              , sizeJHR = 0
+              , sizeJDX = 0
+              , sizeJDT = 0
+              , sizeJLR = 0
+              , highJHR = 0
+              , highJDX = 0
+              , highJDT = 0
+              , woJHR   = 0
+              , woJDX   = 0
+              , woJDT   = 0
+              , woJHRpre
+              , orgSubfieldLen
+              ;
+  tempStrType   tempStr;
+  time_t        msgTime;
+  char         *rpJHR
+             , *rpJDX
+             , *rpJDT
+             , *wpSubf;
+  JAMHDRINFO   *headerInfo;
+  JAMIDXREC    *indexRec;
+  JAMHDR       *headerRec;
+  const char   *mbPath = areaPtr->msgBasePath;
+
+#ifdef _COMPOLD_
+  int compareResult = 0;
+  int debug = access(expJAMname(mbPath, "no_debug"), 0);
+
+  if (debug && JAMmaintOld(areaPtr, switches, name))
+    return -1;
+#endif
+
+  sprintf(tempStr, "Processing JAM area: %s", areaPtr->areaName);
+  logEntry(tempStr, LOG_INBOUND | LOG_NOSCRN, 0);
+  printf("%s... ", tempStr);
+  fflush(stdout);
+
+  if (  (d.hJHR = fsopen(expJAMname(mbPath, EXT_HDR), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
+     || (d.hJDT = fsopen(expJAMname(mbPath, EXT_TXT), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
+     || (d.hJDX = fsopen(expJAMname(mbPath, EXT_IDX), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
+     || (d.hJLR = fsopen(expJAMname(mbPath, EXT_LRD), O_RDWR | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE, 1)) == -1
+     )
+  {
+    CleanUp(&d);
+    newLine();
+    sprintf(tempStr, "*** JAM area %s was not found or was locked", areaPtr->areaName);
+    logEntry(tempStr, LOG_ALWAYS, 0);
+    return 1;
+  }
+
+  if (lock(d.hJHR, 0L, 1L) == -1 && config.mbOptions.mbSharing)
+  {
+    CleanUp(&d);
+    newLine();
+    logEntry("*** SHARE is required when Message Base Sharing is enabled", LOG_ALWAYS, 0);
+    return 1;
+  }
+
+  if (  InitFileBufs(d.hJHR, &d.ibJHR, &d.obJHR, &sizeJHR) < 0
+     || InitFileBufs(d.hJDT, &d.ibJDT, &d.obJDT, &sizeJDT) < -1
+     || InitFileBufs(d.hJDX, &d.ibJDX, &d.obJDX, &sizeJDX) < -1
+     || InitFileBufs(d.hJLR, &d.ibJLR, &d.obJLR, &sizeJLR) < -1
+     )
+  {
+    CleanUp(&d);
+    newLine();
+    logEntry("*** Not enough memory available to pack JAM bases or JAM file error", LOG_ALWAYS, 0);
+    return 1;
+  }
+
+  // make bufs aan de hand van sizeJDX
+  maxMsg = sizeJDX / sizeof(JAMIDXREC);
+
+#ifdef _DEBUG
+  sprintf(tempStr, "Size old: no:%d jhr:%d jdt:%d jdx:%d jlr:%d tot:%d", maxMsg, sizeJHR, sizeJDT, sizeJDX, sizeJLR, sizeJHR + sizeJDT + sizeJDX + sizeJLR);
+  logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
+
+  if (  InitBuf(&d.lrBuf   , maxMsg)
+     || InitBuf(&d.msgidBuf, maxMsg)
+     || InitBuf(&d.replyBuf, maxMsg)
+     )
+  {
+    CleanUp(&d);
+    newLine();
+    logEntry("*** Not enough memory available to pack JAM bases", LOG_ALWAYS, 0);
+    return 1;
+  }
+
+#ifdef _DEBUG
+  logEntry("Updating", LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
+  putStr("Updating ");
+
+  woJHR = 0;
+  rpJHR = d.ibJHR;
+  memwrite(d.obJHR, &woJHR, rpJHR, sizeof(JAMHDRINFO), &highJHR, sizeJHR);
+#if 0
+  rpJHR += sizeof(JAMHDRINFO);
+#endif
+  headerInfo = (JAMHDRINFO*)d.obJHR;
+
+  if (areaPtr->msgs && headerInfo->ActiveMsgs > (u32)areaPtr->msgs)
+    delCount = headerInfo->ActiveMsgs - areaPtr->msgs;
+  else
+    delCount = 0;
+  oldBaseMsgNum = headerInfo->BaseMsgNum;
+  headerInfo->BaseMsgNum = 1;
+  headerInfo->ModCounter++;
+  headerInfo->ActiveMsgs = 0;
+
+  keepSysOpMsgNum = 0xFFFFFFFFL;
+  if (areaPtr->options.sysopRead && sizeJLR > 0)
+  {
+    keepSysOpCRC = crc32jam(name);
+    temp = sizeJLR / sizeof(JAMLREAD);
+    for (count = 0; count < temp; count++)
+      if (((JAMLREAD *)d.ibJLR)[count].UserCRC == keepSysOpCRC)
+      {
+        keepSysOpMsgNum = ((JAMLREAD *)d.ibJLR)[count].HighReadMsg - oldBaseMsgNum + 1;
+        break;
+      }
+  }
+
+#ifdef _DEBUG
+  logEntry("Maint", LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
+  rpJDX = d.ibJDX;
+  woJDX = 0;
+  woJDT = 0;
+  while (!JAMerror && rpJDX < d.ibJDX + sizeJDX)
+  {
+    indexRec = (JAMIDXREC*)rpJDX;
+    rpJDX += sizeof(JAMIDXREC);
+    msgNum++;
+
+    if (indexRec->UserCRC != 0xffffffffL || indexRec->HdrOffset != 0xffffffffL)
+    {
+      if (indexRec->HdrOffset > sizeJHR - sizeof(JAMHDR))
+      {
+        JAMerror = -1;
+        break;
+      }
+      rpJHR = d.ibJHR + indexRec->HdrOffset;
+      woJHRpre = woJHR;
+      headerRec = (JAMHDR*)memwrite(d.obJHR, &woJHR, rpJHR, sizeof(JAMHDR), &highJHR, sizeJHR);
+      rpJHR += sizeof(JAMHDR);
+      orgSubfieldLen = headerRec->SubfieldLen;
+      wpSubf    =          memwrite(d.obJHR, &woJHR, rpJHR, orgSubfieldLen, &highJHR, sizeJHR);
+#if 0
+      rpJHR += orgSubfieldLen;
+#endif
+      if (areaPtr->options.arrivalDate && headerRec->DateProcessed)
+        msgTime = headerRec->DateProcessed;
+      else
+        msgTime = headerRec->DateWritten;
+
+      // TEST MSG AND MARK DELETED
+      if (  (  (switches & SW_D)
+            && (  delCount
+               || (areaPtr->days && areaPtr->days * 86400L + msgTime < startTime)
+               || (  (headerRec->Attribute & MSG_READ)
+                  && (areaPtr->daysRcvd && areaPtr->daysRcvd * 86400L + msgTime < startTime)
+                  )
+               )
+            )
+         || (switches & SW_K)
+         )
+      {
+        if (headerRec->MsgNum < keepSysOpMsgNum)
+        {
+          headerRec->Attribute |= MSG_DELETED;
+          if (delCount)
+            delCount--;
+        }
+      }
+
+      if (!(headerRec->Attribute & MSG_DELETED))
+      {
+        if (headerRec->TxtOffset >= sizeJDT)
+        {
+          JAMerror = -1;
+          break;
+        }
+        rpJDT = d.ibJDT + headerRec->TxtOffset;
+        headerRec->TxtOffset = woJDT;
+
+        memwrite(d.obJDT, &woJDT, rpJDT, headerRec->TxtLen, &highJDT, sizeJDT);
+        // rpJDT += headerRec->TxtLen;  // Not used after this point
+
+        indexRec = (JAMIDXREC*)memwrite(d.obJDX, &woJDX, (char*)indexRec, sizeof(JAMIDXREC), &highJDX, sizeJDX);
+        indexRec->HdrOffset = woJHRpre;
+
+        headerInfo->ActiveMsgs++;
+        d.msgidBuf[msgNumNew] = headerRec->MsgIdCRC;
+        d.replyBuf[msgNumNew] = headerRec->ReplyCRC;
+        headerRec->MsgNum = ++msgNumNew;
+        d.lrBuf[msgNum - 1] = msgNumNew;
+
+        // Remove Re:
+        if (switches & SW_R)
+          if (JAMremoveRe(wpSubf, (u32*)&headerRec->SubfieldLen))    // SubfieldLen can be changed
+          {
+            long diff = orgSubfieldLen - headerRec->SubfieldLen;
+            if (woJHR == highJHR)
+              highJHR -= diff;
+            woJHR -= diff;
+          }
+      }
+      else
+      {
+        // headerRec & subfield not writen, reset woJHR en highJHR
+        if (woJHR == highJHR)
+          highJHR = woJHRpre;
+        woJHR = woJHRpre;
+      }
+    }
+  }
+
+  // Update reply chains
+#ifdef _DEBUG
+  logEntry("Update reply chains", LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
+
+  putStr("Reply chains ");
+
+  curMsg = 0;
+  woJDX  = 0;
+
+  while (!JAMerror && woJDX < sizeJDX && ++curMsg <= msgNumNew)
+  {
+    indexRec = (JAMIDXREC*)(d.obJDX + woJDX);
+    woJDX += sizeof(JAMIDXREC);
+    if (indexRec->UserCRC != 0xffffffffL || indexRec->HdrOffset != 0xffffffffL)
+    {
+      u32 MsgIdCRC
+        , ReplyCRC;
+
+      woJHR = indexRec->HdrOffset;
+      headerRec = (JAMHDR*)(d.obJHR + woJHR);
+
+      reply1st = replyNext = replyTo = 0;
+
+      MsgIdCRC = headerRec->MsgIdCRC;
+      ReplyCRC = headerRec->ReplyCRC;
+
+      if (MsgIdCRC != 0xffffffffL)
+      {
+        count = 0;
+        while (count < msgNumNew && MsgIdCRC != d.replyBuf[count])
+          count++;
+        if (count < msgNumNew)
+          reply1st = count + 1;
+      }
+      if (ReplyCRC != 0xffffffffL)
+      {
+        count = 0;
+        while (count < msgNumNew && ReplyCRC != d.msgidBuf[count])
+          count++;
+        if (count < msgNumNew)
+        {
+          replyTo = count + 1;
+          count = curMsg;
+          while (  count < msgNumNew
+                && (ReplyCRC != d.replyBuf[count] || MsgIdCRC == d.msgidBuf[count])
+                )
+            count++;
+          if (count < msgNumNew)
+            replyNext = count + 1;
+        }
+      }
+      headerRec->Reply1st  = reply1st;
+      headerRec->ReplyTo   = replyTo;
+      headerRec->ReplyNext = replyNext;
+    }
+  }
+
+  // Update last read info
+#ifdef _DEBUG
+  logEntry("Update last read info", LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
+  if (!JAMerror && sizeJLR > 0)
+  {
+    JAMLREAD *jamlrr = (JAMLREAD *)d.ibJLR
+           , *jamlrw = (JAMLREAD *)d.obJLR;
+    u32 msgNumHigh = maxMsg > 0 ? maxMsg - 1 : 0;
+
+    putStr("LastRead ");
+
+    for (count = 1; count < maxMsg; count++)
+      if (!d.lrBuf[count])
+        d.lrBuf[count] = d.lrBuf[count - 1];
+
+    temp = sizeJLR / sizeof(JAMLREAD);
+    for (count = 0; count < temp; count++)
+    {
+      jamlrw->UserCRC = jamlrr->UserCRC;
+      jamlrw->UserID  = jamlrr->UserID;
+
+      if (maxMsg > 0)
+      {
+        msgNum = jamlrr->LastReadMsg - oldBaseMsgNum;
+        jamlrw->LastReadMsg = d.lrBuf[min(msgNum, msgNumHigh)];
+        msgNum = jamlrr->HighReadMsg - oldBaseMsgNum;
+        jamlrw->HighReadMsg = d.lrBuf[min(msgNum, msgNumHigh)];
+      }
+      else
+      {
+        jamlrw->LastReadMsg = 0;
+        jamlrw->HighReadMsg = 0;
+      }
+
+      jamlrr++;
+      jamlrw++;
+    }
+  }
+  {
+    s32 ss = sizeJDX - highJDX
+           + sizeJDT - highJDT
+           + sizeJHR - highJHR;
+#ifdef _DEBUG
+    sprintf(tempStr, "Size new: no:%d jhr:%d jdt:%d jdx:%d jlr:%d tot:%d", msgNumNew, highJHR, highJDT, highJDX, sizeJLR, highJHR + highJDT + highJDX + sizeJLR);
+    logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
+
+    if (ss != 0)
+    {
+      sprintf(tempStr, "Space saved: %d", ss);
+      logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
+    }
+#endif
+    *spaceSaved += ss;
+  }
+  if (JAMerror)
+  {
+    newLine();
+    sprintf(tempStr, "*** Encountered a problem during JAM base maintenance, area %s", areaPtr->areaName);
+    logEntry(tempStr, LOG_ALWAYS, 0);
+  }
+  else
+  {
+#ifdef MAKEBACKUP
+    logEntry("Write backup data", LOG_DEBUG | LOG_NOSCRN, 0);
+    // Write (unchanged) input buffers to backup files
+    writedata(expJAMname(mbPath, "#"BASE_EXT_LRD), d.ibJLR, sizeJLR);
+    writedata(expJAMname(mbPath, "#"BASE_EXT_IDX), d.ibJDX, sizeJDX);
+    writedata(expJAMname(mbPath, "#"BASE_EXT_TXT), d.ibJDT, sizeJDT);
+    writedata(expJAMname(mbPath, "#"BASE_EXT_HDR), d.ibJHR, sizeJHR);
+#endif
+#ifdef _COMPOLD_
+    if (debug)
+    {
+      compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_HDR), d.obJHR, highJHR);
+      compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_IDX), d.obJDX, highJDX);
+      compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_TXT), d.obJDT, highJDT);
+      compareResult |= compareFileToBuf(expJAMname(mbPath, EXT_OLD_LRD), d.obJLR, sizeJLR);
+
+      if (compareResult)
+      {
+        logEntry("Save original data", LOG_DEBUG | LOG_NOSCRN, 0);
+        // save original data.
+        writedata(expJAMname(mbPath, EXT_ORG_LRD), d.ibJLR, sizeJLR);
+        writedata(expJAMname(mbPath, EXT_ORG_IDX), d.ibJDX, sizeJDX);
+        writedata(expJAMname(mbPath, EXT_ORG_TXT), d.ibJDT, sizeJDT);
+        writedata(expJAMname(mbPath, EXT_ORG_HDR), d.ibJHR, sizeJHR);
+      }
+    }
+#endif
+#ifdef _DEBUG
+    logEntry("Save data", LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
+    // save data.
+    if (  0 != writefile(d.hJLR, d.ibJLR, sizeJLR, d.obJLR, sizeJLR)
+       || 0 != writefile(d.hJDX, d.ibJDX, sizeJDX, d.obJDX, highJDX)
+       || 0 != writefile(d.hJDT, d.ibJDT, sizeJDT, d.obJDT, highJDT)
+       || 0 != writefile(d.hJHR, d.ibJHR, sizeJHR, d.obJHR, highJHR)
+       )
+      JAMerror = -1;
+
+    puts("Ready");
+  }
+  CleanUp(&d);
+#ifdef _COMPOLD_
+  if (debug)
+    if (compareResult)
+    {
+      // Must be done after cleanup. Files need to be closed
+      logEntry("DEBUG Create trace files", LOG_DEBUG, 0);
+      sprintf(tempStr, "%s-%d", mbPath, startTime);
+      if (0 == mkdir(tempStr))
+      {
+        tempStrType nmbp;
+        const char *an = strrchr(mbPath, '\\');
+        if (an != NULL)
+          an++;
+        else
+          an = mbPath;
+
+        strcpy(stpcpy(stpcpy(nmbp, tempStr), "\\"), an);
+
+        CopyFile(expJAMname(mbPath, EXT_HDR), expJAMname(nmbp, EXT_HDR), 0);
+        CopyFile(expJAMname(mbPath, EXT_IDX), expJAMname(nmbp, EXT_IDX), 0);
+        CopyFile(expJAMname(mbPath, EXT_TXT), expJAMname(nmbp, EXT_TXT), 0);
+        CopyFile(expJAMname(mbPath, EXT_LRD), expJAMname(nmbp, EXT_LRD), 0);
+
+        MoveFile(expJAMname(mbPath, EXT_ORG_HDR), expJAMname(nmbp, EXT_ORG_HDR));
+        MoveFile(expJAMname(mbPath, EXT_ORG_IDX), expJAMname(nmbp, EXT_ORG_IDX));
+        MoveFile(expJAMname(mbPath, EXT_ORG_TXT), expJAMname(nmbp, EXT_ORG_TXT));
+        MoveFile(expJAMname(mbPath, EXT_ORG_LRD), expJAMname(nmbp, EXT_ORG_LRD));
+
+        MoveFile(expJAMname(mbPath, EXT_OLD_HDR), expJAMname(nmbp, EXT_OLD_HDR));
+        MoveFile(expJAMname(mbPath, EXT_OLD_IDX), expJAMname(nmbp, EXT_OLD_IDX));
+        MoveFile(expJAMname(mbPath, EXT_OLD_TXT), expJAMname(nmbp, EXT_OLD_TXT));
+        MoveFile(expJAMname(mbPath, EXT_OLD_LRD), expJAMname(nmbp, EXT_OLD_LRD));
+      }
+    }
+    else
+    {
+      // New files are the same, so they are not needed -> Delete them.
+      DeleteFile(expJAMname(mbPath, EXT_OLD_HDR));
+      DeleteFile(expJAMname(mbPath, EXT_OLD_IDX));
+      DeleteFile(expJAMname(mbPath, EXT_OLD_TXT));
+      DeleteFile(expJAMname(mbPath, EXT_OLD_LRD));
+    }
+
+  logEntry("Ready", LOG_DEBUG | LOG_NOSCRN, 0);
+
+#if 0
+  putStr("\nPress any key to continue... ");
+  fflush(stdout);
+  getch();
+  newLine();
+#endif
+#endif
+
+  return JAMerror;
+}
+#ifdef _COMPOLD_
+//---------------------------------------------------------------------------
+s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
+{
+  s16           JAMerror = 0;
   fhandle       JHRhandle
               , JDThandle
               , JDXhandle
@@ -161,29 +815,23 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, uchar *name, s32 *spaceSaved)
   u16           maxMsg, curMsg;
   tempStrType   tempStr;
   s16           temp;
-  static s16    useLocks = -1;
   s16           stat = 0;
   u32           bufCount
               , delCount;
   time_t        msgTime;
+  s32           spaceSaved;
 
-  sprintf(tempStr, "Processing JAM area: %s", areaPtr->areaName);
-  logEntry(tempStr, LOG_DEBUG, 0);
+#ifdef _DEBUG
+  sprintf(tempStr, "O Processing JAM area: %s", areaPtr->areaName);
+  logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
 
-  if (buf == NULL && (buf = malloc(TXTBUFSIZE)) == NULL)
-    goto NoMem;
-
-  if (lrBuf == NULL && (lrBuf = malloc(LRSIZE * 2)) == NULL)
-    goto NoMem;
-
-  if (msgidBuf == NULL && (msgidBuf = malloc(MSGIDNUM * 4)) == NULL)
-    goto NoMem;
-
-  if (replyBuf == NULL && (replyBuf = malloc(MSGIDNUM * 4)) == NULL)
-  {
-NoMem:
-    logEntry("No enough memory available to pack JAM bases", LOG_ALWAYS, 2);
-  }
+  if (  (buf      == NULL && (buf      = malloc(TXTBUFSIZE  )) == NULL)
+     || (lrBuf    == NULL && (lrBuf    = malloc(LRSIZE   * 2)) == NULL)
+     || (msgidBuf == NULL && (msgidBuf = malloc(MSGIDNUM * 4)) == NULL)
+     || (replyBuf == NULL && (replyBuf = malloc(MSGIDNUM * 4)) == NULL)
+     )
+    logEntry("O Not enough memory available to pack JAM bases", LOG_ALWAYS, 2);
 
   memset(lrBuf   , 0, LRSIZE   * 2);
   memset(msgidBuf, 0, MSGIDNUM * 4);
@@ -211,7 +859,7 @@ NoMem:
    JLRhandle = fsopen(expJAMname(areaPtr->msgBasePath, EXT_LRD),
                       O_RDONLY|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1);
 
-   if ( (JHRhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_NEW_HDR),
+   if ( (JHRhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_OLD_HDR),
                                O_CREAT|O_TRUNC|O_RDWR|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JLRhandle);
       fsclose(JDXhandle);
@@ -219,7 +867,7 @@ NoMem:
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ( (JDThandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_NEW_TXT),
+   if ( (JDThandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_OLD_TXT),
                                O_CREAT|O_TRUNC|O_RDWR|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JHRhandleNew);
       fsclose(JLRhandle);
@@ -228,7 +876,7 @@ NoMem:
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ( (JDXhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_NEW_IDX),
+   if ( (JDXhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_OLD_IDX),
                                O_CREAT|O_TRUNC|O_RDWR|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JDThandleNew);
       fsclose(JHRhandleNew);
@@ -238,7 +886,7 @@ NoMem:
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ( (JLRhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_NEW_LRD),
+   if ( (JLRhandleNew = fsopen(expJAMname(areaPtr->msgBasePath, EXT_OLD_LRD),
                                O_CREAT|O_TRUNC|O_RDWR|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE, 1)) == -1 )
    {  fsclose(JDXhandleNew);
       fsclose(JDThandleNew);
@@ -247,45 +895,33 @@ NoMem:
       fsclose(JDXhandle);
       fsclose(JDThandle);
       fsclose(JHRhandle);
-jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaName);
+jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->areaName);
       logEntry(tempStr, LOG_ALWAYS, 0);
       return 1;
    }
 
-  if (useLocks)
+  stat = lock(JHRhandle, 0L, 1L);
+  if (stat == -1 && config.mbOptions.mbSharing)
   {
-    stat = lock(JHRhandle, 0L, 1L);
-    if (useLocks == -1)
-    {
-      useLocks = 1;
-      if (stat == -1 && errno == EINVAL)
-      {
-        if (!config.mbOptions.mbSharing)
-          useLocks = 0;
-        else
-        {
-          newLine();
-          logEntry("SHARE is required when Message Base Sharing is enabled", LOG_ALWAYS, 0);
-          fsclose(JLRhandleNew);
-          fsclose(JDXhandleNew);
-          fsclose(JDThandleNew);
-          fsclose(JHRhandleNew);
-          fsclose(JDXhandle);
-          fsclose(JLRhandle);
-          fsclose(JDThandle);
-          fsclose(JHRhandle);
-          return 1;
-        }
-      }
-    }
+    newLine();
+    logEntry("O SHARE is required when Message Base Sharing is enabled", LOG_ALWAYS, 0);
+    fsclose(JLRhandleNew);
+    fsclose(JDXhandleNew);
+    fsclose(JDThandleNew);
+    fsclose(JHRhandleNew);
+    fsclose(JDXhandle);
+    fsclose(JLRhandle);
+    fsclose(JDThandle);
+    fsclose(JHRhandle);
+    return 1;
   }
-  printString(tempStr);
-  printString("... ");
-  flush();
-  tabPos = getTab();
-  logEntry("Updating", LOG_DEBUG, 0);
-  printString("Updating ");
-  updateCurrLine();
+
+  printf("%s... ", tempStr);
+#ifdef _DEBUG
+  logEntry("O Updating", LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
+  putStr("Updating ");
+  fflush(stdout);
 
   read(JHRhandle, &headerInfo, sizeof(JAMHDRINFO));
 
@@ -300,7 +936,7 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
   if (write(JHRhandleNew, &headerInfo, sizeof(JAMHDRINFO)) != sizeof(JAMHDRINFO))
   {
     newLine();
-    logEntry("JAMmaint: Can't write new header", LOG_ALWAYS, 0);
+    logEntry("O JAMmaint: Can't write new header", LOG_ALWAYS, 0);
     JAMerror = -1;
   }
 
@@ -324,13 +960,15 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
     }
   }
 
-  logEntry("Maint", LOG_DEBUG, 0);
+#ifdef _DEBUG
+  logEntry("O Maint", LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
   while (!JAMerror && !eof(JDXhandle))
   {
     if (read(JDXhandle, &indexRec, sizeof(JAMIDXREC)) != sizeof(JAMIDXREC))
     {
       newLine();
-      logEntry("JAMmaint: Can't read old index", LOG_ALWAYS, 0);
+      logEntry("O JAMmaint: Can't read old index", LOG_ALWAYS, 0);
       JAMerror = -1;
       break; // skip rest of loop
     }
@@ -346,7 +984,7 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
       if (read(JHRhandle, &headerRec, sizeof(JAMHDR)) != sizeof(JAMHDR))
       {
         newLine();
-        logEntry("JAMmaint: Can't read old header", LOG_ALWAYS, 0);
+        logEntry("O JAMmaint: Can't read old header", LOG_ALWAYS, 0);
         JAMerror = -1;
         break; /* skip rest of loop */
       }
@@ -389,14 +1027,14 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
           if ((temp = read(JDThandle, buf, (u16)min(bufCount, TXTBUFSIZE))) != (u16)min(bufCount, TXTBUFSIZE))
           {
             newLine();
-            logEntry("JAMmaint: Can't read old message text", LOG_ALWAYS, 0);
+            logEntry("O JAMmaint: Can't read old message text", LOG_ALWAYS, 0);
             JAMerror = -1;
             break;
           }
           if (write(JDThandleNew, buf, temp) != temp)
           {
             newLine();
-            logEntry("JAMmaint: Can't write new message text", LOG_ALWAYS, 0);
+            logEntry("O JAMmaint: Can't write new message text", LOG_ALWAYS, 0);
             JAMerror = -1;
             break;
           }
@@ -426,14 +1064,14 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
         if (write(JDXhandleNew, &indexRec, sizeof(JAMIDXREC)) != sizeof(JAMIDXREC))
         {
           newLine();
-          logEntry("JAMmaint: Can't write new index", LOG_ALWAYS, 0);
+          logEntry("O JAMmaint: Can't write new index", LOG_ALWAYS, 0);
           JAMerror = -1;
           break;
         }
         if (write(JHRhandleNew, &headerRec, sizeof(JAMHDR)) != sizeof(JAMHDR))
         {
           newLine();
-          logEntry("JAMmaint: Can't write new header", LOG_ALWAYS, 0);
+          logEntry("O JAMmaint: Can't write new header", LOG_ALWAYS, 0);
           JAMerror = -1;
           break;
         }
@@ -448,7 +1086,7 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
              )
           {
             newLine();
-            logEntry("JAMmaint: Can't read old header", LOG_ALWAYS, 0);
+            logEntry("O JAMmaint: Can't read old header", LOG_ALWAYS, 0);
             JAMerror = -1;
             break;
           }
@@ -456,7 +1094,7 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
           // Remove Re:
           if ((switches & SW_R) && headerRec.SubfieldLen < TXTBUFSIZE)
           {
-            if (JAMremoveRe(buf, &headerRec.SubfieldLen))
+            if (JAMremoveRe(buf, (u32*)&headerRec.SubfieldLen))
             {
               if (lseek(JHRhandleNew, -(s32)sizeof(JAMHDR), SEEK_CUR) < 0)
               {
@@ -466,7 +1104,7 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
               if (write(JHRhandleNew, &headerRec, sizeof(JAMHDR)) != sizeof(JAMHDR))
               {
                 newLine();
-                logEntry("JAMmaint: Can't write new header", LOG_ALWAYS, 0);
+                logEntry("O JAMmaint: Can't write new header", LOG_ALWAYS, 0);
                 JAMerror = -1;
                 break;
               }
@@ -476,7 +1114,7 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
           if (write(JHRhandleNew, buf, temp) != temp)
           {
             newLine();
-            logEntry("JAMmaint: Can't write new header", LOG_ALWAYS, 0);
+            logEntry("O JAMmaint: Can't write new header", LOG_ALWAYS, 0);
             JAMerror = -1;
             break;
           }
@@ -489,16 +1127,16 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
   if (write(JHRhandleNew, &headerInfo, sizeof(JAMHDRINFO)) != sizeof(JAMHDRINFO))
   {
     newLine();
-    logEntry("JAMmaint: Can't write new header", LOG_ALWAYS, 0);
+    logEntry("O JAMmaint: Can't write new header", LOG_ALWAYS, 0);
     JAMerror = -1;
   }
 
   // Update reply chains
-  logEntry("Update reply chains", LOG_DEBUG, 0);
+#ifdef _DEBUG
+  logEntry("O Update reply chains", LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
 
-  gotoTab(tabPos);
-  printString("Reply chains ");
-  updateCurrLine();
+  putStr("Reply chains ");
 
   if ( msgNumNew > MSGIDNUM )
     maxMsg = MSGIDNUM;
@@ -512,7 +1150,7 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
     if ( read(JDXhandleNew, &indexRec, sizeof(JAMIDXREC)) != sizeof(JAMIDXREC) )
     {
       newLine();
-      logEntry("JAMmaint: Can't read new index", LOG_ALWAYS, 0);
+      logEntry("O JAMmaint: Can't read new index", LOG_ALWAYS, 0);
       JAMerror = -1;
       break;
     }
@@ -526,7 +1164,7 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
       if (read(JHRhandleNew, &headerRec, sizeof(JAMHDR)) != sizeof(JAMHDR))
       {
         newLine();
-        logEntry("JAMmaint: Can't read new header", LOG_ALWAYS, 0);
+        logEntry("O JAMmaint: Can't read new header", LOG_ALWAYS, 0);
         JAMerror = -1;
         break;
       }
@@ -575,7 +1213,7 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
         if (write(JHRhandleNew, &headerRec, sizeof(JAMHDR)) != sizeof(JAMHDR))
         {
           newLine();
-          logEntry("JAMmaint: Can't write new header", LOG_ALWAYS, 0);
+          logEntry("O JAMmaint: Can't write new header", LOG_ALWAYS, 0);
           JAMerror = -1;
           break;
         }
@@ -584,12 +1222,12 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
   }
 
   // Update last read info
-  logEntry("Update last read info", LOG_DEBUG, 0);
+#ifdef _DEBUG
+  logEntry("O Update last read info", LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
   if ( !JAMerror && JLRhandle != -1 )
   {
-    gotoTab(tabPos);
-    printStringFill("LastRead ");
-    updateCurrLine();
+    putStr("LastRead ");
 
     if (!JAMerror)
       for (count = 1; count < LRSIZE; count++)
@@ -610,15 +1248,22 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
       if (write(JLRhandleNew, buf, temp<<4) != (temp<<4))
       {
         newLine();
-        logEntry("JAMmaint: Can't write new last read file", LOG_ALWAYS, 0);
+        logEntry("O JAMmaint: Can't write new last read file", LOG_ALWAYS, 0);
         JAMerror = -1;
         break;
       }
     }
   }
-  *spaceSaved += filelength(JDXhandle) - filelength(JDXhandleNew)
-               + filelength(JDThandle) - filelength(JDThandleNew)
-               + filelength(JHRhandle) - filelength(JHRhandleNew);
+  spaceSaved = filelength(JDXhandle) - filelength(JDXhandleNew)
+             + filelength(JDThandle) - filelength(JDThandleNew)
+             + filelength(JHRhandle) - filelength(JHRhandleNew);
+
+  if (spaceSaved != 0)
+  {
+    sprintf(tempStr, "o Space saved: %d", spaceSaved);
+    logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
+  }
+
   fsclose(JLRhandleNew);
   fsclose(JDXhandleNew);
   fsclose(JDThandleNew);
@@ -628,49 +1273,19 @@ jamx: sprintf(tempStr, "JAM area %s was not found or was locked", areaPtr->areaN
   fsclose(JDThandle);
   fsclose(JHRhandle);
 
-  gotoTab(tabPos);
   if (JAMerror)
   {
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_NEW_HDR), 1);
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_NEW_TXT), 1);
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_NEW_IDX), 1);
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_NEW_LRD), 1);
     newLine();
-    sprintf(tempStr, "Disk problems during JAM base maintenance, area %s", areaPtr->areaName);
+    sprintf(tempStr, "O Disk problems during JAM base maintenance, area %s", areaPtr->areaName);
     logEntry(tempStr, LOG_ALWAYS, 0);
   }
   else
-  {
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_BCK_HDR), 1);
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_BCK_TXT), 1);
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_BCK_IDX), 1);
-    fsunlink(expJAMname(areaPtr->msgBasePath, EXT_BCK_LRD), 1);
+    puts("Ready");
 
-    if (switches & SW_B)
-    {
-      fsrename(expJAMname(areaPtr->msgBasePath, EXT_HDR), expJAMname(areaPtr->msgBasePath, EXT_BCK_HDR), 1);
-      fsrename(expJAMname(areaPtr->msgBasePath, EXT_TXT), expJAMname(areaPtr->msgBasePath, EXT_BCK_TXT), 1);
-      fsrename(expJAMname(areaPtr->msgBasePath, EXT_IDX), expJAMname(areaPtr->msgBasePath, EXT_BCK_IDX), 1);
-      fsrename(expJAMname(areaPtr->msgBasePath, EXT_LRD), expJAMname(areaPtr->msgBasePath, EXT_BCK_LRD), 1);
-    }
-    else
-    {
-      fsunlink(expJAMname(areaPtr->msgBasePath, EXT_HDR), 1);
-      fsunlink(expJAMname(areaPtr->msgBasePath, EXT_TXT), 1);
-      fsunlink(expJAMname(areaPtr->msgBasePath, EXT_IDX), 1);
-      fsunlink(expJAMname(areaPtr->msgBasePath, EXT_LRD), 1);
-    }
-    fsrename(expJAMname(areaPtr->msgBasePath, EXT_NEW_HDR), expJAMname(areaPtr->msgBasePath, EXT_HDR), 1);
-    fsrename(expJAMname(areaPtr->msgBasePath, EXT_NEW_TXT), expJAMname(areaPtr->msgBasePath, EXT_TXT), 1);
-    fsrename(expJAMname(areaPtr->msgBasePath, EXT_NEW_IDX), expJAMname(areaPtr->msgBasePath, EXT_IDX), 1);
-    fsrename(expJAMname(areaPtr->msgBasePath, EXT_NEW_LRD), expJAMname(areaPtr->msgBasePath, EXT_LRD), 1);
-
-    printStringFill("Ready");
-    newLine();
-  }
-  flush();
-  logEntry("Ready", LOG_DEBUG, 0);
-
+#ifdef _DEBUG
+  logEntry("O Ready", LOG_DEBUG | LOG_NOSCRN, 0);
+#endif
   return JAMerror;
 }
 //---------------------------------------------------------------------------
+#endif

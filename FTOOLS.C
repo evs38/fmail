@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,6 +21,24 @@
 //
 //---------------------------------------------------------------------------
 
+#ifdef __STDIO__
+#include <conio.h>
+#else
+#include <bios.h>
+#endif
+#include <ctype.h>
+#include <dir.h>
+#include <dirent.h>
+#include <dos.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <time.h>
+
 #include "fmail.h"
 
 #include "ftools.h"
@@ -37,10 +55,10 @@
 #include "jammaint.h"
 #include "msgmsg.h"
 #include "mtask.h"
-#include "output.h"
+#include "pp_date.h"
+#include "spec.h"
 #include "sorthb.h"
 #include "utils.h"
-#include "pp_date.h"
 #include "version.h"
 
 #ifdef __OS2__
@@ -50,23 +68,6 @@
 extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 
 #endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <dos.h>
-#include <io.h>
-#include <time.h>
-#include <ctype.h>
-#include <dir.h>
-#ifdef __STDIO__
-#include <conio.h>
-#else
-#include <bios.h>
-#endif
-#include <errno.h>
-#include <fcntl.h>
-#include <sys/stat.h>
 
 // linkfout FTools voorkomen!
 u16 echoCount;
@@ -91,12 +92,15 @@ const char *smtpID;
 
 extern s32 startTime;
 
-const char *semaphore[6] = { "fdrescan.now"
-                           , "ierescan.now"
-                           , "dbridge.rsn"
-                           , ""
-                           , "mdrescan.now"
-                           , "xmrescan.flg" };
+const char *semaphore[6] =
+{
+  "fdrescan.now"
+, "ierescan.now"
+, "dbridge.rsn"
+, ""
+, "mdrescan.now"
+, "xmrescan.flg"
+};
 //----------------------------------------------------------------------------
 typedef struct
 {
@@ -186,10 +190,8 @@ void About(void)
               "8088/8086 and up\n"
 #endif
               "    Compiled on      : %d-%02d-%02d\n";
-  char tStr[1024];
-  sprintf(tStr, str, VersionStr(), YEAR, MONTH + 1, DAY);
-  printString(tStr);
-  showCursor();
+
+  printf(str, VersionStr(), YEAR, MONTH + 1, DAY);
 }
 //----------------------------------------------------------------------------
 void Usage(void)
@@ -201,19 +203,17 @@ void Usage(void)
               "   Maint     Message base maintenance (also updates reply chains)\n"
               "   Delete    Delete all messages in one board\n"
               "   Undelete  Undelete all messages in one board           ("MBNAME" only)\n"
-#endif
-              "   Post      Post a file as a netmail or echomail message\n"
-#ifndef GOLDBASE
               "   Export    Export messages in a board to a text file    ("MBNAME" only)\n"
               "   Move      Move messages from one board to another      ("MBNAME" only)\n"
               "   Sort      Sorts messages in the message base           ("MBNAME" only)\n"
               "   Stat      Generate message base statistics             ("MBNAME" only)\n"
 #endif
+              "   Post      Post a file as a netmail or echomail message\n"
               "   Notify    Send a status message to selected nodes\n"
               "   MsgM      *.MSG maintenance\n"
               "   AddNew    Add new areas found during FMail Toss\n"
-              "\nEnter 'FTools <command> ?' for more information about [parameters]\n";
-  printString(str);
+              "\nEnter 'FTools <command> ?' for more information about [parameters]";
+  puts(str);
 }
 //----------------------------------------------------------------------------
 s16 breakPressed = 0;
@@ -246,6 +246,7 @@ s16 readAreaInfo(void)
         boardInfo[areaBuf->board].defined++;
         if ((boardInfo[areaBuf->board].name = malloc(strlen(areaBuf->areaName) + 1)) != NULL)
           strcpy(boardInfo[areaBuf->board].name, areaBuf->areaName);
+
         boardInfo[areaBuf->board].aka         = areaBuf->address;
         boardInfo[areaBuf->board].options     = areaBuf->options;
         boardInfo[areaBuf->board].numDays     = areaBuf->days;
@@ -270,15 +271,12 @@ s32 getSwitchFT(int *argc, char *argv[], s32 mask)
     {
       if (count != --(*argc))
       {
-        printString("Switches should be last on command line\n");
-        showCursor();
+        puts("Switches should be last on command line");
         exit(4);
       }
-      if ((strlen(argv[count]) != 2) || (!(isalpha(argv[count][1]))))
+      if (strlen(argv[count]) != 2 || !(isalpha(argv[count][1])))
       {
-        printString("Illegal switch: ");
-        printString(argv[count]);
-        newLine();
+        printf("Illegal switch: %s\n", argv[count]);
         error++;
       }
       else
@@ -288,18 +286,14 @@ s32 getSwitchFT(int *argc, char *argv[], s32 mask)
           result |= tempMask;
         else
         {
-          printString("Illegal switch: ");
-          printString(argv[count]);
-          newLine();
+          printf("Illegal switch: %s\n", argv[count]);
           error++;
         }
       }
     }
   if (error)
-  {
-    showCursor();
     exit(4);
-  }
+
   return result;
 }
 //----------------------------------------------------------------------------
@@ -328,14 +322,14 @@ int cdecl main(int argc, char *argv[])
   u16 areaSubjChain[256];
 
   u16         *msgRenumBuf;
-  s16 doneSearch;
-  struct ffblk ffblkMsg;
   u16 msgNum;
   u16 low, mid, high;
   s16 isNetmail;
   internalMsgType *message;
   u16 srcAka;
   time_t time1, time2, time2a;
+  DIR           *dir;
+  struct dirent *ent;
 
 #ifndef GOLDBASE
   u16 e;
@@ -352,17 +346,17 @@ int cdecl main(int argc, char *argv[])
   u16            *linkArrayMsgNum;
   u16 linkArrIndex;
   fhandle usersBBSHandle
-  , oldTxtHandle
-  , oldHdrHandle
-  , msgHdrHandle
-  , msgToIdxHandle
-  , msgIdxHandle
-  , msgTxtHandle;
+        , oldTxtHandle
+        , oldHdrHandle
+        , msgHdrHandle
+        , msgToIdxHandle
+        , msgIdxHandle
+        , msgTxtHandle;
   infoRecType infoRec
-  , oldInfoRec;
+    , oldInfoRec;
   s16 oldBoard
-  , newBoard
-  , undeleteBoard = 0; // FTools Maint Undelete
+    , newBoard
+    , undeleteBoard = 0; // FTools Maint Undelete
   uchar *keepHdr;
   u16 keepIdx;
   uchar keepBit
@@ -382,16 +376,15 @@ int cdecl main(int argc, char *argv[])
   u16 codeHigh, codeLow;
   s32 fileSize;
   u16 oldHdrSize
-  , newHdrSize = 0
-  , oldTxtSize
-  , newTxtSize = 0;
-  u16 percentCount;
+    , newHdrSize = 0
+    , oldTxtSize
+    , newTxtSize = 0;
 
   u16 lowMsgNum
-  , highMsgNum;
+    , highMsgNum;
   u32 totalMsgs
-  , totalDeleted
-  , totalTxtHdr;
+    , totalDeleted
+    , totalTxtHdr;
   u16 totalTxtBBS;
   u32 totalLocal;
   u16 hours, minutes, day, month, year;
@@ -413,32 +406,10 @@ int cdecl main(int argc, char *argv[])
 #ifdef __WIN32__
   smtpID = TIDStr();
 #endif
-  initOutput();
-  cls();
 
-#ifndef STDO
-  setAttr(YELLOW, RED, MONO_NORM);
-  printString("ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n");
-  printString("³                                                                             ³\n");
-  printString("³                                                                             ³\n");
-  printString("ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ");
+  printf("%s - The Fast Message Base Utility\n\n", VersionStr());
+  printf("Copyright (C) 1991-%s by FMail Developers - All rights reserved\n\n", __DATE__ + 7);
 
-  setAttr(YELLOW, RED, MONO_HIGH);
-  gotoPos(3, 1);
-#endif
-  sprintf(tempStr, "%s - The Fast Message Base Utility\n", VersionStr());
-  printString(tempStr);
-#ifndef STDO
-  gotoPos(3, 2);
-#else
-  newLine();
-#endif
-  sprintf(tempStr, "Copyright (C) 1991-%s by FMail Developers - All rights reserved\n\n", __DATE__ + 7);
-  printString(tempStr);
-#ifndef STDO
-  gotoPos(0, 5);
-  setAttr(LIGHTGRAY, BLACK, MONO_NORM);
-#endif
   // Array for linking
   memset(areaSubjChain, 0xff, sizeof(areaSubjChain));
 
@@ -461,8 +432,7 @@ int cdecl main(int argc, char *argv[])
      || close(configHandle) == -1
      )
   {
-    printString("Can't read "dCFGFNAME"\n");
-    showCursor();
+    puts("Can't read "dCFGFNAME);
     exit(1);
   }
   lastSavedUniqID = config.lastUniqueID;
@@ -491,7 +461,7 @@ int cdecl main(int argc, char *argv[])
       && errno != ENOFILE
       )
   {
-    printString("Waiting for another copy of FMail, FTools or FSetup to finish...\n");
+    puts("Waiting for another copy of FMail, FTools or FSetup to finish...");
 
     time(&time1);
     time2 = time1;
@@ -518,8 +488,8 @@ int cdecl main(int argc, char *argv[])
 
     if (semaHandle == -1)
     {
-      printString("\nAnother copy of FMail, FTools or FSetup did not finish in time...\n\nExiting...\n");
-      showCursor();
+      puts("\nAnother copy of FMail, FTools or FSetup did not finish in time...\n\nExiting...");
+
       exit(4);
     }
   }
@@ -533,8 +503,7 @@ int cdecl main(int argc, char *argv[])
 
   if (config.akaList[0].nodeNum.zone == 0)
   {
-    printString("Main nodenumber not defined in FSetup\n");
-    showCursor();
+    puts("Main nodenumber not defined in FSetup");
     exit(4);
   }
 
@@ -543,8 +512,7 @@ int cdecl main(int argc, char *argv[])
       || (*config.inPath  == 0)
       || (*config.outPath == 0))
   {
-    printString("Not all subdirectories are defined in FSetup\n");
-    showCursor();
+    puts("Not all subdirectories are defined in FSetup\n");
     exit(4);
   }
 
@@ -554,8 +522,7 @@ int cdecl main(int argc, char *argv[])
      || existDir(config.outPath, "outbound")     == 0
      )
   {
-    printString("Please enter the required subdirectories first!\n");
-    showCursor();
+    puts("Please enter the required subdirectories first!");
     exit(4);
   }
 
@@ -573,15 +540,15 @@ int cdecl main(int argc, char *argv[])
   TXT_BUFSIZE = (HDR_BUFSIZE << 1) / 3;
   LRU_BUFSIZE = HDR_BUFSIZE * 100;
 
-  if (   ((msgHdrBuf   = malloc(HDR_BUFSIZE * sizeof(msgHdrRec))) == NULL)
-      || ((msgIdxBuf   = malloc(HDR_BUFSIZE * sizeof(msgIdxRec))) == NULL)
-      || ((msgToIdxBuf = malloc(HDR_BUFSIZE * sizeof(msgToIdxRec))) == NULL)
-      || ((keepHdr     = malloc(DELRECNUM)) == NULL)
-      || ((keepTxt     = malloc(DELRECNUM * sizeof(keepTxtRecType))) == NULL)
-      || ((renumArray  = malloc(RENUM_BUFSIZE * 2)) == NULL))
+  if (  ((msgHdrBuf   = malloc(HDR_BUFSIZE * sizeof(msgHdrRec))) == NULL)
+     || ((msgIdxBuf   = malloc(HDR_BUFSIZE * sizeof(msgIdxRec))) == NULL)
+     || ((msgToIdxBuf = malloc(HDR_BUFSIZE * sizeof(msgToIdxRec))) == NULL)
+     || ((keepHdr     = malloc(DELRECNUM)) == NULL)
+     || ((keepTxt     = malloc(DELRECNUM * sizeof(keepTxtRecType))) == NULL)
+     || ((renumArray  = malloc(RENUM_BUFSIZE * 2)) == NULL)
+     )
   {
-    printString("Not enough free memory\n");
-    showCursor();
+    puts("Not enough free memory");
     exit(2);
   }
 #endif
@@ -640,34 +607,33 @@ int cdecl main(int argc, char *argv[])
     if ((argc >= 3) && ((argv[2][0] == '?') || (argv[2][1] == '?')))
     {
       if (switches & SW_K)
-            printString("Usage:\n\n"
-                    "    FTools Delete <board>\n\n");
+        puts("Usage:\n\n"
+             "    FTools Delete <board>\n");
       else
         if (switches & SW_U)
-            printString("Usage:\n\n"
-                      "    FTools Undelete <board>\n\n");
+          puts("Usage:\n\n"
+               "    FTools Undelete <board>\n");
         else
           if (switches & SW_M)
-            printString("Usage:\n\n"
-                        "    FTools Move <old board> <new board>\n\n");
+            puts("Usage:\n\n"
+                 "    FTools Move <old board> <new board>\n");
           else
-            printString("Usage:   FTools Maint [JAM areas][/H][/J][/Q][/C][/D][/N][/P][/R][/T][/U][/X]\n"
-                        "Switches:                                                        [/B][/F][/O]\n"
-                        "    /H   Process "MBNAME " base only\n"
-                        "    /J   Process JAM message bases only     /Q  Process only modified JAM areas\n\n"
-                        "    /C   reCover messages in undefined boards ("MBNAME " only)\n"
-                        "    /D   Delete messages using the information in the Area Manager\n"
-                        "    /N   reNumber the message base ("MBNAME " only)\n"
-                        "    /P   Pack (remove deleted messages) ("MBNAME " only)\n"
-                        "    /R   Remove \"Re:\" from subject lines\n"
-                        "    /T   Fix bad text length info in MsgHdr.BBS ("MBNAME " only)\n"
-                        "    /U   Undelete all deleted messages in all boards ("MBNAME " only)\n"
-                        "    /X   Delete messages with bad dates or bad board numbers ("MBNAME " only)\n\n"
-                        "    /B   keep .Bak files      (only in combination with /P)\n"
-                        "    /F   Force overwrite mode (only in combination with /P, "MBNAME " only)\n"
-                        "    /O   Overwrite existing message base only if short of disk space\n"
-                        "                              (only in combination with /P, "MBNAME " only)\n");
-      showCursor();
+            puts("Usage:   FTools Maint [JAM areas][/H][/J][/Q][/C][/D][/N][/P][/R][/T][/U][/X]\n"
+                 "Switches:                                                        [/B][/F][/O]\n"
+                 "    /H   Process "MBNAME " base only\n"
+                 "    /J   Process JAM message bases only     /Q  Process only modified JAM areas\n\n"
+                 "    /C   reCover messages in undefined boards ("MBNAME " only)\n"
+                 "    /D   Delete messages using the information in the Area Manager\n"
+                 "    /N   reNumber the message base ("MBNAME " only)\n"
+                 "    /P   Pack (remove deleted messages) ("MBNAME " only)\n"
+                 "    /R   Remove \"Re:\" from subject lines\n"
+                 "    /T   Fix bad text length info in MsgHdr.BBS ("MBNAME " only)\n"
+                 "    /U   Undelete all deleted messages in all boards ("MBNAME " only)\n"
+                 "    /X   Delete messages with bad dates or bad board numbers ("MBNAME " only)\n\n"
+                 "    /B   keep .Bak files      (only in combination with /P)\n"
+                 "    /F   Force overwrite mode (only in combination with /P, "MBNAME " only)\n"
+                 "    /O   Overwrite existing message base only if short of disk space\n"
+                 "                              (only in combination with /P, "MBNAME " only)");
       return 0;
     }
 
@@ -683,7 +649,7 @@ int cdecl main(int argc, char *argv[])
         logEntry(tempStr, LOG_ALWAYS, 0);
         spaceSavedJAM = 0;
         JAMmaint(areaPtr, switches, config.sysopName, &spaceSavedJAM);
-        showCursor();
+
         return 0;
       }
       sprintf(tempStr, "Deleting all messages in "MBNAME" board %u", oldBoard);
@@ -730,8 +696,9 @@ int cdecl main(int argc, char *argv[])
 
     memset(&lastReadRec, 0, sizeof(lastReadType));
 
-    if ((lastReadHandle = open(expandName("LASTREAD."MBEXTN), O_RDONLY | O_BINARY | O_DENYNONE)) == -1)
+    if ((lastReadHandle = open(expandName("LASTREAD."MBEXTN), O_RDONLY | O_BINARY)) == -1)
       logEntry("Can't read file LastRead."MBEXTN, LOG_ALWAYS, 1);
+
     if (_read(lastReadHandle, &(lastReadRec[1]), 400) != 400)
     {
       close(lastReadHandle);
@@ -768,10 +735,7 @@ int cdecl main(int argc, char *argv[])
       logEntry("Message base AutoRenumbering activated", LOG_ALWAYS, 0);
     }
 
-    printString("Analyzing the message base...");
-#ifdef STDO
-    newLine();
-#endif
+    puts("Analyzing the message base...");
 
     if ((msgHdrHandle = open(expandName("msghdr."MBEXTN), O_RDWR | O_BINARY | O_DENYALL)) == -1)
       logEntry( "Can't open MsgHdr."MBEXTN " for update", LOG_ALWAYS, 1);
@@ -791,16 +755,9 @@ int cdecl main(int argc, char *argv[])
       logEntry("Not enough free memory", LOG_ALWAYS, 2);
     }
 
-    percentCount = 0;
     while ((bufCount = _read(msgHdrHandle, msgHdrBuf, HDR_BUFSIZE
                              * sizeof(msgHdrRec)) / sizeof(msgHdrRec)) > 0)
     {
-#ifndef STDO
-      sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / (oldHdrSize ? oldHdrSize : 1)));
-      gotoTab(39);
-      printString(tempStr);
-      updateCurrLine();
-#endif
       for (count = 0; count < bufCount; count++)
       {
         returnTimeSlice(0);
@@ -1047,14 +1004,9 @@ int cdecl main(int argc, char *argv[])
         }
         msgCount++;
       }
-      percentCount += bufCount;
     }
     close(msgHdrHandle);
 
-#ifndef STDO
-    gotoTab(39);
-    printString("100%\n");
-#endif
     if (switches & SW_U)
     {
       sprintf(tempStr, "Undeleted   : %u msgs", unDeleted);
@@ -1106,19 +1058,12 @@ int cdecl main(int argc, char *argv[])
       logEntry(tempStr, LOG_STATS, 0);
     }
 
-    printString("Updating reply-chains in memory...");
-#ifdef STDO
-    newLine();
-#endif
+    puts("Updating reply-chains in memory...");
 
     for (count = 1; count <= MBBOARDS; count++)
     {
-#ifndef STDO
-      sprintf(tempStr, "%3u%%", count >> 1);
-      gotoTab(39);
-      printString(tempStr);
-      updateCurrLine();
-#endif
+      //printf("%3u%%\b\b\b\b", count >> 1);
+
       c = areaSubjChain[count];
       while (c != 0xffff)
       {
@@ -1145,11 +1090,7 @@ int cdecl main(int argc, char *argv[])
     for (count = 0; count < DELRECNUM - 1; count++)
       keepTxt[count + 1].usedCount = keepTxt[count].usedCount
                                      + bitCountTab[keepTxt[count].used];
-#ifndef STDO
-    gotoTab(39);
-    printString("100%\n");
-#endif
-    // Overwrite ?
+    //puts("100%");
 
     if ((switches & SW_P) && !(switches & SW_F))
     {
@@ -1175,10 +1116,8 @@ int cdecl main(int argc, char *argv[])
       switches |= SW_F;
     if ((switches & SW_F) && (switches & SW_P))
       logEntry("Overwriting existing message base files. DO NOT INTERRUPT!", LOG_ALWAYS, 0);
-    printString("Writing MsgHdr."MBEXTN" and index files...");
-#ifdef STDO
-    newLine();
-#endif
+
+    puts("Writing MsgHdr."MBEXTN" and index files...");
 
     newMsgNum = 0;
 
@@ -1204,8 +1143,6 @@ int cdecl main(int argc, char *argv[])
     }
     oldHdrSize = (u16)(filelength(oldHdrHandle) / sizeof(msgHdrRec));
 
-    percentCount = 0;
-
     linkArrIndex = 0;
     keepIdx = 0;
     keepBit = 1;
@@ -1213,12 +1150,6 @@ int cdecl main(int argc, char *argv[])
     while ((bufCount = _read(oldHdrHandle, msgHdrBuf, HDR_BUFSIZE
                              * sizeof(msgHdrRec)) / sizeof(msgHdrRec)) > 0)
     {
-#ifndef STDO
-      sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / (oldHdrSize ? oldHdrSize : 1)));
-      gotoTab(39);
-      printString(tempStr);
-      updateCurrLine();
-#endif
       newBufCount = 0;
 
       for (count = 0; count < bufCount; count++)
@@ -1318,7 +1249,6 @@ int cdecl main(int argc, char *argv[])
         }
         linkArrIndex++;
       }
-      percentCount += bufCount;
 
       if (newBufCount != 0)
       {
@@ -1327,10 +1257,6 @@ int cdecl main(int argc, char *argv[])
         _write(msgToIdxHandle, msgToIdxBuf, newBufCount * sizeof(msgToIdxRec));
       }
     }
-#ifndef STDO
-    gotoTab(39);
-    printString("100%\n");
-#endif
     chsize(msgHdrHandle, tell(msgHdrHandle));
     newHdrSize = (u16)(filelength(msgHdrHandle) / sizeof(msgHdrRec));
 
@@ -1363,42 +1289,21 @@ int cdecl main(int argc, char *argv[])
         logEntry("Can't open file LastRead."MBEXTN " for update", LOG_ALWAYS, 0);
       else
       {
-        printString("Updating LastRead."MBEXTN"...");
-#ifdef STDO
-        newLine();
-#else
-        if ((ddd = (u16)(filelength(lastReadHandle) / 100)) == 0)
-          ddd = 1;
-#endif
-        percentCount = 0;
+        puts("Updating LastRead."MBEXTN"...");
+
         while ((bufCount = _read(lastReadHandle, lruBuf, LRU_BUFSIZE)) > 0)
         {
-#ifndef STDO
-          sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / ddd));
-          gotoTab(39);
-          printString(tempStr);
-          updateCurrLine();
-#endif
           for (count = 0; count < (bufCount >> 1); count++)
             lruBuf[count] = renumArray[min(lruBuf[count], RENUM_BUFSIZE - 1)];
           lseek(lastReadHandle, -(s32)bufCount, SEEK_CUR);
           _write(lastReadHandle, lruBuf, bufCount);
-          percentCount += bufCount / 100;
         }
         close(lastReadHandle);
-#ifndef STDO
-        gotoTab(39);
-        printString("100%\n");
-#endif
       }
 
       if ((usersBBSHandle = open(expandName("users.bbs"), O_RDWR | O_BINARY | O_DENYNONE)) != -1)
       {
-        printString("Updating Users.BBS...");
-#ifdef STDO
-        newLine();
-#endif
-        percentCount = 0;
+        puts("Updating Users.BBS...");
         c = 0;
 
         if (  config.bbsProgram == BBS_RA20 || config.bbsProgram == BBS_RA25
@@ -1413,23 +1318,12 @@ int cdecl main(int argc, char *argv[])
           }
           else
           {
-#ifndef STDO
-            if ((ddd = (u16)(filelength(usersBBSHandle) / 1016)) == 0)
-              ddd = 1;
-#endif
             while (((lseek(usersBBSHandle, 452 + (1016 * (s32)c++), SEEK_SET) != -1)
                     && (_read(usersBBSHandle, &temp4, 4)) == 4))
             {
-#ifndef STDO
-              sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / ddd));
-              gotoTab(39);
-              printString(tempStr);
-              updateCurrLine();
-#endif
               temp4 = renumArray[min((u16)temp4, RENUM_BUFSIZE - 1)];
               lseek(usersBBSHandle, -4, SEEK_CUR);
               _write(usersBBSHandle, &temp4, 4);
-              percentCount++;
             }
           }
         }
@@ -1443,31 +1337,16 @@ int cdecl main(int argc, char *argv[])
           }
           else
           {
-#ifndef STDO
-            if ((ddd = (u16)(filelength(usersBBSHandle) / 158)) == 0)
-              ddd = 1;
-#endif
             while (((lseek(usersBBSHandle, 130 + (158 * (s32)c++), SEEK_SET) != -1)
                     && (_read(usersBBSHandle, &temp, 2)) == 2))
             {
-#ifndef STDO
-              sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / ddd));
-              gotoTab(39);
-              printString(tempStr);
-              updateCurrLine();
-#endif
               temp = renumArray[min(temp, RENUM_BUFSIZE - 1)];
               lseek(usersBBSHandle, -2, SEEK_CUR);
               _write(usersBBSHandle, &temp, 2);
-              percentCount++;
             }
           }
         }
         close(usersBBSHandle);
-#ifndef STDO
-        gotoTab(39);
-        printString("100%\n");
-#endif
       }
     }
 
@@ -1475,10 +1354,7 @@ int cdecl main(int argc, char *argv[])
     {
       msgTxtBuf = (msgTxtRec *)msgHdrBuf;
 
-      printString("Writing MsgTxt."MBEXTN"...");
-#ifdef STDO
-      newLine();
-#endif
+      puts("Writing MsgTxt."MBEXTN"...");
       if (((msgTxtHandle = open(expandName((switches & SW_F) ? "msgtxt."MBEXTN : "msgtxt.$$$")
                                 , O_WRONLY | O_BINARY | O_CREAT | O_DENYWRITE
                                 , S_IREAD | S_IWRITE)) == -1)
@@ -1489,20 +1365,12 @@ int cdecl main(int argc, char *argv[])
       }
       oldTxtSize = (u16)(filelength(oldTxtHandle) >> 8);
 
-      percentCount = 0;
-
       keepIdx = 0;
       keepBit = 1;
 
       while ((bufCount = _read(oldTxtHandle, msgTxtBuf, TXT_BUFSIZE
                                * sizeof(msgTxtRec)) / sizeof(msgTxtRec)) > 0)
       {
-#ifndef STDO
-        sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / oldTxtSize));
-        gotoTab(39);
-        printString(tempStr);
-        updateCurrLine();
-#endif
         newBufCount = 0;
 
         for (count = 0; count < bufCount; count++)
@@ -1518,15 +1386,10 @@ int cdecl main(int argc, char *argv[])
             keepIdx++;
           }
         }
-        percentCount += bufCount;
 
         if (newBufCount != 0)
           _write(msgTxtHandle, msgTxtBuf, newBufCount * sizeof(msgTxtRec));
       }
-#ifndef STDO
-      gotoTab(39);
-      printString("100%\n");
-#endif
       chsize(msgTxtHandle, tell(msgTxtHandle));
       newTxtSize = (u16)(filelength(msgTxtHandle) >> 8);
 
@@ -1624,10 +1487,7 @@ JAMonly:
             }
             if (!temp)
             {
-              printString("Processing JAM areas...\n");
-#ifdef STDO
-              newLine();
-#endif
+              puts("Processing JAM areas...");
               temp = 1;
             }
             if (!JAMmaint(areaBuf, switches, config.sysopName, &spaceSavedJAM)
@@ -1663,13 +1523,12 @@ nextarea:
     {
       if ((argc >= 3) && ((argv[2][0] == '?') || (argv[2][1] == '?')))
       {
-        printString("Usage:\n\n"
-                    "    FTools Sort [/A]\n\n"
-                    "Switches:\n\n"
-                    "    /A   Sort ALL messages\n"
-                    "         WARNING: It is NOT possible to sort all messages\n"
-                    "         and still have correct lastread pointers!\n");
-        showCursor();
+        puts("Usage:\n\n"
+             "    FTools Sort [/A]\n\n"
+             "Switches:\n\n"
+             "    /A   Sort ALL messages\n"
+             "         WARNING: It is NOT possible to sort all messages\n"
+             "         and still have correct lastread pointers!");
         return 0;
       }
       switches = getSwitchFT(&argc, argv, SW_A);
@@ -1714,17 +1573,13 @@ nextarea:
       {
         if ((argc >= 3) && ((argv[2][0] == '?') || (argv[2][1] == '?')))
         {
-          printString("Usage:\n\n"
-                      "    FTools Stat\n\n");
-          showCursor();
+          puts("Usage:\n\n"
+               "    FTools Stat\n");
           return 0;
         }
         initLog("STAT", 0);
 
-        printString("Analyzing the message base...");
-#ifdef STDO
-        newLine();
-#endif
+        puts("Analyzing the message base...");
 
         if ((msgHdrHandle = open(expandName("msghdr."MBEXTN), O_RDONLY | O_BINARY | O_DENYWRITE)) == -1)
           logEntry("Can't open MsgHdr."MBEXTN " for reading", LOG_ALWAYS, 1);
@@ -1737,17 +1592,9 @@ nextarea:
         lowMsgNum    = 0;
         oldHdrSize   = (u16)(filelength(msgHdrHandle) / sizeof(msgHdrRec));
 
-        percentCount = 0;
         while ((bufCount = _read(msgHdrHandle, msgHdrBuf, HDR_BUFSIZE
                                  * sizeof(msgHdrRec)) / sizeof(msgHdrRec)) > 0)
         {
-#ifndef STDO
-          sprintf(tempStr, "%3u%%", (u16)((s32)100 * percentCount / (oldHdrSize ? oldHdrSize : 1)));
-          gotoTab(39);
-          printString(tempStr);
-          updateCurrLine();
-#endif
-          percentCount += bufCount;
 
           totalMsgs += bufCount;
           for (count = 0; count < bufCount; count++)
@@ -1766,10 +1613,7 @@ nextarea:
           }
         }
         close(msgHdrHandle);
-#ifndef STDO
-        gotoTab(39);
-        printString("100%\n");
-#endif
+
         if (((msgTxtHandle = open(expandName("msgtxt."MBEXTN), O_RDONLY | O_BINARY | O_DENYALL)) == -1)
             || ((fileSize = filelength(msgTxtHandle)) == -1)
             || (close(msgTxtHandle) == -1))
@@ -1828,21 +1672,20 @@ nextarea:
     {
       if (argc < 4 || (argv[2][0] == '?' || argv[2][1] == '?'))
       {
-        printString("Usage:\n\n"
-                    "    FTools Post <file>|- <area tag> [options] [/C] [/D] [/H] [/P]\n\n"
-                    "Options with defaults:\n\n"
-                    "    -from    SysOp name as defined in FSetup\n"
-                    "    -to      'All'\n"
-                    "    -subj    <file name>\n"
-                    "    -dest    <node number> (netmail only)\n"
-                    "    -aka     Board dependant\n\n"
-                    "Switches:\n"
-                    "    /C  Crash status  (netmail only)     /R  File request       (netmail only)\n"
-                    "    /H  Hold status   (netmail only)     /F  File attach        (netmail only)\n"
-                    "    /D  Direct status (netmail only)     /E  Erase sent file    (file attach)\n"
-                    "    /K  Kill/sent     (netmail only)     /T  Truncate sent file (file attach)\n"
-                    "    /P  Private status\n");
-        showCursor();
+        puts("Usage:\n\n"
+             "    FTools Post <file>|- <area tag> [options] [/C] [/D] [/H] [/P]\n\n"
+             "Options with defaults:\n\n"
+             "    -from    SysOp name as defined in FSetup\n"
+             "    -to      'All'\n"
+             "    -subj    <file name>\n"
+             "    -dest    <node number> (netmail only)\n"
+             "    -aka     Board dependant\n\n"
+             "Switches:\n"
+             "    /C  Crash status  (netmail only)     /R  File request       (netmail only)\n"
+             "    /H  Hold status   (netmail only)     /F  File attach        (netmail only)\n"
+             "    /D  Direct status (netmail only)     /E  Erase sent file    (file attach)\n"
+             "    /K  Kill/sent     (netmail only)     /T  Truncate sent file (file attach)\n"
+             "    /P  Private status");
         return 0;
       }
       switches = getSwitchFT(&argc, argv, SW_C | SW_H | SW_D | SW_K | SW_P | SW_R | SW_F | SW_E | SW_T);
@@ -1854,14 +1697,14 @@ nextarea:
 
       memset(message, 0, INTMSG_SIZE);
 
-      strcpy(message->toUserName,   "All");
+      strcpy(message->toUserName  , "All");
       strcpy(message->fromUserName, config.sysopName);
 
       postBoard = 0;
       srcAka = 0;
       if (stricmp(argv[3], "#netdir") != 0)
         postBoard = getBoardNum(argv[3], 1, &srcAka, &areaPtr);
-      isNetmail = (postBoard == 0) || (memicmp(argv[3], "#net", 4) == 0);
+      isNetmail = postBoard == 0 || memicmp(argv[3], "#net", 4) == 0;
 
       for (count = 4; count < argc; count++)
       {
@@ -1919,15 +1762,17 @@ nextarea:
       if (switches & SW_F)
       {
         if ((helpPtr = _fullpath(NULL, message->subject, 72)) == NULL)
-                  logEntry("Can't locate file to be attached", LOG_ALWAYS, 1);
-                  strncpy(message->subject, strlwr(helpPtr), 71);
+          logEntry("Can't locate file to be attached", LOG_ALWAYS, 1);
+
+        strncpy(message->subject, strlwr(helpPtr), 71);
         free(helpPtr);
       }
 
       if (strcmp(argv[2], "-"))
       {
-        if ((lastReadHandle = open(argv[2], O_RDONLY | O_BINARY | O_DENYNONE)) == -1)
+        if ((lastReadHandle = open(argv[2], O_RDONLY | O_BINARY)) == -1)
           logEntry("Can't locate text file", LOG_ALWAYS, 1);
+
         read(lastReadHandle, message->text, TEXT_SIZE - 4096);
         close(lastReadHandle);
         removeLf(message->text);
@@ -1951,9 +1796,8 @@ nextarea:
                              | ((switches & SW_C) ? CRASH : ((switches & SW_H) ? HOLDPICKUP : 0));
         if (switches & (SW_D | SW_E | SW_T))
         {
-          sprintf(tempStr, "\1FLAGS%s%s\r", (switches & SW_D) ? " DIR" : ""
-                  , (switches & SW_E) ? " KFS"
-                  : (switches & SW_T) ? " TFS" : "");
+          sprintf( tempStr, "\1FLAGS%s%s\r", (switches & SW_D) ? " DIR" : ""
+                 , (switches & SW_E) ? " KFS" : (switches & SW_T) ? " TFS" : "");
           insertLine(message->text, tempStr);
         }
 
@@ -1980,29 +1824,27 @@ nextarea:
           message->month   = dateRec.da_mon;
           message->year    = dateRec.da_year;
 
-          message->attribute = ((switches & SW_C) ? CRASH : 0)
-                               | ((switches & SW_P) ? PRIVATE : 0) | LOCAL;
+          message->attribute = ((switches & SW_C) ? CRASH   : 0)
+                             | ((switches & SW_P) ? PRIVATE : 0) | LOCAL;
           addInfo(message, isNetmail);
 
           // write JAM message here
           jam_writemsg(areaPtr->msgBasePath, message, 1);
           jam_closeall();
 
-          sprintf(tempStr, "Posting message in area %s (JAM base %s)"
-                  , areaPtr->areaName, areaPtr->msgBasePath);
+          sprintf(tempStr, "Posting message in area %s (JAM base %s)", areaPtr->areaName, areaPtr->msgBasePath);
           logEntry(tempStr, LOG_ALWAYS, 0);
         }
         else
         {
-          message->attribute = ((switches & SW_C) ? CRASH : 0)
-                               | ((switches & SW_P) ? PRIVATE : 0);
+          message->attribute = ((switches & SW_C) ? CRASH   : 0)
+                             | ((switches & SW_P) ? PRIVATE : 0);
           addInfo(message, isNetmail);
 
           openBBSWr();
           if (writeBBS(message, postBoard, isNetmail) == 0)
           {
-            sprintf(tempStr, "Posting message in area %s ("MBNAME " board %u)"
-                    , areaPtr->areaName, postBoard);
+            sprintf(tempStr, "Posting message in area %s ("MBNAME " board %u)", areaPtr->areaName, postBoard);
             logEntry(tempStr, LOG_ALWAYS, 0);
           }
           closeBBS();
@@ -2026,16 +1868,15 @@ nextarea:
           {
             if ((argc >= 3) && ((argv[2][0] == '?') || (argv[2][1] == '?')))
             {
-              printString("Usage:\n\n"
-                          "    FTools MsgM [-net] [-sent] [-rcvd] [-pmail] [/N]\n\n"
-                          "Options:\n\n"
-                          "    [-net]    Netmail directory\n"
-                          "    [-sent]   Sent messages directory\n"
-                          "    [-rcvd]   Received messages directory\n"
-                          "    [-pmail]  Personal mail directory\n\n"
-                          "Switches:\n\n"
-                          "    /N   Renumber messages\n");
-              showCursor();
+              puts("Usage:\n\n"
+                   "    FTools MsgM [-net] [-sent] [-rcvd] [-pmail] [/N]\n\n"
+                   "Options:\n\n"
+                   "    [-net]    Netmail directory\n"
+                   "    [-sent]   Sent messages directory\n"
+                   "    [-rcvd]   Received messages directory\n"
+                   "    [-pmail]  Personal mail directory\n\n"
+                   "Switches:\n\n"
+                   "    /N   Renumber messages");
               return 0;
             }
             switches = getSwitchFT(&argc, argv, SW_N);
@@ -2045,7 +1886,7 @@ nextarea:
             if (switches == 0)
             {
               logEntry("Nothing to do!", LOG_ALWAYS, 0);
-              showCursor();
+
               return 0;
             }
 
@@ -2084,7 +1925,7 @@ nextarea:
                   {
                     helpPtr2 = stpcpy(tempStr2, config.rcvdPath);
                     helpPtr3 = stpcpy(tempStr3, config.rcvdPath);
-                      logEntry("Processing received messages directory", LOG_ALWAYS, 0);
+                    logEntry("Processing received messages directory", LOG_ALWAYS, 0);
                   }
                   else
                     if (stricmp(argv[c], "-pmail") == 0)
@@ -2104,28 +1945,33 @@ nextarea:
                 if (switches & SW_N)
                 {
                   bufCount = 0;
-                  strcpy(helpPtr2, "*.msg");
-                  doneSearch = findfirst(tempStr2, &ffblkMsg, 0);
-                  while ((bufCount < 0x8ff8) && !doneSearch)
+                  *helpPtr2 = 0;
+                  if ((dir = opendir(tempStr2)) != NULL)
                   {
-                    msgNum = (u16)strtoul(ffblkMsg.ff_name, &helpPtr, 10);
-                    if ((msgNum != 0) && (*helpPtr == '.'))
+                    while ((bufCount < 0x8ff8) && (ent = readdir(dir)) != NULL)
                     {
-                      low = 0;
-                      high = bufCount;
-                      while (low < high)
+                      if (!match_spec("*.msg", ent->d_name))
+                        continue;
+
+                      msgNum = (u16)strtoul(ent->d_name, &helpPtr, 10);
+                      if (msgNum != 0 && *helpPtr == '.')
                       {
-                        mid = (low + high) >> 1;
-                        if (msgNum > msgRenumBuf[mid])
-                          low = mid + 1;
-                        else
-                          high = mid;
+                        low = 0;
+                        high = bufCount;
+                        while (low < high)
+                        {
+                          mid = (low + high) >> 1;
+                          if (msgNum > msgRenumBuf[mid])
+                            low = mid + 1;
+                          else
+                            high = mid;
+                        }
+                        memmove(&msgRenumBuf[low + 1], &msgRenumBuf[low], (bufCount - low) << 1);
+                        msgRenumBuf[low] = msgNum;
+                        bufCount++;
                       }
-                      memmove(&msgRenumBuf[low + 1], &msgRenumBuf[low], (bufCount - low) << 1);
-                      msgRenumBuf[low] = msgNum;
-                      bufCount++;
                     }
-                    doneSearch = findnext(&ffblkMsg);
+                    closedir(dir);
                   }
                   ddd = 0;
                   for (count = 0; count < bufCount; count++)
@@ -2135,10 +1981,7 @@ nextarea:
                       sprintf(helpPtr3, "%u.msg", count + 1);
                       if (rename(tempStr2, tempStr3) == 0)
                       {
-                        gotoTab(0);
-                        sprintf(tempStr, "- Renumbering messages: %u "dARROW" %u", msgRenumBuf[count], count + 1);
-                        printString(tempStr);
-                        updateCurrLine();
+                        printf("\r- Renumbering messages: %u "dARROW" %u", msgRenumBuf[count], count + 1);
                         ddd++;
                       }
                     }
@@ -2168,7 +2011,7 @@ nextarea:
                     && *config.semaphorePath && (stricmp(argv[c], "-net") == 0))
                 {
                   strcpy(tempStr, semaphore[config.mailer]);
-                    touch(config.semaphorePath, tempStr, "");
+                  touch(config.semaphorePath, tempStr, "");
                   if (config.mailer <= 1)
                   {
                     tempStr[1] = 'M';
@@ -2189,17 +2032,16 @@ nextarea:
     {
       if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
       {
-        printString("Usage:\n\n"
-                    "    FTools AddNew [/A]\n\n"
-                    "Switches:\n\n"
-                    "    /A   AutoUpdate config files\n");
-        showCursor();
+        puts("Usage:\n\n"
+             "    FTools AddNew [/A]\n\n"
+             "Switches:\n\n"
+             "    /A   AutoUpdate config files");
         return 0;
       }
       switches = getSwitchFT(&argc, argv, SW_A);
       initLog("ADDNEW", switches);
       addNew(switches);
-      showCursor();
+
       return 0;
     }
     else
@@ -2211,8 +2053,6 @@ nextarea:
       }
       else
         Usage();
-
-  showCursor();
 
   return 0;
 }
@@ -2234,11 +2074,11 @@ void myexit(void)
        || write(configHandle, &config.lastUniqueID, sizeof(config.lastUniqueID)) < sizeof(config.lastUniqueID)
        || close(configHandle) == -1
        )
-      printString("\nCan't write "dCFGFNAME"\n");
+      puts("\nCan't write "dCFGFNAME);
   }
 
 #ifdef _DEBUG0
-  printString("\nPress any key to continue... ");
+  putStr("\nPress any key to continue... ");
   getch();
   newLine();
 #endif

@@ -4,17 +4,17 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="FToolsW32.exe"/>
-    <OBJFILES value="OBJ.6\FToolsW32\ADDNEW.obj OBJ.6\FToolsW32\CFGFILE.obj 
-      OBJ.6\FToolsW32\CRC.obj OBJ.6\FToolsW32\FILESYS.obj 
-      OBJ.6\FToolsW32\FTLOG.obj OBJ.6\FToolsW32\FTNOTIFY.obj 
-      OBJ.6\FToolsW32\FTOOLS.obj OBJ.6\FToolsW32\FTR.obj 
-      OBJ.6\FToolsW32\FTSORTHB.obj OBJ.6\FToolsW32\HUDSON.obj 
-      OBJ.6\FToolsW32\IMPDESC.obj OBJ.6\FToolsW32\ispathch.obj 
-      OBJ.6\FToolsW32\JAMFUN.obj OBJ.6\FToolsW32\JAMMAINT.obj 
-      OBJ.6\FToolsW32\MTASK.obj OBJ.6\FToolsW32\OUTPUT.obj 
-      OBJ.6\FToolsW32\SMTP.obj OBJ.6\FToolsW32\totalsec.obj 
-      OBJ.6\FToolsW32\UPDATE.obj OBJ.6\FToolsW32\UTILS.obj 
-      OBJ.6\FToolsW32\UTILS2.obj OBJ.6\FToolsW32\Version.obj"/>
+    <OBJFILES value="OBJ.6\FToolsW32\addnew.obj OBJ.6\FToolsW32\cfgfile.obj 
+      OBJ.6\FToolsW32\crc.obj OBJ.6\FToolsW32\filesys.obj 
+      OBJ.6\FToolsW32\ftlog.obj OBJ.6\FToolsW32\ftnotify.obj 
+      OBJ.6\FToolsW32\ftools.obj OBJ.6\FToolsW32\ftr.obj 
+      OBJ.6\FToolsW32\hudson.obj OBJ.6\FToolsW32\impdesc.obj 
+      OBJ.6\FToolsW32\ispathch.obj OBJ.6\FToolsW32\jamfun.obj 
+      OBJ.6\FToolsW32\jammaint.obj OBJ.6\FToolsW32\mtask.obj 
+      OBJ.6\FToolsW32\smtp.obj OBJ.6\FToolsW32\sorthb.obj 
+      OBJ.6\FToolsW32\spec.obj OBJ.6\FToolsW32\update.obj 
+      OBJ.6\FToolsW32\utils.obj OBJ.6\FToolsW32\utils2.obj 
+      OBJ.6\FToolsW32\version.obj"/>
     <RESFILES value="FToolsW32.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -29,7 +29,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG"/>
+    <USERDEFINES value="FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FToolsW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -38,11 +38,11 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -Q -Vx -Ve -C -X- -r- -a1 -6 -b -d -k -y -v -vi- -tWC -tWM- -c"/>
-    <PFLAGS value="-N2OBJ.6\FToolsW32 -N0OBJ.6\FToolsW32 -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
+    <CFLAG1 value="-O2 -Q -Vx -Ve -C -X- -a1 -6 -b -d -k- -vi -tWC -tWM- -c"/>
+    <PFLAGS value="-N2OBJ.6\FToolsW32 -N0OBJ.6\FToolsW32 -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-IOBJ.6\FToolsW32 -D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-IOBJ.6\FToolsW32 -D&quot;&quot; -ap -Tpe -x -Gn"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -54,28 +54,27 @@
   <FILELIST>
       <FILE FILENAME="FToolsW32.res" FORMNAME="" UNITNAME="FToolsW32.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="FToolsW32.bpf" FORMNAME="" UNITNAME="FToolsW32" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="ADDNEW.C" FORMNAME="" UNITNAME="ADDNEW" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="CFGFILE.C" FORMNAME="" UNITNAME="CFGFILE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="CRC.C" FORMNAME="" UNITNAME="CRC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="FILESYS.C" FORMNAME="" UNITNAME="FILESYS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="FTLOG.C" FORMNAME="" UNITNAME="FTLOG" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="FTNOTIFY.C" FORMNAME="" UNITNAME="FTNOTIFY" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="FTOOLS.C" FORMNAME="" UNITNAME="FTOOLS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="FTR.C" FORMNAME="" UNITNAME="FTR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="FTSORTHB.C" FORMNAME="" UNITNAME="FTSORTHB" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="HUDSON.C" FORMNAME="" UNITNAME="HUDSON" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="IMPDESC.C" FORMNAME="" UNITNAME="IMPDESC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="addnew.c" FORMNAME="" UNITNAME="addnew" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="cfgfile.c" FORMNAME="" UNITNAME="cfgfile" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="crc.c" FORMNAME="" UNITNAME="crc" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="filesys.c" FORMNAME="" UNITNAME="filesys" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ftlog.c" FORMNAME="" UNITNAME="ftlog" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ftnotify.c" FORMNAME="" UNITNAME="ftnotify" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ftools.c" FORMNAME="" UNITNAME="ftools" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ftr.c" FORMNAME="" UNITNAME="ftr" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="hudson.c" FORMNAME="" UNITNAME="hudson" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="impdesc.c" FORMNAME="" UNITNAME="impdesc" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ispathch.c" FORMNAME="" UNITNAME="ispathch" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="JAMFUN.C" FORMNAME="" UNITNAME="JAMFUN" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="JAMMAINT.C" FORMNAME="" UNITNAME="JAMMAINT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="MTASK.C" FORMNAME="" UNITNAME="MTASK" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="OUTPUT.C" FORMNAME="" UNITNAME="OUTPUT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="SMTP.C" FORMNAME="" UNITNAME="SMTP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="totalsec.c" FORMNAME="" UNITNAME="totalsec" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="UPDATE.C" FORMNAME="" UNITNAME="UPDATE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="UTILS.C" FORMNAME="" UNITNAME="UTILS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="UTILS2.C" FORMNAME="" UNITNAME="UTILS2" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Version.c" FORMNAME="" UNITNAME="Version" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="jamfun.c" FORMNAME="" UNITNAME="jamfun" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="jammaint.c" FORMNAME="" UNITNAME="jammaint" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="mtask.c" FORMNAME="" UNITNAME="mtask" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="smtp.c" FORMNAME="" UNITNAME="smtp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="sorthb.c" FORMNAME="" UNITNAME="sorthb" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="spec.c" FORMNAME="" UNITNAME="spec" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="update.c" FORMNAME="" UNITNAME="update" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="utils.c" FORMNAME="" UNITNAME="utils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="utils2.c" FORMNAME="" UNITNAME="utils2" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="version.c" FORMNAME="" UNITNAME="version" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -83,11 +82,11 @@
   <IDEOPTIONS>
 [Version Info]
 IncludeVerInfo=1
-AutoIncBuild=1
+AutoIncBuild=0
 MajorVer=1
-MinorVer=69
-Release=6
-Build=67
+MinorVer=72
+Release=0
+Build=0
 Debug=0
 PreRelease=0
 Special=0
@@ -99,13 +98,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FTools Windows 32 bit version
-FileVersion=1.69.6.67
+FileVersion=1.72.0.0
 InternalName=FTools
 LegalCopyright=Copyright (c) 1991 - 2015 FMail developers
 LegalTrademarks=
 OriginalFilename=FToolsW32.exe
 ProductName=FMail
-ProductVersion=1.69
+ProductVersion=1.72
 
 [Excluded Packages]
 C:\Program Files\Borland\CBuilder6\Bin\dclstd60.bpl=Borland Standard Components
@@ -145,17 +144,19 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=10
-Item0=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item1=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item2=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
-Item3=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
-Item4=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item5=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item6=_DEBUG;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item7=_DEBUG;P386;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item8=_DEBUG;P386;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUM__
-Item9=_DEBUG
+Count=12
+Item0=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item1=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item2=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item3=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item4=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
+Item5=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
+Item6=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item7=__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item8=_DEBUG;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item9=_DEBUG;P386;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item10=_DEBUG;P386;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUM__
+Item11=_DEBUG
 
 [HistoryLists\hlIntOutputDir]
 Count=1

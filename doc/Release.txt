@@ -1,0 +1,181 @@
+This file contains information about FMail releases since 1.60.GPL
+
+2016-09-18  -  1.72.0.0
+
+  Only 1 month after the last release this time. ;)
+
+  You can download it from the Sourceforge website here:
+
+  https://sourceforge.net/projects/fmail/files/FMail/1.72/
+
+  I decided to slightly change the version numbering. Beta versions will have an
+  uneven second number, and releases an even number. So you won't get releases
+  with a high 3th, and even higher 4th (build) number. That's why there is the
+  little jump in version numbers this time.
+
+  There's only one major new function in this release, and that is the
+  PING/TRACE function. You can read about the smaller changes and bug fixes in
+  the ChangLog file.
+
+
+2016-08-16  -  1.69
+
+  Release of FMail 1.69.
+
+  More then 2 years after the last release, 1.69 has been released!
+
+  You can download it from the Sourceforge website here:
+
+  https://sourceforge.net/projects/fmail/files/FMail/1.69/
+
+  Lots of changes in this release. If you are interested in the complete list,
+  you can read about them in detail in the 'changelog' file in the zip archive
+  after you download it.
+
+  The most notable changes are:
+
+  * FSetup Win32 version: FConfigW32.exe
+  * Via kludge shows milliseconds and time in UTC and is more FTS-4009
+    compliant.
+  * RESCANNED kludge now has the same format as the VIA kludge.
+  * Add a Via line as regular kludge line to messages tossed to the dupe area.
+  * Also add Via kludge on received/tossed net mails.
+  * 'Tiny Path' option.
+  * Jam-maint function rewritten: uses memory buffers, for faster operation, and
+    fixed file lock bug.
+  * 'Allow Rescan' option for echo mail areas.
+  * FMail log style added: Print "Active" time with millisecond precision.
+  * Detect old messages (setting in days in FSetup) and move them to the bad
+    area on detection.
+
+
+2014-07-01  -  1.68
+
+  I have released a new version of FMail (1.68).
+
+  Only the Win32 version has been created. You can download it from sourceforge
+  here:
+
+  http://sourceforge.net/projects/fmail/files/FMail/1.68/FMailW32-1.68.10.91.gpl.zip/download
+
+  http://tinyurl.com/n97gnx4
+  http://preview.tinyurl.com/n97gnx4
+
+  The most important change since the last release is: FMail can now put plain
+  uncompressed .pkt files in it's outbound destinations, if you select 'None' as
+  compressor for nodes.
+
+  But there are a lot more changes and fixes. For the full list see the
+  Changelog file inside the zip release file.
+
+
+2014-03-21  -  1.67
+
+  I have released a new version of FMail (1.67).
+
+  For now, only the Win32 version has been created. You can download it from sourceforge here:
+
+  http://preview.tinyurl.com/okkonol
+  http://sourceforge.net/projects/fmail/files/FMail/1.67/FMailW32-1.67.1.47.gpl.zip
+
+  If you need any one of the other versions (DOS, 386, ...) please let me know and I see what I can do...
+
+  Changes since the last release are:
+
+  2014-03-21  1.67.1.47
+    * Fixed some high ASCII usage.
+    * Print seconds in header of toss summary.
+
+  2013-12-30  1.67.0.45
+    * Disk free space calculation uses 64 bit integers. The standard 32 bit integers aren't big enough to hold todays big disk sizes.
+      This also fixes the bug where the 'Sent to node' report wasn't always written to the log when tossing.
+    * Print free disk space to log file when calculated.
+    * Write dates in log files in iso format (YYYY-MM-DD).
+    * Updated products code list to FTSCPROD.016.
+    * Toss logging is more compact: uses less newlines.
+    * On WIN32 printed version string now has 4 digits.
+    * Lots of cosmetic code changes, and a few little fixes.
+
+
+2013-10-15  -  1.66
+
+  I have released a new version of FMail (1.66).
+
+  For now, only the Win32 version has been created. You can download it from sourceforge here:
+
+  http://goo.gl/IAJxKN
+  http://sourceforge.net/projects/fmail/files/FMail/1.66/FMailW32-1.66.0.33.gpl.zip
+
+  If you need any one of the other versions (DOS, 386, ...) please let me know and I see what I can do...
+
+  The main latest changes are:
+
+  - Sort SEEN-BY list before usage. This fixes a bug where exporting didn't function properly when SEEN-BY's were used.
+  - -aka Option can now be used while posting to an echomail area.
+  - Completely removed key checking code. FMail (with or without a key file) should behave as a registered version.
+
+  But there are more little changes and some bug fixes. You can read the complete list here:
+
+  http://sourceforge.net/p/fmail/code/ci/master/tree/doc/ChangeLog
+
+
+2011-09-11
+
+  FToolsW32 is now also compiled with C++ Builder 6. Watch the name change from:
+  FToolsW3.exe to: FToolsW32.exe. So either adapt your batch files or rename it
+  back! You should be carefull when you use this version of FTools, make sure
+  you make backups of your message base files before you use it. I didn't test
+  every function of FTools, just the ones that I use on my system:
+
+   MAINT /D /N /O /P
+   MSGM -net -sent -rcvd /N
+   Notify /A
+   Post ... <to JAM area>
+
+   So be extra carefull when you use other functions of FTools!
+
+
+2011-09-03  -  1.64.GPL
+
+  This release of FMailW32 1.64.GPL should be regarded as a Beta!
+
+  There are 2 important changes from the previous release:
+
+  1) FMailW32.exe is now build with Borland C++ Builder 6, which is a bit more
+  modern then Borland C++ 4.52 (1995 vs 2002). The main advantage for
+  development is that BCB6 is able to debug Win32 programs, which BC45 was not.
+
+  2) FMailW32 creates files and directory names in lowercase as much as
+  possible, so it should function a bit better where files are on a filesystem
+  that is case sensitive. Like my setup where fmail runs on virtual Windows, and
+  binkd runs on the linux side of the machine.
+
+  For the other tools in the FMail package you should still use those from the
+  previous release, because they are not converted yet!
+
+  Please let me know your experience with this release, in the fidonet
+  FMAIL_HELP echomail area.
+
+
+  Regards, Wilfred van Velzen (2:280/464)
+
+
+2008-02-12  -  1.60.GPL
+
+  This is the opensource release of FMail 1.60.GPL. You will find a copy of the
+  GPL license as the file COPYING in this release.
+
+  FMail was compiled using the Borland C++ 4.52 compiler. In order to compile
+  the DPMI versions, you need the Borland Power Pack.
+
+  If you install Borland C++ in C:\Program fies\BC45\ and extract this archive
+  in D:\FMail, you should be able to open the IDE file and compile FMail.
+
+  If you have questions, please post them on the Sourceforge project space:
+  http://sourceforge.net/projects/fmail/
+
+  Or try your luck by contacting Folkert at the e-mail address listed on
+  http://fmail.nl.eu.org
+
+  Folkert J. Wijnstra  &  Wilfred van Velzen
+

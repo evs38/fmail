@@ -39,7 +39,7 @@
 #include "dups.h"
 #include "log.h"
 #include "msgpkt.h"
-#include "output.h"
+#include "stpcpy.h"
 #include "version.h"
 
 //---------------------------------------------------------------------------
@@ -53,39 +53,14 @@ struct tm         timeBlock;
 u16               dayOfWeek;
 
 u16               mgrLogUsed = 0;
-
-
-#ifdef __BORLANDC__
-#ifdef __WIN32__
-#ifndef __DPMI32__
-struct  COUNTRY
-{
-  short co_date;
-  char  co_curr [ 5];
-  char  co_thsep[ 2];
-  char  co_desep[ 2];
-  char  co_dtsep[ 2];
-  char  co_tmsep[ 2];
-  char  co_currstyle;
-  char  co_digits;
-  char  co_time;
-  long  co_case;
-  char  co_dasep[ 2];
-  char  co_fill [10];
-};
-#endif
-#endif
-   struct COUNTRY countryInfo;
-#else
-   struct country countryInfo;
-#endif
-
 //---------------------------------------------------------------------------
 static void writeLogLine(fhandle logHandle, const char *s)
 {
+#ifndef __WIN32__
   time_t      timer;
+#endif // __WIN32__
   struct tm   tm;
-	tempStrType tempStr;
+  tempStrType tempStr;
   int         sl;
 
 #ifdef __WIN32__
@@ -100,58 +75,56 @@ static void writeLogLine(fhandle logHandle, const char *s)
     tm.tm_min  = st.wMinute;
     tm.tm_sec  = st.wSecond;
   }
-#else
+#else // __WIN32__
   time(&timer);
   tm = *gmtime(&timer);
-#endif
+#endif // __WIN32__
 
   switch (config.logStyle)
   {
     case 1:  // QuickBBS
-      sl = sprintf( tempStr ,"%02u-%.3s-%02u %02u:%02u  %s\n"
-                  , tm.tm_mday
-                  , months + (tm.tm_mon * 3)
-                  , tm.tm_year % 100
-                  , tm.tm_hour
-                  , tm.tm_min, s
-                  );
-      break;
-    case 2:  // D'Bridge
-      sl = sprintf( tempStr ,"%02u/%02u/%02u %02u:%02u  %s\n"
-                  , tm.tm_mon + 1
-                  , tm.tm_mday
-                  , tm.tm_year % 100
-                  , tm.tm_hour
-                  , tm.tm_min, s
-                  );
-      break;
-    case 3:  // Binkley
-      sl = sprintf( tempStr ,"> %02u %.3s %02u %02u:%02u:%02u FMAIL  %s\n"
+      sl = sprintf( tempStr ,"%02u-%.3s-%02u %02u:%02u  "
                   , tm.tm_mday
                   , months + (tm.tm_mon * 3)
                   , tm.tm_year % 100
                   , tm.tm_hour
                   , tm.tm_min
-                  , tm.tm_sec, s
+                  );
+      break;
+    case 2:  // D'Bridge
+      sl = sprintf( tempStr ,"%02u/%02u/%02u %02u:%02u  "
+                  , tm.tm_mon + 1
+                  , tm.tm_mday
+                  , tm.tm_year % 100
+                  , tm.tm_hour
+                  , tm.tm_min
+                  );
+      break;
+    case 3:  // Binkley
+      sl = sprintf( tempStr ,"> %02u %.3s %02u %02u:%02u:%02u FMAIL  "
+                  , tm.tm_mday
+                  , months + (tm.tm_mon * 3)
+                  , tm.tm_year % 100
+                  , tm.tm_hour
+                  , tm.tm_min
+                  , tm.tm_sec
                   );
       break;
 #ifdef __WIN32__
     case 4:  // FMail
-      sl = sprintf(tempStr, "%02u:%02u:%02u.%03u  %s\n", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
+      sl = sprintf(tempStr, "%02u:%02u:%02u.%03u  ", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
       break;
 #endif
     default:  // FrontDoor
-      sl = sprintf( tempStr, "  %2u%c%02u%c%02u  %s\n"
-                  , tm.tm_hour, countryInfo.co_tmsep[0]
-                  , tm.tm_min , countryInfo.co_tmsep[0]
-                  , tm.tm_sec , s
-                  );
+      sl = sprintf(tempStr, "  %2u:%02u:%02u  ", tm.tm_hour, tm.tm_min, tm.tm_sec , s);
       break;
   }
   write(logHandle, tempStr, sl);
+  write(logHandle, s, strlen(s));
+  write(logHandle, "\n", 1);
 }
 //---------------------------------------------------------------------------
-void initLog(char *s, s32 switches)
+void initLog(const char *funcStr, s32 switches)
 {
   fhandle     logHandle;
   tempStrType tempStr
@@ -172,25 +145,19 @@ void initLog(char *s, s32 switches)
   if (!config.logInfo)
     return;
 
-#ifndef __WIN32__
-   country(0, &countryInfo);
-#else
-   countryInfo.co_tmsep[0] = ':';
-#endif
-
   if ((logHandle = openP(config.logName, O_RDWR | O_CREAT | O_APPEND | O_TEXT | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
   {
-    printString ("WARNING: Can't open log file\n\n");
+    puts("WARNING: Can't open log file\n");
     config.logInfo = 0;
   }
   else
   {
 #ifdef __WIN32__
     if (config.logStyle == 4)
-      helpPtr = stpcpy(tempStr2, s);
+      helpPtr = stpcpy(tempStr2, funcStr);
     else
 #endif
-      helpPtr = tempStr2 + sprintf(tempStr2, "%s - %s", VersionStr(), s);
+      helpPtr = tempStr2 + sprintf(tempStr2, "%s - %s", VersionStr(), funcStr);
 
     for (count = 0; count < 26; count++)
     {
@@ -252,15 +219,15 @@ void initLog(char *s, s32 switches)
   }
 }
 //---------------------------------------------------------------------------
-void logEntry(char *s, u16 entryType, u16 errorLevel)
+void logEntry(const char *s, u16 entryType, u16 errorLevel)
 {
   fhandle     logHandle;
   tempStrType tempStr;
 
   if (!(entryType & LOG_NOSCRN))
   {
-    printString(s);
-    newLine();
+    puts(s);
+    fflush(stdout);
   }
 
   if (  entryType == LOG_NEVER
@@ -273,13 +240,10 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
     {
       if (errorLevel != 100)
       {
-        sprintf(tempStr, "Exiting with errorlevel %u", errorLevel);
-        printString(tempStr);
-        newLine();
+        printf("Exiting with errorlevel %u\n", errorLevel);
         if (entryType != LOG_NEVER)
           closeDup();
       }
-      showCursor();
       exit(errorLevel == 100 ? 0 : errorLevel);
     }
     return;
@@ -293,8 +257,7 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
     if (errorLevel != 100)
     {
       sprintf(tempStr, "Exiting with errorlevel %u", errorLevel);
-      printString(tempStr);
-      newLine();
+      puts(tempStr);
       if (logHandle != -1)
       {
         writeLogLine(logHandle, tempStr);
@@ -303,20 +266,18 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
       if (entryType != LOG_NEVER)
         closeDup();
     }
-    showCursor();
-    exit (errorLevel==100 ? 0 : errorLevel);
+    exit(errorLevel == 100 ? 0 : errorLevel);
   }
   if (logHandle != -1)
     close(logHandle);
 }
 //---------------------------------------------------------------------------
-void mgrLogEntry(char *s)
+void mgrLogEntry(const char *s)
 {
   fhandle     logHandle;
   tempStrType tempStr;
 
-  printString(s);
-  newLine();
+  puts(s);
 
   if ((*config.areaMgrLogName) && (!(mgrLogUsed++)) &&
       stricmp(config.logName, config.areaMgrLogName) &&
@@ -366,7 +327,7 @@ void logActive(void)
   tempStrType timeStr;
 
   newLine();
-  sprintf(timeStr, "Active: %.3f sec.", (clock() - at) / CLK_TCK);
+  sprintf(timeStr, "Active: %.3f sec.", ((double)(clock() - at)) / CLK_TCK);
   logEntry(timeStr, LOG_STATS, 0);
 }
 //---------------------------------------------------------------------------

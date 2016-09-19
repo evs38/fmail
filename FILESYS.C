@@ -1,23 +1,25 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 
 #include <fcntl.h>
@@ -31,12 +33,12 @@
 #endif
 
 #include "fmail.h"
-#include "config.h"      
+#include "config.h"
 #include "filesys.h"
 
 int fs_maxfname;
 int fs_maxdir;
-int fs_flags;    
+int fs_flags;
 
 
 #define seg(x) (int)(((long)x)>>16)
@@ -47,7 +49,7 @@ int fs_flags;
 #define fsint86x(a,b,c,d) int86x(a,b,c,d)
 #else
 #define fsint86x(a,b,c,d) int86xdpmi(a,b,c,d)
-#ifndef __32BIT__     
+#ifndef __32BIT__
 static void *intbuf1p, *intbuf1r;
 static void *intbuf2p, *intbuf2r;
 
@@ -78,9 +80,9 @@ int int86xdpmi(int intno, union REGS *inregs, union REGS *outregs, struct SREGS 
 {  regdata.di    = inregs->x.di;
    regdata.si    = inregs->x.si;
    regdata.bx    = inregs->x.bx;
-   regdata.dx    = inregs->x.dx;     
+   regdata.dx    = inregs->x.dx;
    regdata.cx    = inregs->x.cx;
-   regdata.ax    = inregs->x.ax; 
+   regdata.ax    = inregs->x.ax;
    regdata.flags = inregs->x.flags;
    regdata.es    = segregs->es;
    regdata.ds    = segregs->ds;
@@ -108,43 +110,44 @@ int int86xdpmi(int intno, union REGS *inregs, union REGS *outregs, struct SREGS 
 
 
 
-#ifndef __FMAILX__        
-#define segx1(ptr) seg(ptr)   
-#else                     
+#ifndef __FMAILX__
+#define segx1(ptr) seg(ptr)
+#else
 #define segx1(ptr)        \
 (  memcpy(intbuf1p, ptr, 320), \
    seg(intbuf1r)         \
 )
 #endif                    \
 
-#ifndef __FMAILX__        
-#define offx1(ptr) off(ptr)   
-#else                     
+#ifndef __FMAILX__
+#define offx1(ptr) off(ptr)
+#else
 #define offx1(ptr)        \
 (  memcpy(intbuf1p, ptr, 320), \
    off(intbuf1r)         \
 )
 #endif                    \
 
-#ifndef __FMAILX__        
-#define segx2(ptr) seg(ptr)   
-#else                     
+#ifndef __FMAILX__
+#define segx2(ptr) seg(ptr)
+#else
 #define segx2(ptr)        \
 (  memcpy(intbuf2p, ptr, 320), \
    seg(intbuf2r)         \
 )
 #endif                    \
 
-#ifndef __FMAILX__        
-#define offx2(ptr) off(ptr);   
-#else                     
+#ifndef __FMAILX__
+#define offx2(ptr) off(ptr);
+#else
 #define offx2(ptr)        \
 (  memcpy(intbuf2p, ptr, 320), \
    off(intbuf2r)         \
 )
 #endif                    \
 
-
+//---------------------------------------------------------------------------
+// Check if the volume in path supports long file names
 int fileSys(const char *path)
 {
 #ifndef __32BIT__
@@ -163,7 +166,7 @@ int fileSys(const char *path)
    return 1;
 #else
 #ifdef __32BIT__
-   if ( !config.genOptions.lfn )
+   if (!config.genOptions.lfn)
       return 0;
    GetVolumeInformation(path, NULL, 0, NULL, NULL, (LPDWORD)&fs_flags, NULL, 0);
    return (fs_flags & 0x4000) != 0;
@@ -172,16 +175,18 @@ int fileSys(const char *path)
       return 0;
 #ifdef  __FMAILX__
    if ( !intbuf1p )
-   {  u32 tmp;
+   {
+      u32 tmp;
       if ( (tmp = GlobalDosAlloc(320)) == 0 )
-	 return 0;
+        return 0;
       intbuf1p = (void *)(tmp << 16);
       intbuf1r = (void *)(tmp & 0xffff0000L);
    }
    if ( !intbuf2p )
-   {  u32 tmp;
+   {
+      u32 tmp;
       if ( (tmp = GlobalDosAlloc(320)) == 0 )
-	 return 0;
+        return 0;
       intbuf2p = (void *)(tmp << 16);
       intbuf2r = (void *)(tmp & 0xffff0000L);
    }
@@ -189,8 +194,8 @@ int fileSys(const char *path)
    strcpy(pathbuf, path);
    if ( (helpPtr = strchr(pathbuf, '\\')) != NULL )
       *(helpPtr+1) = 0;
-   regs.x.ax = 0x71A0;        
-   segregs.es = segx1(buf);     
+   regs.x.ax = 0x71A0;
+   segregs.es = segx1(buf);
    regs.x.di = offx1(buf);
    regs.x.cx = 255;
    segregs.ds = segx2(pathbuf);
@@ -208,9 +213,8 @@ int fileSys(const char *path)
 #endif
 #endif
 }
-
-
-int fsopen(const char *path, int access , unsigned mode, u16 lfn)
+//---------------------------------------------------------------------------
+int fsopen(const char *path, int access, unsigned mode, u16 lfn)
 {
 #ifdef __32BIT__
 #ifdef __OS2__
@@ -220,7 +224,7 @@ int fsopen(const char *path, int access , unsigned mode, u16 lfn)
    int      ret;
    HANDLE   handle;
 
-   if ( !lfn || !fileSys(path) )
+   if (!lfn || !fileSys(path))
       return open(path, access, mode);
 
 // return OpenFile(path, &ofstruct,
@@ -240,11 +244,12 @@ int fsopen(const char *path, int access , unsigned mode, u16 lfn)
 		       (access & O_TRUNC) ? TRUNCATE_EXISTING : OPEN_EXISTING,
 		       FILE_ATTRIBUTE_NORMAL,
 		       NULL);
-   if ( handle == INVALID_HANDLE_VALUE )
+   if (handle == INVALID_HANDLE_VALUE)
       return -1;
-   if ( (ret = _open_osfhandle((long)handle,  (access & (O_APPEND|O_RDONLY|O_TEXT)))) == -1 )
-   {  CloseHandle(handle);
-      return -1;
+   if ((ret = _open_osfhandle((long)handle, (access & (O_APPEND | O_RDONLY | O_TEXT)))) == -1)
+   {
+    CloseHandle(handle);
+    return -1;
    }
    return ret;
 #endif
@@ -270,21 +275,15 @@ int fsopen(const char *path, int access , unsigned mode, u16 lfn)
    return ret;
 #endif
 }
-
+//---------------------------------------------------------------------------
+#if 0
 int fsclose(int handle)
 {
-#ifdef __32BIT__
-#ifdef __OS2__
-   return close(handle);
-#else
-   return close(handle);
-#endif
-#else
-   return close(handle);
-#endif
+  return close(handle);
 }
-
-
+#endif
+//---------------------------------------------------------------------------
+#if !defined(FMAIL) && !defined(FTOOLS)
 int fsmkdir(const char *path, u16 lfn)
 {
 #ifdef __32BIT__
@@ -318,16 +317,15 @@ int fsmkdir(const char *path, u16 lfn)
    return 0;
 #endif
 }
-
-
+//---------------------------------------------------------------------------
 #ifndef __32BIT__
-typedef struct 
+typedef struct
 {
     u32      dwLowDateTime;
     u32      dwHighDateTime;
 } FILETIME;
 
-typedef struct _WIN32_FIND_DATA 
+typedef struct _WIN32_FIND_DATA
 {
     u32      dwFileAttributes;
     FILETIME ftCreationTime;
@@ -341,7 +339,7 @@ typedef struct _WIN32_FIND_DATA
     u8       cAlternateFileName[14];
 } WIN32_FIND_DATA;
 #endif
-
+//---------------------------------------------------------------------------
 int fsfindfirst(const char *pathname, struct ffblk *ffblk, int attrib, u16 lfn)
 {
 #ifdef __32BIT__
@@ -371,9 +369,9 @@ int fsfindfirst(const char *pathname, struct ffblk *ffblk, int attrib, u16 lfn)
 
    if ( !lfn || !fileSys(pathname) )
       return findfirst(pathname, ffblk, attrib);
-   regs.x.ax = 0x714E;        
-   regs.h.ch = 0;        
-   regs.h.cl = attrib;        
+   regs.x.ax = 0x714E;
+   regs.h.ch = 0;
+   regs.h.cl = attrib;
    segregs.ds = segx1(pathname);
    regs.x.dx = offx1(pathname);
    segregs.es = segx2(&wfd);
@@ -405,8 +403,7 @@ int fsfindfirst(const char *pathname, struct ffblk *ffblk, int attrib, u16 lfn)
    return 0;
 #endif
 }
-
-
+//---------------------------------------------------------------------------
 int fsunlink(const char *path, u16 lfn)
 {
 #ifdef __32BIT__
@@ -440,8 +437,7 @@ int fsunlink(const char *path, u16 lfn)
    return 0;
 #endif
 }
-
-
+//---------------------------------------------------------------------------
 int fsrename(const char *oldname, const char *newname, u16 lfn)
 {
 #ifdef __32BIT__
@@ -477,6 +473,5 @@ int fsrename(const char *oldname, const char *newname, u16 lfn)
    return 0;
 #endif
 }
-
-
-
+#endif
+//---------------------------------------------------------------------------

@@ -1,3 +1,167 @@
+2016-09-18  1.72.0.0
+  * Build 1.72.0 release versions of all 3 modules.
+  * Updated the documentation for the release.
+
+2016-09-17  1.71.6.204-Beta
+  * FConfig: PING configuration: Changed 'Delete' to 'Keep' functions, which should be a bit more clear.
+  * FConfig: Fixed keyboard input routine to allow for high ascii characters.
+
+2016-09-02  1.71.5.204-Beta
+  * Limit "To: AreaFix" string matching: Only one extra character allowed instead of unlimited.
+
+2016-08-23  1.71.5.203-Beta
+  * Added some more explanation about the ping/trace funtion to FMail.txt.
+  * Some extra (debug) logging.
+
+2016-08-23  1.71.4.201-Beta
+
+2016-08-23  1.71.3.200-Beta
+  * Added explanation of Ping/trace options to FMail.txt.
+  * Files created by Export/list functions no longer contain high ascii.
+  * Changed use of 0x10 character to '>' in FConfig, which should be more
+    compatible with windows.
+
+2016-08-22  1.71.3.200-Beta
+  * Made ping/trace function configurable in FConfig
+
+2016-08-22  1.71.2.198-Beta
+  * Ping/trace function in FMail
+
+2016-08-16  1.69.25.189
+  * Forgot to remove the Beta status
+  * Fixed some spelling errors in FMail.txt
+
+2016-08-15  1.69.25.188
+  * Fixed some compiler warnings.
+  * Build 1.69.25 release versions of all 3 modules.
+  * Updated the documentation for the release.
+
+2016-08-11  1.69.24.186-Beta
+  * SEEN-BY's are storred as kludge lines in the hudson message base. Convert them back to
+    real SEEN-BY lines on a rescan.
+  * On a rescan of a hudson area all stored SEEN-BY and PATH lines of a rescanned message
+    were unconditionally removed, which is wrong.
+  * When a log string was longer than about 256 chars FMail could crash.
+
+2016-08-08  1.69.24.184-Beta
+  * Only add asking node to seen-by's in case of rescan, not all connected nodes to an area.
+
+2016-08-08  1.69.24.183-Beta
+  * If a node in the export list of an area is w/o or locked it won't be added to the SEEN-BY's.
+  * Flush output to stdout at strategic places during maint of jam areas.
+
+2016-08-05  1.69.23.181-Beta
+  * Fixed bug in addVia debug logging.
+
+2016-08-05  1.69.23.181-Beta
+  * RESCANNED kludge now has the same format as the VIA kludge,
+    so with full time stamp and version information.
+  * The 'Remove lf/soft cr' options no longer log the removed number of chars
+    in debug mode.
+
+2016-07-26  1.69.22.178-Beta
+  * FSetup Win32 version. Renamed it to FConfigW32.exe, because otherwise later
+    Windows versions (7 and up?) think it's a setup program, and puts up the
+    User Account Control window to ask permision to run it (as administrator).
+
+2016-07-06  1.69.22.178-Beta
+  * FSetupX no longer crashes on the 'List general info' function in the Export menu.
+
+2016-03-31  1.69.22.178-Beta
+  * Log, in a debug compile, when a Via line is added to a message.
+
+2016-03-30  1.69.21.177-Beta
+  * Add a Via line as regular kludge line to messages tossed to the dupe area.
+    So you know when they were received/processed by FMail.
+
+2016-03-29  1.69.20.176-Beta
+  * Use own version for strError(), that doesn't give back a string ending in a newline.
+  * JAMmaintOld() function and comparison of results can be switched off per
+    area through a semaphore file with the same name and path of the JAM area
+    with '.no_debug' as file extension.
+  * Better logging of killed empty netmail (includes from and to address).
+  * Bug fix where sometimes old truncated mailbundles weren't removed.
+
+2016-03-02  1.69.18.171-Beta
+  * removeRe() use memmove instead of strcpy because src and dst overlap.
+  * removeLine() use memmove instead of strcpy because src and dst overlap.
+  * fix 'Imp. SB/Pth' option when there are no forward links for a tossed message (still needs testing).
+
+2016-03-01  1.69.17.167-Beta
+  * Use SeenBy, Tiny Path, Imp. SeenBy -> Imp. SB/Pth, Cosmetic fixes in FSetup.
+  * 'FMAIL BAD:' kludges first.
+  * New: 'FMAIL BAD: Area not in configuration' kludge.
+
+2016-03-01  1.69.16.166-Beta
+  * 'Tiny Path' option.
+  * Changed 'Imp. SeenBy' to 'Imp. SB/Pth' option.
+  * No longer scans current dir as alternative to configured inbound dir.
+  * Use opendir() posix function instead of findfirst() Borland function in about 25 places.
+  * Fixed scanning of OUTBOUND.* directories for removing old mailbundles in case of BSO outbound.
+    '*' Now only aplies to a 3 or 4 character hex string.
+
+2016-02-17  1.69.15.152-Beta
+  * util.c: Added functions for safer aka string retrieval.
+  * Use pkt header destination node number for Via kludge on received netmails.
+  * Better error logging when pkt file reading fails.
+
+2016-02-16  1.69.14.151-Beta
+  * badTimeStr() function optimized for Win32.
+
+2016-02-15  1.69.14.150-Beta
+  * Space instead of dash separates program name from version string in TID kludge and tear line.
+
+2016-02-15  1.69.13.149-Beta
+  * Via kludge more fts-4009 compliant.
+  * Also add Via kludge on received/tossed netmails.
+
+2016-02-13  1.69.13.147-Beta
+  * Via kludge shows milliseconds and time in UTC.
+
+2016-02-04  1.69.12.145-Beta
+  * "FMAIL BAD:" time string more readable.
+  * jammaint func new routine now active on production files (old routine still executed for comparison).
+  * jammaint func also saves original files for debugging.
+
+2016-01-09  1.69.12.144-Beta
+  * "FMAIL BAD:" kludge lines include a processing date/time stamp.
+
+2015-10-09  1.69.11.142-Beta
+  * Added TZUTC kludge to generated messages.
+  * jammaint.c: Make backup files when differences found in debug mode.
+  * util.c: addKludge functions.
+
+2015-10-03  1.69.9.79-Beta
+  * jamfunc.c: Fixed date/time import in jambase from pkt message (DST issue).
+  * jammaint.c: Some little issues in the new jammaint function fixed. Better logging.
+
+2015-09-23  1.69.7.134-Beta
+  * Fixed 2 bugs in the new jammaint function.
+  * ftools now also only uses stdio screen output.
+  * ftools and fmail now compile without any warnings under BCB6.
+  * totalsec.c is not used, so deleted, and removed from the project files.
+
+2015-09-04  1.69.7.125-Beta
+  * FMail only uses stdio functions for output to the console, so output.c is
+    nolonger needed/linked.
+
+2015-08-20  1.69.7.121-Beta
+  * JAMMAINT.C compiles without warnings in Borland. Still needs to be tested!
+
+2015-08-20  1.69.7.120-Beta
+  * Don't change read buffers, so they can be used to be written to backup files.
+
+2015-08-18  1.69.7.120-Beta
+  * Coded jammaint memory routines, still needs compiling, testing, debugging.
+
+2015-08-12  1.69.7.119-Beta
+  * Lots of none functional changes to make it compile with cblocks/mingw.
+    Still compiles with Borland. Not finished yet!
+
+2015-06-19  1.69.7.114-Beta
+  * 'No rescan allowed' option for areas, converted to 'Allow rescan' option.
+    'Which is more clear to users.
+
 2015-06-05  1.69.6.114-Beta
   * No Rescan allowed option for areas
 

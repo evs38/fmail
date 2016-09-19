@@ -21,8 +21,8 @@
 
 
 int fileSys(const char *path);
-int fsopen(const char *path, int access , unsigned mode, u16 lfn);
-int fsclose(int handle);
+int fsopen(const char *path, int access, unsigned mode, u16 lfn);
+#define fsclose(handle)  close(handle)
 int fsmkdir(const char *path, u16 lfn);
 int fsfindfirst(const char *pathname, struct ffblk *ffblk, int attrib, u16 lfn);
 int fsunlink(const char *pathname, u16 lfn);
