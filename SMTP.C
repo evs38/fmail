@@ -41,9 +41,9 @@
 // ALGEMENE VARIABELEN ========================================================
 
 
-static	SOCKET	ws;
-static  char    *sPartBoundary = "~---~fmAIL_bOUNDARY~---~";
-static  int     connOpen;
+static SOCKET	     ws;
+static const char *sPartBoundary = "~---~fmAIL_bOUNDARY~---~";
+static int         connOpen;
 
 
 
@@ -77,14 +77,15 @@ static int flushsbuf(void)
 }
 
 
-static void addsbuf(char *data)
+static void addsbuf(const char *data)
 {
-   int len;
+  int len;
 
-   if ( (len = strlen(data)) + sbufcount > BUFFERSIZE )
-      sbuferror |= flushsbuf();
-   strcpy(sbuffer + sbufcount, data);
-   sbufcount += len;
+  if ((len = strlen(data)) + sbufcount > BUFFERSIZE)
+    sbuferror |= flushsbuf();
+
+  strcpy(sbuffer + sbufcount, data);
+  sbufcount += len;
 }
 
 
@@ -110,12 +111,12 @@ static int response_code[4] =
   221               // QUIT_SUCCESS
 };
 
-static char *response_text[4] =
+static const char *response_text[4] =
 {
-        "SMTP server error",                     // GENERIC_SUCCESS
-        "SMTP server not available",             // CONNECT_SUCCESS
-        "SMTP server not ready for data",        // DATA_SUCCESS
-        "SMTP server didn't terminate session"   // QUIT_SUCCESS
+  "SMTP server error",                     // GENERIC_SUCCESS
+  "SMTP server not available",             // CONNECT_SUCCESS
+  "SMTP server not ready for data",        // DATA_SUCCESS
+  "SMTP server didn't terminate session"   // QUIT_SUCCESS
 };
 
 #define         RESPONSE_BUFFER_SIZE    1024
@@ -227,7 +228,8 @@ static void appendMIMEfile(char *fname)
 {
    int	handle;
    int  nBytesRead;
-   char szFName[32], szExt[32];
+   char szFName[_MAX_FNAME]
+      , szExt  [_MAX_EXT  ];
    char szBuffer[BYTES_TO_READ + 1];
    tempStrType sbuf;
 
@@ -235,7 +237,7 @@ static void appendMIMEfile(char *fname)
       return;
    if ( (handle = open(fname, O_RDONLY|O_BINARY, S_IREAD|S_IWRITE)) == -1 )
       return;
-   fnsplit(fname, NULL, NULL, szFName, szExt);
+   _splitpath(fname, NULL, NULL, szFName, szExt);
    sprintf(sbuf, "--%s\r\n", sPartBoundary);
    addsbuf(sbuf);
    sprintf(sbuf, "Content-Type: application/octet-stream; name=%s%s\r\n", szFName, szExt);
@@ -250,7 +252,7 @@ static void appendMIMEfile(char *fname)
       szBuffer[nBytesRead] = 0;     // Terminate the string
       encode(szBuffer, nBytesRead);
       addsbuf("\r\n");
-   } while( nBytesRead == BYTES_TO_READ );
+   } while(nBytesRead == BYTES_TO_READ);
    addsbuf("\r\n");
 
    close(handle);
@@ -311,15 +313,15 @@ static void appendtext(char *txt)
 
 static  WSADATA wsdata;
 
-static  char    *weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-static  char    *month[12]  = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+static  const char *weekday[ 7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+static  const char *month  [12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
-static int openConnection(u8 *SMTPServerName)
+static int openConnection(char *SMTPServerName)
 {
    tempStrType  hostnamebuf, buf;
    SOCKADDR_IN  sockaddrL, sockaddrR;
-   HOSTENT     	*hostent;
-   SERVENT     	*servent;
+   HOSTENT   	 *hostent;
+   SERVENT     *servent;
 
    if ( WSAStartup(2, &wsdata) )
    {  logEntry("WinSock startup error", LOG_ALWAYS, 0);
@@ -337,7 +339,7 @@ static int openConnection(u8 *SMTPServerName)
    {  logEntry("Socket bind error", LOG_ALWAYS, 0);
       goto einde;
    }
-   if ( (hostent = gethostbyname(SMTPServerName)) == NULL )
+   if ((hostent = gethostbyname(SMTPServerName)) == NULL)
    {  sprintf(buf, "Hostname not found: %s", SMTPServerName);
       logEntry(buf, LOG_ALWAYS, 0);
       goto einde;
@@ -387,14 +389,13 @@ einde:
    return 0;
 }
 
-
-int sendMessage(u8 *SMTPServerName, u8 *mailfrom, u8 *mailto, internalMsgType *message, u8 *attach)
+int sendMessage(char *SMTPServerName, char *mailfrom, char *mailto, internalMsgType *message, char *attach)
 {
-   u8           *fileName;
+   char        *fileName;
    tempStrType  sbuf;
-   time_t	timer;
-   struct tm    *tms;
-   int		error;
+   time_t	      timer;
+   struct tm   *tms;
+   int		      error;
 
    if ( !connOpen )
       if ( !(connOpen = !openConnection(SMTPServerName)) )

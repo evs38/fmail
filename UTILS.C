@@ -31,12 +31,14 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <io.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>   // getenv()
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <stdlib.h>
+#include <utime.h>
 #if defined(__WIN32__)
 #include <windows.h>
 #endif
@@ -45,17 +47,18 @@
 
 #include "areainfo.h"
 #include "filesys.h"
-#include "fjlib.h"
+//#include "fjlib.h"
 #include "log.h"
 #include "msgpkt.h"  // for openP
 #include "spec.h"
+#include "stpcpy.h"
 #include "version.h"
 
 extern configType config;
-psType *seenByArray   = NULL;
-psType *tinySeenArray = NULL;
-psType *pathArray     = NULL;
-psType *tinyPathArray = NULL;
+psRecType *seenByArray   = NULL;
+psRecType *tinySeenArray = NULL;
+psRecType *pathArray     = NULL;
+psRecType *tinyPathArray = NULL;
 
 extern u16 echoCount;
 extern u16 forwNodeCount;
@@ -71,25 +74,28 @@ extern char *version;
 //---------------------------------------------------------------------------
 int moveFile(const char *oldName, const char *newName)
 {
-  fhandle      h1
-             , h2;
-  char        *buf;
-  size_t       count
-             , size;
-  struct ftime ftm;
+  fhandle h1
+        , h2;
+  char   *buf;
+  size_t  count
+        , size;
 
   if (rename(oldName, newName))
   {
-    if (errno != ENOTSAM || (h1 = openP(oldName, O_RDONLY|O_BINARY|O_DENYALL, 0)) == -1)
+#ifdef __BORLANDC__
+    if (errno != ENOTSAM)
+      return -1;
+#endif
+    if ((h1 = openP(oldName, O_RDONLY | O_BINARY | O_DENYALL, 0)) == -1)
       return -1;
 
-    if ((h2 = openP(newName, O_WRONLY|O_BINARY|O_CREAT|O_TRUNC|O_DENYALL, S_IREAD|S_IWRITE)) == -1)
+    if ((h2 = openP(newName, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
     {
       close(h1);
       return -1;
     }
     size = min(32767, (size_t)filelength(h1));
-    if ((buf = malloc(size)) == NULL)
+    if ((buf = (char*)malloc(size)) == NULL)
     {
       close(h1);
       close(h2);
@@ -98,8 +104,19 @@ int moveFile(const char *oldName, const char *newName)
     while ((count = read(h1, buf, size)) > 0)
       write(h2, buf, count);
 
-    getftime(h1, &ftm);
-    setftime(h2, &ftm);
+    {
+      struct stat statbuf;
+      if (0 == fstat(h1, &statbuf))
+      {
+#ifdef __MINGW32__
+#define utimbuf _utimbuf
+#endif // __MINGW32__
+        struct utimbuf utbuf;
+        utbuf.actime  = statbuf.st_atime;
+        utbuf.modtime = statbuf.st_mtime;
+        _futime(h2, &utbuf);
+      }
+    }
     close(h1);
     close(h2);
     free(buf);
@@ -144,7 +161,7 @@ s16 existDir(const char *dir, const char *descr)
 //                 overwritten with each call.  NULL is returned if the
 //                 file is not found.
 //
-static char pathbuf[MAXPATH];
+static char pathbuf[FILENAME_MAX];
 
 const char *_searchpath(const char *filename)
 {
@@ -160,7 +177,7 @@ const char *_searchpath(const char *filename)
 
   // Try the current directory, then all directories in the
   // string ipath.
-  if (getcwd(pathbuf, MAXPATH) == NULL)
+  if (getcwd(pathbuf, FILENAME_MAX) == NULL)
     len = 0;
   else
     len = strlen(pathbuf);
@@ -199,7 +216,7 @@ const char *_searchpath(const char *filename)
 
   // Pathname contains the relative path of the found file.  Convert
   // it to an absolute path.
-  if ((temp = _fullpath(NULL, pathbuf, MAXPATH)) != NULL)
+  if ((temp = _fullpath(NULL, pathbuf, FILENAME_MAX)) != NULL)
   {
     strcpy(pathbuf, temp);
     free(temp);
@@ -227,63 +244,64 @@ int existPattern(const char *path, const char *pattern)
   return ent != NULL;
 }
 //---------------------------------------------------------------------------
-#ifdef __CANUSE64BIT
+#ifdef __WIN32__
 const char *fmtU64(u64 u)
 {
   static tempStrType tempStr;
+#if defined(__BORLANDC__)
+#define dKBC (100ui64 * 1024)
+#define dMBC (100ui64 * 1024 * 1024)
+#define dGBC (100ui64 * 1024 * 1024 * 1024)
+#define dLLFMT "%Lu"
+#elif defined(__MINGW32__)
+#define dKBC (100ull * 1024)
+#define dMBC (100ull * 1024 * 1024)
+#define dGBC (100ull * 1024 * 1024 * 1024)
+#define dLLFMT "%I64u"
+#endif
 
-  if (u >= 100ui64 * 1024)
+  if (u >= dKBC)
   {
-    if (u >= 100ui64 * 1024 * 1024)
+    if (u >= dMBC)
     {
-      if (u >= 100ui64 * 1024 * 1024 * 1024)
-        sprintf(tempStr, "%LuGB", u / (1024 * 1024 * 1024));
+      if (u >= dGBC)
+        sprintf(tempStr, dLLFMT"GB", u / (1024 * 1024 * 1024));
       else
-        sprintf(tempStr, "%LuMB", u / (1024 * 1024));
+        sprintf(tempStr, dLLFMT"MB", u / (1024 * 1024));
     }
     else
-      sprintf(tempStr, "%LuKB", u / 1024);
+      sprintf(tempStr, dLLFMT"KB", u / 1024);
   }
   else
-    sprintf(tempStr, "%Lu", u);
+    sprintf(tempStr, dLLFMT, u);
 
   return tempStr;
 }
 //---------------------------------------------------------------------------
 u64 diskFree64(const char *path)
 {
-  tempStrType  tempStr;
-  struct dfree dtable;
-  char        *helpPtr;
+  ULARGE_INTEGER ul;
 
-  helpPtr = (strchr(path, 0) - 1);
-  if (*helpPtr == '\\')
-    *helpPtr = 0;
-  else
-    helpPtr = NULL;
+  if (GetDiskFreeSpaceEx(path, &ul, NULL, NULL))
+    return ul.QuadPart;
 
-  if (isalpha(path[0]) && path[1] == ':')
-    getdfree(toupper(path[0]) - 'A' + 1, &dtable);
-  else
-  {
-    getcwd(tempStr, sizeof(tempStrType));
-    chdir(path);
-    getdfree(0, &dtable);
-    chdir(tempStr);
-  }
-
-  if (helpPtr != NULL)
-    *helpPtr = '\\';
-
-  if (dtable.df_sclus == (unsigned)-1)
-    return UINT64_MAX;
-
-  return (u64)dtable.df_avail * (u64)dtable.df_bsec * (u64)dtable.df_sclus;
+  return 0;
 }
 #endif
 //---------------------------------------------------------------------------
 u32 diskFree(const char *path)
 {
+#ifdef __WIN32__
+#ifdef __MINGW32__
+#define UINT32_MAX __UINT32_MAX__
+#endif
+  u64 ul = diskFree64(path);
+
+  if (ul > (uint64_t)UINT32_MAX)
+    return UINT32_MAX;
+
+  return ul;
+#else
   tempStrType  tempStr;
   struct dfree dtable;
   char        *helpPtr;
@@ -326,6 +344,7 @@ u32 diskFree(const char *path)
   return (uint32_t)dfs;
 #else
   return dtable.df_avail * (u32)dtable.df_bsec * dtable.df_sclus;
+#endif
 #endif
 }
 //---------------------------------------------------------------------------
@@ -422,7 +441,7 @@ int matchAka(nodeNumType *node, int useAka)
 //---------------------------------------------------------------------------
 s16 emptyText(char *text)
 {
-  s16  code;
+  s16 code;
 
   code = (*text == '\r') || (*text == '\n') || (*text == 1) || (*text == 0);
 
@@ -561,7 +580,7 @@ u32 uniqueID(void)
 #ifdef _DEBUG
     {
       tempStrType tempStr;
-      sprintf(tempStr, "UID: Saved:%08X New:%08X", config.lastUniqueID, lastID);
+      sprintf(tempStr, "UID: Saved:%08lX New:%08lX", config.lastUniqueID, lastID);
       logEntry(tempStr, LOG_DEBUG, 0);
     }
 #endif
@@ -592,7 +611,7 @@ char *removeRe(char *str)
     }
   } while (update);
 
-  return memmove(str, tstr, strlen(tstr) + 1);
+  return (char*)memmove(str, tstr, strlen(tstr) + 1);
 }
 //---------------------------------------------------------------------------
 void removeLfSr(char *msgText)
@@ -738,10 +757,7 @@ char *findCLStr(char *s1, const char *s2)
   return NULL;
 }
 //---------------------------------------------------------------------------
-s16 scanDate( unsigned char *dtPtr
-            , u16 *year , u16 *month, u16 *day
-            , u16 *hours, u16 *minutes
-            )
+s16 scanDate(const char *dtPtr, u16 *year , u16 *month, u16 *day, u16 *hours, u16 *minutes)
 {
   char timeStr[6];
   char dateStr[9];
@@ -750,9 +766,9 @@ s16 scanDate( unsigned char *dtPtr
     return -1;
 
   strncpy(timeStr, dtPtr + 1, 5);
-  timeStr[dtPtr[0]] = 0;
+  timeStr[(int)dtPtr[0]] = 0;
   strncpy(dateStr, dtPtr + 7, 8);
-  dateStr[dtPtr[6]] = 0;
+  dateStr[(int)dtPtr[6]] = 0;
 
   if (  sscanf(timeStr, "%hu%*c%hu", hours, minutes) != 2
      || sscanf(dateStr, "%hu%*c%hu%*c%hu", month, day, year) != 3
@@ -831,28 +847,28 @@ char *insertLineN(char *pos, char *line, u16 num)
   return insertLine(pos, line);
 }
 //---------------------------------------------------------------------------
-static void readPathSeenBy(u16 type, char *msgText, psType *psArray, u16 *arrayCount)
+static void readPathSeenBy(u16 type, char *msgText, psRecType *psArray, u16 *arrayCount)
 {
-   char *searchStr;
+   const char *searchStr;
    u16   searchLength;
    char *helpPtr1
       , *helpPtr2;
    u16   psNet = 0;
-   s16   skip = 0;
+   s16   skip  = 0;
    u16   helpInt;
    u16   maxLength;
 
    if (type == ECHO_SEENBY)
    {
-      searchStr = "SEEN-BY: ";
+      searchStr    = "SEEN-BY: ";
       searchLength = 9;
-      maxLength = MAX_MSGSEENBY;
+      maxLength    = MAX_MSGSEENBY;
    }
    else
    {
-      searchStr = "\1PATH: ";
+      searchStr    = "\1PATH: ";
       searchLength = 7;
-      maxLength = MAX_MSGPATH;
+      maxLength    = MAX_MSGPATH;
    }
 
    *arrayCount = 0;
@@ -885,8 +901,8 @@ static void readPathSeenBy(u16 type, char *msgText, psType *psArray, u16 *arrayC
                                     (psNet != 0) &&
                                     (!skip))
                                 {
-                                   (*psArray)[*arrayCount].net = psNet;
-                                   (*psArray)[(*arrayCount)++].node = helpInt;
+                                   psArray[ *arrayCount   ].net  = psNet;
+                                   psArray[(*arrayCount)++].node = helpInt;
                                 }
                                 skip = 0;
             }
@@ -920,12 +936,12 @@ void logPathSeenBy(const char *pre, u16 type, psRecType *psArray, int arrayCount
   logEntry(tmpStr, LOG_ALWAYS, 0);
 }
 //---------------------------------------------------------------------------
-static void writePathSeenBy(u16 type, char *pathSeen, psType *psArray, u16 arrayCount)
+static void writePathSeenBy(u16 type, char *pathSeen, psRecType *psArray, u16 arrayCount)
 {
    char     *helpPtr,
             *helpPtr2,
             *startPtr;
-   char     *name;
+   const char *name;
    u16      num,
 	    count;
    char     tempStr[6];
@@ -940,18 +956,15 @@ static void writePathSeenBy(u16 type, char *pathSeen, psType *psArray, u16 array
 
    for (count = 0; count < arrayCount; count++)
    {
-      if (((u16)helpPtr-(u16)startPtr >= 68) ||
-          (helpPtr == pathSeen))
+      if (helpPtr - startPtr >= 68 || helpPtr == pathSeen)
       {
-	 startPtr = helpPtr;
+        startPtr = helpPtr;
 
          if (helpPtr != pathSeen)
-         {
             *helpPtr++ = '\r';
-         }
 
          helpPtr = stpcpy (helpPtr, name);
-         num = (*psArray)[count].net;
+         num = psArray[count].net;
          helpPtr2 = tempStr+5;
          do
          {
@@ -978,12 +991,12 @@ static void writePathSeenBy(u16 type, char *pathSeen, psType *psArray, u16 array
       else
       {
          *(helpPtr++) = ' ';
-	 if ((*psArray)[count].net != (*psArray)[count-1].net)
+	       if (psArray[count].net != psArray[count - 1].net)
          {
-            num = (*psArray)[count].net;
+            num = psArray[count].net;
             helpPtr2 = tempStr+5;
             do
-	    {
+	          {
 #ifndef __32BIT__
 	       _AX = num;
 	       _DX = 0;
@@ -1005,7 +1018,7 @@ static void writePathSeenBy(u16 type, char *pathSeen, psType *psArray, u16 array
 	    *(helpPtr++) = '/';
 	 }
       }
-      num = (*psArray)[count].node;
+      num = psArray[count].node;
       helpPtr2 = tempStr+5;
       do
       {
@@ -1031,29 +1044,29 @@ static void writePathSeenBy(u16 type, char *pathSeen, psType *psArray, u16 array
    *helpPtr = 0;
 }
 //---------------------------------------------------------------------------
-static s16 addSeenByNode(u16 net, u16 node, psType *array, u16 *seenByCount)
+static s16 addSeenByNode(u16 net, u16 node, psRecType *array, u16 *seenByCount)
 {
   u16 count;
 
   for (count = 0; (count < *seenByCount) &&
-                 (((*array)[count].net < net) ||
-                 (((*array)[count].net == net) &&
-                 ((*array)[count].node < node)))
-     ; count++)
+                 ((array[count].net < net) ||
+                 ((array[count].net == net) &&
+                  (array[count].node < node)))
+      ; count++)
   {}
 
   if (count == *seenByCount)
   {
-    (*array)[*seenByCount].net      = net;
-    (*array)[(*seenByCount)++].node = node;
+    array[ *seenByCount   ].net  = net;
+    array[(*seenByCount)++].node = node;
   }
   else
-    if ((*array)[count].net != net || (*array)[count].node != node)
+    if (array[count].net != net || array[count].node != node)
     {
-      memmove ( &((*array)[count + 1]), &((*array)[count])
+      memmove ( &(array[count + 1]), &(array[count])
               , (((*seenByCount)++) - count) * sizeof(psRecType));
-      (*array)[count].net  = net;
-      (*array)[count].node = node;
+      array[count].net  = net;
+      array[count].node = node;
     }
     else
       return 0;
@@ -1237,7 +1250,7 @@ void make4d(internalMsgType *message)
    point4d(message);
 }
 //---------------------------------------------------------------------------
-int comparSeenBy(const void* p1, const void* p2)
+int comparSeenBy(const void *p1, const void *p2)
 {
   if (((psRecType*)p1)->net == ((psRecType*)p2)->net)
     return ((psRecType*)p1)->node - ((psRecType*)p2)->node;
@@ -1292,9 +1305,9 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
     for (count = 0; count < MAX_AKAS; count++)
       if (config.akaList[count].nodeNum.zone != 0)
         for (count2 = 0; count2 < seenByCount; count2++)
-          if (config.akaList[count].fakeNet == (*seenByArray)[count2].net)
-            memcpy( &((*seenByArray)[count2])
-                  , &((*seenByArray)[count2 + 1])
+          if (config.akaList[count].fakeNet == seenByArray[count2].net)
+            memcpy( &(seenByArray[count2])
+                  , &(seenByArray[count2 + 1])
                   , ((--seenByCount) - count2) * sizeof(psRecType)
                   );
 
@@ -1302,7 +1315,7 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
   qsort(seenByArray, seenByCount, sizeof(psRecType), comparSeenBy);
 
 #ifdef _DEBUG_LOGPATHSEENBY
-  logPathSeenBy("DEBUG 1s ", ECHO_SEENBY, *seenByArray, seenByCount);
+  logPathSeenBy("DEBUG 1s ", ECHO_SEENBY, seenByArray, seenByCount);
 #endif
 
   // Add other nodes to SEENBY, or asking node in case of rescan
@@ -1387,26 +1400,26 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
   writePathSeenBy(ECHO_SEENBY, msg->tinySeen, tinySeenArray, tinySeenCount);
 
 #ifdef _DEBUG_LOGPATHSEENBY
-  logPathSeenBy("DEBUG 2F ", ECHO_SEENBY, *seenByArray  , seenByCount  );
-  logPathSeenBy("DEBUG 2T ", ECHO_SEENBY, *tinySeenArray, tinySeenCount);
+  logPathSeenBy("DEBUG 2F ", ECHO_SEENBY, seenByArray  , seenByCount  );
+  logPathSeenBy("DEBUG 2T ", ECHO_SEENBY, tinySeenArray, tinySeenCount);
 #endif
 
   // PATH
   readPathSeenBy(ECHO_PATH, msg->text, pathArray, &pathCount);
 #ifdef _DEBUG_LOGPATHSEENBY
-  logPathSeenBy("DEBUG 1  ", ECHO_PATH, *pathArray, pathCount);
+  logPathSeenBy("DEBUG 1  ", ECHO_PATH, pathArray, pathCount);
 #endif
 
   if (!mainNode.nodeNum.point || config.mailOptions.addPointToPath)             // If not a point or if option "Add point to path'
   {
     if (  pathCount == 0                                                            // Er is nog geen path
-       || (  !mainNode.fakeNet                                                        // Geen fakenet
-          && memcmp(&(*pathArray)[pathCount - 1], &mainNode.nodeNum.net, 4) != 0      // En hij staat er nog niet in als laatste
+       || (  !mainNode.fakeNet                                                      // Geen fakenet
+          && memcmp(&pathArray[pathCount - 1], &mainNode.nodeNum.net, 4) != 0       // En hij staat er nog niet in als laatste
           )
        )
-      memcpy(&(*pathArray    )[pathCount++    ].net, &mainNode.nodeNum.net, 4);
+      memcpy(&pathArray[pathCount++].net, &mainNode.nodeNum.net, 4);
 
-    memcpy(&(*tinyPathArray)[tinyPathCount++].net, &mainNode.nodeNum.net, 4);
+    memcpy(&tinyPathArray[tinyPathCount++].net, &mainNode.nodeNum.net, 4);
   }
 
   if (pathCount)
@@ -1414,8 +1427,8 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
   if (tinyPathCount)
     writePathSeenBy(ECHO_PATH, msg->tinyPath, tinyPathArray, tinyPathCount);
 #ifdef _DEBUG_LOGPATHSEENBY
-  logPathSeenBy("DEBUG 2F ", ECHO_PATH, *pathArray    , pathCount    );
-  logPathSeenBy("DEBUG 2T ", ECHO_PATH, *tinyPathArray, tinyPathCount);
+  logPathSeenBy("DEBUG 2F ", ECHO_PATH, pathArray   , pathCount    );
+  logPathSeenBy("DEBUG 2T ", ECHO_PATH, inyPathArray, tinyPathCount);
 #endif
 }
 //---------------------------------------------------------------------------
@@ -1505,7 +1518,7 @@ void addVia(char *msgText, u16 aka, int isNetmail)
 }
 #endif
 //---------------------------------------------------------------------------
-char *makeName(char *path, char *name)
+const char *makeName(char *path, char *name)
 {
   static tempStrType tempStr;
   char  *helpPtr;
@@ -1577,75 +1590,78 @@ long fmseek(int handle, long offset, int fromwhere, int code)
    }
    return lseek(handle, offset, fromwhere);
 }
-
-
+//---------------------------------------------------------------------------
 const char *makeFullPath(const char *deflt, const char *override, const char *name)
 {
   static tempStrType tempStr;
-  uchar  *helpPtr;
+  char  *helpPtr;
 
   helpPtr = stpcpy(tempStr, (override && *override) ? override : deflt);
-  if ( *(helpPtr - 1) != '\\' )
+  if (*(helpPtr - 1) != '\\')
     *helpPtr++ = '\\';
   strcpy(helpPtr, name);
 
   return tempStr;
 }
-
-
-u8 *normalize_nd(u8 *name)
+//---------------------------------------------------------------------------
+char *normalize_nd(char *name)
 {
-  static u16         index;
-   static tempStrType tempStr[2];
-   u8     *helpPtr;
+  static u16 index;
+  static     tempStrType tempStr[2];
+  char      *helpPtr;
 
-   strcpy(tempStr[index], name);
-   while ( (helpPtr = strchr(tempStr[index], '/')) != NULL )
-      *helpPtr = '\\';
+  strcpy(tempStr[index], name);
+  while ((helpPtr = strchr(tempStr[index], '/')) != NULL)
+    *helpPtr = '\\';
 
-   if ( memcmp(tempStr[index], "\\\\", 2) == 0 )
-   {  if ( (helpPtr = strchr(tempStr[index] + 2, '\\')) != NULL &&
-           (helpPtr = strchr(helpPtr + 1, '\\')) != NULL )
-      {  strcpy(tempStr[index], helpPtr);
-      }
-   }
-   else if ( tempStr[index][1] == ':' )
+  if (memcmp(tempStr[index], "\\\\", 2) == 0)
+  {
+    if (  (helpPtr = strchr(tempStr[index] + 2, '\\')) != NULL
+       && (helpPtr = strchr(helpPtr + 1, '\\')) != NULL
+       )
+      strcpy(tempStr[index], helpPtr);
+  }
+  else
+    if (tempStr[index][1] == ':')
       strcpy(tempStr[index], tempStr[index] + 2);
 
-   return tempStr[index++];
+  return tempStr[index++];
 }
-
-
-u16 getKludge(char *txt, char *kludge, char *subfield, u16 bufsize)
+//---------------------------------------------------------------------------
+u16 getKludge(char *txt, const char *kludge, char *subfield, u16 bufsize)
 {
-  char *helpPtr1, *helpPtr2, *helpPtr3;
+  char *helpPtr1
+     , *helpPtr2
+     , *helpPtr3;
 
-   if ( !bufsize )
-      return 0;
-   if ( (helpPtr1 = helpPtr3 = findCLStr(txt, kludge)) == NULL )
-      return 0;
-   helpPtr1 += strlen(kludge);
-   helpPtr2 = subfield;
-   while ( --bufsize && *helpPtr1 && *helpPtr1 != '\r' && *helpPtr1 != '\n' )
-      *(helpPtr2++) = *(helpPtr1++);
-   *helpPtr2 = 0;
-   removeLine(helpPtr3);
-   return 1;
+  if (!bufsize)
+    return 0;
+
+  if ((helpPtr1 = helpPtr3 = findCLStr(txt, kludge)) == NULL)
+    return 0;
+
+  helpPtr1 += strlen(kludge);
+  helpPtr2 = subfield;
+  while (--bufsize && *helpPtr1 && *helpPtr1 != '\r' && *helpPtr1 != '\n')
+    *(helpPtr2++) = *(helpPtr1++);
+
+  *helpPtr2 = 0;
+  removeLine(helpPtr3);
+
+  return 1;
 }
-
-
-void getKludgeNode(char *txt, char *kludge, nodeNumType *nodeNum)
+//---------------------------------------------------------------------------
+void getKludgeNode(char *txt, const char *kludge, nodeNumType *nodeNum)
 {
-    char *helpPtr;
+  char *helpPtr;
 
-    memset(nodeNum, 0, sizeof(nodeNumType));
-    if ((helpPtr = findCLStr(txt, kludge)) != NULL)
-    {
-       helpPtr += strlen(kludge);
-       if (sscanf (helpPtr, "%hu:%hu/%hu.%hu", &nodeNum->zone, &nodeNum->net,
-                                           &nodeNum->node, &nodeNum->point) < 3)
-          memset(nodeNum, 0, sizeof(nodeNumType));
-    }
+  memset(nodeNum, 0, sizeof(nodeNumType));
+  if ((helpPtr = findCLStr(txt, kludge)) != NULL)
+  {
+    helpPtr += strlen(kludge);
+    if (sscanf(helpPtr, "%hu:%hu/%hu.%hu", &nodeNum->zone, &nodeNum->net, &nodeNum->node, &nodeNum->point) < 3)
+      memset(nodeNum, 0, sizeof(nodeNumType));
+  }
 }
 //---------------------------------------------------------------------------
 char *addKludge(char *txt, const char *kludge, const char *kludgeValue)
@@ -1738,7 +1754,7 @@ const char *TZUTCStr(void)
   }
 
   ubias = abs(bias);
-  sprintf(s, "%s%02u%02u", bias <= 0 ? "" : "-", ubias / 60, ubias % 60);
+  sprintf(s, "%s%02lu%02lu", bias <= 0 ? "" : "-", ubias / 60, ubias % 60);
 
   return s;
 #else
@@ -1775,11 +1791,11 @@ void setCurDateMsg(internalMsgType *msg)
 }
 //---------------------------------------------------------------------------
 static tempStrType searchString;
-static u8          *searchPos;
+static char       *searchPos;
 
-u16 nextFile(u8 **filename)
+u16 nextFile(char **filename)
 {
-  u8 *ep;
+  char *ep;
 
   if (searchPos == NULL)
     return 0;
@@ -1811,18 +1827,20 @@ u16 nextFile(u8 **filename)
   *ep = 0;
   *filename = searchPos;
   searchPos = ep + 1;
+
   return 1;
 }
 //---------------------------------------------------------------------------
-u16 firstFile(u8 *string, u8 **filename)
+u16 firstFile(char *string, char **filename)
 {
   if (string == NULL)
   {
     searchPos = NULL;
     return 0;
   }
-  strncpy(searchString, string, sizeof(searchString)-1);
+  strncpy(searchString, string, sizeof(searchString) - 1);
   searchPos = searchString;
+
   return nextFile(filename);
 }
 //---------------------------------------------------------------------------

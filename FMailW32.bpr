@@ -13,7 +13,7 @@
       OBJ.6\FMailW32\JAMMAINT.obj OBJ.6\FMailW32\JAMSCAN.obj 
       OBJ.6\FMailW32\log.obj OBJ.6\FMailW32\MSGMSG.obj OBJ.6\FMailW32\MSGPKT.obj 
       OBJ.6\FMailW32\MSGRA.obj OBJ.6\FMailW32\MTASK.obj 
-      OBJ.6\FMailW32\NODEINFO.obj OBJ.6\FMailW32\PACK.obj 
+      OBJ.6\FMailW32\NODEINFO.obj OBJ.6\FMailW32\pack.obj 
       OBJ.6\FMailW32\ping.obj OBJ.6\FMailW32\SENDSMTP.obj OBJ.6\FMailW32\SMTP.obj 
       OBJ.6\FMailW32\SORTHB.obj OBJ.6\FMailW32\spec.obj OBJ.6\FMailW32\UTILS.obj 
       OBJ.6\FMailW32\UTILS2.obj OBJ.6\FMailW32\Version.obj"/>
@@ -31,7 +31,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="FMAIL;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__"/>
+    <USERDEFINES value="FMAIL;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FMailW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -40,11 +40,11 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -Vx -Ve -C -X- -a1 -6 -b- -d -k- -vi -tWC -tWM- -c"/>
-    <PFLAGS value="-N2OBJ.6\FMailW32 -N0OBJ.6\FMailW32 -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
+    <CFLAG1 value="-Od -Vx -Ve -C -X- -r- -a1 -6 -b- -d -k -y -v -vi- -tWC -tWM- -c"/>
+    <PFLAGS value="-N2OBJ.6\FMailW32 -N0OBJ.6\FMailW32 -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-IOBJ.6\FMailW32 -D&quot;&quot; -ap -Tpe -x -Gn"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-IOBJ.6\FMailW32 -D&quot;&quot; -ap -Tpe -x -Gn -v"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -77,7 +77,7 @@
       <FILE FILENAME="MSGRA.C" FORMNAME="" UNITNAME="MSGRA" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="MTASK.C" FORMNAME="" UNITNAME="MTASK" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="NODEINFO.C" FORMNAME="" UNITNAME="NODEINFO" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="PACK.C" FORMNAME="" UNITNAME="PACK" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="pack.c" FORMNAME="" UNITNAME="pack" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ping.c" FORMNAME="" UNITNAME="ping" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="SENDSMTP.C" FORMNAME="" UNITNAME="SENDSMTP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="SMTP.C" FORMNAME="" UNITNAME="SMTP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -100,7 +100,7 @@
 IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=1
-MinorVer=72
+MinorVer=73
 Release=0
 Build=0
 Debug=0
@@ -114,13 +114,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FMail mail tosser
-FileVersion=1.72.0.0
+FileVersion=1.73.0.0
 InternalName=fmail
 LegalCopyright=Copyright (c) 1991 - 2016 FMail developers
 LegalTrademarks=
 OriginalFilename=FMailW32.exe
 ProductName=FMail
-ProductVersion=1.72
+ProductVersion=1.73
 
 [Excluded Packages]
 C:\Program Files\Borland\CBuilder6\Bin\dclstd60.bpl=Borland Standard Components
@@ -160,18 +160,19 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=11
-Item0=FMAIL;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Count=12
+Item0=FMAIL;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
 Item1=FMAIL;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item2=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item3=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item4=BETA;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item5=BETA;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item6=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
-Item7=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA;_DEBUG
-Item8=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item9=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__486__
-Item10=_DEBUG
+Item2=FMAIL;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item3=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item4=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item5=BETA;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item6=BETA;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item7=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
+Item8=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA;_DEBUG
+Item9=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item10=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__486__
+Item11=_DEBUG
 
 [HistoryLists\hlIntOutputDir]
 Count=3
@@ -183,7 +184,7 @@ Item2=OBJ.6
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=TOSS
+RunParams=SCAN
 Launcher=
 UseLauncher=0
 DebugCWD=

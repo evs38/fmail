@@ -41,6 +41,7 @@
 #include "msgpkt.h"
 #include "nodeinfo.h"
 #include "spec.h"
+#include "stpcpy.h"
 #include "utils.h"
 
 
@@ -65,9 +66,9 @@ typedef netRecType netListType[MAXNETREC];
 extern configType       config;
 extern internalMsgType *message;
 extern globVarsType     globVars;
-extern char             configPath[128];
+extern char             configPath[FILENAME_MAX];
 
-static s16              errorDisplay=0;
+static s16              errorDisplay = 0;
 static u16              netIndex;
 static u32              msgNum;
 static netListType     *netList;
@@ -212,7 +213,7 @@ static void processPackLine(char *line, s32 switches)
   nodeNumType destNode;
   tempStrType tempStr;
   tempStrType lineBuf;
-  char        *helpPtr;
+  char       *helpPtr;
   char        newWildCard;
 
   newWildCard = (strchr(line, '#') != NULL);
@@ -262,7 +263,7 @@ static void processPackLine(char *line, s32 switches)
                      &destNode.zone, &destNode.net, &destNode.node, &destNode.point) < 3) ||
              !((strcmp(helpPtr, nodeStr(&destNode)) == 0) ||
                (strcmp(helpPtr, nodeStrZ(&destNode)) == 0))))
-          logEntry ("Bad VIA node", LOG_ALWAYS, 4);
+          logEntry("Bad VIA node", LOG_ALWAYS, 4);
 
         destType = DEST_VIA;
       }
@@ -282,7 +283,6 @@ static void processPackLine(char *line, s32 switches)
 //---------------------------------------------------------------------------
 s16 pack(s16 argc, char *argv[], s32 switches)
 {
-  s16             doneMsg;
   u16             low
                 , mid
                 , high;
@@ -311,7 +311,7 @@ s16 pack(s16 argc, char *argv[], s32 switches)
 
   if ((fileHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
   {
-    if ((_read(fileHandle, pack, sizeof(packType)) != sizeof(packType)) ||
+    if ((read(fileHandle, pack, sizeof(packType)) != (int)sizeof(packType)) ||
         (close(fileHandle) == -1))
       logEntry("Can't read "dPCKFNAME, LOG_ALWAYS, 1);
   }
@@ -478,7 +478,7 @@ s16 pack(s16 argc, char *argv[], s32 switches)
           fileHandle = -1;
           if (oldAttribute & KILLSENT)
           {
-            sprintf(tempStr, "%s%u.msg", config.netPath, msgNum);
+            sprintf(tempStr, "%s%lu.msg", config.netPath, msgNum);
 
             if ((fileHandle = openP(tempStr, O_RDWR | O_DENYALL | O_BINARY, S_IREAD | S_IWRITE)) != -1)
             {

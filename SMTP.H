@@ -25,7 +25,7 @@
 
 extern const char *smtpID;
 
-int sendMessage(u8 *SMTPServerName, u8 *mailfrom, u8 *mailto, internalMsgType *message, u8 *attach);
+int sendMessage(char *SMTPServerName, char *mailfrom, char *mailto, internalMsgType *message, char *attach);
 
 int closeConnection(void);
 

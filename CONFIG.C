@@ -56,11 +56,12 @@ extern unsigned _cdecl _psp;
 #include "config.h"
 
 #include "areainfo.h"
-#include "log.h"
-#include "utils.h"
-#include "mtask.h"
 #include "crc.h"
+#include "log.h"
 #include "msgpkt.h" // for openP
+#include "mtask.h"
+#include "stpcpy.h"
+#include "utils.h"
 
 extern fhandle fmailLockHandle;
 
@@ -76,13 +77,13 @@ char funcStr[32] = "undefined?";
 
 extern s16 diskError;
 
-extern char    configPath[128];
+extern char configPath[FILENAME_MAX];
 extern internalMsgType *message;
 
-extern psType *seenByArray;
-extern psType *tinySeenArray;
-extern psType *pathArray;
-extern psType *tinyPathArray;
+extern psRecType *seenByArray;
+extern psRecType *tinySeenArray;
+extern psRecType *pathArray;
+extern psRecType *tinyPathArray;
 
 fhandle fmLockHandle;
 
@@ -215,7 +216,7 @@ void initFMail(const char *_funcStr, s32 switches)
   strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
   if (((configHandle = openP(tempStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
-      (_read(configHandle, &config, sizeof(configType)) < sizeof(configType))  ||
+      (read(configHandle, &config, sizeof(configType)) < (int)sizeof(configType))  ||
       (close(configHandle) == -1))
   {
     puts("Can't read "dCFGFNAME);
@@ -225,8 +226,7 @@ void initFMail(const char *_funcStr, s32 switches)
   if (config.genOptions.checkBreak)
     ctrlbrk (c_break);              // Set control-break handler
 #endif
-  if ((config.versionMajor != CONFIG_MAJOR) ||
-     (config.versionMinor != CONFIG_MINOR))
+  if (config.versionMajor != CONFIG_MAJOR || config.versionMinor != CONFIG_MINOR)
   {
     printf("ERROR: "dCFGFNAME" is not created by FSetup %d.%d or later.\n", CONFIG_MAJOR, CONFIG_MINOR);
     if ((config.versionMajor == 0) && (config.versionMinor == 36))
@@ -240,21 +240,24 @@ void initFMail(const char *_funcStr, s32 switches)
   if ((helpPtr = strrchr(tempStr2, '\\')) != NULL)
     *helpPtr = 0;
 
-#undef open(a,b,c)
+//#undef open(a,b,c)
+#undef open
 
   ++no_msg;
-  if  (  (!access(tempStr2, 0))
-     && ((fmailLockHandle = open(tempStr, O_WRONLY | O_DENYWRITE | O_BINARY | O_CREAT | O_TRUNC, S_IREAD|S_IWRITE)) == -1)
-     && (errno != ENOFILE)
+  if (  !access(tempStr2, 0)
+     && (fmailLockHandle = open(tempStr, O_WRONLY | O_DENYALL | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1
+     && errno != ENOFILE
      )
   {
     puts("Waiting for another copy of FMail, FTools or FSetup to finish...");
 
-    time (&time1);
+    time(&time1);
     time2 = time1;
 
-    while (  ((fmailLockHandle = open(tempStr, O_WRONLY | O_DENYALL | O_BINARY | O_CREAT | O_TRUNC, S_IREAD|S_IWRITE)) == -1)
-          && (!config.activTimeOut || time2-time1 < config.activTimeOut) && ((ch = (keyWaiting & 0xff)) != 27))
+    while (  (fmailLockHandle = open(tempStr, O_WRONLY | O_DENYALL | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1
+          && (!config.activTimeOut || time2 - time1 < config.activTimeOut)
+          && (ch = (keyWaiting & 0xff)) != 27
+          )
     {
       if (ch == 0 || ch == -1)
       {
@@ -300,10 +303,8 @@ void initFMail(const char *_funcStr, s32 switches)
      || (existDir(config.bbsPath, "message base") == 0)
      || (existDir(config.inPath,  "inbound"     ) == 0)
      || (existDir(config.outPath, "outbound"    ) == 0)
-#ifndef __32BIT__
-#ifndef __FMAILX__
+#if !defined(__FMAILX__) && !defined(__32BIT__)
      || (*config.swapPath            && existDir(config.swapPath           , "swap"         ) == 0)
-#endif
 #endif
      || (*config.pmailPath           && existDir(config.pmailPath          , "personal mail") == 0)
      || (*config.sentEchoPath        && existDir(config.sentEchoPath       , "sent echomail") == 0)
@@ -331,19 +332,17 @@ void initFMail(const char *_funcStr, s32 switches)
 
   initLog(funcStr, switches);
 
-  if (  NULL == (message       = malloc(INTMSG_SIZE                          ))
-     || NULL == (seenByArray   = malloc(sizeof(psRecType) * MAX_MSGSEENBY    ))
-     || NULL == (tinySeenArray = malloc(sizeof(psRecType) * MAX_MSGTINYSEENBY))
-     || NULL == (pathArray     = malloc(sizeof(psRecType) * MAX_MSGPATH      ))
-     || NULL == (tinyPathArray = malloc(sizeof(psRecType) * MAX_MSGTINYPATH  ))
+  if (  NULL == (message       = (internalMsgType *)malloc(INTMSG_SIZE                          ))
+     || NULL == (seenByArray   = (psRecType       *)malloc(sizeof(psRecType) * MAX_MSGSEENBY    ))
+     || NULL == (tinySeenArray = (psRecType       *)malloc(sizeof(psRecType) * MAX_MSGTINYSEENBY))
+     || NULL == (pathArray     = (psRecType       *)malloc(sizeof(psRecType) * MAX_MSGPATH      ))
+     || NULL == (tinyPathArray = (psRecType       *)malloc(sizeof(psRecType) * MAX_MSGTINYPATH  ))
      )
     logEntry("Not enough memory to initialize FMail", LOG_ALWAYS, 2);
 
-#ifndef __32BIT__
-#ifndef __FMAILX__
+#if !defined(__FMAILX__) && !defined(__32BIT__)
   if (!(*config.swapPath))
     strcpy(config.swapPath, configPath);
-#endif
 #endif
   strupr(config.topic1);
   strupr(config.topic2);
@@ -358,15 +357,14 @@ void deinitFMail(void)
 {
   fhandle     configHandle;
   tempStrType tempStr;
-  u16         counter;
 
   strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
   if (  (configHandle = openP(tempStr, O_WRONLY | O_BINARY, S_IREAD|S_IWRITE)) == -1
      || lseek(configHandle, offsetof(configType, uplinkReq), SEEK_SET) == -1L
-     || write(configHandle, &config.uplinkReq, sizeof(uplinkReqType)*MAX_UPLREQ) < sizeof(uplinkReqType)*MAX_UPLREQ
+     || write(configHandle, &config.uplinkReq, sizeof(uplinkReqType)*MAX_UPLREQ) < (int)sizeof(uplinkReqType)*MAX_UPLREQ
      || lseek(configHandle, offsetof(configType, lastUniqueID), SEEK_SET) == -1L
-     || write(configHandle, &config.lastUniqueID, sizeof(config.lastUniqueID)) < sizeof(config.lastUniqueID)
+     || write(configHandle, &config.lastUniqueID, sizeof(config.lastUniqueID)) < (int)sizeof(config.lastUniqueID)
      || close(configHandle) == -1
      )
   {

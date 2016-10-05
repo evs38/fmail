@@ -23,6 +23,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "ping.h"
@@ -98,8 +99,7 @@ int Ping(internalMsgType *message, int localAkaNum)
   u32              msgLen;
   s32              msgNum;
   tempStrType      tempStr
-                ,  replyStr
-                ,  fromNodeStr;
+                ,  replyStr;
   char            *helpPtr
                 , *helpPtr2;
   internalMsgType *replyMsg;
@@ -207,7 +207,7 @@ int Ping(internalMsgType *message, int localAkaNum)
   // Add closing line
 #if 0
   helpPtr2 =
-#endif  
+#endif
   stpcpy(helpPtr2, "==============================================================================\r");
 
   msgNum = writeMsg(replyMsg, NETMSG, 1);

@@ -32,7 +32,7 @@
 //
 //---------------------------------------------------------------------------
 
-#if __BORLANDC__ >= 0x0500 && defined(__32BIT__)
+#if (__BORLANDC__ >= 0x0500 || __GNUC__ >= 3) && defined(__32BIT__)
 #define __CANUSE64BIT
 #endif
 
@@ -287,8 +287,10 @@ typedef struct
   unsigned                     : 1;  // Bit  7
 } pingOptionsType;
 
-#if sizeof(pingOptionsType) != sizeof(u8)
-#error "*** Error: sizeof(pingOptionsType) != sizeof(u8)"
+#ifdef __BORLANDC__
+# if sizeof(pingOptionsType) != sizeof(u8)
+#  error "*** Error: sizeof(pingOptionsType) != sizeof(u8)"
+# endif
 #endif
 
 typedef struct
@@ -705,7 +707,6 @@ typedef struct
 } nodeInfoType;
 
 
-
 // ********** FMAIL.PCK **********
 
 #define dPCKFNAME  "fmail.pck"
@@ -713,9 +714,8 @@ typedef struct
 #define PACK_STR_SIZE 64
 #define MAX_PACK      128
 
-typedef uchar packEntryType[PACK_STR_SIZE];
+typedef char packEntryType[PACK_STR_SIZE];
 typedef packEntryType packType[MAX_PACK];
-
 
 
 // ********** FMAIL.BDE **********

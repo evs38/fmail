@@ -40,16 +40,15 @@ int fs_maxfname;
 int fs_maxdir;
 int fs_flags;
 
-
+#ifndef __32BIT__
 #define seg(x) (int)(((long)x)>>16)
 #define off(x) (int)x
-
 
 #ifndef __FMAILX__
 #define fsint86x(a,b,c,d) int86x(a,b,c,d)
 #else
 #define fsint86x(a,b,c,d) int86xdpmi(a,b,c,d)
-#ifndef __32BIT__
+
 static void *intbuf1p, *intbuf1r;
 static void *intbuf2p, *intbuf2r;
 
@@ -106,9 +105,6 @@ int int86xdpmi(int intno, union REGS *inregs, union REGS *outregs, struct SREGS 
    return (int)regdata.ax;
 }
 #endif
-#endif
-
-
 
 #ifndef __FMAILX__
 #define segx1(ptr) seg(ptr)
@@ -145,6 +141,8 @@ int int86xdpmi(int intno, union REGS *inregs, union REGS *outregs, struct SREGS 
    off(intbuf2r)         \
 )
 #endif                    \
+
+#endif
 
 //---------------------------------------------------------------------------
 // Check if the volume in path supports long file names
@@ -218,40 +216,69 @@ int fsopen(const char *path, int access, unsigned mode, u16 lfn)
 {
 #ifdef __32BIT__
 #ifdef __OS2__
-   lfn = lfn;
-   return open(path, access, mode);
+  lfn = lfn;
+  return open(path, access, mode);
 #else
-   int      ret;
-   HANDLE   handle;
+  int      ret;
+  HANDLE   handle;
+  DWORD    acc
+         , sharemode;
 
-   if (!lfn || !fileSys(path))
-      return open(path, access, mode);
+  if (!lfn || !fileSys(path))
+    return open(path, access, mode);
 
-// return OpenFile(path, &ofstruct,
-//		   ((access & O_TRUNC) ? OF_CREATE : 0) |
-//		   ((access & O_RDONLY) ? OF_READ : OF_READWRITE) |
-//		   (((access & O_DENYNONE) ? OF_SHARE_DENY_NONE :
-//		    ((access & O_DENYREAD) ? OF_SHARE_DENY_READ :
-//		    ((access & O_DENYWRITE) ? OF_SHARE_DENY_WRITE :
-//		    ((access & O_DENYALL) ? OF_SHARE_EXCLUSIVE : 0))))));
+  // Map the access bits to the NT access mode.
+  switch (access & O_ACCMODE)
+  {
+    case O_RDONLY:
+      acc = GENERIC_READ;
+      break;
+    case O_WRONLY:
+      acc = GENERIC_WRITE;
+      break;
+    case O_RDWR:
+      acc = GENERIC_READ | GENERIC_WRITE;
+      break;
+    default:
+      acc = 0;
+      break;
+  }
 
-   handle = CreateFile(path,
-		       GENERIC_READ|GENERIC_WRITE,
-		       !(access & O_DENYREAD) ? FILE_SHARE_READ :
-		       !(access & O_DENYWRITE) ? FILE_SHARE_WRITE : 0,
-		       NULL,
-		       (access & O_CREAT) ? ((access & O_TRUNC) ? CREATE_ALWAYS : OPEN_ALWAYS) :
-		       (access & O_TRUNC) ? TRUNCATE_EXISTING : OPEN_EXISTING,
-		       FILE_ATTRIBUTE_NORMAL,
-		       NULL);
-   if (handle == INVALID_HANDLE_VALUE)
-      return -1;
-   if ((ret = _open_osfhandle((long)handle, (access & (O_APPEND | O_RDONLY | O_TEXT)))) == -1)
-   {
+  // Map the sharing bits to the NT sharing mode.
+  switch (access & 0x70)   // DOS sharing mode is in bits 4-6
+  {
+    case O_DENYALL:
+      sharemode = 0;
+      break;
+    case O_DENYWRITE:
+      sharemode = FILE_SHARE_READ;
+      break;
+    case O_DENYREAD:
+      sharemode = FILE_SHARE_WRITE;
+      break;
+    default:
+    case O_DENYNONE:
+      sharemode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+      break;
+  }
+
+  handle = CreateFile( path
+                     , acc
+                     , sharemode // !(access & O_DENYREAD) ? FILE_SHARE_READ : !(access & O_DENYWRITE) ? FILE_SHARE_WRITE : 0
+                     , NULL
+                     , (access & O_CREAT) ? ((access & O_TRUNC) ? CREATE_ALWAYS : OPEN_ALWAYS) : (access & O_TRUNC) ? TRUNCATE_EXISTING : OPEN_EXISTING
+                     , FILE_ATTRIBUTE_NORMAL
+                     , NULL
+                     );
+  if (handle == INVALID_HANDLE_VALUE)
+    return -1;
+
+  if ((ret = _open_osfhandle((long)handle, (access & (O_APPEND | O_RDONLY | O_TEXT)))) == -1)
+  {
     CloseHandle(handle);
     return -1;
-   }
-   return ret;
+  }
+  return ret;
 #endif
 #else
    union  REGS  regs, regs2;

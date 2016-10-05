@@ -32,6 +32,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef __MINGW32__
+#include <windef.h>    // min() max()
+#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -43,6 +46,7 @@
 #include "nodeinfo.h"
 #include "ping.h"
 #include "spec.h"
+#include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
 
@@ -63,7 +67,7 @@ extern char       *months;
 extern const char *dayName[7];
 extern s16        zero;
 
-extern const char *upcaseMonths;
+//extern const char *upcaseMonths;
 
 extern globVarsType    globVars;
 
@@ -105,7 +109,7 @@ void moveMsg(char *msgName, char *destDir)
         closedir(dir);
       }
     }
-    sprintf(tempStr, "%s%u.msg", destDir, ++highMsgNum);
+    sprintf(tempStr, "%s%lu.msg", destDir, (u32)++highMsgNum);
     if (!moveFile(msgName, tempStr))
     {
       sprintf(tempStr2, "Moving %s to %s", msgName, tempStr);
@@ -236,10 +240,10 @@ void initMsg(s16 noAreaFix)
   tempStrType    fileNameStr
                , tempStr
                , textStr;
-  char           drive[MAXDRIVE];
-  char           dirStr[MAXDIR];
-  char           name[MAXFILE];
-  char           ext[MAXEXT];
+  char           drive[_MAX_DRIVE];
+  char           dirStr[_MAX_DIR];
+  char           name[_MAX_FNAME];
+  char           ext[_MAX_EXT];
   fhandle        msgMsgHandle;
   fhandle        tempHandle;
   s32            arcSize;
@@ -279,7 +283,7 @@ void initMsg(s16 noAreaFix)
           else
           {
             memset(textStr, 0, 256);
-            count = _read(msgMsgHandle, textStr, 255);
+            count = read(msgMsgHandle, textStr, 255);
             close(msgMsgHandle);
 
             if (  config.mailOptions.killEmptyNetmail
@@ -361,7 +365,7 @@ void initMsg(s16 noAreaFix)
                         }
                         close(tempHandle);
                       }
-                      fnsplit(msgMsg.subject, drive, dirStr, name, ext);
+                      _splitpath(msgMsg.subject, drive, dirStr, name, ext);
                       if (isdigit(ext[3] || isalpha(ext[3] && config.mailOptions.extNames))
                          && (  config.maxBundleSize == 0
                             || (arcSize >> 10) < config.maxBundleSize
@@ -646,14 +650,14 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
   }
 
   if (  (filelength(msgMsgHandle) > (long)(sizeof(msgMsgType) + TEXT_SIZE))
-     || _read(msgMsgHandle, &msgMsg, sizeof(msgMsgType)) != sizeof(msgMsgType)
+     || read(msgMsgHandle, &msgMsg, sizeof(msgMsgType)) != (int)sizeof(msgMsgType)
      )
   {
     close(msgMsgHandle);
     return (-1);
   }
 
-  _read(msgMsgHandle, message->text, TEXT_SIZE);
+  read(msgMsgHandle, message->text, TEXT_SIZE);
   close(msgMsgHandle);
 
   strcpy (message->fromUserName, msgMsg.fromUserName);
@@ -692,7 +696,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
     }
     else
     {
-      message->month = (((s16)strstr(upcaseMonths, strupr(tempStr1)) - (s16)upcaseMonths) / 3) + 1;
+      message->month = ((strstr(upcaseMonths, strupr(tempStr1)) - upcaseMonths) / 3) + 1;
 
       if (message->year >= 80)
         message->year += 1900;
@@ -944,19 +948,16 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 //---------------------------------------------------------------------------
 s32 writeMsgLocal(internalMsgType *message, s16 msgType, s16 valid)
 {
-  struct date dateRec;
-  struct time timeRec;
   char *p;
+  time_t t = time(NULL);
+  struct tm *tm = localtime(&t);
 
-  getdate(&dateRec);
-  gettime(&timeRec);
-
-  message->hours   = timeRec.ti_hour;
-  message->minutes = timeRec.ti_min;
-  message->seconds = timeRec.ti_sec;
-  message->day     = dateRec.da_day;
-  message->month   = dateRec.da_mon;
-  message->year    = dateRec.da_year;
+  message->hours   = tm->tm_hour;
+  message->minutes = tm->tm_min;
+  message->seconds = tm->tm_sec;
+  message->day     = tm->tm_mday;
+  message->month   = tm->tm_mon + 1;
+  message->year    = tm->tm_year + 1900;
 
   message->attribute |= LOCAL;
 
@@ -983,7 +984,7 @@ void validateMsg(void)
 
   for (c = PERMSG; c <= NETMSG; c++)
   {
-    if (c == NETMSG && globVars.netCount || c == PERMSG && globVars.perCount)
+    if ((c == NETMSG && globVars.netCount) || (c == PERMSG && globVars.perCount))
     {
       switch (c)
       {

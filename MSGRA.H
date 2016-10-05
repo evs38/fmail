@@ -189,14 +189,14 @@ typedef struct
 
 typedef struct
 {
-  uchar wtLength;
-  uchar WhoTo[35];
+  u8   wtLength;
+  char WhoTo[35];
 } msgToIdxRec;
 
 typedef struct
 {
-  uchar txtLength;
-  uchar txtStr[255];
+  u8   txtLength;
+  char txtStr[255];
 } msgTxtRec;
 
 #ifdef GOLDBASE
@@ -266,19 +266,19 @@ typedef struct
    uchar         DestZone,
                  OrigZone;
    u16           Cost;
-   uchar         MsgAttr,
+   u8            MsgAttr,
                  NetAttr,
                  Board;
-   uchar         ptLength;
-   schar         PostTime[5];
-   uchar         pdLength;
-   schar         PostDate[8];
-   uchar         wtLength;
-   schar         WhoTo[35];
-   uchar         wfLength;
-   schar         WhoFrom[35];
-   uchar         sjLength;
-   schar         Subj[56]; /* 72 - 16 */
+   u8            ptLength;
+   char          PostTime[5];
+   u8            pdLength;
+   char          PostDate[8];
+   u8            wtLength;
+   char          WhoTo[35];
+   u8            wfLength;
+   char          WhoFrom[35];
+   u8            sjLength;
+   char          Subj[56]; /* 72 - 16 */
    u32           subjCrc;
    u32           wrTime;
    s32           recTime;
@@ -304,10 +304,7 @@ typedef struct
 //---------------------------------------------------------------------------
 s16  multiUpdate      (void);
 
-void readMsgInfo      (u16);
-void writeMsgInfo     (u16);
-
-char *expandNameHudson(char *fileName, int orgName);
+char *expandNameHudson(const char *fileName, int orgName);
 void initBBS          (void);
 
 int  testMBUnlockNow  (void);

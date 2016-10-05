@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -94,7 +94,7 @@ typedef areaNameType badAreaListType[MAX_BADAREA];
 badAreaListType *badAreaList;
 u16             badAreaCount = 0;
 
-extern char configPath[128];
+extern char configPath[FILENAME_MAX];
 extern configType config;
 
 extern char *version;
@@ -294,7 +294,6 @@ static void sendMsg( internalMsgType *message, char *replyStr
                    , nodeInfoType *nodeInfoPtr2, s32 *msgNum2
                    )
 {
-  tempStrType tempStr;
   char       *helpPtr;
   u16         count;
   nodeNumType tempNode;
@@ -394,7 +393,6 @@ int areaFix(internalMsgType *message)
   u8              archiver;
   s16             compare;
   fhandle         helpHandle;
-  fhandle         msgHandle1, msgHandle2;
   tempStrType     replyStr;
   u16             availCount;
   s16             bufCount;
@@ -1452,10 +1450,10 @@ Send:
       }
       if (areaCount)
       {
-        strcpy (helpPtr, "---\r");
-        strcpy (message->fromUserName, config.sysopName);
-        strcpy (message->toUserName,   config.uplinkReq[count].program);
-        strcpy (message->subject,      config.uplinkReq[count].password);
+        strcpy(helpPtr, "---\r");
+        strcpy(message->fromUserName, config.sysopName);
+        strcpy(message->toUserName,   config.uplinkReq[count].program);
+        strcpy(message->subject,      config.uplinkReq[count].password);
         message->srcNode  = config.akaList[config.uplinkReq[count].originAka].nodeNum;
         message->destNode = config.uplinkReq[count].node;
         message->attribute= PRIVATE|KILLSENT;
@@ -1471,43 +1469,54 @@ Send:
           if ((*areaFixList)[c].uplink == count)
             helpPtr += sprintf (helpPtr, "%s\r", (*areaFixList)[c].areaName);
         }
-        strcpy (message->fromUserName, "FMail AreaMgr");
-        strcpy (message->toUserName, config.sysopName);
-        strcpy (message->subject,    "Area(s) requested from uplink");
+        strcpy(message->fromUserName, "FMail AreaMgr");
+        strcpy(message->toUserName, config.sysopName);
+        strcpy(message->subject,    "Area(s) requested from uplink");
         message->destNode  = config.akaList[config.uplinkReq[count].originAka].nodeNum;
         message->attribute = PRIVATE;
 
-        writeMsgLocal (message, NETMSG, 1);
+        writeMsgLocal(message, NETMSG, 1);
       }
     }
   }
 
   if (rescanRequest)
   {
-    sprintf(tempStr, "%s%lu.msg", config.netPath, msgNum1);
-    msgHandle1 = openP(tempStr, O_WRONLY|O_BINARY|O_APPEND|O_DENYNONE, 0);
-    sprintf(tempStr, "%s%lu.msg", config.netPath, msgNum2);
-    msgHandle2 = openP(tempStr, O_WRONLY|O_BINARY|O_APPEND|O_DENYNONE, 0);
+    fhandle msgHandle1 = -1
+          , msgHandle2 = -1;
+#ifdef _DEBUG0
+    sprintf(tempStr, "DEBUG Rescan AreaFix start %s %lu.msg %lu.msg", config.netPath, msgNum1, msgNum2);
+    logEntry(tempStr, LOG_DEBUG, 0);
+#endif
+    if (msgNum1)
+    {
+      sprintf(tempStr, "%s%lu.msg", config.netPath, msgNum1);
+      msgHandle1 = openP(tempStr, O_WRONLY | O_BINARY | O_APPEND | O_DENYNONE, 0);
+    }
+    if (msgNum2)
+    {
+      sprintf(tempStr, "%s%lu.msg", config.netPath, msgNum2);
+      msgHandle2 = openP(tempStr, O_WRONLY | O_BINARY | O_APPEND | O_DENYNONE, 0);
+    }
 
-    strcpy(stpcpy (tempStr, config.bbsPath), "areamgr.$$$");
+    strcpy(stpcpy(tempStr, config.bbsPath), "areamgr.$$$");
     if (nodeInfoPtr->options.allowRescan)
     {
-      if ((helpHandle = openP(tempStr, O_RDWR|O_BINARY|O_CREAT|O_TRUNC|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
+      if ((helpHandle = openP(tempStr, O_RDWR | O_BINARY | O_CREAT | O_TRUNC | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
       {
         if (  write(helpHandle, areaFixList, areaFixCount * sizeof(areaFixType))
            == (int)(areaFixCount * sizeof(areaFixType))
            )
         {
-          lseek (helpHandle, 0, SEEK_SET);
+          lseek(helpHandle, 0, SEEK_SET);
           while (read(helpHandle, &areaFixRec, sizeof(areaFixType)) > 0)
           {
             if ((areaFixRec.remove == 2 || areaFixRec.remove == 8) && areaFixRec.maxRescan)
             {
-              rescan(nodeInfoPtr, areaFixRec.areaName,
-                      areaFixRec.maxRescan != -1 ? areaFixRec.maxRescan :
-                      (rescanAll ? rescanAll :
-                       config.defMaxRescan ? config.defMaxRescan : 0x7FFF),
-                      msgHandle1, msgHandle2);
+              rescan( nodeInfoPtr, areaFixRec.areaName
+                    , areaFixRec.maxRescan != -1 ? areaFixRec.maxRescan : (rescanAll ? rescanAll : config.defMaxRescan ? config.defMaxRescan : 0x7FFF)
+                    , msgHandle1, msgHandle2
+                    );
             }
           }
         }
@@ -1526,6 +1535,9 @@ Send:
     }
     close(msgHandle1);
     close(msgHandle2);
+#ifdef _DEBUG0
+    logEntry("DEBUG Rescan AreaFix end", LOG_DEBUG, 0);
+#endif
   }
 
   strcpy(message->fromUserName, "FMail AreaMgr");

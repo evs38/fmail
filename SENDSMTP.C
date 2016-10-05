@@ -39,14 +39,16 @@
 #include "utils.h"
 #include "smtp.h"
 #include "spec.h"
+#include "stpcpy.h"
 
-
+#if 0
 void _RTLENTRY _EXPFUNC tzset2(void);
+#endif
 
 //---------------------------------------------------------------------------
-static int make_send_msg(u16 xu, u8 *attachName, u16 msg_tfs, u16 msg_kfs)
+static int make_send_msg(u16 xu, char *attachName, u16 msg_tfs, u16 msg_kfs)
 {
-  u8           *fileName;
+  char        *fileName;
   int          handle;
   s32          xs;
   tempStrType  txtName;
@@ -67,10 +69,9 @@ static int make_send_msg(u16 xu, u8 *attachName, u16 msg_tfs, u16 msg_kfs)
   }
   else
     message->text[0] = 0;
-  if ( !sendMessage(config.smtpServer, config.emailAddress,
-                    nodeInfo[xu]->email, message, attachName) )
+  if (!sendMessage(config.smtpServer, config.emailAddress, nodeInfo[xu]->email, message, attachName))
   {
-    if ( firstFile(attachName, &fileName) )
+    if (firstFile(attachName, &fileName))
     {
       do
       {

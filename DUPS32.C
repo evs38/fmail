@@ -41,7 +41,7 @@
 #include "utils.h"
 
 //---------------------------------------------------------------------------
-extern char       configPath[128];
+extern char       configPath[FILENAME_MAX];
 extern configType config;
 
 #define DUP_LEVEL  1
@@ -52,16 +52,22 @@ static u32 nextDupOld[256];
 
 typedef struct
 {
-  uchar headerText[128];
-  u32   version;
-  u32   level;
-  u32   kRecs;
-  u32   totalSize;
-  uchar _reserved[112];
-  u32   nextDup[256];
+  char headerText[128];
+  u32  version;
+  u32  level;
+  u32  kRecs;
+  u32  totalSize;
+  u8  _reserved[112];
+  u32  nextDup[256];
 } dupHdrStruct;
 
 static dupHdrStruct dupHdr;
+
+#ifdef __MINGW32__
+#ifndef min
+#define min(a,b) ((a)<(b)?(a):(b))
+#endif
+#endif
 
 //---------------------------------------------------------------------------
 #ifndef __OS2__
@@ -113,21 +119,21 @@ void openDup(void)
       dupHdr.level   = 0x00000100;
       dupHdr.kRecs   = config.kDupRecs;
    }
-   if ((dupBuffer = malloc(config.kDupRecs*DUP_LEVEL*4096)) == NULL)
+   if ((dupBuffer = (u32 *)malloc(config.kDupRecs * DUP_LEVEL * 4096)) == NULL)
    {
       config.mailOptions.dupDetection = 0;
       logEntry("Can't allocate dupbuffer space", LOG_ALWAYS, 2);
    }
-   memset(dupBuffer, 0, config.kDupRecs*DUP_LEVEL*4096);
-   if ( dupHandle != -1 )
+   memset(dupBuffer, 0, config.kDupRecs * DUP_LEVEL * 4096);
+   if (dupHandle != -1)
    {
       if (dupHdr.kRecs == (u32)config.kDupRecs)
-         read(dupHandle, dupBuffer, dupHdr.kRecs*DUP_LEVEL*4096);
+         read(dupHandle, dupBuffer, dupHdr.kRecs * DUP_LEVEL * 4096);
       else
       {
          for (group = 0; group < 256; group++)
          {
-            lseek(dupHandle, sizeof(dupHdrStruct)+dupHdr.kRecs*16*group, SEEK_SET);
+            lseek(dupHandle, sizeof(dupHdrStruct) + dupHdr.kRecs * 16 * group, SEEK_SET);
             read(dupHandle, &dupBuffer[config.kDupRecs * 4 * group], 16 * min((u32)config.kDupRecs, dupHdr.kRecs));
             if (dupHdr.nextDup[group] >= (u32)config.kDupRecs * 4)
                dupHdr.nextDup[group] = 0;

@@ -76,7 +76,7 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include "sendsmtp.h"
 #endif
 
-#ifndef __FMAILX__
+#if !defined(__FMAILX__) && !defined(__32BIT__)
 extern unsigned cdecl _stklen = 16384;
 #endif
 
@@ -91,7 +91,7 @@ u16     badEchoCount = 0;
 #ifdef __FMAILX__
 char programPath[128];
 #endif
-char configPath[128];
+char configPath[FILENAME_MAX];
 s16  _mb_upderr = 0;
 
 #ifndef __32BIT__
@@ -456,8 +456,8 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 {
   tempStrType        pktStr
                    , tempStr;
-  char              *helpPtr
-                  , *dirStr;
+  char              *helpPtr;
+  char              *dirStr;
   echoToNodeType     tempEchoToNode;
   s16                echoToNodeCount
                    , areaIndex
@@ -510,7 +510,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
           {
             if (ftscprod[i].prodcode == globVars.remoteProdCode)
             {
-              helpPtr = ftscprod[i].prodname;
+              helpPtr = (char*)ftscprod[i].prodname;
               break;
             }
             ++i;
@@ -1665,9 +1665,9 @@ void Scan(int argc, char *argv[])
           if ((tempHandle = openP(tempStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) != -1)
           {
   #ifndef GOLDBASE
-            while ((_read(tempHandle, &index, 2) == 2)
+            while ((read(tempHandle, &index, 2) == 2)
   #else
-            while ((_read(tempHandle, &index, 4) == 4)
+            while ((read(tempHandle, &index, 4) == 4)
   #endif
                   && !diskError && !breakPressed)
             {

@@ -30,6 +30,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef __MINGW32__
+#include <windef.h>    // min() max()
+#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -39,6 +42,7 @@
 #include "filesys.h"
 #include "jam.h"
 #include "jamfun.h"
+#include "lock.h"
 #include "log.h"
 #include "msgpkt.h"
 #include "mtask.h"
@@ -333,12 +337,12 @@ u16 jam_getsubfields(u32 jam_code, char *jam_subfields, u32 jam_subfieldlen, int
         case JAMSFLD_OADDRESS :
                                 strncpy(tempStr, jam_subfields + index, (udef)datlen);
                                 tempStr[(udef)datlen] = 0;
-                                sscanf(tempStr, "%u:%u/%u.%u", &message->srcNode.zone, &message->srcNode.net, &message->srcNode.node, &message->srcNode.point);
+                                sscanf(tempStr, "%hu:%hu/%hu.%hu", &message->srcNode.zone, &message->srcNode.net, &message->srcNode.node, &message->srcNode.point);
                                 break;
         case JAMSFLD_DADDRESS :
                                 strncpy(tempStr, jam_subfields + index, (udef)datlen);
                                 tempStr[(udef)datlen] = 0;
-                                sscanf(tempStr, "%u:%u/%u.%u", &message->destNode.zone, &message->destNode.net, &message->destNode.node, &message->destNode.point);
+                                sscanf(tempStr, "%hu:%hu/%hu.%hu", &message->destNode.zone, &message->destNode.net, &message->destNode.node, &message->destNode.point);
                                 break;
         case JAMSFLD_SENDERNAME :
                                 strncpy(message->fromUserName, jam_subfields + index, min((udef)datlen, sizeof(message->fromUserName) - 1));
@@ -446,7 +450,8 @@ u16 jam_makesubfields(u32 jam_code, char *jam_subfields, u32 *jam_subfieldLen,
 //      u16   hiID;
         udef  count;
         udef    again;
-        char  *helpPtr1, *helpPtr2;
+        char  *helpPtr1
+            , *helpPtr2;
         udef  stlen;
         char  tempStr[_JAM_MAXSUBLEN];
 
@@ -524,14 +529,18 @@ u16 jam_makesubfields(u32 jam_code, char *jam_subfields, u32 *jam_subfieldLen,
 //#define JAMSFLD_UNKNOWN     0xffff
                         }
                         if ( helpPtr1 != NULL && *jam_subfieldLen+(stlen = strlen(helpPtr1))+8 < _JAM_MAXSUBLENTOT )
-                        {  *(((u16*)helpPtr2)++) = loID;
-                           *(((u16*)helpPtr2)++) = 0;
-                           *(((u32*)helpPtr2)++) = stlen;
-                           helpPtr2 = stpcpy(helpPtr2, helpPtr1);
-                           *jam_subfieldLen += 8 + stlen;
+                        {
+                          *(u16*)helpPtr2 = loID;
+                          helpPtr2 += sizeof(u16);
+                          *(u16*)helpPtr2 = 0;
+                          helpPtr2 += sizeof(u16);
+                          *(u32*)helpPtr2 = stlen;
+                          helpPtr2 += sizeof(u32);
+                          helpPtr2 = stpcpy(helpPtr2, helpPtr1);
+                          *jam_subfieldLen += 8 + stlen;
                         }
                 }
-                while ( again );
+                while (again);
         }
         return 1;
 }
@@ -634,50 +643,53 @@ static s16 useLocks = -1;
 
 u16 jam_getlock(u32 jam_code)
 {
-   s16 stat;
+  s16 stat;
 
-   dummy = jam_code;
-   if (useLocks)
-   {
-      stat=lock(jam_hdrhandle, 0L, 1L);
-      if (useLocks == -1)
-                {
-         useLocks = 1;
-         if (stat == -1 && errno == EINVAL)
-         {
-            if (!config.mbOptions.mbSharing)
-               useLocks = 0;
-            else
-            {
-               newLine();
-               logEntry("SHARE is required when Message Base Sharing is enabled", LOG_ALWAYS, 0);
-               return 0;
-            }
-         }
+  dummy = jam_code;
+  if (useLocks)
+  {
+    stat = lock(jam_hdrhandle, 0L, 1L);
+    if (useLocks == -1)
+    {
+      useLocks = 1;
+      if (stat == -1 && errno == EINVAL)
+      {
+        if (!config.mbOptions.mbSharing)
+          useLocks = 0;
+        else
+        {
+          newLine();
+          logEntry("SHARE is required when Message Base Sharing is enabled", LOG_ALWAYS, 0);
+
+          return 0;
+        }
       }
-   }
-   return 1;
+    }
+  }
+  return 1;
 }
-
-
-
+//---------------------------------------------------------------------------
 u16 jam_freelock(u32 jam_code)
-{  dummy = jam_code;
+{
+  dummy = jam_code;
 
 //      Update MOD counter
-        if ( lseek(jam_hdrhandle, 0, SEEK_SET) != 0 )
-                return 0;
-        if ( read(jam_hdrhandle, &jam_hdrinfo, sizeof(JAMHDRINFO)) != sizeof(JAMHDRINFO) )
-                return 0;
-        ++jam_hdrinfo.ModCounter;
-        if ( lseek(jam_hdrhandle, 0, SEEK_SET) != 0 )
-                return 0;
-        if ( write(jam_hdrhandle, &jam_hdrinfo, sizeof(JAMHDRINFO)) != sizeof(JAMHDRINFO) )
-                return 0;
-        return !useLocks || !unlock(jam_hdrhandle, 0, 1);
+  if (lseek(jam_hdrhandle, 0, SEEK_SET) != 0)
+    return 0;
+
+  if (read(jam_hdrhandle, &jam_hdrinfo, sizeof(JAMHDRINFO)) != sizeof(JAMHDRINFO))
+    return 0;
+
+  ++jam_hdrinfo.ModCounter;
+  if (lseek(jam_hdrhandle, 0, SEEK_SET) != 0)
+    return 0;
+
+  if (write(jam_hdrhandle, &jam_hdrinfo, sizeof(JAMHDRINFO)) != sizeof(JAMHDRINFO))
+    return 0;
+
+  return !useLocks || !unlock(jam_hdrhandle, 0, 1);
 }
-
-
+//---------------------------------------------------------------------------
 u32 jam_incmsgcount(u32 jam_code)
 {  dummy = jam_code;
 
@@ -719,9 +731,9 @@ u32 jam_writemsg(char *msgbasename, internalMsgType *message, u16 local)
     return 0;
   }
   jam_initmsghdrrec(&jam_msghdrrec, message, local);
-  jam_makesubfields(jam_code, jam_subfields, &jam_msghdrrec.SubfieldLen, &jam_msghdrrec, message);
+  jam_makesubfields(jam_code, jam_subfields, (u32*)&jam_msghdrrec.SubfieldLen, &jam_msghdrrec, message);
   jam_puttext(&jam_msghdrrec, message->text);
-  jam_newhdr(jam_code, &jam_idxrec.HdrOffset, &jam_msghdrrec, jam_subfields);
+  jam_newhdr(jam_code, (u32*)&jam_idxrec.HdrOffset, &jam_msghdrrec, jam_subfields);
   jam_idxrec.UserCRC = crc32jam(message->toUserName);
   jam_newidx(jam_code, &jam_idxrec, &msgNum);
   jam_incmsgcount(jam_code);

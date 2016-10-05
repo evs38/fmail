@@ -24,10 +24,13 @@
 #include <fcntl.h>
 #include <io.h>
 #include <stddef.h>
+#include <stdio.h>    // SEEK_SET for mingw
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+
+#include "fmail.h"
 
 #include "cfgfile.h"
 
@@ -40,15 +43,15 @@ extern configType config;
 //---------------------------------------------------------------------------
 typedef struct
 {
-  const char *fileName;
+  char       *fileName;
   u16         recordSize;
-  const u16   bufferSize;
+  u16         bufferSize;
   fhandle     handle;
   char       *recBuf;
-  const char *revString;
+  char       *revString;
   u16         revNumber;
-  const u16   dataType;
-  const u16   init;
+  u16         dataType;
+  u16         init;
   u16         status;
   headerType  header;
 
@@ -113,9 +116,10 @@ static configFileInfoType fileData[MAX_CFG_FILES] =
 };
 //---------------------------------------------------------------------------
 
-static configFileInfoType cfiArr[MAX_CFG_FILES] = {{ 0 }};
+static configFileInfoType cfiArr[MAX_CFG_FILES];
 
-extern char configPath[128];  // Path to directory with FMail config files
+
+extern char configPath[FILENAME_MAX];  // Path to directory with FMail config files
 
 //---------------------------------------------------------------------------
 s16 openConfig(u16 fileType, headerType **header, void **buf)
@@ -135,7 +139,7 @@ s16 openConfig(u16 fileType, headerType **header, void **buf)
    fileData[fileType].recordSize = fileData[fileType].bufferSize;
    if ( fileType == CFG_ECHOAREAS || fileType == CFG_AREADEF )
       fileData[fileType].recordSize -=
-     (MAX_FORWARDDEF - config.maxForward)*sizeof(nodeNumXType);
+     (MAX_FORWARDDEF - config.maxForward) * sizeof(nodeNumXType);
 
 restart:
    strcpy(areaInfoPath, configPath);
@@ -144,7 +148,7 @@ restart:
    memset(&cfiArr[fileType].header, 0, sizeof(headerType));
    cfiArr[fileType].status = 0;
 
-  if ((cfiArr[fileType].handle = open(areaInfoPath, O_BINARY|O_RDWR|O_CREAT|O_DENYALL, S_IREAD|S_IWRITE)) == -1)
+  if ((cfiArr[fileType].handle = open(areaInfoPath, O_BINARY | O_RDWR | O_CREAT | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
     return 0;
 
    if (filelength(cfiArr[fileType].handle) == 0)
@@ -193,7 +197,7 @@ error:   close(cfiArr[fileType].handle);
             free(cfiArr[fileType].recBuf);
             goto error;
          }
-         if ((temphandle = open(tempPath, O_BINARY|O_RDWR|O_CREAT|O_DENYALL, S_IREAD|S_IWRITE)) == -1)
+         if ((temphandle = open(tempPath, O_BINARY | O_RDWR | O_CREAT | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
          {
             free(cfiArr[fileType].recBuf);
             cfiArr[fileType].recBuf = NULL;
@@ -261,7 +265,7 @@ error:   close(cfiArr[fileType].handle);
   if ( fileType == 1 && cfiArr[fileType].header.totalRecords > 340 )
     goto error;
 #endif
-  if ((cfiArr[fileType].recBuf = malloc(fileData[fileType].bufferSize)) == NULL)
+  if ((cfiArr[fileType].recBuf = (char*)malloc(fileData[fileType].bufferSize)) == NULL)
     goto error;
   *header = &cfiArr[fileType].header;
   *buf    = cfiArr[fileType].recBuf;

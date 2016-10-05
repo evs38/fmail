@@ -13,8 +13,10 @@ static inline char *stpcpy(char *dst, const char *src)
 
 #endif
 
+#ifdef __BORLANDC__
 #pragma warn -8060
 #pragma warn -8027
+#endif // __BORLANDC__
 
 __inline static char *stpncpy(char *dst, const char *src, int n)
 {

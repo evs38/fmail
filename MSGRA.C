@@ -93,6 +93,11 @@ extern char    *months;
 extern u16      echoCount;
 extern char    *version;
 
+static void readMsgInfo (u16);
+static void writeMsgInfo(u16);
+
+
+
 #include "hudson_shared.c"
 //---------------------------------------------------------------------------
 void initBBS(void)
@@ -280,7 +285,7 @@ s16 multiUpdate(void)
       msgHdrOffset = filelength(destHdrHandle) / sizeof(msgHdrRec);
       msgTxtOffset = filelength(destTxtHandle) >> 8;
 #endif
-      if ((txtBuf = malloc(TXT_BUFSIZE*256)) == NULL)
+      if ((txtBuf = (msgTxtRec*)malloc(TXT_BUFSIZE * 256)) == NULL)
       {
          close(destTxtHandle);
          close(destToIdxHandle);
@@ -318,9 +323,9 @@ s16 multiUpdate(void)
       }
       free(txtBuf);
 
-      hdrBuf   = malloc (HDR_BUFSIZE*sizeof(msgHdrRec));
-      idxBuf   = malloc (HDR_BUFSIZE*sizeof(msgIdxRec));
-      toIdxBuf = malloc (HDR_BUFSIZE*sizeof(msgToIdxRec));
+      hdrBuf   = (msgHdrRec  *)malloc(HDR_BUFSIZE * sizeof(msgHdrRec));
+      idxBuf   = (msgIdxRec  *)malloc(HDR_BUFSIZE * sizeof(msgIdxRec));
+      toIdxBuf = (msgToIdxRec*)malloc(HDR_BUFSIZE * sizeof(msgToIdxRec));
 
       if ((hdrBuf == NULL) || (idxBuf == NULL) || (toIdxBuf == NULL))
       {
@@ -473,10 +478,10 @@ void openBBSWr(u16 orgName)
 {
    readMsgInfo(orgName);
 
-   if (((msgHdrBuf   = malloc (HDR_BUFSIZE*sizeof(msgHdrRec))) == NULL) ||
-       ((msgIdxBuf   = malloc (HDR_BUFSIZE*sizeof(msgIdxRec))) == NULL) ||
-       ((msgToIdxBuf = malloc (HDR_BUFSIZE*sizeof(msgToIdxRec))) == NULL) ||
-       ((msgTxtBuf   = malloc (TXT_BUFSIZE*256)) == NULL))
+   if (((msgHdrBuf   = (msgHdrRec  *)malloc(HDR_BUFSIZE * sizeof(msgHdrRec))) == NULL) ||
+       ((msgIdxBuf   = (msgIdxRec  *)malloc(HDR_BUFSIZE * sizeof(msgIdxRec))) == NULL) ||
+       ((msgToIdxBuf = (msgToIdxRec*)malloc(HDR_BUFSIZE * sizeof(msgToIdxRec))) == NULL) ||
+       ((msgTxtBuf   = (msgTxtRec  *)malloc(TXT_BUFSIZE * 256)) == NULL))
       logEntry ("Not enough memory to allocate message base file buffers", LOG_ALWAYS, 2);
 
    if ((msgHdrHandle = openP(expandNameHudson("MSGHDR", orgName),
@@ -572,8 +577,7 @@ static s16 writeText (char *msgText, char *seenBy, char *path, u16 skip,
          txtBufCount = 0;
       }
 
-      if ((helpPtr = memccpy (msgTxtBuf[txtBufCount].txtStr,
-                              textPtr, 0, 255)) == NULL)
+      if ((helpPtr = (char*)memccpy(msgTxtBuf[txtBufCount].txtStr, textPtr, 0, 255)) == NULL)
       {
          msgTxtBuf[txtBufCount++].txtLength = 255;
          textPtr += 255;
@@ -638,10 +642,8 @@ s16 writeBBS (internalMsgType *message, u16 boardNum, u16 impSeenBy)
                      &msgRa.NumRecs))
          return 1;
 
-      sprintf(&msgRa.ptLength, "\x05%02d:%02d\x08%02d-%02d-%02d",
-                                message->hours, message->minutes,
-                                message->month, message->day,
-                                message->year%100);
+      sprintf((char*)&msgRa.ptLength, "\x05%02d:%02d\x08%02d-%02d-%02d"
+                                    , message->hours, message->minutes, message->month, message->day, message->year % 100);
 
       msgRa.MsgAttr = (message->attribute & PRIVATE) ? RA_PRIVATE : 0;
 
@@ -943,7 +945,6 @@ void moveBadBBS(void)
 {
    msgHdrRec   msgRa;
    msgIdxRec   msgIndex;
-   tempStrType tempStr;
    s16         areaIndex;
    s16         move = 0;
    s16         result;
@@ -956,16 +957,17 @@ void moveBadBBS(void)
    u32         offset = 0;
 #endif
 
-   while ( lseek(msgIdxHandle, offset++ * sizeof(msgIdxRec), SEEK_SET) != -1 &&
-           _read (msgIdxHandle, &msgIndex, sizeof(msgIdxRec)) == sizeof(msgIdxRec))
+   while (  lseek(msgIdxHandle, offset++ * sizeof(msgIdxRec), SEEK_SET) != -1
+         && read (msgIdxHandle, &msgIndex, sizeof(msgIdxRec)) == (int)sizeof(msgIdxRec)
+         )
    {
-      if ( (s32)msgIndex.MsgNum == -1 || msgIndex.Board != config.badBoard )
+      if ((s32)msgIndex.MsgNum == -1 || msgIndex.Board != config.badBoard)
          continue;
 
-      if ( (result = scanBBS(offset - 1, message, 2)) < 0 )
+      if ((result = scanBBS(offset - 1, message, 2)) < 0)
          continue;
 
-      if ( !result )
+      if (!result)
          break;
 
       printf("(%d) ", msgIndex.MsgNum);
@@ -1115,7 +1117,7 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
    if (lseek(msgHdrHandle, index * (u32)sizeof(msgHdrRec), SEEK_SET) == -1)
       return 0;
 
-   if ((temp = _read(msgHdrHandle, &msgRa, sizeof(msgHdrRec))) != sizeof(msgHdrRec))
+   if ((temp = read(msgHdrHandle, &msgRa, sizeof(msgHdrRec))) != sizeof(msgHdrRec))
    {
       if (eof(msgHdrHandle) != 1)
          logEntry("Can't read MsgHdr."MBEXTN, LOG_ALWAYS, 0);
@@ -1150,7 +1152,7 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
       strncpy(message->toUserName,   msgRa.WhoTo,   msgRa.wtLength);
       strncpy(message->subject,      msgRa.Subj,    msgRa.sjLength);
 
-      if (scanDate(&msgRa.ptLength,
+      if (scanDate((char*)&msgRa.ptLength,
                    &message->year, &message->month, &message->day,
                    &message->hours, &message->minutes) != 0)
       {
@@ -1197,7 +1199,7 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
 
       for (count = 0; count < msgRa.NumRecs; count++)
       {
-         if (_read(msgTxtHandle, &txtRa, 256) != 256)
+         if (read(msgTxtHandle, &txtRa, 256) != 256)
          {
             puts("\nError reading MsgTxt."MBEXTN".");
             return 0;
@@ -1283,9 +1285,8 @@ s16 updateCurrHdrBBS(internalMsgType *message)
    if (lockMB())
       return 1;
 
-   recNum = lseek (msgHdrHandle, -(long)(sizeof(msgHdrRec)), SEEK_CUR) /
-            (u32)sizeof(msgHdrRec);
-   if (_read (msgHdrHandle, &msgRa, sizeof(msgHdrRec)) != sizeof(msgHdrRec))
+   recNum = lseek(msgHdrHandle, -(long)(sizeof(msgHdrRec)), SEEK_CUR) / (u32)sizeof(msgHdrRec);
+   if (read(msgHdrHandle, &msgRa, sizeof(msgHdrRec)) != (int)sizeof(msgHdrRec))
    {
       unlockMB();
       return 1;
@@ -1389,11 +1390,14 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
 #else
   u32             index;
 #endif
-  u16             echoIndex;
+  u16             echoIndex = 0;
   u16             msgsFound = 0;
   s16             msgCount;
 
-  echoIndex = 0;
+#ifdef _DEBUG0
+  logEntry("DEBUG Rescan start", LOG_DEBUG, 0);
+#endif
+
   while (echoIndex < echoCount && strcmp(echoAreaList[echoIndex].areaName, areaName) != 0)
     echoIndex++;
 
@@ -1415,13 +1419,16 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
     msgsFound = (u16)jam_rescan(echoIndex, maxRescan, nodeInfo, message);
   else
   {
+#ifdef _DEBUG0
+    logEntry("DEBUG Rescan hudson", LOG_DEBUG, 0);
+#endif
     origMsgHdrHandle = msgHdrHandle;
     origMsgTxtHandle = msgTxtHandle;
 
     strcpy(tempStr, config.bbsPath);
     strcat(tempStr, "MSGINFO."MBEXTN);
     if (((tempHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1) ||
-       (lseek(tempHandle, 4+(echoAreaList[echoIndex].board*2), SEEK_SET) == -1) ||
+       (lseek(tempHandle, 4 + (echoAreaList[echoIndex].board * 2), SEEK_SET) == -1) ||
        (read(tempHandle, &msgCount, 2) != 2)  ||
        (close(tempHandle) == -1))
       return -1;
@@ -1507,6 +1514,9 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
   putchar('\r');
   sprintf(tempStr, "Rescanned %u messages in area %s", msgsFound, echoAreaList[echoIndex].areaName);
   mgrLogEntry(tempStr);
+#ifdef _DEBUG
+  logEntry(tempStr, LOG_DEBUG, 0);
+#endif
   strcat(tempStr, "\r");
   write(msgHandle1, tempStr, strlen(tempStr));
   write(msgHandle2, tempStr, strlen(tempStr));

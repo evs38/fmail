@@ -112,11 +112,11 @@ static void writeLogLine(fhandle logHandle, const char *s)
       break;
 #ifdef __WIN32__
     case 4:  // FMail
-      sl = sprintf(tempStr, "%02u:%02u:%02u.%03u  ", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
+      sl = sprintf(tempStr, "%02u:%02u:%02u.%03u  ", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
       break;
 #endif
     default:  // FrontDoor
-      sl = sprintf(tempStr, "  %2u:%02u:%02u  ", tm.tm_hour, tm.tm_min, tm.tm_sec , s);
+      sl = sprintf(tempStr, "  %2u:%02u:%02u  ", tm.tm_hour, tm.tm_min, tm.tm_sec);
       break;
   }
   write(logHandle, tempStr, sl);

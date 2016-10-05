@@ -19,7 +19,7 @@
 //
 //----------------------------------------------------------------------------
 
-#if 0
+#if 1
   #define BETA
 #endif
 
@@ -138,8 +138,8 @@ const char *TIDStr(void)
 #ifdef __WIN32__
 const char *VersionString(void)
 {
-  static char resultStr[MAX_PATH] = { 0 };
-  char        fullPath [MAX_PATH];
+  static char resultStr[FILENAME_MAX] = { 0 };
+  char        fullPath [FILENAME_MAX];
   DWORD       dummy;
   DWORD       verInfoSize;
 
@@ -173,9 +173,9 @@ const char *VersionString(void)
 #if 0
 char *GetInfo(char *InfoItem)
 {
-  static char szResult  [MAX_PATH];
-  char        szFullPath[MAX_PATH];
-  char        szGetName [MAX_PATH];
+  static char szResult  [FILENAME_MAX];
+  char        szFullPath[FILENAME_MAX];
+  char        szGetName [FILENAME_MAX];
   LPSTR       lpVersion;        // String pointer to Item text
   DWORD       dwVerInfoSize;    // Size of version information block
   DWORD       dwVerHnd = 0;     // An 'ignored' parameter, always '0'

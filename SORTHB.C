@@ -30,6 +30,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#ifdef __MINGW32__
+#include <windef.h>    // min() max()
+#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -40,6 +43,7 @@
 #include "msgra.h"    // expandName()
 #include "mtask.h"
 #include "sorthb.h"
+#include "stpcpy.h"
 #include "utils.h"
 
 
@@ -83,17 +87,17 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
                ,*sli_msgNum
                ,*sli_prevReply
                ,*sli_nextReply;
-  unsigned char *sli_areaNum;
+  char          *sli_areaNum;
   u16           *sli_subjectCrcHi
                ,*sli_subjectCrcLo
                ,*sli_bsTimeStampHi
                ,*sli_bsTimeStampLo;
 
-   u16           HDR_BUFSIZE;
+  u16           HDR_BUFSIZE;
 
-   HDR_BUFSIZE = (248>>3) *
+  HDR_BUFSIZE = (248>>3) *
 #if defined(__FMAILX__) || defined(__32BIT__)
-                            8;
+                          8;
 #else
                             (8-((config.ftBufSize==0) ? 0 :
                                ((config.ftBufSize==1) ? 3 :
@@ -131,8 +135,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
    if (config.mbOptions.sortNew)
    {
-      if (((sli_bsTimeStampHi = calloc(newTotalMsgBBS, 2)) == NULL) ||
-          ((sli_bsTimeStampLo = calloc(newTotalMsgBBS, 2)) == NULL))
+      if (((sli_bsTimeStampHi = (u16*)calloc(newTotalMsgBBS, 2)) == NULL) ||
+          ((sli_bsTimeStampLo = (u16*)calloc(newTotalMsgBBS, 2)) == NULL))
       {
          close (msgHdrHandle);
          logEntry ("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
@@ -142,8 +146,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
    if (config.mbOptions.updateChains)
    {
-      if (((sli_prevReply = calloc(newTotalMsgBBS, 2)) == NULL) ||
-          ((sli_nextReply = calloc(newTotalMsgBBS, 2)) == NULL))
+      if (((sli_prevReply = (u16*)calloc(newTotalMsgBBS, 2)) == NULL) ||
+          ((sli_nextReply = (u16*)calloc(newTotalMsgBBS, 2)) == NULL))
       {
          close (msgHdrHandle);
          logEntry ("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
@@ -151,14 +155,14 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       }
    }
 
-   if (((sli_recNum        = calloc(newTotalMsgBBS, 2)) == NULL) ||
-       ((sli_msgNum        = calloc(newTotalMsgBBS, 2)) == NULL) ||
-       ((sli_areaNum       = calloc(newTotalMsgBBS, 1)) == NULL) ||
-       ((sli_subjectCrcHi  = calloc(newTotalMsgBBS, 2)) == NULL) ||
-       ((sli_subjectCrcLo  = calloc(newTotalMsgBBS, 2)) == NULL) ||
-       ((msgHdrBuf         = malloc(HDR_BUFSIZE*sizeof(msgHdrRec))) == NULL) ||
-       ((msgIdxBuf         = malloc(HDR_BUFSIZE*sizeof(msgIdxRec))) == NULL) ||
-       ((msgToIdxBuf       = malloc(HDR_BUFSIZE*sizeof(msgToIdxRec))) == NULL))
+   if (((sli_recNum        = (u16 *)calloc(newTotalMsgBBS, 2)) == NULL) ||
+       ((sli_msgNum        = (u16 *)calloc(newTotalMsgBBS, 2)) == NULL) ||
+       ((sli_areaNum       = (char*)calloc(newTotalMsgBBS, 1)) == NULL) ||
+       ((sli_subjectCrcHi  = (u16 *)calloc(newTotalMsgBBS, 2)) == NULL) ||
+       ((sli_subjectCrcLo  = (u16 *)calloc(newTotalMsgBBS, 2)) == NULL) ||
+       ((msgHdrBuf         = (msgHdrRec  *)malloc(HDR_BUFSIZE * sizeof(msgHdrRec))) == NULL) ||
+       ((msgIdxBuf         = (msgIdxRec  *)malloc(HDR_BUFSIZE * sizeof(msgIdxRec))) == NULL) ||
+       ((msgToIdxBuf       = (msgToIdxRec*)malloc(HDR_BUFSIZE * sizeof(msgToIdxRec))) == NULL))
    {
       close (msgHdrHandle);
       logEntry ("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
@@ -197,10 +201,9 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
             if (config.mbOptions.sortNew)
             {
-               if (scanDate (&msgHdrBuf[bufCount].ptLength,
-                             &year, &month, &day, &hours, &minutes) == 0)
+               if (scanDate ((char*)&msgHdrBuf[bufCount].ptLength, &year, &month, &day, &hours, &minutes) == 0)
                {
-                  sli_bsTimeStampHi[count] = (u16)((code = checkDate (year, month, day, hours, minutes, 0)) >> 16);
+                  sli_bsTimeStampHi[count] = (u16)((code = checkDate(year, month, day, hours, minutes, 0)) >> 16);
                   sli_bsTimeStampLo[count] = (u16)code;
                }
                else
@@ -307,8 +310,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       {
          if ((sli_areaNum[temp = sli_recNum[count]]) <= MBBOARDS)
          {
-            sli_prevReply[temp] = areaSubjChain[sli_areaNum[temp]];
-            areaSubjChain[sli_areaNum[temp]] = count;
+            sli_prevReply[temp] = areaSubjChain[(int)sli_areaNum[temp]];
+            areaSubjChain[(int)sli_areaNum[temp]] = count;
          }
       }
       for (count = 1; count <= MBBOARDS; count++)
@@ -480,7 +483,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 #ifndef FTOOLS
              (testMBUnlockNow() == 0) &&
 #endif
-             (bufCount = (_read(oldHdrHandle, msgHdrBuf, HDR_BUFSIZE * sizeof(msgHdrRec)) + 1) / sizeof(msgHdrRec)) != 0)
+             (bufCount = (read(oldHdrHandle, msgHdrBuf, HDR_BUFSIZE * sizeof(msgHdrRec)) + 1) / sizeof(msgHdrRec)) != 0)
       {
          returnTimeSlice(0);
          printf("%3u%%\b\b\b\b", (u16)((s32)100 * count / newTotalMsgBBS));

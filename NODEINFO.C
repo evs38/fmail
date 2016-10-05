@@ -27,6 +27,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#ifdef __MINGW32__
+#include <windef.h>    // min() max()
+#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -55,14 +58,14 @@ void initNodeInfo(void)
   headerType   *nodeHeader;
   nodeInfoType *nodeBuf;
 
-  if (!openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf))
+  if (!openConfig(CFG_NODES, &nodeHeader, (void**)&nodeBuf))
     logEntry("Bad or missing "dNODFNAME, LOG_ALWAYS, 2);
 
   nodeCount = min(MAX_NODES, (u16)(nodeHeader->totalRecords));
 
   for (count = 0; count < nodeCount; count++)
   {
-    if ((nodeInfo[count] = malloc(sizeof(nodeInfoType))) == NULL)
+    if ((nodeInfo[count] = (nodeInfoType*)malloc(sizeof(nodeInfoType))) == NULL)
       logEntry ("Not enough memory available", LOG_ALWAYS, 2);
 
     getRec(CFG_NODES, count);
@@ -118,7 +121,7 @@ void closeNodeInfo(void)
         nodeInfo[count2]->referenceLNBDat  = nodeInfo[count]->referenceLNBDat;
       }
 
-  if (openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf))
+  if (openConfig(CFG_NODES, &nodeHeader, (void**)&nodeBuf))
   {
     strcpy(message->fromUserName, "FMail AutoPassive");
     strcpy(message->subject,      "Status of system changed to Passive");
@@ -144,7 +147,7 @@ void closeNodeInfo(void)
                 );
           writeMsgLocal(message, NETMSG, 1);
           sprintf(message->text, "The status of your system %s has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r"
-                                "You can reactivate your system by sending a message containing %ACTIVE to FMail.\r\r%s"
+                                "You can reactivate your system by sending a message containing %%ACTIVE to FMail.\r\r%s"
                 , nodeStr(&nodeBuf->node), (u32)nodeBuf->passiveSize*100L, totalBundleSize[count]/1024
                 , TearlineStr()
                 );
@@ -165,7 +168,7 @@ void closeNodeInfo(void)
                    );
             writeMsgLocal (message, NETMSG, 1);
             sprintf(message->text, "The status of your system %s has been changed to Passive because you did not poll for at least %u days.\r\r"
-                                   "You can reactivate your system by sending a message containing %ACTIVE to FMail.\r\r%s"
+                                   "You can reactivate your system by sending a message containing %%ACTIVE to FMail.\r\r%s"
                    , nodeStr(&nodeBuf->node), nodeBuf->passiveDays
                    , TearlineStr()
                    );

@@ -32,6 +32,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef __MINGW32__
+#include <windef.h>    // min() max()
+#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -42,6 +45,7 @@
 #include "msgpkt.h"
 #include "mtask.h"
 #include "nodeinfo.h"
+#include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
 
@@ -82,7 +86,7 @@ extern configType   config;
 //---------------------------------------------------------------------------
 void initPkt(void)
 {
-  if ((pktRdBuf = malloc(PKT_BUFSIZE)) == NULL)
+  if ((pktRdBuf = (char*)malloc(PKT_BUFSIZE)) == NULL)
     logEntry ("Error allocating memory for packet read buffer", LOG_ALWAYS, 2);
 
   pmHdr.two = 2;
@@ -110,7 +114,6 @@ s16 openPktRd(char *pktName, s16 secure)
    char          password[9];
    tempStrType   tempStr;
    pktHdrType    msgPktHdr;
-   struct ftime  fileTime;
 
    startBuf = PKT_BUFSIZE;
    endBuf   = PKT_BUFSIZE;
@@ -127,7 +130,7 @@ s16 openPktRd(char *pktName, s16 secure)
       return 1;
    }
 
-   if (_read(pktHandle, &msgPktHdr, 58) < 58)
+   if (read(pktHandle, &msgPktHdr, 58) < 58)
    {
       tempStrType newPktName;
 
@@ -314,18 +317,32 @@ s16 openPktRd(char *pktName, s16 secure)
       }
    }
 
-   globVars.packetSize = filelength(pktHandle);
-   getftime(pktHandle, &fileTime);
-   globVars.hour  = fileTime.ft_hour;
-   globVars.min   = fileTime.ft_min ;
-   globVars.sec   = fileTime.ft_tsec << 1;
-   globVars.day   = fileTime.ft_day;
-   globVars.month = fileTime.ft_month;
-   globVars.year  = fileTime.ft_year + 1980;
+  globVars.packetSize = filelength(pktHandle);
+  {
+    struct stat statbuf;
+    if (0 == fstat(pktHandle, &statbuf))
+    {
+      struct tm *tm = localtime(&statbuf.st_mtime);
+      globVars.hour  = tm->tm_hour;
+      globVars.min   = tm->tm_min;
+      globVars.sec   = tm->tm_sec;
+      globVars.day   = tm->tm_mday;
+      globVars.month = tm->tm_mon + 1;
+      globVars.year  = tm->tm_year + 1900;
+    }
+    else
+    {
+      globVars.hour  =
+      globVars.min   =
+      globVars.sec   = 0;
+      globVars.day   =
+      globVars.month = 1;
+      globVars.year  = 1980;
+    }
+  }
+  nodeInfoPtr->lastMsgRcvdDat = startTime;
 
-   nodeInfoPtr->lastMsgRcvdDat = startTime;
-
-   return 0;
+  return 0;
 }
 //---------------------------------------------------------------------------
 s16 bscanstart(void)
@@ -344,7 +361,7 @@ s16 bscanstart(void)
       }
       startBuf = 0;
       oldStart = 0;
-      if ((endBuf = _read(pktHandle, pktRdBuf + offset, PKT_BUFSIZE - offset) + offset) < 2)
+      if ((endBuf = read(pktHandle, pktRdBuf + offset, PKT_BUFSIZE - offset) + offset) < 2)
         return EOF;
     }
   }
@@ -369,7 +386,7 @@ s16 bgetw(u16 *w)
     }
     startBuf = 0;
     oldStart = 0;
-    if ((endBuf = _read(pktHandle, pktRdBuf + offset, PKT_BUFSIZE - offset) + offset) < 2)
+    if ((endBuf = read(pktHandle, pktRdBuf + offset, PKT_BUFSIZE - offset) + offset) < 2)
       return EOF;
   }
   *w = *(u16*)(pktRdBuf + startBuf);
@@ -384,7 +401,7 @@ static s16 bgets(char *s, size_t n) // !MSGSIZE
   size_t m;
   char *helpPtr;
 
-  while ((helpPtr = memccpy(s + sLen, pktRdBuf + startBuf, 0, m = min(n - sLen, (size_t)endBuf - (size_t)startBuf))) == NULL)
+  while ((helpPtr = (char*)memccpy(s + sLen, pktRdBuf + startBuf, 0, m = min(n - sLen, (size_t)endBuf - (size_t)startBuf))) == NULL)
   {
     sLen += m;
     if (sLen == n)
@@ -398,7 +415,7 @@ static s16 bgets(char *s, size_t n) // !MSGSIZE
     }
     startBuf = 0;
     oldStart = 0;
-    endBuf   = _read(pktHandle, pktRdBuf, PKT_BUFSIZE);
+    endBuf   = read(pktHandle, pktRdBuf, PKT_BUFSIZE);
     if (endBuf == 0)
     {
       /*--- put extra zero at end of PKT file */
@@ -421,8 +438,6 @@ s16 bgetdate( char *dateStr
 {
   char monthStr[23];
 
-#pragma messsage("Lengte ivm 2000 verhoogd van 21 naar 23. Nog controleren!")
-
   if (bgets(dateStr, 23) || strlen(dateStr) < 15)
     return EOF;
 
@@ -444,10 +459,14 @@ s16 bgetdate( char *dateStr
       *minutes =  0;
     }
     else
-      *month = (((s16)strstr(upcaseMonths, strupr(monthStr)) - (s16)upcaseMonths) / 3) + 1;
+    {
+      char *ts = strstr(upcaseMonths, strupr(monthStr));
+      if (NULL != ts)
+        *month = ((ts - upcaseMonths) / 3) + 1;
+      else
+        *month = 1;
+    }
   }
-
-#pragma messsage("Eerste twee tests ivm 2000 Toegevoegd. Nog controleren!")
 
   if (*year < 1980)
   {
@@ -483,7 +502,7 @@ s16 bgetdate( char *dateStr
   {
     startBuf = 0;
     oldStart = 0;
-    endBuf = _read(pktHandle, pktRdBuf, PKT_BUFSIZE);
+    endBuf = read(pktHandle, pktRdBuf, PKT_BUFSIZE);
   }
   if (  (strlen(dateStr) < 19)
      && (endBuf - startBuf > 0)
@@ -550,8 +569,8 @@ void closePktRd(void)
 s16 openPktWr(nodeFileRecType *nfInfoRec)
 {
    pktHdrType   msgPktHdr;
-   struct time  timeRec;
-   struct date  dateRec;
+   struct tm   *tm;
+   time_t       ti;
    fhandle      pktHandle;
 
    nfInfoRec->bytesValid = 0;
@@ -562,21 +581,21 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
    {
       nfInfoRec->pktHandle    = 0;
       *nfInfoRec->pktFileName = 0;
-      return (-1);
+      return -1;
    }
    nfInfoRec->pktHandle = pktHandle;
 
-   memset (&msgPktHdr, 0, sizeof (pktHdrType));
+   memset(&msgPktHdr, 0, sizeof (pktHdrType));
 
-   gettime (&timeRec);
-   getdate (&dateRec);
+   time(&ti);
+   tm = localtime(&ti);
 
-   msgPktHdr.year          = dateRec.da_year;
-   msgPktHdr.month         = dateRec.da_mon-1;
-   msgPktHdr.day           = dateRec.da_day;
-   msgPktHdr.hour          = timeRec.ti_hour;
-   msgPktHdr.minute        = timeRec.ti_min;
-   msgPktHdr.second        = timeRec.ti_sec;
+   msgPktHdr.year          = tm->tm_year + 1900;
+   msgPktHdr.month         = tm->tm_mon;
+   msgPktHdr.day           = tm->tm_mday;
+   msgPktHdr.hour          = tm->tm_hour;
+   msgPktHdr.minute        = tm->tm_min;
+   msgPktHdr.second        = tm->tm_sec;
    msgPktHdr.baud          = 0;
    msgPktHdr.packetType    = 2;
    msgPktHdr.origZoneQ     = nfInfoRec->srcNode.zone;
@@ -678,7 +697,7 @@ char *setSeenByPath( internalMsgType *msg, char *txtEnd
 {
 #ifdef _DEBUG0
   tempStrType tempStr;
-  
+
   sprintf(tempStr, "DEBUG setSeenByPath areaOptions.tinySeenBy:%u nodeOptions.tinySeenBy:%u areaOptions.tinyPath:%u", areaOptions.tinySeenBy, nodeOptions.tinySeenBy, areaOptions.tinyPath);
   logEntry(tempStr, LOG_DEBUG, 0);
 #endif
@@ -800,7 +819,7 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
         close(pktHandle);
         nodeFileInfo[count]->pktHandle = 0;
 
-        if ((fnPtr = malloc(sizeof(fnRecType))) == NULL)
+        if ((fnPtr = (fnRecType*)malloc(sizeof(fnRecType))) == NULL)
           return 1;
 
         memset(fnPtr, 0, sizeof(fnRecType));
@@ -889,7 +908,7 @@ s16 validateEchoPktWr(void)
 
          rename(tempStr, fnPtr->fileName);
          fnPtr->valid = 1;
-         fnPtr = fnPtr->nextRec;
+         fnPtr = (fnRecType*)fnPtr->nextRec;
       }
    }
 
@@ -961,7 +980,7 @@ s16 closeEchoPktWr(void)
          while (fnPtr->nextRec != NULL)
          {
             fnPtr2 = fnPtr;
-            fnPtr = fnPtr->nextRec;
+            fnPtr = (fnRecType*)fnPtr->nextRec;
          }
          if (fnPtr2 == NULL)
             nodeFileInfo[count]->fnList = NULL;
@@ -1089,7 +1108,7 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
       }
       close(pktHandle);
       nfInfo->pktHandle = 0;
-      if ((fnPtr = malloc(sizeof(fnRecType))) == NULL)
+      if ((fnPtr = (fnRecType*)malloc(sizeof(fnRecType))) == NULL)
         return 1;
       memset(fnPtr, 0, sizeof(fnRecType));
       strcpy(fnPtr->fileName, nfInfo->pktFileName);
@@ -1148,7 +1167,7 @@ s16 closeNetPktWr(nodeFileRecType *nfInfo)
          while(fnPtr->nextRec != NULL)
          {
             fnPtr2 = fnPtr;
-            fnPtr = fnPtr->nextRec;
+            fnPtr = (fnRecType*)fnPtr->nextRec;
          }
          if (fnPtr2 == NULL)
             nfInfo->fnList = NULL;

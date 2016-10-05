@@ -49,7 +49,6 @@ u32 jam_scan(u16 echoIndex, u32 jam_msgnum, u16 scanOne, internalMsgType *messag
   JAMHDRINFO *jam_hdrinforec;
   JAMHDR      jam_msghdrrec;
   JAMIDXREC   jam_idxrec;
-  tempStrType tempStr;
 
   if (!(jam_code = jam_open(echoAreaList[echoIndex].JAMdirPtr, &jam_hdrinforec)))
     return 0;
@@ -174,6 +173,10 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   nodeFileRecType nfInfo;
   u32             found;
 
+#ifdef _DEBUG0
+  logEntry("DEBUG Rescan jam", LOG_DEBUG, 0);
+#endif
+
   if (!(jam_code = jam_open(echoAreaList[echoIndex].JAMdirPtr, &jam_hdrinforec)))
     return 0;
 
@@ -216,6 +219,10 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   }
   closeNetPktWr(&nfInfo);
   jam_close(jam_code);
+
+#ifdef _DEBUG0
+  logEntry("DEBUG Rescan jam end", LOG_DEBUG, 0);
+#endif
 
   return msgCount;
 }

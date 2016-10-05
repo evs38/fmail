@@ -39,7 +39,7 @@ typedef struct
       , destNet;
   uchar prodCodeLo
       , serialNoMajor;
-  uchar password[8];
+  char  password[8];
   u16   origZoneQ
       , destZoneQ
       , auxNet
@@ -51,7 +51,7 @@ typedef struct
       , destZone
       , origPoint
       , destPoint;
-  uchar prodData[4];
+  char  prodData[4];
 
 } pktHdrType;
 //---------------------------------------------------------------------------
@@ -68,12 +68,12 @@ typedef struct
       , destNet;
   uchar prodCode
       , revisionLevel;
-  uchar password [8];
+  char  password [8];
   u16   origZone
       , destZone;
-  uchar origDomain[8]
+  char  origDomain[8]
       , destDomain[8];
-  uchar prodData[4];
+  char  prodData[4];
 
 } FSC45pktHdrType;
 //---------------------------------------------------------------------------
@@ -105,7 +105,6 @@ s16   openPktRd        (char *fileName, s16 secure);
 s16   readPkt          (internalMsgType *message);
 void  closePktRd       (void);
 
-s16   closeLuPkt       (void);
 fhandle openP          (const char *pathname, int access, u16 mode);
 fhandle fsopenP        (const char *pathname, int access, u16 mode);
 

@@ -26,8 +26,8 @@
 //---------------------------------------------------------------------------
 struct ftscps
 {
-  u16   prodcode;
-  char *prodname;
+  u16         prodcode;
+  const char *prodname;
 };
 //---------------------------------------------------------------------------
 extern struct ftscps ftscprod[];

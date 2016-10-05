@@ -47,13 +47,11 @@
 #include "filesys.h"
 #include "ftools.h"
 #include "jam.h"
+#include "lock.h"
 #include "log.h"
 #include "nodeinfo.h"
+#include "stpcpy.h"
 #include "utils.h"
-
-#ifdef __BORLANDC__
-#define ftruncate(h, s) chsize((h), (s))
-#endif
 
 extern configType config;
 extern s32        startTime;
@@ -142,13 +140,13 @@ int InitFileBufs(fhandle h, char **inbuf, char **outbuf, u32 *size)
   if (s.st_size <= 0)
     return -1;
 
-  *outbuf = malloc(*size);
+  *outbuf = (char*)malloc(*size);
   if (*outbuf == NULL)
     return -20;
 
   memset(*outbuf, 0, *size);
 
-  *inbuf = malloc(*size);
+  *inbuf = (char*)malloc(*size);
   if (*inbuf == NULL)
     return -20;
 
@@ -190,7 +188,7 @@ int writefile(fhandle h, char *obuf, int os, char *buf, int s)
 
   if (  0 != lseek(h, 0, SEEK_SET)
      || (s >  0 && s != write(h, buf, s))
-     || (s < os && 0 != ftruncate(h, s))
+     || (s < os && 0 != chsize(h, s))
      )
   {
     tempStrType tstr;
@@ -339,7 +337,6 @@ void CleanUp(struct data *d)
 s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSaved)
 {
   s16           JAMerror = 0;
-  u16           tabPos;
   struct data   d = { -1, -1, -1, -1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
   u32           reply1st
               , replyNext
@@ -428,7 +425,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   maxMsg = sizeJDX / sizeof(JAMIDXREC);
 
 #ifdef _DEBUG
-  sprintf(tempStr, "Size old: no:%d jhr:%d jdt:%d jdx:%d jlr:%d tot:%d", maxMsg, sizeJHR, sizeJDT, sizeJDX, sizeJLR, sizeJHR + sizeJDT + sizeJDX + sizeJLR);
+  sprintf(tempStr, "Size old: no:%lu jhr:%lu jdt:%lu jdx:%lu jlr:%lu tot:%lu", maxMsg, sizeJHR, sizeJDT, sizeJDX, sizeJLR, sizeJHR + sizeJDT + sizeJDX + sizeJLR);
   logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
 
@@ -675,12 +672,12 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
            + sizeJDT - highJDT
            + sizeJHR - highJHR;
 #ifdef _DEBUG
-    sprintf(tempStr, "Size new: no:%d jhr:%d jdt:%d jdx:%d jlr:%d tot:%d", msgNumNew, highJHR, highJDT, highJDX, sizeJLR, highJHR + highJDT + highJDX + sizeJLR);
+    sprintf(tempStr, "Size new: no:%lu jhr:%lu jdt:%lu jdx:%lu jlr:%lu tot:%lu", msgNumNew, highJHR, highJDT, highJDX, sizeJLR, highJHR + highJDT + highJDX + sizeJLR);
     logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
 
     if (ss != 0)
     {
-      sprintf(tempStr, "Space saved: %d", ss);
+      sprintf(tempStr, "Space saved: %lu", ss);
       logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
     }
 #endif

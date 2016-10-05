@@ -20,9 +20,11 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------
+#include "lock.h"
+#include "stpcpy.h"
 
 //---------------------------------------------------------------------------
-char *expandNameHudson(char *fileName, int orgName)
+char *expandNameHudson(const char *fileName, int orgName)
 {
   static tempStrType expandStr;
 

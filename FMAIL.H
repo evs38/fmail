@@ -25,7 +25,8 @@
 
 #include "fmstruct.h"
 
-#include <dir.h>         // MAXFILE
+//#include <dir.h>         // MAXFILE
+#include <stdio.h>       // FILENAME_MAX
 #include <sys/types.h>   // stat.off_t
 
 #define FA_SPEC 0x1F
@@ -38,12 +39,12 @@
 // #define FA_ARCH     0x20        /* Archive */
 
 // Dos modes
-#ifndef O_DENYNONE
-#define O_DENYNONE 0
-#endif
-#ifndef O_DENYALL
-#define O_DENYALL 0
-#endif
+//#ifndef O_DENYALL
+#define O_DENYALL   0x10
+#define O_DENYWRITE 0x20
+#define O_DENYREAD  0x30
+#define O_DENYNONE  0x40
+//#endif
 
 #if (__BORLANDC__ >= 0x0452)
 #ifndef __OS2__
@@ -92,7 +93,7 @@
 #endif
 #define INTMSG_SIZE   (sizeof(internalMsgType) - DEF_TEXT_SIZE + TEXT_SIZE)
 
-#define PKT_INFO_SIZE    192
+#define PKT_INFO_SIZE      192
 
 #define MAX_MSGTINYPATH      2  // 1 should be enough
 #define MAX_MSGPATH        200
@@ -105,7 +106,7 @@
 #define NORM_PATH_SIZE 1024
 
 
-extern char configPath[128];
+extern char configPath[FILENAME_MAX];
 
 typedef struct
 {
@@ -128,8 +129,8 @@ typedef struct
   char        normSeen[NORM_SEEN_SIZE];
   char        tinyPath[TINY_PATH_SIZE];
   char        normPath[NORM_PATH_SIZE];
-  uchar       pktInfo[PKT_INFO_SIZE];
-  char        text[DEF_TEXT_SIZE];
+  char        pktInfo [PKT_INFO_SIZE ];
+  char        text    [DEF_TEXT_SIZE ];
 
 } internalMsgType;
 
@@ -140,9 +141,9 @@ typedef struct
 
 } psRecType;
 
-typedef psRecType psType[];
+//typedef psRecType psType[];
 
-#define dTEMPSTRLEN  (256 + 64)  // Groter dan MAXPATH (wordt ook voor paden gebruikt)
+#define dTEMPSTRLEN  (FILENAME_MAX + 64)  // Groter dan FILENAME_MAX (wordt ook voor paden gebruikt)
 typedef char tempStrType[dTEMPSTRLEN];
 
 typedef struct
@@ -355,7 +356,7 @@ u16 foundToUserName(const char *toUserName);
 //---------------------------------------------------------------------------
 struct bt
 {
-  char       fname[MAXFILE];
+  char       fname[FILENAME_MAX];
   time_t     mtime;
   long       size;
   struct bt *nextb;

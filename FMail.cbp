@@ -3,71 +3,174 @@
 	<FileVersion major="1" minor="6" />
 	<Project>
 		<Option title="FMail" />
+		<Option platforms="Windows;" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="bin/Debug/FMail" prefix_auto="1" extension_auto="1" />
+				<Option platforms="Windows;" />
+				<Option output="bin/Debug/FMailW32" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-march=i686" />
+					<Add option="-m32" />
 					<Add option="-g" />
+					<Add option="-D_DEBUG" />
 				</Compiler>
+				<Linker>
+					<Add option="-m32" />
+				</Linker>
 			</Target>
 			<Target title="Release">
-				<Option output="bin/Release/FMail" prefix_auto="1" extension_auto="1" />
+				<Option platforms="Windows;" />
+				<Option output="bin/Release/FMailW32" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add option="-m32" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add option="-m32" />
 				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-m32" />
 			<Add option="-DFMAIL" />
-			<Add option="-D__FMAILX__" />
 			<Add option="-D__32BIT__" />
-			<Add option="-DSTDO" />
 			<Add option="-D__STDIO__" />
 			<Add option="-D__WINDOWS32__" />
 			<Add option="-D__PENTIUMPRO__" />
 		</Compiler>
+		<Linker>
+			<Add option="-m32" />
+		</Linker>
 		<Unit filename="ARCHIVE.C">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="ARCHIVE.H" />
 		<Unit filename="AREAFIX.C">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="AREAFIX.H" />
 		<Unit filename="AREAINFO.C">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="AREAINFO.H" />
 		<Unit filename="BCLFUN.C">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="BCLFUN.H" />
 		<Unit filename="CFGFILE.C">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="CFGFILE.H" />
 		<Unit filename="CONFIG.C">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="CONFIG.H" />
 		<Unit filename="CRC.C">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="DUPS.H" />
 		<Unit filename="DUPS32.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="FILESYS.C">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="FMAIL.C">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="FMSTRUCT.H" />
+		<Unit filename="FTSCPROD.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="FTSCPROD.H" />
+		<Unit filename="JAMFUN.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="JAMFUN.H" />
+		<Unit filename="JAMMAINT.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="JAMMAINT.H" />
+		<Unit filename="JAMSCAN.C">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="LOG.C">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="LOG.H" />
+		<Unit filename="MSGMSG.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="MSGMSG.H" />
+		<Unit filename="MSGPKT.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="MSGPKT.H" />
+		<Unit filename="MSGRA.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="MSGRA.H" />
+		<Unit filename="MTASK.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="NODEINFO.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="NODEINFO.H" />
+		<Unit filename="SENDSMTP.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SENDSMTP.H" />
+		<Unit filename="SMTP.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SMTP.H" />
+		<Unit filename="SORTHB.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SORTHB.H" />
+		<Unit filename="UTILS.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="UTILS.H" />
+		<Unit filename="UTILS2.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Version.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Version.h" />
+		<Unit filename="fmail.h" />
+		<Unit filename="ispathch.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="lock.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="lock.h" />
+		<Unit filename="pack.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="pack.h" />
+		<Unit filename="ping.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ping.h" />
+		<Unit filename="pp_date.h" />
+		<Unit filename="spec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="spec.h" />
+		<Unit filename="stpcpy.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

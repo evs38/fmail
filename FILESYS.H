@@ -23,8 +23,9 @@
 int fileSys(const char *path);
 int fsopen(const char *path, int access, unsigned mode, u16 lfn);
 #define fsclose(handle)  close(handle)
+#if !defined(FMAIL) && !defined(FTOOLS)
 int fsmkdir(const char *path, u16 lfn);
 int fsfindfirst(const char *pathname, struct ffblk *ffblk, int attrib, u16 lfn);
 int fsunlink(const char *pathname, u16 lfn);
 int fsrename(const char *oldname, const char *newname, u16 lfn);
-
+#endif

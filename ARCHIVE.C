@@ -40,6 +40,8 @@
 #include <windef.h>    // min() max()
 #endif // __MINGW32__
 
+#include "fmail.h"
+
 #include "archive.h"
 
 #include "areainfo.h"
@@ -53,10 +55,8 @@
 #include "stpcpy.h"
 #include "utils.h"
 
-#ifndef __FMAILX__
-#ifndef __32BIT__
+#if !defined(__FMAILX__) && !defined(__32BIT__)
 #include "spawno.h"
-#endif
 #endif
 
 #ifdef __32BIT__
@@ -109,7 +109,7 @@ static u8 archiveType(char *fullFileName)
   if ((arcHandle = openP(fullFileName, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
     return 0xFE;
 
-  byteCount = _read(arcHandle, data, 29);
+  byteCount = read(arcHandle, data, 29);
   close(arcHandle);
 
   if (byteCount < 2)
@@ -1325,7 +1325,7 @@ void retryArc(void)
         strcpy(stpcpy(tempStr, config.outPath), ent->d_name);
 
         if ( (pktHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1
-           && _read(pktHandle, &msgPktHdr, sizeof(pktHdrType)) == sizeof(pktHdrType)
+           && read(pktHandle, &msgPktHdr, sizeof(pktHdrType)) == (int)sizeof(pktHdrType)
            && close(pktHandle) != -1
            )
         {
