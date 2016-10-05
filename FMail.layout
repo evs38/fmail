@@ -2,9 +2,14 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Debug" />
-	<File name="UTILS.H" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="fmail.c" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="6017" topLine="113" />
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="lock.c" open="0" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="553" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="lock.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -12,77 +17,22 @@
 			<Cursor1 position="195" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="MSGMSG.C" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="25238" topLine="852" />
-		</Cursor>
-	</File>
-	<File name="DUPS32.C" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1384" topLine="27" />
-		</Cursor>
-	</File>
-	<File name="spec.h" open="1" top="1" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="875" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="CRC.C" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1140" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="NODEINFO.C" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="3824" topLine="107" />
-		</Cursor>
-	</File>
-	<File name="spec.c" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="spec.c" open="0" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="1098" topLine="31" />
 		</Cursor>
 	</File>
-	<File name="CFGFILE.C" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="smtp.c" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3141" topLine="107" />
+			<Cursor1 position="1702" topLine="61" />
 		</Cursor>
 	</File>
-	<File name="FTSCPROD.H" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="version.c" open="1" top="1" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="0" topLine="0" />
+			<Cursor1 position="3425" topLine="132" />
 		</Cursor>
 	</File>
-	<File name="SORTHB.C" open="0" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="10871" topLine="297" />
-		</Cursor>
-	</File>
-	<File name="JAMMAINT.C" open="0" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="3400" topLine="114" />
-		</Cursor>
-	</File>
-	<File name="FMAIL.C" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2295" topLine="77" />
-		</Cursor>
-	</File>
-	<File name="SENDSMTP.C" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1307" topLine="15" />
-		</Cursor>
-	</File>
-	<File name="MSGPKT.C" open="0" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="11254" topLine="306" />
-		</Cursor>
-	</File>
-	<File name="Version.c" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="pack.c" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="pack.c" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="3557" topLine="118" />
 		</Cursor>
@@ -92,80 +42,10 @@
 			<Cursor1 position="2176" topLine="91" />
 		</Cursor>
 	</File>
-	<File name="FILESYS.C" open="1" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="spec.h" open="0" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="9070" topLine="296" />
+			<Cursor1 position="875" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="JAMFUN.C" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="26523" topLine="717" />
-		</Cursor>
-	</File>
-	<File name="UTILS.C" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="5519" topLine="202" />
-		</Cursor>
-	</File>
-	<File name="ARCHIVE.C" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="24556" topLine="849" />
-		</Cursor>
-	</File>
-	<File name="MSGRA.C" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="37491" topLine="1140" />
-		</Cursor>
-	</File>
-	<File name="FTSCPROD.C" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1271" topLine="304" />
-		</Cursor>
-	</File>
-	<File name="CONFIG.C" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2023" topLine="68" />
-		</Cursor>
-	</File>
-	<File name="MSGRA.H" open="0" top="0" tabpos="19" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="7211" topLine="254" />
-		</Cursor>
-	</File>
-	<File name="AREAFIX.C" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2384" topLine="80" />
-		</Cursor>
-	</File>
-	<File name="JAMSCAN.C" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1586" topLine="38" />
-		</Cursor>
-	</File>
-	<File name="SMTP.C" open="0" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="7954" topLine="302" />
-		</Cursor>
-	</File>
-	<File name="FMAIL.H" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2950" topLine="92" />
-		</Cursor>
-	</File>
-	<File name="FMSTRUCT.H" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="6438" topLine="220" />
-		</Cursor>
-	</File>
-	<File name="LOG.C" open="0" top="0" tabpos="19" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="3790" topLine="102" />
-		</Cursor>
-	</File>
-	<File name="lock.c" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="553" topLine="0" />
-		</Cursor>
-	</File>
-	<EditorTabsLayout layout="06e7b36057f54c3c00000e4700000002=0;FMail:FMAIL.C,2;FMail:UTILS.C,3;FMail:UTILS.H,4;FMail:CFGFILE.C,5;FMail:CONFIG.C,6;FMail:AREAFIX.C,7;FMail:Version.c,8;FMail:DUPS32.C,9;FMail:pack.c,10;FMail:ARCHIVE.C,*11;FMail:spec.h,12;FMail:spec.c,13;FMail:lock.c,14;FMail:MSGMSG.C,15;FMail:FILESYS.C@layout2|name=dummy;caption=;state=2098174;dir=3;layer=0;row=0;pos=0;prop=100000;bestw=634;besth=320;minw=634;minh=320;maxw=-1;maxh=-1;floatx=-1;floaty=-1;floatw=-1;floath=-1|name=06e7b36057f54c3c00000e4700000002;caption=;state=2098172;dir=5;layer=0;row=0;pos=0;prop=100000;bestw=200;besth=200;minw=-1;minh=-1;maxw=-1;maxh=-1;floatx=-1;floaty=-1;floatw=-1;floath=-1|dock_size(5,0,0)=202|" />
+	<EditorTabsLayout layout="06df6b6857f5716b00000d0600000002=0;FMail:fmail.c,1;FMail:smtp.c,*2;FMail:version.c@layout2|name=dummy;caption=;state=2098174;dir=3;layer=0;row=0;pos=0;prop=100000;bestw=634;besth=320;minw=634;minh=320;maxw=-1;maxh=-1;floatx=-1;floaty=-1;floatw=-1;floath=-1|name=06df6b6857f5716b00000d0600000002;caption=;state=2098172;dir=5;layer=0;row=0;pos=0;prop=100000;bestw=200;besth=200;minw=-1;minh=-1;maxw=-1;maxh=-1;floatx=-1;floaty=-1;floatw=-1;floath=-1|dock_size(5,0,0)=202|" />
 </CodeBlocks_layout_file>

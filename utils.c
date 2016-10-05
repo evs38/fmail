@@ -292,9 +292,6 @@ u64 diskFree64(const char *path)
 u32 diskFree(const char *path)
 {
 #ifdef __WIN32__
-#ifdef __MINGW32__
-#define UINT32_MAX __UINT32_MAX__
-#endif
   u64 ul = diskFree64(path);
 
   if (ul > (uint64_t)UINT32_MAX)

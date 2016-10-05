@@ -49,6 +49,8 @@
 		</Compiler>
 		<Linker>
 			<Add option="-m32" />
+			<Add library="c:/Program Files/CodeBlocks/MinGW/lib/libversion.a" />
+      <Add library="c:/Program Files/CodeBlocks/MinGW/lib/libwsock32.a" />
 		</Linker>
 		<Unit filename="archive.c">
 			<Option compilerVar="CC" />
@@ -87,11 +89,15 @@
 		<Unit filename="fmail.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="fmail.h" />
 		<Unit filename="fmstruct.h" />
 		<Unit filename="ftscprod.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="ftscprod.h" />
+		<Unit filename="ispathch.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="jamfun.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -103,6 +109,10 @@
 		<Unit filename="jamscan.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="lock.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="lock.h" />
 		<Unit filename="log.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -126,6 +136,15 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="nodeinfo.h" />
+		<Unit filename="pack.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="pack.h" />
+		<Unit filename="ping.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ping.h" />
+		<Unit filename="pp_date.h" />
 		<Unit filename="sendsmtp.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -138,6 +157,11 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="sorthb.h" />
+		<Unit filename="spec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="spec.h" />
+		<Unit filename="stpcpy.h" />
 		<Unit filename="utils.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -149,28 +173,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="version.h" />
-		<Unit filename="fmail.h" />
-		<Unit filename="ispathch.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="lock.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="lock.h" />
-		<Unit filename="pack.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="pack.h" />
-		<Unit filename="ping.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="ping.h" />
-		<Unit filename="pp_date.h" />
-		<Unit filename="spec.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="spec.h" />
-		<Unit filename="stpcpy.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

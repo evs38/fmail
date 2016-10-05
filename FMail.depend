@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1475419143 source:c:\fmail\fmail.c
+1475604961 source:c:\fmail\fmail.c
 	<os2.h>
 	<conio.h>
 	<ctype.h>
@@ -239,7 +239,7 @@
 
 1474319825 c:\fmail\spec.h
 
-1475604286 source:c:\fmail\cfgfile.c
+1475604901 source:c:\fmail\cfgfile.c
 	<fcntl.h>
 	<io.h>
 	<stddef.h>
@@ -252,7 +252,7 @@
 	"cfgfile.h"
 	"internal.h"
 
-1475349198 source:c:\fmail\config.c
+1475604853 source:c:\fmail\config.c
 	<stdlib.h>
 	<stdio.h>
 	<dos.h>
@@ -282,7 +282,7 @@
 	"fmail.h"
 	"crc.h"
 
-1475349274 source:c:\fmail\dups32.c
+1475604961 source:c:\fmail\dups32.c
 	<ctype.h>
 	<dos.h>
 	<fcntl.h>
@@ -511,7 +511,7 @@
 	"utils.h"
 	"version.h"
 
-1475418564 source:c:\fmail\pack.c
+1475604961 source:c:\fmail\pack.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -609,4 +609,48 @@
 	<ctype.h>
 	<string.h>
 	"spec.h"
+
+1474319825 source:c:\fmail\utils2.c
+	<ctype.h>
+	<direct.h>
+	<stdio.h>
+	<string.h>
+	<time.h>
+	"utils.h"
+	"ispathch.h"
+
+1426949161 c:\fmail\ispathch.h
+
+1475703155 source:c:\fmail\version.c
+	"Version.h"
+	"pp_date.h"
+	<stdio.h>
+	<windows.h>
+
+1475702018 source:c:\fmail\utils.c
+	<ctype.h>
+	<dir.h>
+	<direct.h>
+	<dirent.h>
+	<dos.h>
+	<errno.h>
+	<fcntl.h>
+	<io.h>
+	<stdint.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	<stdlib.h>
+	<utime.h>
+	<windows.h>
+	"utils.h"
+	"areainfo.h"
+	"filesys.h"
+	"log.h"
+	"msgpkt.h"
+	"spec.h"
+	"stpcpy.h"
+	"version.h"
 
