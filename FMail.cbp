@@ -50,105 +50,105 @@
 		<Linker>
 			<Add option="-m32" />
 		</Linker>
-		<Unit filename="ARCHIVE.C">
+		<Unit filename="archive.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="ARCHIVE.H" />
-		<Unit filename="AREAFIX.C">
+		<Unit filename="archive.h" />
+		<Unit filename="areafix.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="AREAFIX.H" />
-		<Unit filename="AREAINFO.C">
+		<Unit filename="areafix.h" />
+		<Unit filename="areainfo.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="AREAINFO.H" />
-		<Unit filename="BCLFUN.C">
+		<Unit filename="areainfo.h" />
+		<Unit filename="bclfun.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="BCLFUN.H" />
-		<Unit filename="CFGFILE.C">
+		<Unit filename="bclfun.h" />
+		<Unit filename="cfgfile.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="CFGFILE.H" />
-		<Unit filename="CONFIG.C">
+		<Unit filename="cfgfile.h" />
+		<Unit filename="config.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="CONFIG.H" />
-		<Unit filename="CRC.C">
+		<Unit filename="config.h" />
+		<Unit filename="crc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="DUPS.H" />
-		<Unit filename="DUPS32.C">
+		<Unit filename="dups.h" />
+		<Unit filename="dups32.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="FILESYS.C">
+		<Unit filename="filesys.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="FMAIL.C">
+		<Unit filename="fmail.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="FMSTRUCT.H" />
-		<Unit filename="FTSCPROD.C">
+		<Unit filename="fmstruct.h" />
+		<Unit filename="ftscprod.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="FTSCPROD.H" />
-		<Unit filename="JAMFUN.C">
+		<Unit filename="ftscprod.h" />
+		<Unit filename="jamfun.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="JAMFUN.H" />
-		<Unit filename="JAMMAINT.C">
+		<Unit filename="jamfun.h" />
+		<Unit filename="jammaint.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="JAMMAINT.H" />
-		<Unit filename="JAMSCAN.C">
+		<Unit filename="jammaint.h" />
+		<Unit filename="jamscan.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="LOG.C">
+		<Unit filename="log.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="LOG.H" />
-		<Unit filename="MSGMSG.C">
+		<Unit filename="log.h" />
+		<Unit filename="msgmsg.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="MSGMSG.H" />
-		<Unit filename="MSGPKT.C">
+		<Unit filename="msgmsg.h" />
+		<Unit filename="msgpkt.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="MSGPKT.H" />
-		<Unit filename="MSGRA.C">
+		<Unit filename="msgpkt.h" />
+		<Unit filename="msgra.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="MSGRA.H" />
-		<Unit filename="MTASK.C">
+		<Unit filename="msgra.h" />
+		<Unit filename="mtask.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="NODEINFO.C">
+		<Unit filename="nodeinfo.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="NODEINFO.H" />
-		<Unit filename="SENDSMTP.C">
+		<Unit filename="nodeinfo.h" />
+		<Unit filename="sendsmtp.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SENDSMTP.H" />
-		<Unit filename="SMTP.C">
+		<Unit filename="sendsmtp.h" />
+		<Unit filename="smtp.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SMTP.H" />
-		<Unit filename="SORTHB.C">
+		<Unit filename="smtp.h" />
+		<Unit filename="sorthb.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SORTHB.H" />
-		<Unit filename="UTILS.C">
+		<Unit filename="sorthb.h" />
+		<Unit filename="utils.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="UTILS.H" />
-		<Unit filename="UTILS2.C">
+		<Unit filename="utils.h" />
+		<Unit filename="utils2.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Version.c">
+		<Unit filename="version.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Version.h" />
+		<Unit filename="version.h" />
 		<Unit filename="fmail.h" />
 		<Unit filename="ispathch.c">
 			<Option compilerVar="CC" />

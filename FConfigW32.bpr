@@ -4,14 +4,14 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="FConfigW32.exe"/>
-    <OBJFILES value="OBJ.6\FConfigW32\AMGR_UTL.obj OBJ.6\FConfigW32\AREAMGR.obj 
-      OBJ.6\FConfigW32\CFGFILE.obj OBJ.6\FConfigW32\CRC.obj 
-      OBJ.6\FConfigW32\EXPORT.obj OBJ.6\FConfigW32\FILESYS.obj 
-      OBJ.6\FConfigW32\FS_FUNC.obj OBJ.6\FConfigW32\FS_UTIL.obj 
-      OBJ.6\FConfigW32\FSETUP.obj OBJ.6\FConfigW32\IMPORT.obj 
-      OBJ.6\FConfigW32\ispathch.obj OBJ.6\FConfigW32\MTASK.obj 
-      OBJ.6\FConfigW32\NODEMGR.obj OBJ.6\FConfigW32\PACKMGR.obj 
-      OBJ.6\FConfigW32\UPDATE.obj OBJ.6\FConfigW32\UTILS2.obj 
+    <OBJFILES value="OBJ.6\FConfigW32\AMGR_UTL.obj OBJ.6\FConfigW32\AREAMGR.obj
+      OBJ.6\FConfigW32\CFGFILE.obj OBJ.6\FConfigW32\CRC.obj
+      OBJ.6\FConfigW32\EXPORT.obj OBJ.6\FConfigW32\FILESYS.obj
+      OBJ.6\FConfigW32\FS_FUNC.obj OBJ.6\FConfigW32\FS_UTIL.obj
+      OBJ.6\FConfigW32\FSETUP.obj OBJ.6\FConfigW32\IMPORT.obj
+      OBJ.6\FConfigW32\ispathch.obj OBJ.6\FConfigW32\MTASK.obj
+      OBJ.6\FConfigW32\NODEMGR.obj OBJ.6\FConfigW32\PACKMGR.obj
+      OBJ.6\FConfigW32\UPDATE.obj OBJ.6\FConfigW32\UTILS2.obj
       OBJ.6\FConfigW32\Version.obj OBJ.6\FConfigW32\WINDOW.obj"/>
     <RESFILES value="FConfigW32.res"/>
     <DEFFILE value=""/>
@@ -19,10 +19,10 @@
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
-    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi 
-      inetdbxpress.bpi visualclx.bpi dbrtl.bpi bdertl.bpi vcldb.bpi vcldbx.bpi 
-      dsnap.bpi cds.bpi bdecds.bpi teeui.bpi teedb.bpi tee.bpi teeqr.bpi 
-      ibxpress.bpi visualdbclx.bpi inetdb.bpi bcbie.bpi soaprtl.bpi 
+    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi
+      inetdbxpress.bpi visualclx.bpi dbrtl.bpi bdertl.bpi vcldb.bpi vcldbx.bpi
+      dsnap.bpi cds.bpi bdecds.bpi teeui.bpi teedb.bpi tee.bpi teeqr.bpi
+      ibxpress.bpi visualdbclx.bpi inetdb.bpi bcbie.bpi soaprtl.bpi
       dbexpress.bpi dbxcds.bpi bcb2kaxserver.bpi adortl.bpi"/>
     <PATHCPP value=".;"/>
     <PATHPAS value=".;"/>
@@ -56,24 +56,24 @@
   <FILELIST>
       <FILE FILENAME="FConfigW32.res" FORMNAME="" UNITNAME="FConfigW32.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="FConfigW32.bpf" FORMNAME="" UNITNAME="FConfigW32" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="AMGR_UTL.C" FORMNAME="" UNITNAME="AMGR_UTL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="AREAMGR.C" FORMNAME="" UNITNAME="AREAMGR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="CFGFILE.C" FORMNAME="" UNITNAME="CFGFILE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="CRC.C" FORMNAME="" UNITNAME="CRC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="EXPORT.C" FORMNAME="" UNITNAME="EXPORT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="FILESYS.C" FORMNAME="" UNITNAME="FILESYS" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="FS_FUNC.C" FORMNAME="" UNITNAME="FS_FUNC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="FS_UTIL.C" FORMNAME="" UNITNAME="FS_UTIL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="FSETUP.C" FORMNAME="" UNITNAME="FSETUP" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="IMPORT.C" FORMNAME="" UNITNAME="IMPORT" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="ispathch.c" FORMNAME="" UNITNAME="ispathch" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="MTASK.C" FORMNAME="" UNITNAME="MTASK" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="NODEMGR.C" FORMNAME="" UNITNAME="NODEMGR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="PACKMGR.C" FORMNAME="" UNITNAME="PACKMGR" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="UPDATE.C" FORMNAME="" UNITNAME="UPDATE" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="UTILS2.C" FORMNAME="" UNITNAME="UTILS2" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Version.c" FORMNAME="" UNITNAME="Version" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="WINDOW.C" FORMNAME="" UNITNAME="WINDOW" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="amgr_utl.c" formname="" unitname="amgr_utl" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="areamgr.c" formname="" unitname="areamgr" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="cfgfile.c" formname="" unitname="cfgfile" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="crc.c" formname="" unitname="crc" containerID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="export.c" formname="" unitname="export" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="filesys.c" formname="" unitname="filesys" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="fs_func.c" formname="" unitname="fs_func" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="fs_util.c" formname="" unitname="fs_util" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="fsetup.c" formname="" unitname="fsetup" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="import.c" formname="" unitname="import" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ispathch.c" formname="" unitname="ispathch" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="mtask.c" formname="" unitname="mtask" contaINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="nodemgr.c" formname="" unitname="nodemgr" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="packmgr.c" formname="" unitname="packmgr" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="update.c" formname="" unitname="update" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="utils2.c" formname="" unitname="utils2" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="version.c" formname="" unitname="version" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="window.c" formname="" unitname="window" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
