@@ -1,7 +1,9 @@
+#ifndef ftscprodH
+#define ftscprodH
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -32,3 +34,5 @@ struct ftscps
 //---------------------------------------------------------------------------
 extern struct ftscps ftscprod[];
 //---------------------------------------------------------------------------
+
+#endif

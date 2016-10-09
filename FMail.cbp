@@ -12,15 +12,12 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="TOSS" />
 				<Compiler>
 					<Add option="-march=i686" />
-					<Add option="-m32" />
 					<Add option="-g" />
 					<Add option="-D_DEBUG" />
 				</Compiler>
-				<Linker>
-					<Add option="-m32" />
-				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option platforms="Windows;" />
@@ -30,11 +27,9 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
-					<Add option="-m32" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add option="-m32" />
 				</Linker>
 			</Target>
 		</Build>
@@ -50,7 +45,7 @@
 		<Linker>
 			<Add option="-m32" />
 			<Add library="c:/Program Files/CodeBlocks/MinGW/lib/libversion.a" />
-      <Add library="c:/Program Files/CodeBlocks/MinGW/lib/libwsock32.a" />
+			<Add library="c:/Program Files/CodeBlocks/MinGW/lib/libwsock32.a" />
 		</Linker>
 		<Unit filename="archive.c">
 			<Option compilerVar="CC" />
@@ -79,6 +74,7 @@
 		<Unit filename="crc.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="crc.h" />
 		<Unit filename="dups.h" />
 		<Unit filename="dups32.c">
 			<Option compilerVar="CC" />
@@ -86,18 +82,23 @@
 		<Unit filename="filesys.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="filesys.h" />
 		<Unit filename="fmail.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="fmail.h" />
 		<Unit filename="fmstruct.h" />
+		<Unit filename="ftools.h" />
 		<Unit filename="ftscprod.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="ftscprod.h" />
+		<Unit filename="internal.h" />
 		<Unit filename="ispathch.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="ispathch.h" />
+		<Unit filename="jam.h" />
 		<Unit filename="jamfun.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -109,6 +110,7 @@
 		<Unit filename="jamscan.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="jamsys.h" />
 		<Unit filename="lock.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -132,6 +134,7 @@
 		<Unit filename="mtask.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="mtask.h" />
 		<Unit filename="nodeinfo.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -157,6 +160,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="sorthb.h" />
+		<Unit filename="spawno.h" />
 		<Unit filename="spec.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -175,7 +179,7 @@
 		<Unit filename="version.h" />
 		<Extensions>
 			<code_completion />
-			<envvars />
+			<envvars set="default" />
 			<debugger />
 			<lib_finder disable_auto="1" />
 		</Extensions>

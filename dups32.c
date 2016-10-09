@@ -50,6 +50,8 @@ static s16 dupOpened  = 0;
 static u32 *dupBuffer = NULL;
 static u32 nextDupOld[256];
 
+#include <pshpack1.h>
+
 typedef struct
 {
   char headerText[128];
@@ -60,6 +62,8 @@ typedef struct
   u8  _reserved[112];
   u32  nextDup[256];
 } dupHdrStruct;
+
+#include <poppack.h>
 
 static dupHdrStruct dupHdr;
 

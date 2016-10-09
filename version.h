@@ -27,10 +27,10 @@
 
 extern const char *TOOLSTR;
 
-const char *VersionStr   (void);
-const char *Version      (void);
-const char *TearlineStr  (void);
-const char *TIDStr       (void);
+const char *VersionStr (void);
+const char *Version    (void);
+const char *TearlineStr(void);
+const char *TIDStr     (void);
 #ifdef __WIN32__
 const char *VersionString(void);
 #endif

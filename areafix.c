@@ -1490,12 +1490,12 @@ Send:
 #endif
     if (msgNum1)
     {
-      sprintf(tempStr, "%s%lu.msg", config.netPath, msgNum1);
+      sprintf(tempStr, "%s%u.msg", config.netPath, msgNum1);
       msgHandle1 = openP(tempStr, O_WRONLY | O_BINARY | O_APPEND | O_DENYNONE, 0);
     }
     if (msgNum2)
     {
-      sprintf(tempStr, "%s%lu.msg", config.netPath, msgNum2);
+      sprintf(tempStr, "%s%u.msg", config.netPath, msgNum2);
       msgHandle2 = openP(tempStr, O_WRONLY | O_BINARY | O_APPEND | O_DENYNONE, 0);
     }
 

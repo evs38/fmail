@@ -21,23 +21,24 @@
 //
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <dos.h>
-#include <io.h>
-#include <dir.h>
-#include <sys/stat.h>
-#include <time.h>
-#include <fcntl.h>
-#include <string.h>
 #ifdef __STDIO__
 #include <conio.h>
 #else
 #include <bios.h>
 #endif
-#include <errno.h>
 #include <ctype.h>
+#include <dir.h>
+#include <dos.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <io.h>
+#include <share.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <time.h>
 
 #if defined _Windows && !defined __DPMI16__
 #define _far
@@ -211,15 +212,17 @@ void initFMail(const char *_funcStr, s32 switches)
   tempStrType tempStr
             , tempStr2;
   char       *helpPtr;
+  int         readlen = -1;
 
   strcpy(funcStr, _funcStr);
   strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
-  if (((configHandle = openP(tempStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
-      (read(configHandle, &config, sizeof(configType)) < (int)sizeof(configType))  ||
-      (close(configHandle) == -1))
+  if ( (configHandle = openP(tempStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) == -1
+     || (readlen = read(configHandle, &config, sizeof(configType))) < (int)sizeof(configType)
+     || close(configHandle) == -1
+     )
   {
-    puts("Can't read "dCFGFNAME);
+    printf("Can't read: %s\n", tempStr);
     exit(4);
   }
 #if !defined __STDIO__ && !defined __32BIT__
@@ -240,12 +243,9 @@ void initFMail(const char *_funcStr, s32 switches)
   if ((helpPtr = strrchr(tempStr2, '\\')) != NULL)
     *helpPtr = 0;
 
-//#undef open(a,b,c)
-#undef open
-
   ++no_msg;
   if (  !access(tempStr2, 0)
-     && (fmailLockHandle = open(tempStr, O_WRONLY | O_DENYALL | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1
+     && (fmailLockHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
      && errno != ENOFILE
      )
   {
@@ -254,7 +254,7 @@ void initFMail(const char *_funcStr, s32 switches)
     time(&time1);
     time2 = time1;
 
-    while (  (fmailLockHandle = open(tempStr, O_WRONLY | O_DENYALL | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1
+    while (  (fmailLockHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
           && (!config.activTimeOut || time2 - time1 < config.activTimeOut)
           && (ch = (keyWaiting & 0xff)) != 27
           )
@@ -281,8 +281,6 @@ void initFMail(const char *_funcStr, s32 switches)
     }
   }
   no_msg = 0;
-
-#define open(a,b,c)  openP(a,b,c)
 
   if (config.akaList[0].nodeNum.zone == 0)
   {

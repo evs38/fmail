@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -29,15 +29,16 @@
 #define BADMSG   -4
 #define SECHOMSG -5
 
+#include <pshpack1.h>
 //---------------------------------------------------------------------------
 typedef struct
 {
-  unsigned day      : 5;
-  unsigned month    : 4;
-  unsigned year     : 7;
-  unsigned dSeconds : 5;
-  unsigned minutes  : 6;
-  unsigned hours    : 5;
+  u32 day     : 5;
+  u32 month   : 4;
+  u32 year    : 7;
+  u32 dSeconds: 5;
+  u32 minutes : 6;
+  u32 hours   : 5;
 
 } packedTime;
 //---------------------------------------------------------------------------
@@ -70,6 +71,8 @@ typedef struct
   nodeNumType destNode;
 
 } fAttInfoType;
+
+#include <poppack.h>
 //---------------------------------------------------------------------------
 void initMsg      (s16 noAreaFix);
 u16  getFlags     (char *text);

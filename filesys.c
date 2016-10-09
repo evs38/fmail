@@ -146,6 +146,7 @@ int int86xdpmi(int intno, union REGS *inregs, union REGS *outregs, struct SREGS 
 
 //---------------------------------------------------------------------------
 // Check if the volume in path supports long file names
+//
 int fileSys(const char *path)
 {
 #ifndef __32BIT__
@@ -166,6 +167,7 @@ int fileSys(const char *path)
 #ifdef __32BIT__
    if (!config.genOptions.lfn)
       return 0;
+
    GetVolumeInformation(path, NULL, 0, NULL, NULL, (LPDWORD)&fs_flags, NULL, 0);
    return (fs_flags & 0x4000) != 0;
 #else

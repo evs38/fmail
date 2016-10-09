@@ -577,7 +577,7 @@ u32 uniqueID(void)
 #ifdef _DEBUG
     {
       tempStrType tempStr;
-      sprintf(tempStr, "UID: Saved:%08lX New:%08lX", config.lastUniqueID, lastID);
+      sprintf(tempStr, "UID: Saved:%08X New:%08X", config.lastUniqueID, lastID);
       logEntry(tempStr, LOG_DEBUG, 0);
     }
 #endif
@@ -1691,7 +1691,7 @@ char *addMSGIDKludge(internalMsgType *message, char *insertPoint)
 {
   tempStrType tempStr;
 
-  sprintf(tempStr, "%s %08lx", nodeStr(&message->srcNode), uniqueID());
+  sprintf(tempStr, "%s %08x", nodeStr(&message->srcNode), uniqueID());
 
   return addKludge(insertPoint ? insertPoint : message->text, "MSGID:", tempStr);
 }

@@ -62,6 +62,9 @@ extern "C" {
 #define CURRENTREVLEV   1
 #define HEADERSIGNATURE "JAM"
 
+
+#include <pshpack1.h>
+
 /*
 **  Header file information block, stored first in all .JHR files
 */
@@ -204,6 +207,8 @@ typedef struct
     UINT32  HighReadMsg;               /* Highest read message number */
     }
     JAMLREAD, _JAMDATA * JAMLREADptr;
+
+#include <poppack.h>
 
 #endif /* __JAM_H__ */
 

@@ -420,6 +420,7 @@ void deInitAreaInfo(void)
    }
    if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
       logEntry ("Bad or missing "dARFNAME, LOG_ALWAYS, 1);
+
    for (count = 0; count < areaHeader->totalRecords; count++)
    {
       getRec(CFG_ECHOAREAS, count);

@@ -71,7 +71,7 @@ u32 jam_scan(u16 echoIndex, u32 jam_msgnum, u16 scanOne, internalMsgType *messag
   }
   do
   {
-    if (jam_idxrec.HdrOffset != MAXU32)
+    if (jam_idxrec.HdrOffset != UINT32_MAX)
     {
       memset(message, 0, INTMSG_SIZE);
       jam_gethdr(jam_code, jam_idxrec.HdrOffset, &jam_msghdrrec, jam_subfields, message);
@@ -131,7 +131,7 @@ u32 jam_update(u16 echoIndex, u32 jam_msgnum, internalMsgType *message)
    }
 
    if ( jam_getidx(jam_code, &jam_idxrec, jam_msgnum+1-jam_hdrinforec->BaseMsgNum) &&
-        jam_idxrec.HdrOffset != MAXU32 &&
+        jam_idxrec.HdrOffset != UINT32_MAX &&
         jam_gethdr(jam_code, jam_idxrec.HdrOffset, &jam_msghdrrec, jam_subfields, NULL) )
    {
       if ( config.mbOptions.scanUpdate )
@@ -191,7 +191,7 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
 
   while (found)
   {
-    if (jam_idxrec.HdrOffset != MAXU32)
+    if (jam_idxrec.HdrOffset != UINT32_MAX)
     {
       // returnTimeSlice(0);
       if (count-- <= maxRescan)

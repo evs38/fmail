@@ -725,7 +725,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   if (config.mailer == dMT_FrontDoor)
   {
     helpPtr = stpcpy(semaName, config.semaphorePath);
-    count = sprintf(helpPtr, "%08lx.`FM", crc32(nodeStr(destNode))) - 2;
+    count = sprintf(helpPtr, "%08x.`FM", crc32(nodeStr(destNode))) - 2;
     unlink(semaName);
     *(u16 *)(helpPtr + count) = '*';
     if (existPattern(config.semaphorePath, helpPtr))
@@ -743,7 +743,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     if (config.mailer == dMT_InterMail)
     {
       helpPtr2 = stpcpy(semaName, config.semaphorePath);
-      sprintf(semaName, "X%07lX.FM", crc32len((char *)destNode, 8) / 16);
+      sprintf(semaName, "X%07X.FM", crc32len((char *)destNode, 8) / 16);
       helpPtr = strrchr(semaName, '.');
       *helpPtr = *(helpPtr - 1);
       *(helpPtr - 1) = '.';
@@ -848,7 +848,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
                , config.akaList[0].nodeNum.point + destNode->net
                , destNode->node - config.akaList[0].nodeNum.net
                , config.akaList[0].nodeNum.node  + destNode->point);
-        extPtr = archivePtr + sprintf(archivePtr, "%08lX", crc32(nodeName));  // idem
+        extPtr = archivePtr + sprintf(archivePtr, "%08X", crc32(nodeName));  // idem
       }
 
       sprintf(extPtr, ".%.2s?", "SUMOTUWETHFRSA" + (timeBlock.tm_wday << 1)); // idem

@@ -141,14 +141,14 @@ void closeNodeInfo(void)
         {
           message->destNode = config.akaList[0].nodeNum;
           strcpy(message->toUserName, config.sysopName);
-          sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r%s"
-                , nodeStr(&nodeBuf->node), nodeBuf->sysopName, (u32)nodeBuf->passiveSize*100L, totalBundleSize[count]/1024
+          sprintf(message->text, "The status of system %s (SysOp %s) has been changed to Passive because the maximum total bundle size of %u kb was exceed. The current total bundle size is %u kb.\r\r%s"
+                , nodeStr(&nodeBuf->node), nodeBuf->sysopName, (u32)nodeBuf->passiveSize * 100, (u32)totalBundleSize[count] / 1024
                 , TearlineStr()
                 );
           writeMsgLocal(message, NETMSG, 1);
-          sprintf(message->text, "The status of your system %s has been changed to Passive because the maximum total bundle size of %lu kb was exceed. The current total bundle size is %lu kb.\r\r"
+          sprintf(message->text, "The status of your system %s has been changed to Passive because the maximum total bundle size of %u kb was exceed. The current total bundle size is %u kb.\r\r"
                                 "You can reactivate your system by sending a message containing %%ACTIVE to FMail.\r\r%s"
-                , nodeStr(&nodeBuf->node), (u32)nodeBuf->passiveSize*100L, totalBundleSize[count]/1024
+                , nodeStr(&nodeBuf->node), (u32)nodeBuf->passiveSize * 100, (u32)totalBundleSize[count] / 1024
                 , TearlineStr()
                 );
           message->destNode = nodeBuf->node;

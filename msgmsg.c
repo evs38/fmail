@@ -109,7 +109,7 @@ void moveMsg(char *msgName, char *destDir)
         closedir(dir);
       }
     }
-    sprintf(tempStr, "%s%lu.msg", destDir, (u32)++highMsgNum);
+    sprintf(tempStr, "%s%u.msg", destDir, (u32)++highMsgNum);
     if (!moveFile(msgName, tempStr))
     {
       sprintf(tempStr2, "Moving %s to %s", msgName, tempStr);
@@ -274,7 +274,7 @@ void initMsg(s16 noAreaFix)
 
       if (msgNum != 0 && *helpPtr == '.')
       {
-        sprintf(fPtr, "%lu.msg", msgNum);
+        sprintf(fPtr, "%u.msg", msgNum);
 
         if ((msgMsgHandle = openP(fileNameStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
         {
@@ -293,7 +293,7 @@ void initMsg(s16 noAreaFix)
                && !unlink(fileNameStr)
                )
             {
-              sprintf(tempStr, "Killing empty netmail message #%lu, from: %s to: %s", msgNum, msgMsg.fromUserName, msgMsg.toUserName);
+              sprintf(tempStr, "Killing empty netmail message #%u, from: %s to: %s", msgNum, msgMsg.fromUserName, msgMsg.toUserName);
               logEntry(tempStr, LOG_SENTRCVD, 0);
               messagesMoved = 1;
             }
@@ -315,7 +315,7 @@ void initMsg(s16 noAreaFix)
                       emptyText(textStr) &&
                       !unlink(fileNameStr))
                   {
-                    sprintf(tempStr, "Attached file not found, killing ARCmail message #%lu", msgNum);
+                    sprintf(tempStr, "Attached file not found, killing ARCmail message #%u", msgNum);
                     logEntry(tempStr, LOG_SENTRCVD, 0);
                     messagesMoved = 1;
                   }
@@ -449,7 +449,7 @@ void initMsg(s16 noAreaFix)
             attribMsg(temp | RECEIVED, aFixMsgNum[count]);
           else
           {
-            sprintf(fPtr, "%lu.msg", aFixMsgNum[count]);
+            sprintf(fPtr, "%u.msg", aFixMsgNum[count]);
             unlink(fileNameStr);
           }
           validateMsg();
@@ -478,7 +478,7 @@ void initMsg(s16 noAreaFix)
           {
             if (config.pingOptions.deletePingRequests)
             {
-              sprintf(fPtr, "%lu.msg", pingMsgNum[count]);
+              sprintf(fPtr, "%u.msg", pingMsgNum[count]);
               unlink(fileNameStr);
               sprintf(tempStr, "Delete PING request message: %s", fileNameStr);
               logEntry(tempStr, LOG_ALWAYS, 0);
@@ -604,7 +604,7 @@ s16 attribMsg(u16 attribute, s32 msgNum)
             , tempStr2;
   fhandle     msgMsgHandle;
 
-  sprintf(tempStr1, "%s%lu.msg", config.netPath, msgNum);
+  sprintf(tempStr1, "%s%u.msg", config.netPath, msgNum);
 
   if (((msgMsgHandle = openP(tempStr1, O_RDWR|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1) ||
       (lseek(msgMsgHandle, sizeof(msgMsgType)-4, SEEK_SET) == -1) ||
@@ -640,7 +640,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
 
   memset(message, 0, INTMSG_SIZE);
 
-  sprintf(tempStr1, "%s%lu.msg", config.netPath, msgNum);
+  sprintf(tempStr1, "%s%u.msg", config.netPath, msgNum);
 
   if ((msgMsgHandle = openP(tempStr1, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
   {
@@ -888,7 +888,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 
     // Try to open file
     count = 0;
-    sprintf(helpPtr, valid ? "%lu.msg" : "%lu."MBEXTB, ++highMsgNum);
+    sprintf(helpPtr, valid ? "%u.msg" : "%u."MBEXTB, ++highMsgNum);
 
     while (  count < 20
           && (msgHandle = openP(tempStr, O_RDWR | O_CREAT | O_EXCL | O_TRUNC | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)
@@ -896,7 +896,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
           )
     {
       highMsgNum += count++ < 10 ? 1 : 10;
-      sprintf(helpPtr, valid ? "%lu.msg" : "%lu."MBEXTB, highMsgNum);
+      sprintf(helpPtr, valid ? "%u.msg" : "%u."MBEXTB, highMsgNum);
     }
 
     if (msgHandle == -1)
@@ -1021,7 +1021,7 @@ void validateMsg(void)
             do
             {
               highMsgNum += count < 10 ? 1 : 10;
-              sprintf(helpPtr2, "%lu.msg", highMsgNum);
+              sprintf(helpPtr2, "%u.msg", highMsgNum);
             }
             while (count++ < 20 && rename(tempStr1, tempStr2));
           }

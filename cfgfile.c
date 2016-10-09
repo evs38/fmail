@@ -124,10 +124,12 @@ extern char configPath[FILENAME_MAX];  // Path to directory with FMail config fi
 //---------------------------------------------------------------------------
 s16 openConfig(u16 fileType, headerType **header, void **buf)
 {
-   pathType areaInfoPath, tempPath;
+   pathType areaInfoPath
+          , tempPath;
    fhandle  temphandle;
    char    *helpPtr;
-   u16      count, count2;
+   u16      count
+          , count2;
    u16      orgRecSize;
    nodeNumType *nodeNumBuf;
    u16      converted = 0;
@@ -137,9 +139,8 @@ s16 openConfig(u16 fileType, headerType **header, void **buf)
       return 0;
 
    fileData[fileType].recordSize = fileData[fileType].bufferSize;
-   if ( fileType == CFG_ECHOAREAS || fileType == CFG_AREADEF )
-      fileData[fileType].recordSize -=
-     (MAX_FORWARDDEF - config.maxForward) * sizeof(nodeNumXType);
+   if (fileType == CFG_ECHOAREAS || fileType == CFG_AREADEF)
+      fileData[fileType].recordSize -= (MAX_FORWARDDEF - config.maxForward) * sizeof(nodeNumXType);
 
 restart:
    strcpy(areaInfoPath, configPath);
@@ -149,7 +150,12 @@ restart:
    cfiArr[fileType].status = 0;
 
   if ((cfiArr[fileType].handle = open(areaInfoPath, O_BINARY | O_RDWR | O_CREAT | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
+  {
+#ifdef _DEBUG
+    printf("DEBUG open failed: %s\n", areaInfoPath);
+#endif // _DEBUG
     return 0;
+  }
 
    if (filelength(cfiArr[fileType].handle) == 0)
    {
@@ -165,19 +171,24 @@ restart:
    }
    else
    {
-      read(cfiArr[fileType].handle, &cfiArr[fileType].header, sizeof(headerType));
-
-      if (memcmp(cfiArr[fileType].header.versionString, "FMail", 5) ||
-          (cfiArr[fileType].header.headerSize < sizeof(headerType)) ||
-          ((!allowConversion || converted) && cfiArr[fileType].header.recordSize < fileData[fileType].recordSize) ||
-          (cfiArr[fileType].header.dataType != fileData[fileType].dataType))
+      if (sizeof(headerType) != read(cfiArr[fileType].handle, &cfiArr[fileType].header, sizeof(headerType)))
       {
+#ifdef _DEBUG
+         printf("DEBUG openConfig error read\n");
+#endif // _DEBUG
 error:   close(cfiArr[fileType].handle);
          cfiArr[fileType].handle = -1;
          *header = NULL;
          *buf = NULL;
          return 0;
       }
+
+      if (memcmp(cfiArr[fileType].header.versionString, "FMail", 5) ||
+          (cfiArr[fileType].header.headerSize < sizeof(headerType)) ||
+          ((!allowConversion || converted) && cfiArr[fileType].header.recordSize < fileData[fileType].recordSize) ||
+          (cfiArr[fileType].header.dataType != fileData[fileType].dataType))
+        goto error;
+
       if ( cfiArr[fileType].header.recordSize < fileData[fileType].recordSize ||
            ((fileType == CFG_ECHOAREAS || fileType == CFG_AREADEF) &&
            cfiArr[fileType].header.recordSize > fileData[fileType].recordSize) )

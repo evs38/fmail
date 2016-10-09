@@ -1,7 +1,9 @@
+#ifndef ftoolsH
+#define ftoolsH
 //-----------------------------------------------------------------------------
 //
 //  Copyright (C) 2007      Folkert J. Wijnstra
-//  Copyright (C) 2008-2011 Wilfred van Velzen
+//  Copyright (C) 2008-2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,9 +23,6 @@
 //
 //-----------------------------------------------------------------------------
 
-#ifndef __ftools_h
-#define __ftools_h
-
 typedef struct
 {
   uchar          *name;
@@ -32,7 +31,7 @@ typedef struct
   areaOptionsType options;
   u16             numDays;
   u16             numDaysRcvd;
-  u16             numMsgs;  
+  u16             numMsgs;
 } boardInfoType;
 
 s32 getSwitchFT(int *argc, char *argv[], s32 mask);

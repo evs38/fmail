@@ -91,10 +91,21 @@
 /********************************************************/
 /* CONFIG.BBSSoftware                                   */
 /********************************************************/
-enum BBSSoft { NoBBSSoft = 0, RemoteAccess111, QuickBBS,
-               SuperBBS, ProBoard122 /* Unused */, TagBBS,
-               RemoteAccess200, ProBoard130 /* Unused */,
-               ProBoard200, ProBoard212, Maximus202, Maximus300 };
+enum BBSSoft
+{
+  NoBBSSoft = 0
+, RemoteAccess111
+, QuickBBS
+, SuperBBS
+, ProBoard122 /* Unused */
+, TagBBS
+, RemoteAccess200
+, ProBoard130 /* Unused */
+, ProBoard200
+, ProBoard212
+, Maximus202
+, Maximus300
+};
 
 /********************************************************/
 /* CONFIG.CC.what                                       */
@@ -128,7 +139,12 @@ enum BBSSoft { NoBBSSoft = 0, RemoteAccess111, QuickBBS,
 /********************************************************/
 /* CONFIG.arcext.inb/outb                               */
 /********************************************************/
-enum ARCmailExt { ARCDigits = 0, ARCHex, ARCAlpha };
+enum ARCmailExt
+{
+  ARCDigits = 0
+, ARCHex
+, ARCAlpha
+};
 
 /********************************************************/
 /* CONFIG.AreaFixFlags                                  */
@@ -184,14 +200,44 @@ typedef unsigned short word;     /* normal int = 16 bit */
 typedef unsigned long dword;
 #endif
 
-enum ARCers { ARC_Unknown = -1, ARC_SeaArc, ARC_PkArc, ARC_Pak,
-              ARC_ArcPlus, ARC_Zoo, ARC_PkZip, ARC_Lha, ARC_Arj,
-              ARC_Sqz, ARC_RAR, ARC_UC2 }; /* for Unpackers */
+enum ARCers
+{
+  ARC_Unknown = -1
+, ARC_SeaArc
+, ARC_PkArc
+, ARC_Pak
+, ARC_ArcPlus
+, ARC_Zoo
+, ARC_PkZip
+, ARC_Lha
+, ARC_Arj
+, ARC_Sqz
+, ARC_RAR
+, ARC_UC2
+}; /* for Unpackers */
 
-enum NetmailStatus { NetNormal = 0, NetHold, NetCrash /*, NetImm */ };
+enum NetmailStatus
+{
+  NetNormal = 0
+, NetHold
+, NetCrash
+/*, NetImm */
+};
 
-enum AreaFixType { NoAreaFix = 0, NormalAreaFix, FSC57AreaFix };
-enum AreaFixSendTo { AreaFix = 0, AreaMgr, AreaLink, EchoMgr };
+enum AreaFixType
+{
+  NoAreaFix = 0
+, NormalAreaFix
+, FSC57AreaFix
+};
+
+enum AreaFixSendTo
+{
+  AreaFix = 0
+, AreaMgr
+, AreaLink
+, EchoMgr
+};
 
 /********************************************************/
 /* Structures                                           */
@@ -199,7 +245,10 @@ enum AreaFixSendTo { AreaFix = 0, AreaMgr, AreaLink, EchoMgr };
 
 typedef struct
 {
- word zone,net,node,point;
+  word zone
+     , net
+     , node
+     , point;
 } Address;
 
 #define _MAXPATH 56
@@ -306,38 +355,38 @@ typedef struct
  byte aka,autopassive,newgroup,resv1;
  struct
  {
-  unsigned passive          : 1;
-  unsigned dddd             : 1;    /* Type 2+/4D                            */
-  unsigned arcmail060       : 1;
-  unsigned tosscan          : 1;
-  unsigned umlautnet        : 1;
-  unsigned exportbyname     : 1;
-  unsigned allowareacreate  : 1;
-  unsigned disablerescan    : 1;
-  unsigned arc_status       : 2;    /* NetmailStatus for ARCmail attaches    */
-  unsigned arc_direct       : 1;    /* Direct flag for ARCmail attaches      */
-  unsigned noattach         : 1;    /* don't create a ARCmail file attach    */
-  unsigned mgr_status       : 2;    /* NetMailStatus for AreaFix receipts    */
-  unsigned mgr_direct       : 1;    /* Direct flag for ...                   */
-  unsigned not_help         : 1;
-  unsigned not_notify       : 1;
-  unsigned packer           : 4;    /* # of Packer used, 0xf = send .PKT     */
-  unsigned packpriority     : 2;    /* system has priority packing ARCmail   */
-  unsigned resv             : 1;
+  u32 passive        : 1;
+  u32 dddd           : 1;    /* Type 2+/4D                            */
+  u32 arcmail060     : 1;
+  u32 tosscan        : 1;
+  u32 umlautnet      : 1;
+  u32 exportbyname   : 1;
+  u32 allowareacreate: 1;
+  u32 disablerescan  : 1;
+  u32 arc_status     : 2;    /* NetmailStatus for ARCmail attaches    */
+  u32 arc_direct     : 1;    /* Direct flag for ARCmail attaches      */
+  u32 noattach       : 1;    /* don't create a ARCmail file attach    */
+  u32 mgr_status     : 2;    /* NetMailStatus for AreaFix receipts    */
+  u32 mgr_direct     : 1;    /* Direct flag for ...                   */
+  u32 not_help       : 1;
+  u32 not_notify     : 1;
+  u32 packer         : 4;    /* # of Packer used, 0xf = send .PKT     */
+  u32 packpriority   : 2;    /* system has priority packing ARCmail   */
+  u32 resv           : 1;
  } flags;                       /* 24 bits total !                       */
  struct
  {
-  unsigned type             : 2;    /* Type of AreaFix: None (human),
+  u16 type       : 2;    /* Type of AreaFix: None (human),
                                    Normal or Advanced (FSC-57)           */
-  unsigned noforward        : 1;    /* Don't forward AFix requests           */
-  unsigned allowremote      : 1;
-  unsigned allowdelete      : 1;    /* flags for different FSC-57 requests   */
-  unsigned allowrename      : 1;    /* all 3 reserved for future use         */
-  unsigned binarylist       : 1;
-  unsigned addplus          : 1;    /* add '+' when requesting new area      */
-  unsigned addtear          : 1;    /* add tearline to the end of requests   */
-  unsigned sendto           : 3;    /* name of this systems's AreaFix robot  */
-  unsigned resv             : 4;
+  u16 noforward  : 1;    /* Don't forward AFix requests           */
+  u16 allowremote: 1;
+  u16 allowdelete: 1;    /* flags for different FSC-57 requests   */
+  u16 allowrename: 1;    /* all 3 reserved for future use         */
+  u16 binarylist : 1;
+  u16 addplus    : 1;    /* add '+' when requesting new area      */
+  u16 addtear    : 1;    /* add tearline to the end of requests   */
+  u16 sendto     : 3;    /* name of this systems's AreaFix robot  */
+  u16 resv       : 4;
  } afixflags;
  word resv2;
  char password[9];              /* .PKT password                         */
@@ -362,33 +411,33 @@ typedef struct
  word read_sec,write_sec;
  struct
  {
-  unsigned aka    : 8;              /* 0 ... CONFIG.AkaCnt                   */
-  unsigned group  : 8;              /* 0 ... CONFIG.GroupCnt                 */
+  u16 aka  : 8;              /* 0 ... CONFIG.AkaCnt                   */
+  u16 group: 8;              /* 0 ... CONFIG.GroupCnt                 */
  } info;
  struct
  {
-  unsigned storage: 4;
-  unsigned atype  : 4;
-  unsigned origin : 5;              /* # of origin line                      */
-  unsigned resv   : 3;
+  u16 storage: 4;
+  u16 atype  : 4;
+  u16 origin : 5;              /* # of origin line                      */
+  u16 resv   : 3;
  } flags;
  struct
  {
-  unsigned autoadded  : 1;
-  unsigned tinyseen   : 1;
-  unsigned cpd        : 1;
-  unsigned passive    : 1;
-  unsigned keepseen   : 1;
-  unsigned mandatory  : 1;
-  unsigned keepsysop  : 1;
-  unsigned killread   : 1;
-  unsigned disablepsv : 1;
-  unsigned keepmails  : 1;
-  unsigned hide       : 1;
-  unsigned nomanual   : 1;
-  unsigned umlaut     : 1;
-  unsigned hideseen   : 1;
-  unsigned resv       : 2;
+  u16 autoadded : 1;
+  u16 tinyseen  : 1;
+  u16 cpd       : 1;
+  u16 passive   : 1;
+  u16 keepseen  : 1;
+  u16 mandatory : 1;
+  u16 keepsysop : 1;
+  u16 killread  : 1;
+  u16 disablepsv: 1;
+  u16 keepmails : 1;
+  u16 hide      : 1;
+  u16 nomanual  : 1;
+  u16 umlaut    : 1;
+  u16 hideseen  : 1;
+  u16 resv      : 2;
  } advflags;
  word resv1;
  dword seenbys;                 /* LSB = Aka0, MSB = Aka31           */
@@ -441,12 +490,12 @@ typedef struct
  word nodenr;
  struct
  {
-  unsigned newgroup : 8;
-  unsigned active   : 1;
-  unsigned valid    : 1;
-  unsigned uncond   : 1;
-  unsigned format   : 3;
-  unsigned resv     : 2;
+  u16 newgroup: 8;
+  u16 active  : 1;
+  u16 valid   : 1;
+  u16 uncond  : 1;
+  u16 format  : 3;
+  u16 resv    : 2;
  } flags;
  char file[_MAXPATH];
  word sec_level;

@@ -54,7 +54,7 @@
 #include "utils.h"
 
 extern configType config;
-extern s32        startTime;
+extern time_t     startTime;
 
 //---------------------------------------------------------------------------
 s16 JAMremoveRe(char *buf, u32 *bufsize)
@@ -425,7 +425,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   maxMsg = sizeJDX / sizeof(JAMIDXREC);
 
 #ifdef _DEBUG
-  sprintf(tempStr, "Size old: no:%lu jhr:%lu jdt:%lu jdx:%lu jlr:%lu tot:%lu", maxMsg, sizeJHR, sizeJDT, sizeJDX, sizeJLR, sizeJHR + sizeJDT + sizeJDX + sizeJLR);
+  sprintf(tempStr, "Size old: no:%u jhr:%u jdt:%u jdx:%u jlr:%u tot:%u", maxMsg, sizeJHR, sizeJDT, sizeJDX, sizeJLR, sizeJHR + sizeJDT + sizeJDX + sizeJLR);
   logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
 
@@ -672,12 +672,12 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
            + sizeJDT - highJDT
            + sizeJHR - highJHR;
 #ifdef _DEBUG
-    sprintf(tempStr, "Size new: no:%lu jhr:%lu jdt:%lu jdx:%lu jlr:%lu tot:%lu", msgNumNew, highJHR, highJDT, highJDX, sizeJLR, highJHR + highJDT + highJDX + sizeJLR);
+    sprintf(tempStr, "Size new: no:%u jhr:%u jdt:%u jdx:%u jlr:%u tot:%u", msgNumNew, highJHR, highJDT, highJDX, sizeJLR, highJHR + highJDT + highJDX + sizeJLR);
     logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
 
     if (ss != 0)
     {
-      sprintf(tempStr, "Space saved: %lu", ss);
+      sprintf(tempStr, "Space saved: %u", ss);
       logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
     }
 #endif

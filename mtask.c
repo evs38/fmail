@@ -75,13 +75,13 @@ void returnTimeSlice(u16 arg)
   Sleep(SLEEPTIME);  // milliseconds
 #else
   sleep(1);
-#endif  
+#endif
 }
 #endif
 
 #if !defined __OS2__ && !defined __32BIT__
 
-#include "dos.h"
+#include <dos.h>
 
 #include "fmstruct.h"
 #include "config.h"

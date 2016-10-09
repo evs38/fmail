@@ -524,7 +524,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
           logEntry(tempStr, LOG_PKTINFO, 0);
 
           if ((globVars.remoteCapability & 1) == 1)
-            sprintf( tempStr, "Pkt info: %s %u.%02u, Type 2+, %ld, %04u-%02u-%02u %02u:%02u:%02u%s%s"
+            sprintf( tempStr, "Pkt info: %s %u.%02u, Type 2+, %d, %04u-%02u-%02u %02u:%02u:%02u%s%s"
                    , helpPtr, globVars.versionHi, globVars.versionLo
                    , globVars.packetSize
                    , globVars.year, globVars.month, globVars.day
@@ -532,7 +532,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                    , globVars.password ? ", Pwd" : "", (globVars.password == 2) ? ", Sec" : ""
                    );
           else
-            sprintf( tempStr, "Pkt info: %s, Type %s, %ld, %04u-%02u-%02u %02u:%02u:%02u%s%s"
+            sprintf( tempStr, "Pkt info: %s, Type %s, %d, %04u-%02u-%02u %02u:%02u:%02u%s%s"
                    , helpPtr
                    , globVars.remoteCapability == 0xffff ? "2.2" :"2.0"
                    , globVars.packetSize
@@ -1331,7 +1331,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
 
     if (findCLStr(message->text, "\1MSGID: ") == NULL)
     {
-      sprintf(tempStr, "\1MSGID: %s %08lx\r", nodeStr (&message->srcNode), uniqueID());
+      sprintf(tempStr, "\1MSGID: %s %08x\r", nodeStr (&message->srcNode), uniqueID());
       insertLine(message->text, tempStr);
     }
 
@@ -1830,7 +1830,7 @@ void Import(int argc, char *argv[])
                 else
                 {
                   validate2BBS(0);
-                  sprintf( tempStr, "Importing msg #%lu from %s to %s (board #%u)"
+                  sprintf( tempStr, "Importing msg #%u from %s to %s (board #%u)"
                          , msgNum, nodeStr(&message->srcNode), nodeStr(&message->destNode), boardNum);
                   logEntry(tempStr, LOG_NETIMP, 0);
                   count++;
@@ -1972,6 +1972,14 @@ int main(int argc, char *argv[])
   *(strrchr(programPath, '\\') + 1) = 0;
 #endif
 
+#ifdef _DEBUG
+    {
+      tempStrType cwd;
+      getcwd(cwd, dTEMPSTRLEN);
+      printf("DEBUG: cwd: %s\n", cwd);
+    }
+#endif
+
   if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0)
   {
     strcpy(configPath, argv[0]);
@@ -1980,7 +1988,7 @@ int main(int argc, char *argv[])
   else
   {
     strcpy(configPath, helpPtr);
-    if (configPath[strlen(configPath)-1] != '\\')
+    if (configPath[strlen(configPath) - 1] != '\\')
       strcat(configPath, "\\");
   }
 

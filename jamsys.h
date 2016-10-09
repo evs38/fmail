@@ -36,39 +36,28 @@ extern "C" {
 //  __BORLANDC__    Borland C++ 3.x
 
 #if !defined(_BASETSD_H_) && !defined(_BASETSD_H)
-typedef s32                 INT32;       // 32 bits signed integer
-typedef u32                 UINT32;      // 32 bits unsigned integer
+typedef s32     INT32;       // 32 bits signed integer
+typedef u32     UINT32;      // 32 bits unsigned integer
 #endif
-typedef s16                 INT16;       // 16 bits signed integer
-typedef u16                 UINT16;      // 16 bits unsigned integer
-typedef char                CHAR8;       // 8 bits signed integer
-typedef uchar               UCHAR8;      // 8 bits unsigned integer
-typedef fhandle             FHANDLE;     // File handle
+typedef s16     INT16;       // 16 bits signed integer
+typedef u16     UINT16;      // 16 bits unsigned integer
+typedef char    CHAR8;       // 8 bits signed integer
+typedef u8      UCHAR8;      // 8 bits unsigned integer
+typedef fhandle FHANDLE;     // File handle
 
 #define _JAMFAR
 #define _JAMPROC
 #define _JAMDATA
 
 
-typedef INT32 _JAMDATA *        INT32ptr;
-typedef UINT32 _JAMDATA *       UINT32ptr;
-typedef INT16 _JAMDATA *        INT16ptr;
-typedef UINT16 _JAMDATA *       UINT16ptr;
-typedef CHAR8 _JAMDATA *        CHAR8ptr;
-typedef UCHAR8 _JAMDATA *       UCHAR8ptr;
-typedef void _JAMDATA *         VOIDptr;
+typedef INT32  _JAMDATA *INT32ptr;
+typedef UINT32 _JAMDATA *UINT32ptr;
+typedef INT16  _JAMDATA *INT16ptr;
+typedef UINT16 _JAMDATA *UINT16ptr;
+typedef CHAR8  _JAMDATA *CHAR8ptr;
+typedef UCHAR8 _JAMDATA *UCHAR8ptr;
+typedef void   _JAMDATA *VOIDptr;
 
-//
-//  Values for "AccessMode" and "ShareMode" parameter to JAMsysSopen.
-//
-
-#define JAMO_RDWR           O_RDWR
-#define JAMO_RDONLY         O_RDONLY
-#define JAMO_WRONLY         O_WRONLY
-#define JAMSH_DENYNO        SH_DENYNO
-#define JAMSH_DENYRD        SH_DENYRD
-#define JAMSH_DENYWR        SH_DENYWR
-#define JAMSH_DENYRW        SH_DENYRW
 
 #endif // __JAMSYS_H__
 

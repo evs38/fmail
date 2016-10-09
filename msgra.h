@@ -25,6 +25,8 @@
 
 #define CS_SECURITY 0xc6cad720L
 
+#include <pshpack1.h>
+
 typedef struct
 {
    uchar    nameLength;
@@ -301,6 +303,7 @@ typedef struct
 
 #endif
 
+#include <poppack.h>
 //---------------------------------------------------------------------------
 s16  multiUpdate      (void);
 

@@ -643,7 +643,7 @@ static s16 useLocks = -1;
 
 u16 jam_getlock(u32 jam_code)
 {
-  s16 stat;
+  int stat;
 
   dummy = jam_code;
   if (useLocks)
@@ -749,7 +749,7 @@ u32 jam_writemsg(char *msgbasename, internalMsgType *message, u16 local)
     strcat(tempStr, "ECHOMAIL.JAM");
     if ((handle = fsopenP(tempStr, O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
     {
-      len = sprintf(tempStr, "%s %lu\r\n", msgbasename, msgNum);
+      len = sprintf(tempStr, "%s %u\r\n", msgbasename, msgNum);
       write(handle, tempStr, len);
       fsclose(handle);
     }

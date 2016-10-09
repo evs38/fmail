@@ -23,6 +23,8 @@
 //
 //---------------------------------------------------------------------------
 
+#include <pshpack1.h>
+
 typedef struct
 {
    u16  origNode
@@ -98,6 +100,8 @@ typedef struct
 //               * Field only guaranteed accurate in a type 2.2 header
 //---------------------------------------------------------------------------
 
+#include <poppack.h>
+
 void  initPkt          (void);
 void  deInitPkt        (void);
 
@@ -108,8 +112,7 @@ void  closePktRd       (void);
 fhandle openP          (const char *pathname, int access, u16 mode);
 fhandle fsopenP        (const char *pathname, int access, u16 mode);
 
-char *setSeenByPath    ( internalMsgType *msg, char *txtEnd
-                       , areaOptionsType areaOptions, nodeOptionsType nodeOptions);
+char *setSeenByPath    (internalMsgType *msg, char *txtEnd, areaOptionsType areaOptions, nodeOptionsType nodeOptions);
 s16   writeEchoPkt     (internalMsgType *message, areaOptionsType areaOptions, echoToNodeType echoToNode);
 void  freePktHandles   (void);
 s16   validateEchoPktWr(void);

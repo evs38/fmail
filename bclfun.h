@@ -26,6 +26,8 @@
 #define BCLH_ISLIST   0x00000001L  // File is complete list
 #define BCLH_ISUPDATE 0x00000002L  // File contains update/diff information
 
+#include <pshpack1.h>
+
 typedef struct
 {
   char FingerPrint[4];   // BCL<NUL>
@@ -45,11 +47,14 @@ typedef struct
 typedef struct
 {
   u16 EntryLength;      // Length of entry data
-  u32 flags1, flags2;   // Conference flags
+  u32 flags1
+    , flags2;           // Conference flags
 } bcl_type;
 
 extern bcl_header_type bcl_header;
 extern bcl_type bcl;
+
+#include <poppack.h>
 
 //---------------------------------------------------------------------------
 udef openBCL (uplinkReqType *uplinkReq);

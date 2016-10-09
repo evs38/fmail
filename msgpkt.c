@@ -54,6 +54,8 @@ u16 PKT_BUFSIZE = 32000;
 
 extern time_t startTime;
 
+#include <pshpack1.h>
+
 typedef struct
 {
   u16 two;
@@ -64,6 +66,8 @@ typedef struct
   u16 attribute;
   u16 cost;
 } pmHdrType;
+
+#include <poppack.h>
 
 u16 inBuf
   , startBuf
@@ -163,16 +167,22 @@ s16 openPktRd(char *pktName, s16 secure)
 
       globVars.remoteCapability = srcCapability;
 
-      while ((MAX_AKAS > globVars.packetDestAka) &&
-             ((config.akaList[globVars.packetDestAka].nodeNum.zone == 0) ||
-              (msgPktHdr.destZone   != config.akaList[globVars.packetDestAka].nodeNum.zone) ||
-              ((msgPktHdr.destNet   != config.akaList[globVars.packetDestAka].nodeNum.net)  ||
-               (msgPktHdr.destNode  != config.akaList[globVars.packetDestAka].nodeNum.node) ||
-               ((msgPktHdr.destPoint != config.akaList[globVars.packetDestAka].nodeNum.point) &&
-                (config.akaList[globVars.packetDestAka].nodeNum.point != 0))) &&
-              ((msgPktHdr.destNet   != config.akaList[globVars.packetDestAka].fakeNet) ||
-               (msgPktHdr.destNode  != config.akaList[globVars.packetDestAka].nodeNum.point) ||
-               (msgPktHdr.destPoint != 0))))
+      while (  MAX_AKAS > globVars.packetDestAka
+            && (  config.akaList[globVars.packetDestAka].nodeNum.zone == 0
+               || msgPktHdr.destZone != config.akaList[globVars.packetDestAka].nodeNum.zone
+               || (  (  msgPktHdr.destNet  != config.akaList[globVars.packetDestAka].nodeNum.net
+                     || msgPktHdr.destNode != config.akaList[globVars.packetDestAka].nodeNum.node
+                     || (  msgPktHdr.destPoint != config.akaList[globVars.packetDestAka].nodeNum.point
+                        && config.akaList[globVars.packetDestAka].nodeNum.point != 0
+                        )
+                     )
+                  && (  msgPktHdr.destNet   != config.akaList[globVars.packetDestAka].fakeNet
+                     || msgPktHdr.destNode  != config.akaList[globVars.packetDestAka].nodeNum.point
+                     || msgPktHdr.destPoint != 0
+                     )
+                  )
+               )
+            )
          globVars.packetDestAka++;
 
 #ifdef _DEBUG0
@@ -221,10 +231,10 @@ s16 openPktRd(char *pktName, s16 secure)
          sprintf(tempStr, "FSC-0045 dest AKA: %d", globVars.packetDestAka);
          logEntry(tempStr, LOG_DEBUG, 0);
 #endif
-         globVars.packetSrcNode.zone  = ((FSC45pktHdrType*)&msgPktHdr)->origZone;
-         globVars.packetSrcNode.net   = ((FSC45pktHdrType*)&msgPktHdr)->origNet;
-         globVars.packetSrcNode.node  = ((FSC45pktHdrType*)&msgPktHdr)->origNode;
-         globVars.packetSrcNode.point = ((FSC45pktHdrType*)&msgPktHdr)->origPoint;
+         globVars.packetSrcNode .net   = ((FSC45pktHdrType*)&msgPktHdr)->origNet;
+         globVars.packetSrcNode .zone  = ((FSC45pktHdrType*)&msgPktHdr)->origZone;
+         globVars.packetSrcNode .node  = ((FSC45pktHdrType*)&msgPktHdr)->origNode;
+         globVars.packetSrcNode .point = ((FSC45pktHdrType*)&msgPktHdr)->origPoint;
          globVars.packetDestNode.zone  = ((FSC45pktHdrType*)&msgPktHdr)->destZone;
          globVars.packetDestNode.net   = ((FSC45pktHdrType*)&msgPktHdr)->destNet;
          globVars.packetDestNode.node  = ((FSC45pktHdrType*)&msgPktHdr)->destNode;
@@ -234,22 +244,27 @@ s16 openPktRd(char *pktName, s16 secure)
       {
          // 2-d / fake-net info
 
-         while ((globVars.packetDestAka < MAX_AKAS) &&
-                ((config.akaList[globVars.packetDestAka].nodeNum.zone == 0) ||
-                 ((msgPktHdr.destNet  != config.akaList[globVars.packetDestAka].nodeNum.net) ||
-                  (msgPktHdr.destNode != config.akaList[globVars.packetDestAka].nodeNum.node)) &&
-                 ((msgPktHdr.destNet  != config.akaList[globVars.packetDestAka].fakeNet) ||
-                  (msgPktHdr.destNode != config.akaList[globVars.packetDestAka].nodeNum.point))))
+         while (  globVars.packetDestAka < MAX_AKAS
+               && (  config.akaList[globVars.packetDestAka].nodeNum.zone == 0
+                  || (  (  msgPktHdr.destNet  != config.akaList[globVars.packetDestAka].nodeNum.net
+                        || msgPktHdr.destNode != config.akaList[globVars.packetDestAka].nodeNum.node
+                        )
+                     && (  msgPktHdr.destNet  != config.akaList[globVars.packetDestAka].fakeNet
+                        || msgPktHdr.destNode != config.akaList[globVars.packetDestAka].nodeNum.point
+                        )
+                     )
+                  )
+               )
             globVars.packetDestAka++;
 
 #ifdef _DEBUG0
          sprintf(tempStr, "Type 2 dest AKA: %d", globVars.packetDestAka);
          logEntry(tempStr, LOG_DEBUG, 0);
 #endif
-         globVars.packetSrcNode.zone  = 0;
-         globVars.packetSrcNode.net   = msgPktHdr.origNet;
-         globVars.packetSrcNode.node  = msgPktHdr.origNode;
-         globVars.packetSrcNode.point = 0;
+         globVars.packetSrcNode .zone  = 0;
+         globVars.packetSrcNode .net   = msgPktHdr.origNet;
+         globVars.packetSrcNode .node  = msgPktHdr.origNode;
+         globVars.packetSrcNode .point = 0;
          globVars.packetDestNode.zone  = 0;
          globVars.packetDestNode.net   = msgPktHdr.destNet;
          globVars.packetDestNode.node  = msgPktHdr.destNode;
@@ -317,9 +332,8 @@ s16 openPktRd(char *pktName, s16 secure)
       }
    }
 
-  globVars.packetSize = filelength(pktHandle);
   {
-    struct stat statbuf;
+    struct stat statbuf = { 0 };
     if (0 == fstat(pktHandle, &statbuf))
     {
       struct tm *tm = localtime(&statbuf.st_mtime);
@@ -329,6 +343,8 @@ s16 openPktRd(char *pktName, s16 secure)
       globVars.day   = tm->tm_mday;
       globVars.month = tm->tm_mon + 1;
       globVars.year  = tm->tm_year + 1900;
+
+      globVars.packetSize = statbuf.st_size;
     }
     else
     {
@@ -338,6 +354,8 @@ s16 openPktRd(char *pktName, s16 secure)
       globVars.day   =
       globVars.month = 1;
       globVars.year  = 1980;
+
+      globVars.packetSize = 0;
     }
   }
   nodeInfoPtr->lastMsgRcvdDat = startTime;
@@ -575,7 +593,7 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
 
    nfInfoRec->bytesValid = 0;
 
-   sprintf (nfInfoRec->pktFileName, "%s%08lx.tmp", config.outPath, uniqueID());
+   sprintf (nfInfoRec->pktFileName, "%s%08x.tmp", config.outPath, uniqueID());
 
    if ((pktHandle = openP(nfInfoRec->pktFileName, O_RDWR|O_CREAT|O_TRUNC|O_DENYALL, S_IREAD|S_IWRITE)) == -1)
    {
@@ -1213,6 +1231,14 @@ fhandle openP(const char *pathname, int access, u16 mode)
          )
       {
         tempStrType tempStr;
+#ifdef _DEBUG0
+        {
+          tempStrType cwd;
+          getcwd(cwd, dTEMPSTRLEN);
+          sprintf(tempStr, "DEBUG openP: cwd:%s, %x", cwd, access);
+          logEntry(tempStr, LOG_DEBUG, 0);
+        }
+#endif // _DEBUG
         sprintf(tempStr, "Error opening %s: %s", pathname, strError(errcode));
         logEntry(tempStr, LOG_OPENERR, 0);
       }
@@ -1245,7 +1271,7 @@ fhandle fsopenP(const char *pathname, int access, u16 mode)
          )
       {
         tempStrType tempStr;
-        sprintf(tempStr, "Error opening %s: %s", pathname, strError(errcode));
+        sprintf(tempStr, "Error fs-opening %s: %s", pathname, strError(errcode));
         logEntry(tempStr, LOG_OPENERR, 0);
       }
       --no_log;

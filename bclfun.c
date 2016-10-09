@@ -149,7 +149,7 @@ udef process_bcl(char *fileName)
   if (index == MAX_UPLREQ)
     return 0;
 
-  sprintf(newFileName, "%08lX.BCL", uniqueID());
+  sprintf(newFileName, "%08X.BCL", uniqueID());
   sprintf(tempStr2, "%s%s", configPath, newFileName);
   if (!moveFile(tempStr, tempStr2))
   {
@@ -216,7 +216,7 @@ void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInf
   if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
     return;
 
-  sprintf(tempStr, "%s%08lX.$$$", config.outPath, uniqueID());
+  sprintf(tempStr, "%s%08X.$$$", config.outPath, uniqueID());
   if ((helpHandle = openP(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
   {
     tempStrType logStr;

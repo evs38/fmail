@@ -584,8 +584,8 @@ static s16 writeText (char *msgText, char *seenBy, char *path, u16 skip,
       }
       else
       {
-         textPtr += (msgTxtBuf[txtBufCount++].txtLength = (u16)(helpPtr - 1 -
-                    msgTxtBuf[txtBufCount].txtStr));
+         textPtr += (msgTxtBuf[txtBufCount].txtLength = (u16)(helpPtr - 1 - msgTxtBuf[txtBufCount].txtStr));
+         txtBufCount++;
       }
 #ifdef GOLDBASE
       if ( !(++msgTxtRecNum+globVars.baseTotalTxtRecs) )
@@ -1465,9 +1465,9 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
       {
          if (  msgIdxBuf[count].Board == echoAreaList[echoIndex].board
 #ifndef GOLDBASE
-            && msgIdxBuf[count].MsgNum != MAXU16
+            && msgIdxBuf[count].MsgNum != UINT16_MAX
 #else
-            && msgIdxBuf[count].MsgNum != MAXU32
+            && msgIdxBuf[count].MsgNum != UINT32_MAX
 #endif
             )
          {
