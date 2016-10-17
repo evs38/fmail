@@ -187,7 +187,7 @@ typedef struct
 #define LOG_DEBUG     0x8000
 
 typedef nodeFakeType _akaListType[MAX_AKAS_OLD];
-typedef nodeFakeType akaListType[MAX_AKAS_F];
+typedef nodeFakeType  akaListType[MAX_AKAS_F  ];
 
 typedef struct
 {
@@ -196,7 +196,7 @@ typedef struct
   u16 swap         : 1;  // BIT 2
   u16 swapEMS      : 1;  // BIT 3
   u16 swapXMS      : 1;  // BIT 4
-  u16 lfn          : 1;  // BIT 5
+  u16              : 1;  // BIT 5  (was lfn)
   u16 monochrome   : 1;  // BIT 6
   u16 commentFFD   : 1;  // BIT 7
   u16 PTAreasBBS   : 1;  // BIT 8

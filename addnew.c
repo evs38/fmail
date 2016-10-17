@@ -41,26 +41,47 @@
 //---------------------------------------------------------------------------
 static badEchoType badEchos[MAX_BAD_ECHOS];
 
-typedef u8 *anType[MAX_AREAS];
-typedef u8 *mpType[MAX_AREAS];
+typedef char *anType[MAX_AREAS];
+typedef char *mpType[MAX_AREAS];
 
+static u16     areaInfoCount;
+static mpType *mbPaths;
+
+//---------------------------------------------------------------------------
+const char *ANGetAreaPath(u16 i)
+{
+  if (i >= areaInfoCount)
+    return NULL;
+
+  if (NULL == (*mbPaths)[index])
+    return "";
+
+  return (*mbPaths)[index];
+}
 //---------------------------------------------------------------------------
 void addNew(s32 switches)
 {
-  anType       *areaNames;
-  mpType       *mbPaths;
+  anType      *areaNames;
   u8           usedArea[MBBOARDS];
-  u8           *tempPtr, *tempPtr2;
-  u16          badEchoCount, areaInfoCount, count, index;
-  u16          areasExist, areasAdded;
+  u8          *tempPtr
+            , *tempPtr2;
+  u16          badEchoCount
+             , count
+             , index;
+  u16          areasExist
+             , areasAdded;
   int          tempHandle;
   tempStrType  tempStr;
-  headerType   *adefHeader, *areaHeader;
-  rawEchoType  tempInfo, echoDefaultsRec, *adefBuf, *areaBuf;
+  headerType  *adefHeader
+            , *areaHeader;
+  rawEchoType  tempInfo
+            ,  echoDefaultsRec
+            , *adefBuf
+            , *areaBuf;
 
-  if ( (areaNames = malloc(sizeof(anType))) == NULL )
+  if ((areaNames = malloc(sizeof(anType))) == NULL)
     return;
-  if ( (mbPaths = malloc(sizeof(mpType))) == NULL )
+  if ((mbPaths   = malloc(sizeof(mpType))) == NULL)
   {
     free(areaNames);
     return;
@@ -144,39 +165,8 @@ void addNew(s32 switches)
       {
         if (tempInfo.board == 2)  // JAM
         {
-          MakeJamAreaPath(&tempInfo);
-
-          for (;;)
-          {
-            index = 0;
-            while ( index < areaInfoCount )
-            {
-              if ( (*mbPaths)[index] && !stricmp((*mbPaths)[index], tempInfo.msgBasePath) )
-                break;
-              ++index;
-            }
-            if ( index == areaInfoCount )
-              break;
-            tempPtr = strchr(tempInfo.msgBasePath, 0) - 1;
-            for (;;)
-            {
-              if ( !isdigit(*tempPtr) )
-                *tempPtr = '0';
-              else
-              {
-                if ( *tempPtr != '9' )
-                  ++*tempPtr;
-                else
-                {
-                  *tempPtr = '0';
-                  --tempPtr;
-                  if ( tempPtr >= tempInfo.msgBasePath && *tempPtr != '\\' )
-                    continue;
-                }
-              }
-              break;
-            }
-          }
+// todo: Testen!
+          MakeJamAreaPath(&tempInfo, ANGetAreaPath);
           tempInfo.board = 0;
         }
         else // pass-through

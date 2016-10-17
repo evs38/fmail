@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <io.h>
+#include <share.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>   // getenv()
@@ -46,8 +47,6 @@
 #include "utils.h"
 
 #include "areainfo.h"
-#include "filesys.h"
-//#include "fjlib.h"
 #include "log.h"
 #include "msgpkt.h"  // for openP
 #include "spec.h"
@@ -86,10 +85,10 @@ int moveFile(const char *oldName, const char *newName)
     if (errno != ENOTSAM)
       return -1;
 #endif
-    if ((h1 = openP(oldName, O_RDONLY | O_BINARY | O_DENYALL, 0)) == -1)
+    if ((h1 = _sopen(oldName, O_RDONLY | O_BINARY, SH_DENYRW, 0)) == -1)
       return -1;
 
-    if ((h2 = openP(newName, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
+    if ((h2 = _sopen(newName, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
     {
       close(h1);
       return -1;
@@ -1515,77 +1514,79 @@ void addVia(char *msgText, u16 aka, int isNetmail)
 }
 #endif
 //---------------------------------------------------------------------------
-const char *makeName(char *path, char *name)
-{
-  static tempStrType tempStr;
-  char  *helpPtr;
-  udef   len;
-  u16    count;
+// const char *makeName(char *path, char *name)
+// {
+//   static tempStrType tempStr;
+//   char  *helpPtr;
+//   udef   len;
+//   u16    count;
 
-  len = strlen(name);
-  helpPtr = stpcpy(tempStr, path);
-  strcpy(helpPtr, name);
+//   helpPtr = stpcpy(tempStr, path);
+//   strcpy(helpPtr, name);
 
-  if (fileSys(path))
-    return tempStr;
+//   if (fileSys(path))
+//     return tempStr;
 
-  name = helpPtr;
-  if (len > 8)
-  {
-    helpPtr[8] = 0;
-    len = 8;
-  }
-  while ((helpPtr = strchr(helpPtr, '.')) != NULL)
-  {
-    strcpy(helpPtr, helpPtr + 1);
-    len--;
-  }
+//   len = strlen(name);
+//   name = helpPtr;
+//   if (len > 8)
+//   {
+//     helpPtr[8] = 0;
+//     len = 8;
+//   }
+//   while ((helpPtr = strchr(helpPtr, '.')) != NULL)
+//   {
+//     strcpy(helpPtr, helpPtr + 1);
+//     len--;
+//   }
 
-  helpPtr = strchr(tempStr, 0);
-  count = 0;
-  while (  count < echoCount
-        && (  echoAreaList[count].JAMdirPtr == NULL
-           || stricmp(tempStr, echoAreaList[count].JAMdirPtr) != 0
-           )
-        )
-    count++;
+//   helpPtr = strchr(tempStr, 0);
+//   count = 0;
+//   while (  count < echoCount
+//         && (  echoAreaList[count].JAMdirPtr == NULL
+//            || stricmp(tempStr, echoAreaList[count].JAMdirPtr) != 0
+//            )
+//         )
+//     count++;
 
-  if (count < echoCount)
-  {
-    if ( len >= 8 )
-      --helpPtr;
-    if ( len >= 7 )
-      --helpPtr;
+//   if (count < echoCount)
+//   {
+//     if ( len >= 8 )
+//       --helpPtr;
+//     if ( len >= 7 )
+//       --helpPtr;
 
-    if (*helpPtr == '\\' || *(helpPtr + 1) == '\\')
-      return "";
+//     if (*helpPtr == '\\' || *(helpPtr + 1) == '\\')
+//       return "";
 
-    *helpPtr = '`';
-    *(helpPtr + 1) = '0';
-    strcpy(helpPtr + 2, ".*");
-    do
-    {
-      if ((*(helpPtr + 1))++ == '9')
-        return "";
-    }
-    while (existPattern(path, name));
-    helpPtr += 2;
-  }
-  *helpPtr = 0;
+//     *helpPtr = '`';
+//     *(helpPtr + 1) = '0';
+//     strcpy(helpPtr + 2, ".*");
+//     do
+//     {
+//       if ((*(helpPtr + 1))++ == '9')
+//         return "";
+//     }
+//     while (existPattern(path, name));
+//     helpPtr += 2;
+//   }
+//   *helpPtr = 0;
 
-  return tempStr;
-}
+//   return tempStr;
+// }
 //---------------------------------------------------------------------------
 long fmseek(int handle, long offset, int fromwhere, int code)
 {
-   if ( fromwhere == SEEK_SET && offset < 0 )
-   {  tempStrType tempStr;
+  if (fromwhere == SEEK_SET && offset < 0)
+  {
+    tempStrType tempStr;
 
-      sprintf(tempStr, "Illegal Seek operation, code %u", code);
-      logEntry(tempStr, LOG_ALWAYS, 0);
-      return -1;
-   }
-   return lseek(handle, offset, fromwhere);
+    sprintf(tempStr, "Illegal Seek operation, code %u", code);
+    logEntry(tempStr, LOG_ALWAYS, 0);
+
+    return -1;
+  }
+  return lseek(handle, offset, fromwhere);
 }
 //---------------------------------------------------------------------------
 const char *makeFullPath(const char *deflt, const char *override, const char *name)

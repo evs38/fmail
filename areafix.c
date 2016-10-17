@@ -69,8 +69,7 @@ static const char *arcName[12] = { "none", "arc", "zip", "lzh", "pak", "zoo", "a
 #define ARCCOUNT 12
 
 extern u16             echoCount;
-extern cookedEchoType  *echoAreaList;
-
+extern cookedEchoType *echoAreaList;
 
 typedef struct
 {
@@ -92,7 +91,7 @@ typedef areaSortType areaSortListType[MAX_AREAFIX];
 typedef areaNameType badAreaListType[MAX_BADAREA];
 
 badAreaListType *badAreaList;
-u16             badAreaCount = 0;
+u16              badAreaCount = 0;
 
 extern char configPath[FILENAME_MAX];
 extern configType config;
@@ -156,7 +155,7 @@ static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
         else
         {
           strcpy(stpcpy(fileStr, configPath), config.uplinkReq[count].fileName);
-          if ((textHandle = openP(fileStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
+          if ((textHandle = open(fileStr, O_RDONLY | O_BINARY)) == -1)
           {
             sprintf(fileStr, "Uplink areas file %s not found in FMail system dir",
                     config.uplinkReq[count].fileName);
@@ -372,6 +371,17 @@ static void sendMsg( internalMsgType *message, char *replyStr
   }
 }
 //---------------------------------------------------------------------------
+const char *AFGetAreaPath(u16 i)
+{
+  if (i >= echoCount)
+    return NULL;
+
+  if (echoAreaList[i].JAMdirPtr == NULL)
+    return "";
+
+  return echoAreaList[i].JAMdirPtr;
+}
+//---------------------------------------------------------------------------
 int areaFix(internalMsgType *message)
 {
   nodeInfoType   *nodeInfoPtr;
@@ -384,7 +394,6 @@ int areaFix(internalMsgType *message)
   u16             c, count, count2;
   s16             temp;
   s32             msgNum1, msgNum2;
-  rawEchoType     rawEchoInfo2;
   u16             areaCount;
   int             areaFixCount = 0;
   u16             activeAreasCount = 0;
@@ -416,7 +425,8 @@ int areaFix(internalMsgType *message)
   areaSortListType *areaSortList;
   headerType	   *areaHeader
                , *adefHeader;
-  rawEchoType	   *areaBuf
+  rawEchoType     rawEchoInfo2
+               , *areaBuf
                , *adefBuf;
   udef            komma;
   char           *tag
@@ -1318,8 +1328,7 @@ int areaFix(internalMsgType *message)
 Send:
   strcpy(stpcpy(tempStr, configPath), "areamgr.txt");
 
-  ++no_msg;
-  if ((helpHandle = openP(tempStr, O_RDONLY | O_BINARY, 0)) != -1)
+  if ((helpHandle = open(tempStr, O_RDONLY | O_BINARY, 0)) != -1)
   {
     bytesRead = read(helpHandle, helpPtr, 0x7FFF);
     close(helpHandle);
@@ -1341,9 +1350,7 @@ Send:
       {
         if ((*areaFixList)[c].uplink == count)
         {
-          helpPtr += sprintf (helpPtr, "%s%s\r",
-                              config.uplinkReq[count].options.addPlusPrefix?"+":"",
-                              (*areaFixList)[c].areaName);
+          helpPtr += sprintf(helpPtr, "%s%s\r", config.uplinkReq[count].options.addPlusPrefix ? "+" : "", (*areaFixList)[c].areaName);
 
           memset(&rawEchoInfo2, 0, RAWECHO_SIZE);
 
@@ -1357,28 +1364,27 @@ Send:
           strcpy(rawEchoInfo2.areaName, (*areaFixList)[c].areaName);
 
           *descrStr = 0;
-          if (checkForward((*areaFixList)[c].areaName, nodeInfoPtr) != -1 &&
-              *descrStr)
-            strcpy (rawEchoInfo2.comment, descrStr);
+          if (checkForward((*areaFixList)[c].areaName, nodeInfoPtr) != -1 && *descrStr)
+            strcpy(rawEchoInfo2.comment, descrStr);
           else
-            sprintf (rawEchoInfo2.comment, "Requested from %s",
-                     nodeStr(&config.uplinkReq[count].node));
+            sprintf(rawEchoInfo2.comment, "Requested from %s", nodeStr(&config.uplinkReq[count].node));
+
           rawEchoInfo2.address = config.uplinkReq[count].originAka;
           rawEchoInfo2.options.active = 1;
           rawEchoInfo2.options.allowAreafix = 1;
 
-          if ( !rawEchoInfo2.board )
+          if (rawEchoInfo2.board == 0)       // Passthrough
             *rawEchoInfo2.msgBasePath = 0;
-          else if ( rawEchoInfo2.board == 1 )
+          else if (rawEchoInfo2.board == 1)  // Hudson
           {
             u16  xu;
-            char boardtest[MBBOARDS+1];
+            char boardtest[MBBOARDS + 1];
 
             memset(boardtest, 0, sizeof(boardtest));
-            for ( xu = 0; xu < echoCount; xu++ )
-              if ( echoAreaList[xu].board &&
-                   echoAreaList[xu].board <= MBBOARDS )
+            for (xu = 0; xu < echoCount; xu++)
+              if (echoAreaList[xu].board && echoAreaList[xu].board <= MBBOARDS)
                 boardtest[echoAreaList[xu].board] = 1;
+
             count = 0;
             while ( ++xu <= MBBOARDS )
               if ( !boardtest[xu] )
@@ -1389,10 +1395,10 @@ Send:
               rawEchoInfo2.board = 0;
             *rawEchoInfo2.msgBasePath = 0;
           }
-          else if ( rawEchoInfo2.board == 2 )
+          else if (rawEchoInfo2.board == 2)  // Jam
           {
             rawEchoInfo2.board = 0;
-            strcpy(rawEchoInfo2.msgBasePath, makeName(rawEchoInfo2.msgBasePath, rawEchoInfo2.areaName));
+            MakeJamAreaPath(&rawEchoInfo2, AFGetAreaPath);
           }
 
 // originele code (hieronder) weer teruggezet 30-1-96
@@ -1429,20 +1435,15 @@ Send:
           }
 
           temp = 0;
-          while (getRec (CFG_ECHOAREAS, temp) &&
-                 (strcmp(areaBuf->areaName, rawEchoInfo2.areaName) < 0))
-          {
+          while (getRec(CFG_ECHOAREAS, temp) && strcmp(areaBuf->areaName, rawEchoInfo2.areaName) < 0)
             temp++;
-          }
+
           memcpy (areaBuf, &rawEchoInfo2, RAWECHO_SIZE);
           insRec(CFG_ECHOAREAS, temp);
           for (count2 = 0; count2 < min(MAX_AREAFIX,areaHeader->totalRecords); count2++)
-          {
             if ((*areaSortList)[count2].index >= temp)
-            {
               (*areaSortList)[count2].index++;
-            }
-          }
+
           (*areaSortList)[areaHeader->totalRecords-1].index = -1;
           (*areaSortList)[areaHeader->totalRecords-1].groupChar = 127;
           areaCount++;
@@ -1491,18 +1492,18 @@ Send:
     if (msgNum1)
     {
       sprintf(tempStr, "%s%u.msg", config.netPath, msgNum1);
-      msgHandle1 = openP(tempStr, O_WRONLY | O_BINARY | O_APPEND | O_DENYNONE, 0);
+      msgHandle1 = open(tempStr, O_WRONLY | O_BINARY | O_APPEND, 0);
     }
     if (msgNum2)
     {
       sprintf(tempStr, "%s%u.msg", config.netPath, msgNum2);
-      msgHandle2 = openP(tempStr, O_WRONLY | O_BINARY | O_APPEND | O_DENYNONE, 0);
+      msgHandle2 = open(tempStr, O_WRONLY | O_BINARY | O_APPEND, 0);
     }
 
     strcpy(stpcpy(tempStr, config.bbsPath), "areamgr.$$$");
     if (nodeInfoPtr->options.allowRescan)
     {
-      if ((helpHandle = openP(tempStr, O_RDWR | O_BINARY | O_CREAT | O_TRUNC | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
+      if ((helpHandle = open(tempStr, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
       {
         if (  write(helpHandle, areaFixList, areaFixCount * sizeof(areaFixType))
            == (int)(areaFixCount * sizeof(areaFixType))
@@ -1546,7 +1547,7 @@ Send:
   {
     strcpy(stpcpy(tempStr, configPath), "areamgr.hlp");
 
-    if ((helpHandle = openP(tempStr, O_RDONLY | O_BINARY, 0)) != -1)
+    if ((helpHandle = open(tempStr, O_RDONLY | O_BINARY, 0)) != -1)
     {
       bytesRead = read(helpHandle, message->text, DEF_TEXT_SIZE - 0x1000);  // Er moeten nog wat kludges aan kunnen worden toegevoegd
       close (helpHandle);

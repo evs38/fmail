@@ -109,9 +109,6 @@ s16   openPktRd        (char *fileName, s16 secure);
 s16   readPkt          (internalMsgType *message);
 void  closePktRd       (void);
 
-fhandle openP          (const char *pathname, int access, u16 mode);
-fhandle fsopenP        (const char *pathname, int access, u16 mode);
-
 char *setSeenByPath    (internalMsgType *msg, char *txtEnd, areaOptionsType areaOptions, nodeOptionsType nodeOptions);
 s16   writeEchoPkt     (internalMsgType *message, areaOptionsType areaOptions, echoToNodeType echoToNode);
 void  freePktHandles   (void);

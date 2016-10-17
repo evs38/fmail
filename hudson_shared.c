@@ -76,7 +76,7 @@ void setMBUnlockNow(void)
   if (config.mbOptions.mbSharing)
   {
     strcpy(stpcpy(tempStr, config.bbsPath), "MBUNLOCK.NOW");
-    close(open(tempStr, O_RDWR | O_CREAT | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE));
+    close(open(tempStr, O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE));
     testMBUnlockNow();
   }
 }
@@ -89,7 +89,7 @@ int lockMB(void)
 
   strcpy(stpcpy(tempStr, config.bbsPath), "MSGINFO."MBEXTN);
 
-  if ((lockHandle = open(tempStr, O_RDWR | O_CREAT | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
+  if ((lockHandle = open(tempStr, O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
   {
     logEntry("Can't open file MsgInfo."MBEXTN" for output", LOG_ALWAYS, 0);
 

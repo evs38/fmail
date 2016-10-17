@@ -23,6 +23,7 @@
 
 #include <fcntl.h>
 #include <io.h>
+#include <share.h>
 #include <stddef.h>
 #include <stdio.h>    // SEEK_SET for mingw
 #include <stdlib.h>
@@ -33,8 +34,6 @@
 #include "fmail.h"
 
 #include "cfgfile.h"
-
-#include "internal.h" // not necessary for 3rd party programs
 
 // set to non-zero value if automatic conversion is desired
 u16  allowConversion = 0;
@@ -149,7 +148,7 @@ restart:
    memset(&cfiArr[fileType].header, 0, sizeof(headerType));
    cfiArr[fileType].status = 0;
 
-  if ((cfiArr[fileType].handle = open(areaInfoPath, O_BINARY | O_RDWR | O_CREAT | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
+  if ((cfiArr[fileType].handle = _sopen(areaInfoPath, O_RDWR | O_BINARY | O_CREAT, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
   {
 #ifdef _DEBUG
     printf("DEBUG open failed: %s\n", areaInfoPath);
@@ -208,7 +207,7 @@ error:   close(cfiArr[fileType].handle);
             free(cfiArr[fileType].recBuf);
             goto error;
          }
-         if ((temphandle = open(tempPath, O_BINARY | O_RDWR | O_CREAT | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
+         if ((temphandle = _sopen(tempPath, O_RDWR | O_BINARY | O_CREAT, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
          {
             free(cfiArr[fileType].recBuf);
             cfiArr[fileType].recBuf = NULL;

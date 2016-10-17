@@ -31,6 +31,7 @@
 #include <io.h>
 #include <process.h>
 #include <process.h>
+#include <share.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -106,7 +107,7 @@ static u8 archiveType(char *fullFileName)
   s16 byteCount;
   unsigned char data[29];
 
-  if ((arcHandle = openP(fullFileName, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
+  if ((arcHandle = _sopen(fullFileName, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
     return 0xFE;
 
   byteCount = read(arcHandle, data, 29);
@@ -356,7 +357,7 @@ void unpackArc(const struct bt *bp)
             , dirStr
             , pathStr;
   s16 temp;
-  char *extPtr;
+  char *extPtr = "";
   char parStr[MAX_PARSIZE];
   char procStr1[64];
   char procStr2[MAX_PARSIZE];
@@ -660,10 +661,10 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
               , procStr2[MAX_PARSIZE];
   fhandle       tempHandle
               , semaHandle = -1;
-  s32           arcSize;
+  long          arcSize = 0;
   const char   *exto
              , *extn
-             , *cPtr;
+             , *cPtr = "";
 #if (!defined(__FMAILX__) && !defined(__32BIT__))
   u16           memReq;
 #endif
@@ -734,7 +735,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     if (config.mailOptions.createSema)
     {
       strcpy(helpPtr + count, "FM");
-      if ((semaHandle = openP(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
+      if ((semaHandle = open(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
         return handleNoCompress(pktName, qqqName, destNode);
     }
   }
@@ -755,7 +756,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
       if (config.mailOptions.createSema)
       {
         strcpy(helpPtr + 1, "FM");
-        if ((semaHandle = openP(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
+        if ((semaHandle = open(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
           return handleNoCompress(pktName, qqqName, destNode);
       }
     }
@@ -779,7 +780,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
           sprintf(archivePtr, "%04hx%04hx.bsy", destNode->net, destNode->node);
 
         // Don't use config.mailOptions.createSema! FTS-5005 specifies it needs to be set
-        if ((semaHandle = openP(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
+        if ((semaHandle = open(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
           return handleNoCompress(pktName, qqqName, destNode);
       }
   }
@@ -1169,7 +1170,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   if (nodeInfo->archiver != 0xFF)
   {
     arcSize = 0;
-    if ((tempHandle = openP(archiveStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+    if ((tempHandle = open(archiveStr, O_RDONLY | O_BINARY)) != -1)
     {
       if ((arcSize = filelength(tempHandle)) == -1)
         arcSize = 0;
@@ -1229,7 +1230,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
                : (nodeInfo->outStatus == 2) ? 'c'
                : (nodeInfo->outStatus >= 3 && nodeInfo->outStatus <= 5) ? 'c' : 'f');
 
-      if ((tempHandle = openP(archiveStr, O_RDWR | O_CREAT | O_APPEND | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
+      if ((tempHandle = open(archiveStr, O_RDWR | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       {
         if (semaHandle >= 0)
         {
@@ -1324,7 +1325,7 @@ void retryArc(void)
 
         strcpy(stpcpy(tempStr, config.outPath), ent->d_name);
 
-        if ( (pktHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1
+        if ( (pktHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1
            && read(pktHandle, &msgPktHdr, sizeof(pktHdrType)) == (int)sizeof(pktHdrType)
            && close(pktHandle) != -1
            )

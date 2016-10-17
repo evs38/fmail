@@ -24,8 +24,8 @@
 //---------------------------------------------------------------------------
 
 #include "fmstruct.h"
+#include "stricmp.h"
 
-//#include <dir.h>         // MAXFILE
 #include <stdio.h>       // FILENAME_MAX
 #include <sys/types.h>   // stat.off_t
 
@@ -37,24 +37,6 @@
 // #define FA_LABEL    0x08        /* Volume label */
 // #define FA_DIREC    0x10        /* Directory */
 // #define FA_ARCH     0x20        /* Archive */
-
-// Dos modes
-//#ifndef O_DENYALL
-#define O_DENYALL   0x10
-#define O_DENYWRITE 0x20
-#define O_DENYREAD  0x30
-#define O_DENYNONE  0x40
-//#endif
-
-#if (__BORLANDC__ >= 0x0452)
-#ifndef __OS2__
-#define _open  _rtl_open
-#define _close _rtl_close
-#define _creat _rtl_creat
-#define _read  _rtl_read
-#define _write _rtl_write
-#endif
-#endif
 
 #define CONFIG_MAJOR   0
 #define CONFIG_MINOR  94 // do not change
@@ -317,8 +299,6 @@ u16 getAreaCode(char *msgText);
 #define DERR_WRHBAD     17
 #define DERR_WRHDUP     18
 #define DERR_WRJECHO    32
-
-#include "internal.h"
 
 #define nodegreater(n1, n2)      \
 (  ((n1.zone  >  n2.zone) ||     \

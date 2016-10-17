@@ -164,15 +164,13 @@ int fileSys(const char *path)
    path = path;
    return 1;
 #else
-#ifdef __32BIT__
    if (!config.genOptions.lfn)
       return 0;
+#ifdef __32BIT__
 
    GetVolumeInformation(path, NULL, 0, NULL, NULL, (LPDWORD)&fs_flags, NULL, 0);
    return (fs_flags & 0x4000) != 0;
 #else
-   if ( !config.genOptions.lfn )
-      return 0;
 #ifdef  __FMAILX__
    if ( !intbuf1p )
    {

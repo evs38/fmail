@@ -186,9 +186,7 @@ s16 multiUpdate(void)
 
       msgNumOffset = newInfoRec.HighMsg;
 
-      if ((srcHdrHandle = openP(expandNameHudson("MSGHDR", 0),
-                             O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                             S_IREAD|S_IWRITE)) == -1)
+      if ((srcHdrHandle = open(expandNameHudson("MSGHDR", 0), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       {
          unlockMB();
          logEntry("Can't update the message base files", LOG_ALWAYS, 0);
@@ -196,9 +194,7 @@ s16 multiUpdate(void)
          return 1;
       }
 
-      if ((srcTxtHandle = openP(expandNameHudson("MSGTXT", 0),
-                                O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                                S_IREAD|S_IWRITE)) == -1)
+      if ((srcTxtHandle = open(expandNameHudson("MSGTXT", 0), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       {
          close(srcHdrHandle);
          unlockMB();
@@ -210,8 +206,7 @@ s16 multiUpdate(void)
       helpPtr = stpcpy(tempStr, config.bbsPath);
 
       strcpy(helpPtr, "MSGHDR."MBEXTN);
-      if ((destHdrHandle = openP(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                                          S_IREAD|S_IWRITE)) == -1)
+      if ((destHdrHandle = open(tempStr, O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       {
          close(srcTxtHandle);
          close(srcHdrHandle);
@@ -222,8 +217,7 @@ s16 multiUpdate(void)
       }
 
       strcpy(helpPtr, "MSGIDX."MBEXTN);
-      if ((destIdxHandle = openP(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                                          S_IREAD|S_IWRITE)) == -1)
+      if ((destIdxHandle = open(tempStr, O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       {
          close(destHdrHandle);
          close(srcTxtHandle);
@@ -234,8 +228,7 @@ s16 multiUpdate(void)
          return 1;
       }
       strcpy(helpPtr, "MSGTOIDX."MBEXTN);
-      if ((destToIdxHandle = openP(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                                            S_IREAD|S_IWRITE)) == -1)
+      if ((destToIdxHandle = open(tempStr, O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       {
          close(destIdxHandle);
          close(destHdrHandle);
@@ -248,8 +241,7 @@ s16 multiUpdate(void)
       }
 
       strcpy(helpPtr, "MSGTXT."MBEXTN);
-      if ((destTxtHandle = openP(tempStr, O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                                          S_IREAD|S_IWRITE)) == -1)
+      if ((destTxtHandle = open(tempStr, O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       {
          close(destToIdxHandle);
          close(destIdxHandle);
@@ -450,9 +442,7 @@ static void readMsgInfo(u16 orgName)
 {
    fhandle msgInfoHandle;
 
-   if ( ((msgInfoHandle = openP(expandNameHudson("MSGINFO", orgName),
-                                O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                                S_IREAD|S_IWRITE)) == -1) ||
+   if (((msgInfoHandle = open(expandNameHudson("MSGINFO", orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
         read (msgInfoHandle, &infoRec, sizeof(infoRecType)) != sizeof(infoRecType) )
       memset (&infoRec, 0, sizeof(infoRecType));
 
@@ -465,9 +455,7 @@ static void writeMsgInfo(u16 orgName)
 {
    fhandle msgInfoHandle;
 
-   if ( ((msgInfoHandle = openP(expandNameHudson("MSGINFO", orgName),
-                                O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                                S_IREAD|S_IWRITE)) == -1) ||
+   if ( ((msgInfoHandle = open(expandNameHudson("MSGINFO", orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
         write (msgInfoHandle, &infoRecValid, sizeof(infoRecType)) == -1 )
       logEntry ("Can't open file MsgInfo."MBEXTN" for output", LOG_ALWAYS, 1);
 
@@ -484,30 +472,22 @@ void openBBSWr(u16 orgName)
        ((msgTxtBuf   = (msgTxtRec  *)malloc(TXT_BUFSIZE * 256)) == NULL))
       logEntry ("Not enough memory to allocate message base file buffers", LOG_ALWAYS, 2);
 
-   if ((msgHdrHandle = openP(expandNameHudson("MSGHDR", orgName),
-                             O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                             S_IREAD|S_IWRITE)) == -1)
+   if ((msgHdrHandle = open(expandNameHudson("MSGHDR", orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgHdrHandle, 0, SEEK_END);
 
-   if ((msgTxtHandle = openP(expandNameHudson("MSGTXT", orgName),
-                             O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                             S_IREAD|S_IWRITE)) == -1)
+   if ((msgTxtHandle = open(expandNameHudson("MSGTXT", orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgTxtHandle, 0, SEEK_END);
 
-   if ((msgToIdxHandle = openP(expandNameHudson("MSGTOIDX", orgName),
-                               O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                               S_IREAD|S_IWRITE)) == -1)
+   if ((msgToIdxHandle = open(expandNameHudson("MSGTOIDX", orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgToIdxHandle, 0, SEEK_END);
 
-   if ((msgIdxHandle = openP(expandNameHudson("MSGIDX", orgName),
-                             O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                             S_IREAD|S_IWRITE)) == -1)
+   if ((msgIdxHandle = open(expandNameHudson("MSGIDX", orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgIdxHandle, 0, SEEK_END);
@@ -570,8 +550,7 @@ static s16 writeText (char *msgText, char *seenBy, char *path, u16 skip,
       if (txtBufCount == TXT_BUFSIZE)
       {
          lseek(msgTxtHandle, 0, SEEK_END);
-         if (_write (msgTxtHandle, msgTxtBuf, TXT_BUFSIZE*256) !=
-                                                           (TXT_BUFSIZE*256))
+         if (write(msgTxtHandle, msgTxtBuf, TXT_BUFSIZE * 256) != TXT_BUFSIZE * 256)
             return 1;
 
          txtBufCount = 0;
@@ -697,9 +676,9 @@ s16 writeBBS (internalMsgType *message, u16 boardNum, u16 impSeenBy)
          lseek(msgHdrHandle, 0, SEEK_END);
          lseek(msgIdxHandle, 0, SEEK_END);
          lseek(msgToIdxHandle, 0, SEEK_END);
-         if (  _write(msgHdrHandle  , msgHdrBuf  , HDR_BUFSIZE * sizeof(msgHdrRec  )) != (int)(HDR_BUFSIZE * sizeof(msgHdrRec  ))
-            || _write(msgIdxHandle  , msgIdxBuf  , HDR_BUFSIZE * sizeof(msgIdxRec  )) != (int)(HDR_BUFSIZE * sizeof(msgIdxRec  ))
-            || _write(msgToIdxHandle, msgToIdxBuf, HDR_BUFSIZE * sizeof(msgToIdxRec)) != (int)(HDR_BUFSIZE * sizeof(msgToIdxRec))
+         if (  write(msgHdrHandle  , msgHdrBuf  , HDR_BUFSIZE * sizeof(msgHdrRec  )) != (int)(HDR_BUFSIZE * sizeof(msgHdrRec  ))
+            || write(msgIdxHandle  , msgIdxBuf  , HDR_BUFSIZE * sizeof(msgIdxRec  )) != (int)(HDR_BUFSIZE * sizeof(msgIdxRec  ))
+            || write(msgToIdxHandle, msgToIdxBuf, HDR_BUFSIZE * sizeof(msgToIdxRec)) != (int)(HDR_BUFSIZE * sizeof(msgToIdxRec))
             )
             return 1;
 
@@ -730,17 +709,16 @@ s16 validate1BBS(void)
       lseek(msgHdrHandle, 0, SEEK_END);
       lseek(msgIdxHandle, 0, SEEK_END);
       lseek(msgToIdxHandle, 0, SEEK_END);
-      error =  _write(msgHdrHandle  , msgHdrBuf  , hdrBufCount * sizeof(msgHdrRec  )) != (int)(hdrBufCount * sizeof(msgHdrRec  ))
-            || _write(msgIdxHandle  , msgIdxBuf  , hdrBufCount * sizeof(msgIdxRec  )) != (int)(hdrBufCount * sizeof(msgIdxRec  ))
-            || _write(msgToIdxHandle, msgToIdxBuf, hdrBufCount * sizeof(msgToIdxRec)) != (int)(hdrBufCount * sizeof(msgToIdxRec));
+      error =  write(msgHdrHandle  , msgHdrBuf  , hdrBufCount * sizeof(msgHdrRec  )) != (int)(hdrBufCount * sizeof(msgHdrRec  ))
+            || write(msgIdxHandle  , msgIdxBuf  , hdrBufCount * sizeof(msgIdxRec  )) != (int)(hdrBufCount * sizeof(msgIdxRec  ))
+            || write(msgToIdxHandle, msgToIdxBuf, hdrBufCount * sizeof(msgToIdxRec)) != (int)(hdrBufCount * sizeof(msgToIdxRec));
       hdrBufCount = 0;
    }
 
    if ((!error) && (txtBufCount != 0))
    {
       lseek(msgTxtHandle, 0, SEEK_END);
-      error = (_write (msgTxtHandle, msgTxtBuf, txtBufCount << 8) !=
-                                               (txtBufCount << 8));
+      error = (write(msgTxtHandle, msgTxtBuf, txtBufCount << 8) != (txtBufCount << 8));
       txtBufCount = 0;
    }
    return error;
@@ -1077,18 +1055,15 @@ void openBBSRd(void)
    strcpy (tempStr, config.bbsPath);
    strcat (tempStr, "MSGHDR."MBEXTN);
 
-   if ((msgHdrHandle = openP(tempStr, O_RDWR|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1)
-   {
+   if ((msgHdrHandle = open(tempStr, O_RDWR | O_BINARY)) == -1)
       logEntry ("Can't open message base files for input", LOG_ALWAYS, 1);
-   }
 
    strcpy (tempStr, config.bbsPath);
    strcat (tempStr, "MSGTXT."MBEXTN);
 
-   if ((msgTxtHandle = openP(tempStr, O_RDWR|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1)
-   {
+   if ((msgTxtHandle = open(tempStr, O_RDWR | O_BINARY)) == -1)
       logEntry ("Can't open message base files for input", LOG_ALWAYS, 1);
-   }
+
 #ifdef GOLDBASE
    msgTxtRecNum = (u16)(filelength (msgTxtHandle) >> 8);
 #else
@@ -1304,22 +1279,22 @@ s16 updateCurrHdrBBS(internalMsgType *message)
          strcpy (tempStr, config.bbsPath);
          strcat (tempStr, "MSGIDX."MBEXTN);
 
-         if ((tempHandle = openP(tempStr, O_RDWR|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1)
+         if ((tempHandle = open(tempStr, O_RDWR | O_BINARY)) == -1)
             logEntry ("Can't open message base files for update", LOG_ALWAYS, 1);
 
-         lseek (tempHandle, recNum*(u32)sizeof(msgIdxRec), SEEK_SET);
-         write (tempHandle, &deletedFlag, 2);
-         close (tempHandle);
+         lseek(tempHandle, recNum*(u32)sizeof(msgIdxRec), SEEK_SET);
+         write(tempHandle, &deletedFlag, 2);
+         close(tempHandle);
 
-         strcpy (tempStr, config.bbsPath);
-         strcat (tempStr, "MSGTOIDX."MBEXTN);
+         strcpy(tempStr, config.bbsPath);
+         strcat(tempStr, "MSGTOIDX."MBEXTN);
 
-         if ((tempHandle = openP(tempStr, O_RDWR|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1)
+         if ((tempHandle = open(tempStr, O_RDWR | O_BINARY)) == -1)
             logEntry ("Can't open message base files for update", LOG_ALWAYS, 1);
 
-         lseek (tempHandle, recNum*(u32)sizeof(msgToIdxRec), SEEK_SET);
-         write (tempHandle, "\x0b* Deleted *", 12);
-         close (tempHandle);
+         lseek(tempHandle, recNum*(u32)sizeof(msgToIdxRec), SEEK_SET);
+         write(tempHandle, "\x0b* Deleted *", 12);
+         close(tempHandle);
 
          if (msgRa.Board >= 1 && msgRa.Board <= MBBOARDS)
          {
@@ -1359,7 +1334,7 @@ s16 updateCurrHdrBBS(internalMsgType *message)
    }
 
    lseek(msgHdrHandle, -(long)sizeof(msgHdrRec), SEEK_CUR);
-   if (_write(msgHdrHandle, &msgRa, sizeof(msgHdrRec)) != sizeof(msgHdrRec))
+   if (write(msgHdrHandle, &msgRa, sizeof(msgHdrRec)) != sizeof(msgHdrRec))
    {
       lseek(msgHdrHandle, 0, SEEK_CUR);
       unlockMB();
@@ -1427,7 +1402,7 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
 
     strcpy(tempStr, config.bbsPath);
     strcat(tempStr, "MSGINFO."MBEXTN);
-    if (((tempHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1) ||
+    if (((tempHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1) ||
        (lseek(tempHandle, 4 + (echoAreaList[echoIndex].board * 2), SEEK_SET) == -1) ||
        (read(tempHandle, &msgCount, 2) != 2)  ||
        (close(tempHandle) == -1))
@@ -1435,17 +1410,17 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
 
     strcpy(tempStr, config.bbsPath);
     strcat(tempStr, "MSGHDR."MBEXTN);
-    if ((msgHdrHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
+    if ((msgHdrHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1)
       return -1;
 
     strcpy(tempStr, config.bbsPath);
     strcat(tempStr, "MSGTXT."MBEXTN);
-    if ((msgTxtHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
+    if ((msgTxtHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1)
       return (-1);
 
     strcpy(tempStr, config.bbsPath);
     strcat(tempStr, "MSGIDX."MBEXTN);
-    if ((tempHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
+    if ((tempHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1)
       return (-1);
 
     sprintf(tempStr, "Scanning for messages in HUDSON area: %s", echoAreaList[echoIndex].areaName);

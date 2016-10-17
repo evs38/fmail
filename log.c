@@ -145,7 +145,7 @@ void initLog(const char *funcStr, s32 switches)
   if (!config.logInfo)
     return;
 
-  if ((logHandle = openP(config.logName, O_WRONLY	| O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) == -1)
+  if ((logHandle = open(config.logName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) == -1)
   {
     puts("WARNING: Can't open log file\n");
     config.logInfo = 0;
@@ -249,7 +249,7 @@ void logEntry(const char *s, u16 entryType, u16 errorLevel)
     return;
   }
 
-  if ((logHandle = openP(config.logName, O_WRONLY	| O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
+  if ((logHandle = open(config.logName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
     writeLogLine(logHandle, s);
 
   if (errorLevel)
@@ -281,7 +281,7 @@ void mgrLogEntry(const char *s)
 
   if ((*config.areaMgrLogName) && (!(mgrLogUsed++)) &&
       stricmp(config.logName, config.areaMgrLogName) &&
-      ((logHandle = openP(config.areaMgrLogName, O_WRONLY	| O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1))
+      ((logHandle = open(config.areaMgrLogName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1))
   {
     if (config.logStyle == 0 || config.logStyle == 4)
     {
@@ -313,8 +313,8 @@ void mgrLogEntry(const char *s)
     close(logHandle);
   }
 
-  if (((logHandle = openP( *config.areaMgrLogName ? config.areaMgrLogName : config.logName
-                         , O_WRONLY	| O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1))
+  if (((logHandle = open( *config.areaMgrLogName ? config.areaMgrLogName : config.logName
+                        , O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1))
   {
     writeLogLine(logHandle, s);
     close(logHandle);

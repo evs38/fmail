@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <io.h>
+#include <share.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,7 +41,6 @@
 
 #include "archive.h"
 #include "areainfo.h"
-#include "filesys.h"
 #include "log.h"
 #include "msgpkt.h"
 #include "mtask.h"
@@ -126,7 +126,7 @@ s16 openPktRd(char *pktName, s16 secure)
    globVars.packetDestAka = 0;
    globVars.remoteProdCode = 0x0104;
 
-   if ((pktHandle = openP(pktName, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
+   if ((pktHandle = _sopen(pktName, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
    {
       sprintf(tempStr, "Error opening packet file: %s", pktName);
       logEntry(tempStr, LOG_ALWAYS, 0);
@@ -595,7 +595,7 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
 
    sprintf (nfInfoRec->pktFileName, "%s%08x.tmp", config.outPath, uniqueID());
 
-   if ((pktHandle = openP(nfInfoRec->pktFileName, O_RDWR|O_CREAT|O_TRUNC|O_DENYALL, S_IREAD|S_IWRITE)) == -1)
+   if ((pktHandle = _sopen(nfInfoRec->pktFileName, O_RDWR | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
    {
       nfInfoRec->pktHandle    = 0;
       *nfInfoRec->pktFileName = 0;
@@ -639,7 +639,7 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
       msgPktHdr.cwValid       = (CAPABILITY >> 8) | (((char)CAPABILITY) << 8);
    }
 
-   if (_write(pktHandle, &msgPktHdr, 58) != 58)
+   if (write(pktHandle, &msgPktHdr, 58) != 58)
    {
       close(pktHandle);
       unlink(nfInfoRec->pktFileName);
@@ -649,40 +649,6 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
    }
    nfInfoRec->nodePtr->lastMsgSentDat = startTime;
    return 0;
-}
-//---------------------------------------------------------------------------
-// Try to free a file handle of the pkt file with the least msgs
-//
-static s16 closeLuPkt(void)
-{
-  u16 minimum;
-  s16 minIndex;
-  s16 count;
-
-  if (forwNodeCount == 0)
-  {
-    logEntry ("ERROR: Not enough file handles available", LOG_ALWAYS, 0);
-    return 1;
-  }
-
-  minimum = 32767;
-  minIndex = -1;
-  for (count = forwNodeCount-1; count >= 0; count--)
-    if (nodeFileInfo[count]->pktHandle != 0 && nodeFileInfo[count]->totalMsgs < minimum)
-    {
-       minimum = nodeFileInfo[count]->totalMsgs;
-       minIndex = count;
-    }
-
-  if (minIndex == -1)
-  {
-    logEntry("ERROR: Not enough file handles available", LOG_ALWAYS, 0);
-    return 1;
-  }
-  close(nodeFileInfo[minIndex]->pktHandle);
-  nodeFileInfo[minIndex]->pktHandle = 0;
-
-  return 0;
 }
 //---------------------------------------------------------------------------
 void RemoveNetKludge(char *text, const char *kludge)
@@ -772,7 +738,7 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
            openPktWr(nodeFileInfo[count]);
         else
         {
-          if ((nodeFileInfo[count]->pktHandle = openP(nodeFileInfo[count]->pktFileName, O_WRONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) != -1)
+          if ((nodeFileInfo[count]->pktHandle = _sopen(nodeFileInfo[count]->pktFileName, O_WRONLY | O_BINARY, SH_DENYRW)) != -1)
             lseek(nodeFileInfo[count]->pktHandle, 0, SEEK_END);
           else
             nodeFileInfo[count]->pktHandle = 0;
@@ -818,7 +784,7 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
       ((pmHdrType*)pktBufStart)->attribute = message->attribute;
       ((pmHdrType*)pktBufStart)->cost      = message->cost;
 
-      if (_write(pktHandle, pktBufStart, pktBufLen) != (int)pktBufLen )
+      if (write(pktHandle, pktBufStart, pktBufLen) != (int)pktBufLen )
       {
         puts("Cannot write to PKT file.");
         return 1;
@@ -828,7 +794,7 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
 
       if (config.maxPktSize != 0 && filelength(pktHandle) >= config.maxPktSize * (s32)1000)
       {
-        if (_write(pktHandle, &zero, 2) != 2)
+        if (write(pktHandle, &zero, 2) != 2)
         {
           puts("Cannot write to PKT file.");
           close(pktHandle);
@@ -903,7 +869,7 @@ s16 validateEchoPktWr(void)
       {
                if (tempLen[count] == -1)
          {
-            if (((tempHandle = openP(nodeFileInfo[count]->pktFileName, O_RDONLY|O_BINARY|O_DENYNONE,S_IREAD|S_IWRITE)) == -1) ||
+            if (((tempHandle = open(nodeFileInfo[count]->pktFileName, O_RDONLY | O_BINARY)) == -1) ||
                 ((tempLen[count] = filelength(tempHandle)) == -1) ||
                 (close(tempHandle) == -1))
             {
@@ -974,12 +940,11 @@ s16 closeEchoPktWr(void)
    {
       if (*nodeFileInfo[count]->pktFileName != 0)
       {
-         if (((pktHandle = openP(nodeFileInfo[count]->pktFileName,
-                                 O_WRONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) == -1) ||
-             (lseek (pktHandle, 0, SEEK_SET) == -1) ||
-             (chsize (pktHandle, nodeFileInfo[count]->bytesValid) == -1) ||
-             (lseek (pktHandle, 0, SEEK_END) == -1) ||
-             (_write (pktHandle, &zero, 2) != 2) ||
+         if (((pktHandle = _sopen(nodeFileInfo[count]->pktFileName, O_WRONLY | O_BINARY, SH_DENYRW)) == -1) ||
+             (lseek(pktHandle, 0, SEEK_SET) == -1) ||
+             (chsize(pktHandle, nodeFileInfo[count]->bytesValid) == -1) ||
+             (lseek(pktHandle, 0, SEEK_END) == -1) ||
+             (write(pktHandle, &zero, 2) != 2) ||
              (close(pktHandle) == -1))
          {
             logEntry ("ERROR: Cannot adjust length of file", LOG_ALWAYS, 0);
@@ -1053,8 +1018,7 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
       }
       else
       {
-         if ((nfInfo->pktHandle = openP(nfInfo->pktFileName,
-                                        O_WRONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) == -1)
+         if ((nfInfo->pktHandle = _sopen(nfInfo->pktFileName, O_WRONLY | O_BINARY, SH_DENYRW)) == -1)
          {
             nfInfo->pktHandle = 0;
             logEntry ("Cannot open netmail PKT file", LOG_ALWAYS, 0);
@@ -1074,7 +1038,7 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
    pmHdr.attribute = message->attribute;
    pmHdr.cost      = message->cost;
 
-   error |= (_write(pktHandle, &pmHdr, sizeof(pmHdrType)) != sizeof(pmHdrType));
+   error |= (write(pktHandle, &pmHdr, sizeof(pmHdrType)) != sizeof(pmHdrType));
 
    if ((nfInfo->nodePtr->options.fixDate) || (*message->dateStr == 0))
    {
@@ -1085,25 +1049,25 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
                            message->year%100, message->hours,
                            message->minutes,  message->seconds);
       len = strlen(message->okDateStr) + 1;
-      error |= (_write(pktHandle, message->okDateStr, len) != len);
+      error |= (write(pktHandle, message->okDateStr, len) != len);
    }
    else
    {
       len = strlen(message->dateStr) + 1;
-      error |= (_write(pktHandle, message->dateStr, len) != len);
+      error |= (write(pktHandle, message->dateStr, len) != len);
    }
 
    len = strlen(message->toUserName) + 1;
-   error |= (_write(pktHandle, message->toUserName, len) != len);
+   error |= (write(pktHandle, message->toUserName, len) != len);
 
    len = strlen(message->fromUserName) + 1;
-   error |= (_write(pktHandle, message->fromUserName, len) != len);
+   error |= (write(pktHandle, message->fromUserName, len) != len);
 
    len = strlen(message->subject) + 1;
-   error |= (_write(pktHandle, message->subject, len) != len);
+   error |= (write(pktHandle, message->subject, len) != len);
 
    len = strlen(message->text) + 1;
-   error |= (_write(pktHandle, message->text, len) != len);
+   error |= (write(pktHandle, message->text, len) != len);
 
    if ((tempLen = filelength(pktHandle)) == -1)
    {
@@ -1116,7 +1080,7 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
 
    if (config.maxPktSize != 0 && tempLen >= config.maxPktSize * (s32)1000)
    {
-      if (_write(pktHandle, &zero, 2) != 2)
+      if (write(pktHandle, &zero, 2) != 2)
       {
          puts("Cannot write to PKT file.");
          close(pktHandle);
@@ -1166,11 +1130,11 @@ s16 closeNetPktWr(nodeFileRecType *nfInfo)
          return (0);
       }
 
-      if (((pktHandle = openP(nfInfo->pktFileName, O_WRONLY|O_BINARY|O_DENYALL,S_IREAD|S_IWRITE)) == -1) ||
+      if (((pktHandle = _sopen(nfInfo->pktFileName, O_WRONLY | O_BINARY, SH_DENYRW)) == -1) ||
             (lseek (pktHandle, 0, SEEK_SET) == -1) ||
             (chsize (pktHandle, nfInfo->bytesValid) == -1) ||
             (lseek (pktHandle, 0, SEEK_END) == -1) ||
-            (_write (pktHandle, &zero, 2) != 2) ||
+            (write (pktHandle, &zero, 2) != 2) ||
             (close(pktHandle) == -1))
       {
          logEntry ("ERROR: Cannot adjust length of file", LOG_ALWAYS, 0);
@@ -1203,86 +1167,5 @@ s16 closeNetPktWr(nodeFileRecType *nfInfo)
    }
 
    return 0;
-}
-//---------------------------------------------------------------------------
-// Open functions that try to close pkt files if there are too many files
-// open, before giving up.
-//
-#undef open
-
-       int no_msg = 0;
-static int no_log = 0;
-
-//---------------------------------------------------------------------------
-fhandle openP(const char *pathname, int access, u16 mode)
-{
-  fhandle handle;
-  int     errcode;
-
-  ++no_log;
-  while ((handle = open(pathname, access, mode)) == -1)
-  {
-    errcode = errno;
-    // If there are too many open files, try to close a pkt file
-    if (errno != EMFILE || closeLuPkt())
-    {
-      if (  !no_msg && no_log == 1
-         && ((config.logInfo & LOG_OPENERR) || (config.logInfo & LOG_ALWAYS))
-         )
-      {
-        tempStrType tempStr;
-#ifdef _DEBUG0
-        {
-          tempStrType cwd;
-          getcwd(cwd, dTEMPSTRLEN);
-          sprintf(tempStr, "DEBUG openP: cwd:%s, %x", cwd, access);
-          logEntry(tempStr, LOG_DEBUG, 0);
-        }
-#endif // _DEBUG
-        sprintf(tempStr, "Error opening %s: %s", pathname, strError(errcode));
-        logEntry(tempStr, LOG_OPENERR, 0);
-      }
-      --no_log;
-      no_msg = 0;
-
-      return -1;
-    }
-  }
-  --no_log;
-  no_msg = 0;
-
-  return handle;
-}
-//---------------------------------------------------------------------------
-fhandle fsopenP(const char *pathname, int access, u16 mode)
-{
-  fhandle handle;
-  int     errcode;
-
-  ++no_log;
-  while ((handle = fsopen(pathname, access, mode, 1)) == -1)
-  {
-    errcode = errno;
-    // If there are too many open files, try to close a pkt file
-    if (errno != EMFILE || closeLuPkt())
-    {
-      if (  !no_msg && no_log == 1
-         && ((config.logInfo & LOG_OPENERR) || (config.logInfo & LOG_ALWAYS))
-         )
-      {
-        tempStrType tempStr;
-        sprintf(tempStr, "Error fs-opening %s: %s", pathname, strError(errcode));
-        logEntry(tempStr, LOG_OPENERR, 0);
-      }
-      --no_log;
-      no_msg = 0;
-
-      return -1;
-    }
-  }
-  --no_log;
-  no_msg = 0;
-
-  return handle;
 }
 //---------------------------------------------------------------------------

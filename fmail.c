@@ -322,7 +322,10 @@ u16 getAreaCode(char *msgText)
 {
   areaNameType echoName;
   char        *helpPtr;
-  u16          low, mid, high;
+  u16          low
+             , mid
+             , high;
+  int          r;
   tempStrType  tempStr;
 
   if (strncmp(msgText, "AREA:", 5) != 0 && strncmp(msgText, "\1AREA:", 6) != 0)
@@ -331,7 +334,7 @@ u16 getAreaCode(char *msgText)
   if (*msgText == 1)
     strcpy(msgText, msgText + 1);
 
-  helpPtr = msgText+5;
+  helpPtr = msgText + 5;
   while (*helpPtr == ' ')
     helpPtr++;
 
@@ -343,16 +346,21 @@ u16 getAreaCode(char *msgText)
     *helpPtr = 0;
 
   if (*echoName == 0)
-    putStr("Message has no valid area tag ");
+    logEntry("Message has no valid area tag", LOG_ALWAYS, 0);
   else
   {
     low = 0;
     high = echoCount;
     while (low < high)
     {
-      mid = (low + high) >> 1;
-      if (stricmp(echoName, echoAreaList[mid].areaName) > 0)
-        low = mid+1;
+      mid = (low + high) / 2;
+      if (!(r = stricmp(echoName, echoAreaList[mid].areaName)))
+      {
+        low = mid;
+        break;
+      }
+      if (r > 0)
+        low = mid + 1;
       else
         high = mid;
     }
@@ -376,14 +384,15 @@ u16 getAreaCode(char *msgText)
         return low;
 
       if (echoAreaList[low].options.local)
-        putStr("Area is local: ");
+        sprintf(tempStr, "Area is local: '%s'", echoName);
       else
-        putStr("Area is not active: ");
-      printf("%s ", echoName);
+        sprintf(tempStr, "Area is not active: '%s'", echoName);
+      logEntry(tempStr, LOG_ALWAYS, 0);
     }
     else
     {
-      printf("Unknown area: %s ", echoName);
+      sprintf(tempStr, "Unknown area: '%s'", echoName);
+      logEntry(tempStr, LOG_ALWAYS, 0);
 
       if (badEchoCount < MAX_BAD_ECHOS)
       {
@@ -463,7 +472,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                    , areaIndex
                    , areaFixRep;
   int                i
-                   , localAkaNum;
+                   , localAkaNum = -1;
   u16                pktMsgCount;
   DIR               *dir;
   struct dirent     *ent;
@@ -990,8 +999,7 @@ void Toss(int argc, char *argv[])
   openDup();
 
   strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
-  ++no_msg;
-  if ((tempHandle = openP(tempStr, O_RDONLY | O_BINARY, S_IREAD|S_IWRITE)) != -1)
+  if ((tempHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1)
   {
     badEchoCount = read(tempHandle, badEchos, MAX_BAD_ECHOS * sizeof(badEchoType)) / sizeof(badEchoType);
     close(tempHandle);
@@ -1093,7 +1101,7 @@ void Toss(int argc, char *argv[])
   if (badEchoCount)
   {
     strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
-    if ((tempHandle = openP(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+    if ((tempHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) != -1)
     {
       write(tempHandle, badEchos, badEchoCount * sizeof(badEchoType));
       close(tempHandle);
@@ -1126,13 +1134,13 @@ void Toss(int argc, char *argv[])
   if (globVars.echoCountV || globVars.dupCountV || globVars.badCountV)
   {
     if (*config.tossedAreasList &&
-         (tempHandle = openP(config.tossedAreasList, O_WRONLY|O_CREAT|O_APPEND|O_TEXT, S_IREAD|S_IWRITE)) != -1)
+         (tempHandle = open(config.tossedAreasList, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
       for (count = 0; count < echoCount; count++)
         if (echoAreaList[count].msgCountV)
           write(tempHandle, tempStr, sprintf(tempStr, "%s\n", echoAreaList[count].areaName));
 
     if ( *config.summaryLogName
-       && (tempHandle = openP( config.summaryLogName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1
+       && (tempHandle = open( config.summaryLogName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1
        )
     {
       logEntry("Writing toss summary", LOG_DEBUG, 0);
@@ -1535,8 +1543,7 @@ void Scan(int argc, char *argv[])
       {
         strcpy(tempStr, config.bbsPath);
         strcat(tempStr, "echomail.jam");
-        ++no_msg;
-        if ((tempHandle = openP(tempStr, O_RDONLY | O_TEXT, S_IREAD | S_IWRITE)) != -1)
+        if ((tempHandle = open(tempStr, O_RDONLY | O_TEXT)) != -1)
         {
           memset(tempStr, 0, sizeof(tempStrType));
           if ((count = read(tempHandle, tempStr, sizeof(tempStrType)-1)) != -1)
@@ -1661,8 +1668,7 @@ void Scan(int argc, char *argv[])
         {
           strcpy(tempStr, makeFullPath(config.bbsPath, getenv("QUICK"), !count ? "echomail."MBEXTN : "netmail."MBEXTN));
 
-          ++no_msg;
-          if ((tempHandle = openP(tempStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+          if ((tempHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1)
           {
   #ifndef GOLDBASE
             while ((read(tempHandle, &index, 2) == 2)

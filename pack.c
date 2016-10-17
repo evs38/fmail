@@ -26,6 +26,7 @@
 #include <dos.h>
 #include <fcntl.h>
 #include <io.h>
+#include <share.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -309,7 +310,7 @@ s16 pack(s16 argc, char *argv[], s32 switches)
 
   strcpy(stpcpy(tempStr, configPath), dPCKFNAME);
 
-  if ((fileHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
+  if ((fileHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1)
   {
     if ((read(fileHandle, pack, sizeof(packType)) != (int)sizeof(packType)) ||
         (close(fileHandle) == -1))
@@ -480,7 +481,7 @@ s16 pack(s16 argc, char *argv[], s32 switches)
           {
             sprintf(tempStr, "%s%u.msg", config.netPath, msgNum);
 
-            if ((fileHandle = openP(tempStr, O_RDWR | O_DENYALL | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+            if ((fileHandle = _sopen(tempStr, O_RDWR | O_BINARY, SH_DENYRW)) != -1)
             {
               close(fileHandle);
               fileHandle = unlink(tempStr);

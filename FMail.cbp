@@ -25,6 +25,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="PACK" />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
@@ -47,6 +48,9 @@
 			<Add library="c:/Program Files/CodeBlocks/MinGW/lib/libversion.a" />
 			<Add library="c:/Program Files/CodeBlocks/MinGW/lib/libwsock32.a" />
 		</Linker>
+		<Unit filename="FMailW32.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
 		<Unit filename="archive.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -79,10 +83,6 @@
 		<Unit filename="dups32.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="filesys.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="filesys.h" />
 		<Unit filename="fmail.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -93,7 +93,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="ftscprod.h" />
-		<Unit filename="internal.h" />
 		<Unit filename="ispathch.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -166,6 +165,10 @@
 		</Unit>
 		<Unit filename="spec.h" />
 		<Unit filename="stpcpy.h" />
+		<Unit filename="stricmp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stricmp.h" />
 		<Unit filename="utils.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -24,6 +24,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <io.h>
+#include <share.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -56,7 +57,7 @@ udef openBCL(uplinkReqType *uplinkReq)
   nodeNumType tempNode;
 
   sprintf(tempStr, "%s%s", configPath, uplinkReq->fileName);
-  if ( (bclHandle = openP(tempStr, O_RDONLY|O_BINARY|O_DENYALL, S_IREAD|S_IWRITE)) == -1
+  if ( (bclHandle = _sopen(tempStr, O_RDONLY | O_BINARY, SH_DENYRW)) == -1
      || read(bclHandle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header)
      )
   {
@@ -123,7 +124,7 @@ udef process_bcl(char *fileName)
   nodeNumType tempNode;
 
   sprintf(tempStr, "%s%s", config.inPath, fileName);
-  if ( (handle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1
+  if ( (handle = _sopen(tempStr, O_RDONLY | O_BINARY, SH_DENYRW)) == -1
      || read(handle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header)
      )
   {
@@ -217,7 +218,7 @@ void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInf
     return;
 
   sprintf(tempStr, "%s%08X.$$$", config.outPath, uniqueID());
-  if ((helpHandle = openP(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
+  if ((helpHandle = open(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
   {
     tempStrType logStr;
     sprintf(logStr, "Creating BCL file for node %s: %s", nodeStr(destNode), tempStr);

@@ -28,8 +28,9 @@
 #include <dos.h>
 #include <io.h>
 #include <fcntl.h>
-#include <time.h>
+#include <share.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include "fmail.h"
 #include "msgmsg.h"
@@ -58,8 +59,7 @@ static int make_send_msg(u16 xu, char *attachName, u16 msg_tfs, u16 msg_kfs)
   strcpy(message->subject, "Mail attach");
   strcpy(txtName, configPath);
   strcat(txtName, "email.txt");
-  ++no_msg;
-  if ( (handle = openP(txtName, O_TEXT|O_RDONLY, S_IREAD|S_IWRITE)) != -1 )
+  if ( (handle = open(txtName, O_RDONLY | O_TEXT)) != -1 )
   {
     if ( (xs = read(handle, message->text, TEXT_SIZE - 1)) != - 1)
       message->text[xs] = 0;
@@ -75,15 +75,11 @@ static int make_send_msg(u16 xu, char *attachName, u16 msg_tfs, u16 msg_kfs)
     {
       do
       {
-        if ( msg_tfs &&
-             (handle = openP(fileName, O_WRONLY|O_CREAT|O_TRUNC|O_DENYALL, S_IREAD|S_IWRITE)) != -1 )
-        {
+        if (msg_tfs && (handle = _sopen(fileName, O_WRONLY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) != -1)
           close(handle);
-        }
-        else if ( msg_kfs )
-        {
-          unlink(fileName);
-        }
+        else
+          if (msg_kfs)
+            unlink(fileName);
       }
       while ( nextFile(&fileName) );
     }
@@ -177,7 +173,7 @@ static int sendsmtp_bink(void)
   char          *archiveDirPtr
               , *helpPtr;
   u16            msg_tfs
-               , msg_kfs;
+               , msg_kfs = 0;
   tempStrType    archiveStr
                , archiveFile
                , tempStr;
@@ -216,7 +212,7 @@ static int sendsmtp_bink(void)
           continue;
 
         strcpy(archiveDirPtr, ent->d_name);
-        if ((tempHandle = openP(archiveStr, O_RDWR | O_CREAT | O_APPEND | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
+        if ((tempHandle = open(archiveStr, O_RDWR | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) == -1)
           continue;
 
         memset(tempStr, 0, sizeof(tempStr) - 1);

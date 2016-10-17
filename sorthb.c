@@ -85,13 +85,13 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
    u16          *sli_recNum
                ,*sli_msgNum
-               ,*sli_prevReply
-               ,*sli_nextReply;
+               ,*sli_prevReply = NULL
+               ,*sli_nextReply = NULL;
   char          *sli_areaNum;
   u16           *sli_subjectCrcHi
                ,*sli_subjectCrcLo
-               ,*sli_bsTimeStampHi
-               ,*sli_bsTimeStampLo;
+               ,*sli_bsTimeStampHi = NULL
+               ,*sli_bsTimeStampLo = NULL;
 
   u16           HDR_BUFSIZE;
 
@@ -104,7 +104,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
                                ((config.ftBufSize==2) ? 5 : 7))));
 #endif
 
-   if ((msgHdrHandle = open(expandNameHudson("MSGHDR", 0), O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+   if ((msgHdrHandle = open(expandNameHudson("MSGHDR", 0), O_RDONLY | O_BINARY)) == -1)
    {
       puts("Can't open MsgHdr."MBEXTN" for update.");
       return;
@@ -146,8 +146,9 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
    if (config.mbOptions.updateChains)
    {
-      if (((sli_prevReply = (u16*)calloc(newTotalMsgBBS, 2)) == NULL) ||
-          ((sli_nextReply = (u16*)calloc(newTotalMsgBBS, 2)) == NULL))
+      if (  (sli_prevReply = (u16*)calloc(newTotalMsgBBS, 2)) == NULL
+         || (sli_nextReply = (u16*)calloc(newTotalMsgBBS, 2)) == NULL
+         )
       {
          close (msgHdrHandle);
          logEntry ("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
@@ -363,7 +364,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
       if (((unlink (tempStr2) == -1) && (errno != ENOENT)) ||
           ((msgHdrHandle = open(tempStr3, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
-          ((oldHdrHandle = open(tempStr1, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) == -1))
+          ((oldHdrHandle = open(tempStr1, O_RDONLY | O_BINARY)) == -1))
       {
          close (msgHdrHandle);
          newLine();
@@ -459,7 +460,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       strcpy(tempStr1, expandNameHudson("MSGHDR", 0));
 
       if (  ((msgHdrHandle = open(tempStr1, O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1)
-         || ((oldHdrHandle = open(tempStr1, O_RDONLY | O_BINARY          , S_IREAD | S_IWRITE)) == -1)
+         || ((oldHdrHandle = open(tempStr1, O_RDONLY | O_BINARY)) == -1)
          )
       {
          close(msgHdrHandle);

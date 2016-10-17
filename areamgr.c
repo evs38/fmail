@@ -314,26 +314,38 @@ s16 multiAkaSelect(void)
 //---------------------------------------------------------------------------
 static void fillAreaInfo(u16 index, rawEchoType *tempInfo)
 {
-   memset(areaInfo[index], 0, sizeof(rawEchoTypeX));
-   if ( (areaInfo[index]->areaName = malloc(strlen(tempInfo->areaName) + 1)) != NULL )
-      strcpy(areaInfo[index]->areaName, tempInfo->areaName);
-   if ( (areaInfo[index]->comment = malloc(strlen(tempInfo->comment) + 1)) != NULL )
-      strcpy(areaInfo[index]->comment, tempInfo->comment);
-   if ( (areaInfo[index]->msgBasePath = malloc(strlen(tempInfo->msgBasePath) + 1)) != NULL )
-      strcpy(areaInfo[index]->msgBasePath, tempInfo->msgBasePath);
-   areaInfo[index]->boardNumRA = tempInfo->boardNumRA;
-   areaInfo[index]->msgBaseType = tempInfo->msgBaseType;
-   areaInfo[index]->board = tempInfo->board;
-   areaInfo[index]->options = tempInfo->options;
-   areaInfo[index]->address = tempInfo->address;
-   areaInfo[index]->group = tempInfo->group;
+  memset(areaInfo[index], 0, sizeof(rawEchoTypeX));
+  if ((areaInfo[index]->areaName    = malloc(strlen(tempInfo->areaName   ) + 1)) != NULL)
+    strcpy(areaInfo[index]->areaName   , tempInfo->areaName   );
+  if ((areaInfo[index]->comment     = malloc(strlen(tempInfo->comment    ) + 1)) != NULL)
+    strcpy(areaInfo[index]->comment    , tempInfo->comment    );
+  if ((areaInfo[index]->msgBasePath = malloc(strlen(tempInfo->msgBasePath) + 1)) != NULL)
+    strcpy(areaInfo[index]->msgBasePath, tempInfo->msgBasePath);
+
+  areaInfo[index]->boardNumRA  = tempInfo->boardNumRA;
+  areaInfo[index]->msgBaseType = tempInfo->msgBaseType;
+  areaInfo[index]->board       = tempInfo->board;
+  areaInfo[index]->options     = tempInfo->options;
+  areaInfo[index]->address     = tempInfo->address;
+  areaInfo[index]->group       = tempInfo->group;
 }
 //---------------------------------------------------------------------------
 static void freeAreaInfo(u16 index)
 {
-   free(areaInfo[index]->areaName);
-   free(areaInfo[index]->comment);
-   free(areaInfo[index]->msgBasePath);
+  free(areaInfo[index]->areaName   );
+  free(areaInfo[index]->comment    );
+  free(areaInfo[index]->msgBasePath);
+}
+//---------------------------------------------------------------------------
+const char *AMGetAreaPath(int i)
+{
+  if (i >= areaInfoCount)
+    return NULL;
+
+  if (NULL == areaInfo[i]->msgBasePath)
+    return "";
+
+  return areaInfo[i]->msgBasePath;
 }
 //---------------------------------------------------------------------------
 s16 areaMgr(void)
@@ -401,12 +413,12 @@ s16 areaMgr(void)
 	 {
             memset (&tempInfo, 0, RAWECHO_SIZE);
 
-	    memcpy (tempInfo.areaName,   areaInfoOld.areaName,   sizeof(areaNameType)-1);
-	    memcpy (tempInfo.comment,    areaInfoOld.comment,    COMMENT_LEN-1);
-	    memcpy (tempInfo.msgBasePath,areaInfoOld.msgBasePath,MB_PATH_LEN_OLD-1);
-	    memcpy (tempInfo.originLine, areaInfoOld.originLine, ORGLINE_LEN-1);
-            for ( count = 0; count < MAX_FORWARDOLD; count++ )
-               tempInfo.forwards[count].nodeNum = areaInfoOld.export[count];
+	    memcpy(tempInfo.areaName   , areaInfoOld.areaName   , sizeof(areaNameType) - 1);
+	    memcpy(tempInfo.comment    , areaInfoOld.comment    , COMMENT_LEN          - 1);
+	    memcpy(tempInfo.msgBasePath, areaInfoOld.msgBasePath, MB_PATH_LEN_OLD      - 1);
+	    memcpy(tempInfo.originLine , areaInfoOld.originLine , ORGLINE_LEN          - 1);
+      for (count = 0; count < MAX_FORWARDOLD; count++ )
+        tempInfo.forwards[count].nodeNum = areaInfoOld.export[count];
 	    tempInfo.signature  = MC('A','E');
 	    tempInfo.group      = areaInfoOld.group;
 	    tempInfo.board      = areaInfoOld.board;
@@ -491,9 +503,9 @@ s16 areaMgr(void)
       if (ch)
          putRec(CFG_ECHOAREAS, count);
 
-      areaBuf->comment[COMMENT_LEN-1] = 0;
-      areaBuf->msgBasePath[MB_PATH_LEN-1] = 0;
-      areaBuf->originLine[ORGLINE_LEN-1] = 0;
+      areaBuf->comment    [COMMENT_LEN - 1] = 0;
+      areaBuf->msgBasePath[MB_PATH_LEN - 1] = 0;
+      areaBuf->originLine [ORGLINE_LEN - 1] = 0;
       areaBuf->address = min(areaBuf->address, (u16)MAX_AKAS);
       areaBuf->group  &= 0x03FFFFFFL;
 
@@ -893,47 +905,18 @@ s16 areaMgr(void)
 				    tempInfo.address = badEchos[badEchoCount].destAka;
 
             if (tempInfo.board == 2) // JAM
-            {
-              MakeJamAreaPath(&tempInfo);
-              for ( ; ; )
-              {
-                idx = 0;
-                while ( idx < areaInfoCount )
-                {
-                  if ( *areaInfo[idx]->msgBasePath && !stricmp(areaInfo[idx]->msgBasePath, tempInfo.msgBasePath) )
-                    break;
-                  ++idx;
-                }
-                if ( idx == areaInfoCount )
-                  break;
-                tempPtr = strchr(tempInfo.msgBasePath, 0) - 1;
-                for ( ; ; )
-                {  if ( !isdigit(*tempPtr) )
-                      *tempPtr = '0';
-                   else
-                   {  if ( *tempPtr != '9' )
-                         ++*tempPtr;
-                      else
-                      {  *tempPtr = '0';
-                         --tempPtr;
-                         if ( tempPtr >= tempInfo.msgBasePath && *tempPtr != '\\' )
-                            continue;
-                      }
-                   }
-                   break;
-                }
-              }
-            }
+// todo: Testen!
+              MakeJamAreaPath(&tempInfo, AMGetAreaPath);
+
             update = 1;
-				 }
-      }
-                              tempInfo.boardNumRA = 0;
+          }
+        }
+        tempInfo.boardNumRA = 0;
+        areaInfoBoard = 0;
 
-                              areaInfoBoard = 0;
-
-			      if (tempInfo.board == 1) /* Hudson */
-			      {
-                                 memset (usedArea, 0, MBBOARDS);
+        if (tempInfo.board == 1) /* Hudson */
+        {
+          memset (usedArea, 0, MBBOARDS);
 				 for (count = 0; count < areaInfoCount; count++)
 				 {
                                     if (areaInfo[count]->board - 1 < MBBOARDS)
@@ -991,7 +974,7 @@ s16 areaMgr(void)
 				       ch = askBoolean ("Area name field is empty. Discard current record ?", 'N');
 				    }
 				    else if ( (count = strlen(tempInfo.msgBasePath))!= 0 &&
-					      tempInfo.msgBasePath[count-1] == '\\' )
+					      tempInfo.msgBasePath[count - 1] == '\\' )
                                     {
                                        ch = askBoolean ("Invalid JAM base name. Discard current record ?", 'N');
                                     }

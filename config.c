@@ -59,7 +59,7 @@ extern unsigned _cdecl _psp;
 #include "areainfo.h"
 #include "crc.h"
 #include "log.h"
-#include "msgpkt.h" // for openP
+//#include "msgpkt.h" // for openP
 #include "mtask.h"
 #include "stpcpy.h"
 #include "utils.h"
@@ -217,7 +217,7 @@ void initFMail(const char *_funcStr, s32 switches)
   strcpy(funcStr, _funcStr);
   strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
-  if ( (configHandle = openP(tempStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) == -1
+  if ( (configHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1
      || (readlen = read(configHandle, &config, sizeof(configType))) < (int)sizeof(configType)
      || close(configHandle) == -1
      )
@@ -243,7 +243,6 @@ void initFMail(const char *_funcStr, s32 switches)
   if ((helpPtr = strrchr(tempStr2, '\\')) != NULL)
     *helpPtr = 0;
 
-  ++no_msg;
   if (  !access(tempStr2, 0)
      && (fmailLockHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
      && errno != ENOFILE
@@ -280,7 +279,6 @@ void initFMail(const char *_funcStr, s32 switches)
       exit(4);
     }
   }
-  no_msg = 0;
 
   if (config.akaList[0].nodeNum.zone == 0)
   {
@@ -358,7 +356,7 @@ void deinitFMail(void)
 
   strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
-  if (  (configHandle = openP(tempStr, O_WRONLY | O_BINARY, S_IREAD|S_IWRITE)) == -1
+  if (  (configHandle = open(tempStr, O_WRONLY | O_BINARY)) == -1
      || lseek(configHandle, offsetof(configType, uplinkReq), SEEK_SET) == -1L
      || write(configHandle, &config.uplinkReq, sizeof(uplinkReqType)*MAX_UPLREQ) < (int)sizeof(uplinkReqType)*MAX_UPLREQ
      || lseek(configHandle, offsetof(configType, lastUniqueID), SEEK_SET) == -1L

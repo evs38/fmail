@@ -39,7 +39,6 @@
 #include "areainfo.h"
 #include "config.h"
 #include "crc.h"
-#include "filesys.h"
 #include "jam.h"
 #include "jamfun.h"
 #include "lock.h"
@@ -162,34 +161,35 @@ u32 jam_open(char *msgBaseName, JAMHDRINFO **jam_hdrinfo)
    strcpy(jam_basename, msgBaseName);
    helpptr = stpcpy(tempstr, msgBaseName);
    strcpy(helpptr, EXT_HDRFILE);
-   if ( (jam_hdrhandle = fsopenP(tempstr, O_RDWR|O_BINARY|O_DENYNONE|O_CREAT, S_IREAD|S_IWRITE)) == -1 )
+   if ((jam_hdrhandle = open(tempstr, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1 )
    {
 //    logEntry("jam_open 1", LOG_ALWAYS, 0);
       return 0;
    }
    strcpy(helpptr, EXT_LRDFILE);
-   if ( (jam_lrdhandle = fsopenP(tempstr, O_RDWR|O_BINARY|O_DENYNONE|O_CREAT, S_IREAD|S_IWRITE)) == -1 )
-   {  fsclose(jam_hdrhandle);
+   if ( (jam_lrdhandle = open(tempstr, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1 )
+   {  close(jam_hdrhandle);
 //    logEntry("jam_open 2", LOG_ALWAYS, 0);
       return 0;
    }
    strcpy(helpptr, EXT_TXTFILE);
-   if ( (jam_txthandle = fsopenP(tempstr, O_RDWR|O_BINARY|O_DENYNONE|O_CREAT, S_IREAD|S_IWRITE)) == -1 )
-   {  fsclose(jam_lrdhandle);
-      fsclose(jam_hdrhandle);
+   if ((jam_txthandle = open(tempstr, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1)
+   {  close(jam_lrdhandle);
+      close(jam_hdrhandle);
 //    logEntry("jam_open 3", LOG_ALWAYS, 0);
       return 0;
    }
    strcpy(helpptr, EXT_IDXFILE);
-   if ( (jam_idxhandle = fsopenP(tempstr, O_RDWR|O_BINARY|O_DENYNONE|O_CREAT, S_IREAD|S_IWRITE)) == -1 )
-   {  fsclose(jam_txthandle);
-      fsclose(jam_lrdhandle);
-      fsclose(jam_hdrhandle);
+   if ((jam_idxhandle = open(tempstr, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1)
+   {
+      close(jam_txthandle);
+      close(jam_lrdhandle);
+      close(jam_hdrhandle);
 //    logEntry("jam_open 4", LOG_ALWAYS, 0);
       return 0;
    }
    *jam_hdrinfo = &hdrinfo;
-   if ( read(jam_hdrhandle, &hdrinfo, sizeof(JAMHDRINFO)) != sizeof(JAMHDRINFO) )
+   if (read(jam_hdrhandle, &hdrinfo, sizeof(JAMHDRINFO)) != sizeof(JAMHDRINFO))
    {
 //    Create new JAM base
       memset(&hdrinfo, 0, sizeof(JAMHDRINFO));
@@ -197,7 +197,8 @@ u32 jam_open(char *msgBaseName, JAMHDRINFO **jam_hdrinfo)
       hdrinfo.DateCreated = 0;
       hdrinfo.PasswordCRC = -1L;
       hdrinfo.BaseMsgNum = 1L;
-      return ((jam_baseopen = write(jam_hdrhandle, &hdrinfo, sizeof(JAMHDRINFO))) == sizeof(JAMHDRINFO));
+
+      return (jam_baseopen = write(jam_hdrhandle, &hdrinfo, sizeof(JAMHDRINFO))) == sizeof(JAMHDRINFO);
    }
    return jam_baseopen = 1;
 }
@@ -208,10 +209,10 @@ void jam_close(u32 jam_code)
 
   if (jam_baseopen)
   {
-    fsclose(jam_idxhandle);
-    fsclose(jam_txthandle);
-    fsclose(jam_lrdhandle);
-    fsclose(jam_hdrhandle);
+    close(jam_idxhandle);
+    close(jam_txthandle);
+    close(jam_lrdhandle);
+    close(jam_hdrhandle);
     jam_idxhandle = -1;
     jam_txthandle = -1;
     jam_lrdhandle = -1;
@@ -710,7 +711,7 @@ u32 jam_incmsgcount(u32 jam_code)
 
 u32 jam_writemsg(char *msgbasename, internalMsgType *message, u16 local)
 {
-  u32         jam_code;
+  u32         jam_code = 0;
   JAMHDRINFO *jam_hdrinforec;
   JAMHDR      jam_msghdrrec;
   JAMIDXREC   jam_idxrec;
@@ -747,11 +748,11 @@ u32 jam_writemsg(char *msgbasename, internalMsgType *message, u16 local)
 
     strcpy(tempStr, config.bbsPath);
     strcat(tempStr, "ECHOMAIL.JAM");
-    if ((handle = fsopenP(tempStr, O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+    if ((handle = open(tempStr, O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
     {
       len = sprintf(tempStr, "%s %u\r\n", msgbasename, msgNum);
       write(handle, tempStr, len);
-      fsclose(handle);
+      close(handle);
     }
   }
 

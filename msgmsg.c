@@ -27,6 +27,7 @@
 #include <dos.h>
 #include <fcntl.h>
 #include <io.h>
+#include <share.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,7 +43,7 @@
 #include "areainfo.h"
 #include "log.h"
 #include "msgmsg.h"
-#include "msgpkt.h"  // for openP
+//#include "msgpkt.h"  // for openP
 #include "nodeinfo.h"
 #include "ping.h"
 #include "spec.h"
@@ -79,7 +80,7 @@ s16 messagesMoved = 0;
 //---------------------------------------------------------------------------
 void moveMsg(char *msgName, char *destDir)
 {
-  s32            highMsgNum;
+  s32            highMsgNum = 0;
   tempStrType    tempStr
                , tempStr2;
   DIR           *dir;
@@ -178,7 +179,7 @@ static void removeTrunc(char *path)
           else
           {
             if (count2 == fAttCount)
-              close(openP(fileNameStr, O_BINARY | O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE));
+              close(open(fileNameStr, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE));
           }
         }
       }
@@ -276,7 +277,7 @@ void initMsg(s16 noAreaFix)
       {
         sprintf(fPtr, "%u.msg", msgNum);
 
-        if ((msgMsgHandle = openP(fileNameStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
+        if ((msgMsgHandle = open(fileNameStr, O_RDONLY | O_BINARY)) != -1)
         {
           if (read(msgMsgHandle, &msgMsg, sizeof(msgMsgType)) != sizeof(msgMsgType))
             close(msgMsgHandle);
@@ -350,7 +351,7 @@ void initMsg(s16 noAreaFix)
                        )
                     {
                       arcSize = 0;
-                      if ((tempHandle = openP(msgMsg.subject, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1)
+                      if ((tempHandle = open(msgMsg.subject, O_RDONLY | O_BINARY)) != -1)
                       {
                         if ((arcSize = filelength(tempHandle)) == -1)
                           arcSize = 0;
@@ -606,9 +607,9 @@ s16 attribMsg(u16 attribute, s32 msgNum)
 
   sprintf(tempStr1, "%s%u.msg", config.netPath, msgNum);
 
-  if (((msgMsgHandle = openP(tempStr1, O_RDWR|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) == -1) ||
+  if (((msgMsgHandle = open(tempStr1, O_WRONLY | O_BINARY)) == -1) ||
       (lseek(msgMsgHandle, sizeof(msgMsgType)-4, SEEK_SET) == -1) ||
-      (_write(msgMsgHandle, &attribute, 2) != 2))
+      (write(msgMsgHandle, &attribute, 2) != 2))
   {
     close(msgMsgHandle);
     sprintf(tempStr2, "Can't update file %s", tempStr1);
@@ -642,7 +643,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
 
   sprintf(tempStr1, "%s%u.msg", config.netPath, msgNum);
 
-  if ((msgMsgHandle = openP(tempStr1, O_RDONLY | O_BINARY | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
+  if ((msgMsgHandle = _sopen(tempStr1, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
   {
     sprintf(tempStr2, "Can't open file %s", tempStr1);
     logEntry(tempStr2, LOG_ALWAYS, 0);
@@ -853,7 +854,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 
   highMsgNum = 0;
   strcpy(helpPtr, "LASTREAD");
-  if (valid && ((msgHandle = openP(tempStr, O_RDONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) != -1))
+  if (valid && ((msgHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1))
   {
     if (read(msgHandle, &highMsgNum, 2) != 2)
       highMsgNum = 0;
@@ -891,8 +892,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     sprintf(helpPtr, valid ? "%u.msg" : "%u."MBEXTB, ++highMsgNum);
 
     while (  count < 20
-          && (msgHandle = openP(tempStr, O_RDWR | O_CREAT | O_EXCL | O_TRUNC | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)
-             ) == -1
+          && -1 == (msgHandle = open(tempStr, O_WRONLY | O_CREAT | O_EXCL | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE))
           )
     {
       highMsgNum += count++ < 10 ? 1 : 10;
@@ -907,8 +907,8 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 
     len = strlen(message->text) + 1;
 
-    if (  _write(msgHandle, &msgMsg, sizeof(msgMsgType)) != (int)sizeof(msgMsgType)
-       || _write(msgHandle, message->text, len) != len
+    if (  write(msgHandle, &msgMsg, sizeof(msgMsgType)) != (int)sizeof(msgMsgType)
+       || write(msgHandle, message->text, len) != len
        )
     {
       close(msgHandle);

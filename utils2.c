@@ -22,8 +22,9 @@
 //---------------------------------------------------------------------------
 
 #include <ctype.h>
-#include <direct.h>  // _chdrive()
+#include <direct.h>  // chdir() _chdrive()
 #include <stdio.h>
+#include <stdlib.h>  // atoi()
 #include <string.h>
 #include <time.h>
 
@@ -122,39 +123,55 @@ char *stristr(const char *str1, const char *str2)
   }
 }
 //---------------------------------------------------------------------------
-void MakeJamAreaPath(rawEchoType *echo)
+void MakeJamAreaPath(rawEchoType *echo, const char *(*CallBackGetAreaPath)(u16))
 {
+  int toLower = 1;
   char *tempPtr
      , *tempPtr2
      ;
   tempPtr = tempPtr2 = strchr(echo->msgBasePath, 0);
   strncpy(tempPtr, echo->areaName, MB_PATH_LEN - strlen(echo->msgBasePath) - 1);
-  if (!config.genOptions.lfn)
+  while (*tempPtr)
   {
-    while (*tempPtr)
-    {
-      if (!isalnum(*tempPtr))
-        strcpy(tempPtr, tempPtr + 1);
-      else
-        ++tempPtr;
-    }
-    tempPtr2[8] = 0;
-    strupr(echo->msgBasePath);
+    if (!ispathch(*tempPtr))
+      strcpy(tempPtr, tempPtr + 1);
+    else
+      if (islower(*tempPtr++))
+        toLower = 0;
   }
-  else
-  {
-    int toLower = 1;
-    while (*tempPtr)
+  if (toLower)
+    strlwr(tempPtr2);
+
+  if (NULL != CallBackGetAreaPath)
+    for (;;)
     {
-      if (!ispathch(*tempPtr))
-        strcpy(tempPtr, tempPtr + 1);
+      u16 i;
+      const char *ap;
+
+      for (i = 0;; i++)
+      {
+        if (NULL == (ap = CallBackGetAreaPath(i)))
+          return;
+
+        if (0 == stricmp(ap, echo->msgBasePath) )
+          break;
+      }
+
+      tempPtr = strchr(echo->msgBasePath, 0) - 1;
+      if (!isdigit(*tempPtr))
+      {
+        *++tempPtr = '0';
+        *++tempPtr = 0;
+      }
       else
-        if (islower(*tempPtr++))
-          toLower = 0;
+      {
+        int num;
+        while (isdigit(*--tempPtr))
+          ;
+        num = atoi(++tempPtr) + 1;
+        sprintf(tempPtr, "%d", num);
+      }
     }
-    if (toLower)
-      strlwr(tempPtr2);
-  }
 }
 //---------------------------------------------------------------------------
 int ChDir(const char *path)

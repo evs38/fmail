@@ -25,11 +25,6 @@
 
 #ifdef FMAIL
 
-#define open(a,b,c) openP(a,b,c)
-
-extern int no_msg;
-
-fhandle openP(const char *pathname, int access, u16 mode);
 
 #endif
 #endif

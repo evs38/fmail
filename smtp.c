@@ -233,9 +233,9 @@ static void appendMIMEfile(char *fname)
    char szBuffer[BYTES_TO_READ + 1];
    tempStrType sbuf;
 
-   if ( !fname || !*fname )
+   if (!fname || !*fname)
       return;
-   if ( (handle = open(fname, O_RDONLY|O_BINARY, S_IREAD|S_IWRITE)) == -1 )
+   if ((handle = open(fname, O_RDONLY | O_BINARY)) == -1)
       return;
    _splitpath(fname, NULL, NULL, szFName, szExt);
    sprintf(sbuf, "--%s\r\n", sPartBoundary);

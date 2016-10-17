@@ -36,7 +36,7 @@
 #include "crc.h"
 #include "dups.h"
 #include "log.h"
-#include "msgpkt.h" // for openP
+//#include "msgpkt.h" // for openP
 #include "time.h"
 #include "utils.h"
 
@@ -107,7 +107,7 @@ void openDup(void)
    strcpy(tempPath, configPath);
    strcat(tempPath, "FMAIL32.DUP");
 
-   if (  (dupHandle = openP(tempPath, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) == -1
+   if (  (dupHandle = open(tempPath, O_RDONLY | O_BINARY)) == -1
       || read(dupHandle, &dupHdr, sizeof(dupHdrStruct)) != sizeof(dupHdrStruct)
       || filelength(dupHandle) != (long)dupHdr.totalSize
       )
@@ -257,7 +257,7 @@ void closeDup(void)
   strcpy(tempPath, configPath);
   strcat(tempPath, "FMAIL32.DUP");
 
-  if (  (dupHandle = openP(tempPath, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1
+  if (  (dupHandle = open(tempPath, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1
      || write(dupHandle, &dupHdr, sizeof(dupHdrStruct)) != sizeof(dupHdrStruct)
      || write(dupHandle, dupBuffer, dupHdr.kRecs * DUP_LEVEL * 4096) != (int)(DUP_LEVEL * dupHdr.kRecs * 4096)
      || close(dupHandle) == -1

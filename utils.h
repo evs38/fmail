@@ -123,7 +123,7 @@ void        addVia         (char *msgText, u16 aka, int isNetmail);
 void        setViaStr      (char *buf, const char *preStr, u16 aka);
 s16         scanDate       (const char *datePtr, u16 *year, u16 *month, u16 *day, u16 *hours, u16 *minutes);
 s32         checkDate      (u16 year,  u16 month,  u16 day, u16 hours, u16 minutes, u16 seconds);
-const char *makeName       (char *path, char *name);
+//const char *makeName       (char *path, char *name);
 long        fmseek         (int handle, long offset, int fromwhere, int code);
 const char *makeFullPath   (const char *deflt, const char *override, const char *name);
 u16         getKludge      (char *txt, const char *kludge, char *subfield, u16 bufsize);
@@ -139,7 +139,7 @@ void        setCurDateMsg  (internalMsgType *msg);
 u16         firstFile      (char *string, char **filename);
 u16         nextFile       (char **filename);
 char       *stristr        (const char *str1, const char *str2);
-void        MakeJamAreaPath(rawEchoType *tempInfo);
+void        MakeJamAreaPath(rawEchoType *echo, const char *(*CallBackGetAreaPath)(u16));
 //---------------------------------------------------------------------------
 #define freeNull(b) if ((b) != NULL) free(b), (b) = NULL
 //---------------------------------------------------------------------------
