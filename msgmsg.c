@@ -59,21 +59,17 @@ const char *upcaseMonths = "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
 fAttInfoType fAttInfo[MAX_ATTACH];
 u16          fAttCount = 0;
 
-
-extern time_t     startTime;
-extern struct tm  timeBlock;
-extern configType config;
+extern configType  config;
 extern char       *version;
 extern char       *months;
 extern const char *dayName[7];
-extern s16        zero;
+extern s16         zero;
 
 //extern const char *upcaseMonths;
 
-extern globVarsType    globVars;
+extern globVarsType     globVars;
 
 extern internalMsgType *message;
-
 
 s16 messagesMoved = 0;
 
@@ -179,7 +175,7 @@ static void removeTrunc(char *path)
           else
           {
             if (count2 == fAttCount)
-              close(open(fileNameStr, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE));
+              close(open(fileNameStr, O_RDWR | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE));
           }
         }
       }
@@ -950,7 +946,7 @@ s32 writeMsgLocal(internalMsgType *message, s16 msgType, s16 valid)
 {
   char *p;
   time_t t = time(NULL);
-  struct tm *tm = localtime(&t);
+  struct tm *tm = localtime(&t);  // localtime -> should be ok
 
   message->hours   = tm->tm_hour;
   message->minutes = tm->tm_min;

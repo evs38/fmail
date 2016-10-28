@@ -305,30 +305,25 @@ typedef struct
 
 #include <poppack.h>
 //---------------------------------------------------------------------------
-s16  multiUpdate      (void);
-
+void  closeBBSWr      (u16);
 char *expandNameHudson(const char *fileName, int orgName);
-void initBBS          (void);
-
-int  testMBUnlockNow  (void);
-int  lockMB           (void);
-void unlockMB         (void);
-
-void openBBSWr        (u16 orgName);
-s16  writeBBS         (internalMsgType *message, u16 boardNum, u16 impSeenBy);
-s16  validate1BBS     (void);
-void validate2BBS     (u16);
-void closeBBSWr       (u16);
-
+void  initBBS         (void);
+int   lockMB          (void);
+void  moveBadBBS      (void);
+s16   multiUpdate     (void);
+void  openBBSWr       (u16 orgName);
+s16   rescan          (nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle msgHandle1, fhandle msgHandle2);
 #ifndef GOLDBASE
-s16  scanBBS          (u16 index, internalMsgType *message, u16 rescan);
+s16   scanBBS         (u16 index, internalMsgType *message, u16 rescan);
 #else
-s16  scanBBS          (u32 index, internalMsgType *message, u16 rescan);
+s16   scanBBS         (u32 index, internalMsgType *message, u16 rescan);
 #endif
-s16  updateCurrHdrBBS (internalMsgType *message);
-void moveBadBBS       (void);
-
-s16 rescan            (nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle msgHandle1, fhandle msgHandle2);
+int   testMBUnlockNow (void);
+void  unlockMB        (void);
+s16   updateCurrHdrBBS(internalMsgType *message);
+s16   validate1BBS    (void);
+void  validate2BBS    (u16);
+s16   writeBBS        (internalMsgType *message, u16 boardNum, u16 impSeenBy);
 
 //---------------------------------------------------------------------------
 #endif  // msgraH

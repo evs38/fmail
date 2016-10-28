@@ -64,10 +64,8 @@ typedef struct
 
 typedef netRecType netListType[MAXNETREC];
 
-extern configType       config;
 extern internalMsgType *message;
 extern globVarsType     globVars;
-extern char             configPath[FILENAME_MAX];
 
 static s16              errorDisplay = 0;
 static u16              netIndex;
@@ -77,7 +75,8 @@ static netListType     *netList;
 //---------------------------------------------------------------------------
 s16 packValid(nodeNumType *node, char *packedNodes)
 {
-  tempStrType tempStr;
+  int         bufLen;
+  char       *buf;
   char       *helpPtr
            , *helpPtr2;
   char        stringNode[32];
@@ -87,8 +86,11 @@ s16 packValid(nodeNumType *node, char *packedNodes)
   if (packedNodes == NULL)
     return 0;
 
-  strcpy(tempStr, packedNodes);
-  helpPtr = strtok(tempStr, " ");
+  bufLen = strlen(packedNodes);
+  buf = malloc(bufLen + 16);
+
+  strcpy(buf, packedNodes);
+  helpPtr = strtok(buf, " ");
 
   *nodeTempStr = 0;
 
@@ -103,7 +105,12 @@ s16 packValid(nodeNumType *node, char *packedNodes)
         if ((helpPtr2 = strchr(nodeTempStr, ':')) != NULL)
           strcpy(helpPtr2 + 1, helpPtr);
         else
-          logEntry("Bad entry in Pack Manager", LOG_ALWAYS, 4);
+        {
+          tempStrType tempStr;
+          sprintf(tempStr, "Bad entry in Pack Manager: %s", helpPtr);
+          free(buf);
+          logEntry(tempStr, LOG_ALWAYS, 4);
+        }
       }
       else
       {
@@ -112,7 +119,12 @@ s16 packValid(nodeNumType *node, char *packedNodes)
           if ((helpPtr2 = strchr(nodeTempStr, '/')) != NULL)
             strcpy(helpPtr2 + 1, helpPtr);
           else
-            logEntry("Bad entry in Pack Manager", LOG_ALWAYS, 4);
+          {
+            tempStrType tempStr;
+            sprintf(tempStr, "Bad entry in Pack Manager: %s", helpPtr);
+            free(buf);
+            logEntry(tempStr, LOG_ALWAYS, 4);
+          }
         }
         else
         {
@@ -133,7 +145,10 @@ s16 packValid(nodeNumType *node, char *packedNodes)
       if (nodeTempStr[count] == '*')
       {
         if (nodeTempStr[count + 1] != 0)
+        {
+          free(buf);
           logEntry ("Asterisk only allowed as last character of node number", LOG_ALWAYS, 4);
+        }
 
         nodeTempStr[count] = 0;
         stringNode[count] = 0;
@@ -144,16 +159,24 @@ s16 packValid(nodeNumType *node, char *packedNodes)
       }
     }
     if (strcmp(stringNode, nodeTempStr) == 0)
+    {
+      free(buf);
       return 1;
+    }
 
     if ((helpPtr = strchr(stringNode, '.')) != NULL)
     {
       *helpPtr = 0;
       if (strcmp(stringNode, nodeTempStr) == 0)
+      {
+        free(buf);
         return 1;
+      }
     }
     helpPtr = strtok(NULL, " ");
   }
+  free(buf);
+
   return 0;
 }
 //---------------------------------------------------------------------------
@@ -213,7 +236,8 @@ static void processPackLine(char *line, s32 switches)
   char        destType;
   nodeNumType destNode;
   tempStrType tempStr;
-  tempStrType lineBuf;
+  int         lineLen = strlen(line);
+  char       *lineBuf = malloc(lineLen + 16);
   char       *helpPtr;
   char        newWildCard;
 
@@ -264,7 +288,10 @@ static void processPackLine(char *line, s32 switches)
                      &destNode.zone, &destNode.net, &destNode.node, &destNode.point) < 3) ||
              !((strcmp(helpPtr, nodeStr(&destNode)) == 0) ||
                (strcmp(helpPtr, nodeStrZ(&destNode)) == 0))))
+        {
+          free(lineBuf);
           logEntry("Bad VIA node", LOG_ALWAYS, 4);
+        }
 
         destType = DEST_VIA;
       }
@@ -280,6 +307,7 @@ static void processPackLine(char *line, s32 switches)
 
     packRoute(lineBuf, helpPtr, destType, &destNode, switches);
   }
+  free(lineBuf);
 }
 //---------------------------------------------------------------------------
 s16 pack(s16 argc, char *argv[], s32 switches)
@@ -373,13 +401,20 @@ s16 pack(s16 argc, char *argv[], s32 switches)
   if (argc > 2)
   {
     // Processing command line
-    tempStr[0] = tempStr[1] = 0;
+    char *buf
+       , *tptr;
+    int buflen = 0;
+
     for (count = 2; count < argc; count++)
-    {
-      strcat(tempStr, " ");
-      strcat(tempStr, argv[count]);
-    }
-    processPackLine(tempStr + 1, switches);
+      buflen += strlen(argv[count]) + 1;
+
+    buflen += 16;  // 1 should be enough ;)
+    tptr = buf = malloc(buflen);
+    for (count = 2; count < argc; count++)
+      tptr = stpcpy(stpcpy(tptr, " "), argv[count]);
+
+    processPackLine(buf + 1, switches);
+    free(buf);
   }
   else
   {

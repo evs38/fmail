@@ -445,7 +445,7 @@ int sendMessage(char *SMTPServerName, char *mailfrom, char *mailto, internalMsgT
    sprintf(sbuf, "X-Mailer: %s\r\n", smtpID);
    addsbuf(sbuf);
    time(&timer);
-   tms = gmtime(&timer);
+   tms = gmtime(&timer);  // gmt ok!
    sprintf(sbuf, "Date: %s, %02u %s %u %02u:%02u:%02u GMT\r\n",
 		 weekday[tms->tm_wday], tms->tm_mday,
                  month[tms->tm_mon], tms->tm_year+1900,

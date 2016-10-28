@@ -26,6 +26,7 @@
 #include <dir.h>
 #include <dos.h>
 #include <io.h>
+#include <share.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -33,11 +34,12 @@
 
 #include "fmail.h"
 
-#include "ftlog.h"
 #include "areainfo.h" // needed for utils.h
-#include "utils.h"
 #include "crc.h"
+#include "ftlog.h"
 #include "hudson.h"
+#include "msgradef.h"
+#include "utils.h"
 
 extern configType config;
 extern time_t     startTime;
@@ -53,37 +55,25 @@ fhandle lockHandle;
 //---------------------------------------------------------------------------
 void openBBSWr(void)
 {
-   if ((msgHdrHandle = open(expandNameH("MSGHDR"),
-                            O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                            S_IREAD|S_IWRITE)) == -1)
-   {
-      logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
-   }
-   lseek (msgHdrHandle, 0, SEEK_END);
+   if ((msgHdrHandle = open(expandNameH(dMSGHDR), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
-   if ((msgTxtHandle = open(expandNameH("MSGTXT"),
-                            O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                            S_IREAD|S_IWRITE)) == -1)
-   {
-      logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
-   }
-   lseek (msgTxtHandle, 0, SEEK_END);
+   lseek(msgHdrHandle, 0, SEEK_END);
 
-   if ((msgToIdxHandle = open(expandNameH("MSGTOIDX"),
-                              O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                              S_IREAD|S_IWRITE)) == -1)
-   {
-      logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
-   }
-   lseek (msgToIdxHandle, 0, SEEK_END);
+   if ((msgTxtHandle = open(expandNameH(dMSGTXT), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
-   if ((msgIdxHandle = open(expandNameH("MSGIDX"),
-                            O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-                            S_IREAD|S_IWRITE)) == -1)
-   {
-      logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
-   }
-   lseek (msgIdxHandle, 0, SEEK_END);
+   lseek(msgTxtHandle, 0, SEEK_END);
+
+   if ((msgToIdxHandle = open(expandNameH(dMSGTOIDX), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
+
+   lseek(msgToIdxHandle, 0, SEEK_END);
+
+   if ((msgIdxHandle = open(expandNameH(dMSGIDX), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
+
+   lseek(msgIdxHandle, 0, SEEK_END);
 }
 //---------------------------------------------------------------------------
 s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
@@ -94,26 +84,20 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
    u16         msgTxtRecNum;
    u16         msgHdrRecNum;
    infoRecType infoRec;
-   char *textPtr,
-        *helpPtr;
-   fhandle msgInfoHandle;
-   fhandle mailBBSHandle;
-   struct date dateRec;
-   struct time timeRec;
+   char       *textPtr
+            , *helpPtr;
+   fhandle     msgInfoHandle;
+   fhandle     mailBBSHandle;
 
-   memset (&msgRa, 0, sizeof(msgHdrRec));
+   memset(&msgRa, 0, sizeof(msgHdrRec));
 
    if (boardNum)
    {
       if (lockMB()) return (1);
 
-      if (((msgInfoHandle = open(expandNameH("MSGINFO"),
-                                 O_RDWR|O_CREAT|O_BINARY|O_DENYNONE,
-											S_IREAD|S_IWRITE)) == -1) ||
-			 (_read (msgInfoHandle, &infoRec, sizeof(infoRecType)) != sizeof(infoRecType)))
-		{
-			 memset (&infoRec, 0, sizeof(infoRecType));
-		}
+      if (((msgInfoHandle = open(expandNameH(dMSGINFO), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
+          (read(msgInfoHandle, &infoRec, sizeof(infoRecType)) != sizeof(infoRecType)))
+        memset(&infoRec, 0, sizeof(infoRecType));
 
 		msgRa.ReplyTo    = 0;
 		msgRa.SeeAlsoNum = 0;
@@ -122,11 +106,11 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
     msgRa.StartRec   =
     msgTxtRecNum     = (u16)(filelength(msgTxtHandle) >> 8);
 		msgRa.Board      = boardNum;
-    msgHdrRecNum = (u16)(filelength(msgHdrHandle)/sizeof(msgHdrRec));
+    msgHdrRecNum     = (u16)(filelength(msgHdrHandle)/sizeof(msgHdrRec));
 
-                if ((s16)(msgRa.MsgNum = ++infoRec.HighMsg) < 0)
+    if ((s16)(msgRa.MsgNum = ++infoRec.HighMsg) < 0)
 		{
-			logEntry ("Highest allowed message number has been reached", LOG_ALWAYS, 0);
+			logEntry("Highest allowed message number has been reached", LOG_ALWAYS, 0);
 			unlockMB();
 			return (1);
 		}
@@ -134,37 +118,38 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 		textPtr = message->text;
 		while (*textPtr)
 		{
-			if ((helpPtr = memccpy (msgTxt.txtStr, textPtr, 0, 255)) == NULL)
+			if ((helpPtr = memccpy(msgTxt.txtStr, textPtr, 0, 255)) == NULL)
 			{
 				msgTxt.txtLength = 255;
 				textPtr += 255;
 			}
 			else
 			{
-                                textPtr += (msgTxt.txtLength = (u16)(helpPtr - 1 - msgTxt.txtStr));
-         }
-         if (!++msgTxtRecNum)
-         {
-            logEntry ("Maximum message base size has been reached", LOG_ALWAYS, 0);
-            newLine ();
-            unlockMB();
-            return (1);
-         }
-         if (_write (msgTxtHandle, &msgTxt, 256) != 256)
-         {
-            unlockMB();
-            return (1);
-         }
-         msgRa.NumRecs++;
+        textPtr += msgTxt.txtLength = (u16)(helpPtr - 1 - msgTxt.txtStr);
       }
-
-      gettime (&timeRec);
-      getdate (&dateRec);
-
-      sprintf (&msgRa.ptLength, "\x05%02d:%02d\x08%02d-%02d-%02d",
-                                timeRec.ti_hour, timeRec.ti_min,
-                                dateRec.da_mon,  dateRec.da_day,
-                                dateRec.da_year%100);
+     if (!++msgTxtRecNum)
+     {
+        logEntry("Maximum message base size has been reached", LOG_ALWAYS, 0);
+        newLine ();
+        unlockMB();
+        return (1);
+     }
+     if (write(msgTxtHandle, &msgTxt, 256) != 256)
+     {
+        unlockMB();
+        return (1);
+     }
+     msgRa.NumRecs++;
+  }
+    {
+      time_t t = time(NULL);
+      struct tm *tm = localtime(&t);
+      sprintf ((char*)&msgRa.ptLength, "\x05%02d:%02d\x08%02d-%02d-%02d"
+                                     , tm->tm_hour, tm->tm_min, tm->tm_mon + 1, tm->tm_mday, tm->tm_year % 100);
+#ifdef _DEBUG
+      logEntry("DEBUG writeBBS US time format written", LOG_DEBUG, 0);
+#endif // _DEBUG
+    }
 
       msgRa.MsgAttr = RA_LOCAL | ((message->attribute & PRIVATE) ? RA_PRIVATE : 0);
 
@@ -184,22 +169,18 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
          msgRa.DestNode = message->destNode.node;
          msgRa.Cost     = message->cost;
 
-         mailBBSHandle = open(expandNameH("NETMAIL"),
-                              O_WRONLY|O_CREAT|O_APPEND|O_BINARY|O_DENYWRITE,
-                              S_IREAD|S_IWRITE);
+         mailBBSHandle = _sopen(expandNameH("NETMAIL"), O_WRONLY | O_CREAT | O_APPEND | O_BINARY, SH_DENYWR, S_IREAD | S_IWRITE);
       }
       else
       {
          msgRa.MsgAttr |= RA_ECHO_OUT;
 
-         mailBBSHandle = open(expandNameH("ECHOMAIL"),
-                              O_WRONLY|O_CREAT|O_APPEND|O_BINARY|O_DENYWRITE,
-                              S_IREAD|S_IWRITE);
+         mailBBSHandle = _sopen(expandNameH("ECHOMAIL"), O_WRONLY | O_CREAT | O_APPEND | O_BINARY, SH_DENYWR, S_IREAD | S_IWRITE);
       }
       if (mailBBSHandle != -1)
       {
-         write (mailBBSHandle, &msgHdrRecNum, 2);
-         close (mailBBSHandle);
+         write(mailBBSHandle, &msgHdrRecNum, 2);
+         close(mailBBSHandle);
       }
 
       if (config.mbOptions.removeRe)
@@ -225,9 +206,9 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
       msgIdx.MsgNum = msgRa.MsgNum;
       msgIdx.Board  = msgRa.Board;
 
-      if ((_write(msgHdrHandle, &msgRa , sizeof(msgHdrRec)) != sizeof(msgHdrRec)) ||
-          (_write(msgIdxHandle, &msgIdx, sizeof(msgIdxRec)) != sizeof(msgIdxRec)) ||
-          (_write(msgToIdxHandle, &msgRa.wtLength, sizeof(msgToIdxRec)) != sizeof(msgToIdxRec)))
+      if ((write(msgHdrHandle, &msgRa , sizeof(msgHdrRec)) != sizeof(msgHdrRec)) ||
+          (write(msgIdxHandle, &msgIdx, sizeof(msgIdxRec)) != sizeof(msgIdxRec)) ||
+          (write(msgToIdxHandle, &msgRa.wtLength, sizeof(msgToIdxRec)) != sizeof(msgToIdxRec)))
       {
          unlockMB();
          return 1;

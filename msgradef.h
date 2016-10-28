@@ -1,9 +1,8 @@
-#ifndef mtaskH
-#define mtaskH
+#ifndef msgradefH
+#define msgradefH
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016  Wilfred van Velzen
+//  Copyright (C) 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -23,9 +22,12 @@
 //
 //---------------------------------------------------------------------------
 
-#define getMultiTasker()  {}
-#define multiTxt()  ""
+#define dMSGHDR    "msghdr"
+#define dMSGTXT    "msgtxt"
+#define dMSGIDX    "msgidx"
+#define dMSGINFO   "msginfo"
+#define dMSGTOIDX  "msgtoidx"
+#define dMSGMULTI  "msg*"
 
-void returnTimeSlice(int arg);
-
-#endif // mtaskH
+//---------------------------------------------------------------------------
+#endif

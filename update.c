@@ -31,26 +31,27 @@
 
 #include "fmail.h"
 
-#include "fs_util.h"
 #include "areainfo.h"
-#include "window.h"
+#include "cfgfile.h"
 #include "fdfolder.h"
+#include "fs_util.h"
 #include "imfolder.h"
 #include "msgra.h"
-#include "cfgfile.h"
+#include "utils.h"
 #include "version.h"
 
 #ifndef FSETUP
 #include "log.h"
+
 #define displayMessage(msg) logEntry(msg, LOG_ALWAYS, 0)
 
 //---------------------------------------------------------------------------
-static s16 groupToChar (s32 group)
+static s16 groupToChar(s32 group)
 {
   s16 c = 'A';
 
-  if ( group )
-    while ( !(group & BIT0) )
+  if (group)
+    while (!(group & 1))
     {
       group >>= 1;
       c++;
@@ -59,7 +60,7 @@ static s16 groupToChar (s32 group)
 }
 
 #ifndef GOLDBASE
-static char getGroupChar (s32 groupCode)
+char getGroupChar(s32 groupCode)
 {
   char count = 0;
 
@@ -68,15 +69,17 @@ static char getGroupChar (s32 groupCode)
     groupCode >>= 1;
     count++;
   }
-  count += 'A'-1;
+  count += 'A' - 1;
   return (count);
 }
 #endif
-#endif
+#else   // FSETUP
+#include "window.h"
+#endif  // FSETUP
 
 extern configType config;
-extern windowLookType windowLook;
-extern char configPath[128];
+//extern windowLookType windowLook;
+extern char configPath[FILENAME_MAX];
 
 
 typedef struct
@@ -270,9 +273,7 @@ typedef struct      /* Message boards - MBOARDS.DAT */
 } MboardType;
 
 /*---------------------------------------------------------------------------*/
-
 /* PROBOARD 2.02 STRUCTURES */
-
 /*
 ----------------------------------------------------------------------------
  MESSAGES.PB
@@ -342,7 +343,7 @@ static u16 nodeStrIndex;
 
 static char nodeNameStr[2][24];
 
-char *nodeStrP(nodeNumType *nodeNum)
+static char *nodeStrP(nodeNumType *nodeNum)
 {
   char *tempPtr;
 
@@ -382,7 +383,7 @@ typedef u16 aiType[MAX_AREAS];
 typedef u8 *anType[MAX_AREAS];
 
 
-void autoUpdate (void)
+void autoUpdate(void)
 {
   u16          count,
   count2;
@@ -436,15 +437,12 @@ void autoUpdate (void)
     strcat (tempStr, "areas.bbs");
 
     if ((textFile = fopen(tempStr, "wt")) == NULL)
-    {
-      displayMessage ("Can't open Areas.BBS for output");
-    }
+      displayMessage("Can't open Areas.BBS for output");
     else
     {
       if (config.akaList[0].nodeNum.zone != 0)
-      {
-        fprintf (textFile, "%s ! ", nodeStr(&config.akaList[0].nodeNum));
-      }
+        fprintf(textFile, "%s ! ", nodeStr(&config.akaList[0].nodeNum));
+
       fprintf(textFile, "%s\n", config.sysopName);
       fprintf(textFile, "; Created by %s - %s", VersionStr(), ctime(&timer));
 
@@ -477,7 +475,7 @@ void autoUpdate (void)
             count2 = 0;
             while ((count2 < MAX_FORWARD) && (areaBuf->forwards[count2].nodeNum.zone != 0))
             {
-              strcpy (tempStr, nodeStr (&areaBuf->forwards[count2].nodeNum));
+              strcpy(tempStr, nodeStr(&areaBuf->forwards[count2].nodeNum));
               helpPtr = tempStr;
 
               if (lastZone == areaBuf->forwards[count2].nodeNum.zone)
@@ -520,7 +518,7 @@ void autoUpdate (void)
       fclose (textFile);
     }
   }
-  /*
+#if 0
      if (*config.autoGoldEdAreasPath != 0)
      {
         strcpy (tempStr, config.autoGoldEdAreasPath);
@@ -652,11 +650,11 @@ void autoUpdate (void)
 fclose (textFile);
 }
 }
-*/
+#endif
 if (*config.autoGoldEdAreasPath != 0)
 {
-  strcpy (tempStr, config.autoGoldEdAreasPath);
-  strcat (tempStr, "areas.gld");
+  strcpy(tempStr, config.autoGoldEdAreasPath);
+  strcat(tempStr, "areas.gld");
 
   if ((textFile = fopen(tempStr, "wt")) == NULL)
   {
@@ -835,29 +833,26 @@ if (*config.autoFolderFdPath != 0)
   strcpy (tempStr, config.autoFolderFdPath);
   strcat (tempStr, (config.mailer==1) ? "imfolder.cfg" : "folder.fd");
 
-  if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
-                           O_TRUNC|O_BINARY|O_DENYNONE,
-                           S_IREAD|S_IWRITE)) == -1)
+  if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT| O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
   {
     if (config.mailer!=1)
-      displayMessage ("Can't open FOLDER.FD for output");
+      displayMessage("Can't open FOLDER.FD for output");
     else
-      displayMessage ("Can't open IMFOLDER.CFG for output");
+      displayMessage("Can't open IMFOLDER.CFG for output");
   }
   else
   {
-    if (config.mailer!=1)
+    if (config.mailer != 1)
     {
-      if (*config.sentPath &&
-          !strcmp (config.sentPath, config.rcvdPath))
+      if (*config.sentPath && !strcmp(config.sentPath, config.rcvdPath))
       {
-        memset (&folderFdRec, 0, sizeof(FOLDER));
-        strcpy (folderFdRec.title, "Sent/Received netmail");
-        strcpy (folderFdRec.path,  config.sentPath);
+        memset(&folderFdRec, 0, sizeof(FOLDER));
+        strcpy(folderFdRec.title, "Sent/Received netmail");
+        strcpy(folderFdRec.path,  config.sentPath);
         folderFdRec.behave = FD_LOCAL | FD_NETMAIL | FD_READONLY | FD_EXPORT_OK;
         folderFdRec.userok = 0x03ff;
         folderFdRec.pwdcrc = -1L;
-        write (folderHandle, &folderFdRec, sizeof(FOLDER));
+        write(folderHandle, &folderFdRec, sizeof(FOLDER));
       }
       else
       {
@@ -1204,47 +1199,42 @@ if (*config.autoRAPath != 0)
     strcpy (tempStr, config.autoRAPath);
     strcat (tempStr, "mboards.dat");
 
-    if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
-                             O_TRUNC|O_BINARY|O_DENYNONE,
-                             S_IREAD|S_IWRITE)) == -1)
-    {
-      displayMessage ("Can't open MBOARDS.DAT for output");
-    }
+    if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      displayMessage("Can't open MBOARDS.DAT for output");
     else
     {
       if (*config.pmailPath)
       {
-        memset (&TAGBoardRec, 0, sizeof(MboardType));
-        strcpy (TAGBoardRec.Name, "Personal mail");
+        memset(&TAGBoardRec, 0, sizeof(MboardType));
+        strcpy(TAGBoardRec.Name, "Personal mail");
         TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-        strcpy (TAGBoardRec.Path, config.pmailPath);
+        strcpy(TAGBoardRec.Path, config.pmailPath);
         TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
         TAGBoardRec.Mstyle  = LOCALSTYLE;
         TAGBoardRec.Mtype   = FIDOFORMAT;
         TAGBoardRec.AccessAR = '@';
-        write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+        write(folderHandle, &TAGBoardRec, sizeof(MboardType));
       }
-      if (*config.sentPath &&
-          !strcmp (config.sentPath, config.rcvdPath))
+      if (*config.sentPath && !strcmp(config.sentPath, config.rcvdPath))
       {
-        memset (&TAGBoardRec, 0, sizeof(MboardType));
-        strcpy (TAGBoardRec.Name, "Sent/Received netmail");
+        memset(&TAGBoardRec, 0, sizeof(MboardType));
+        strcpy(TAGBoardRec.Name, "Sent/Received netmail");
         TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-        strcpy (TAGBoardRec.Path, config.sentPath);
+        strcpy(TAGBoardRec.Path, config.sentPath);
         TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
         TAGBoardRec.Mstyle  = LOCALSTYLE;
         TAGBoardRec.Mtype   = FIDOFORMAT;
         TAGBoardRec.AccessAR = '@';
-        write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+        write(folderHandle, &TAGBoardRec, sizeof(MboardType));
       }
       else
       {
         if (*config.sentPath)
         {
-          memset (&TAGBoardRec, 0, sizeof(MboardType));
-          strcpy (TAGBoardRec.Name, "Sent netmail");
+          memset(&TAGBoardRec, 0, sizeof(MboardType));
+          strcpy(TAGBoardRec.Name, "Sent netmail");
           TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-          strcpy (TAGBoardRec.Path, config.sentPath);
+          strcpy(TAGBoardRec.Path, config.sentPath);
           TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
           TAGBoardRec.Mstyle  = LOCALSTYLE;
           TAGBoardRec.Mtype   = FIDOFORMAT;
@@ -1258,76 +1248,76 @@ if (*config.autoRAPath != 0)
           /* anonymous */
           /* allowansi */
           /* allowhandles */
-          write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+          write(folderHandle, &TAGBoardRec, sizeof(MboardType));
         }
 
         if (*config.rcvdPath)
         {
-          memset (&TAGBoardRec, 0, sizeof(MboardType));
-          strcpy (TAGBoardRec.Name, "Received netmail");
+          memset(&TAGBoardRec, 0, sizeof(MboardType));
+          strcpy(TAGBoardRec.Name, "Received netmail");
           TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-          strcpy (TAGBoardRec.Path, config.rcvdPath);
+          strcpy(TAGBoardRec.Path, config.rcvdPath);
           TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
           TAGBoardRec.Mstyle  = LOCALSTYLE;
           TAGBoardRec.Mtype   = FIDOFORMAT;
           TAGBoardRec.AccessAR = '@';
-          write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+          write(folderHandle, &TAGBoardRec, sizeof(MboardType));
         }
       }
 
       if (*config.sentEchoPath)
       {
-        memset (&TAGBoardRec, 0, sizeof(MboardType));
-        strcpy (TAGBoardRec.Name, "Sent echomail");
+        memset(&TAGBoardRec, 0, sizeof(MboardType));
+        strcpy(TAGBoardRec.Name, "Sent echomail");
         TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-        strcpy (TAGBoardRec.Path, config.sentEchoPath);
+        strcpy(TAGBoardRec.Path, config.sentEchoPath);
         TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
         TAGBoardRec.Mstyle  = LOCALSTYLE;
         TAGBoardRec.Mtype   = FIDOFORMAT;
         TAGBoardRec.AccessAR = '@';
-        write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+        write(folderHandle, &TAGBoardRec, sizeof(MboardType));
       }
 
       if (config.dupBoard)
       {
-        memset (&TAGBoardRec, 0, sizeof(MboardType));
-        strcpy (TAGBoardRec.Name, "Duplicate messages");
+        memset(&TAGBoardRec, 0, sizeof(MboardType));
+        strcpy(TAGBoardRec.Name, "Duplicate messages");
         TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-        strcpy (TAGBoardRec.Path, config.sentPath);
+        strcpy(TAGBoardRec.Path, config.sentPath);
         TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
         TAGBoardRec.Mstyle  = LOCALSTYLE;
         TAGBoardRec.Mtype   = RAFORMAT;
         TAGBoardRec.AccessAR = '@';
         TAGBoardRec.RaBoard = config.dupBoard;
-        write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+        write(folderHandle, &TAGBoardRec, sizeof(MboardType));
       }
 
       if (config.badBoard)
       {
-        memset (&TAGBoardRec, 0, sizeof(MboardType));
-        strcpy (TAGBoardRec.Name, "Bad messages");
+        memset(&TAGBoardRec, 0, sizeof(MboardType));
+        strcpy(TAGBoardRec.Name, "Bad messages");
         TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-        strcpy (TAGBoardRec.Path, config.sentPath);
+        strcpy(TAGBoardRec.Path, config.sentPath);
         TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
         TAGBoardRec.Mstyle  = LOCALSTYLE;
         TAGBoardRec.Mtype   = RAFORMAT;
         TAGBoardRec.AccessAR = '@';
         TAGBoardRec.RaBoard = config.badBoard;
-        write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+        write(folderHandle, &TAGBoardRec, sizeof(MboardType));
       }
 
       if (config.recBoard)
       {
-        memset (&TAGBoardRec, 0, sizeof(MboardType));
-        strcpy (TAGBoardRec.Name, "Recovered messages");
+        memset(&TAGBoardRec, 0, sizeof(MboardType));
+        strcpy(TAGBoardRec.Name, "Recovered messages");
         TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-        strcpy (TAGBoardRec.Path, config.sentPath);
+        strcpy(TAGBoardRec.Path, config.sentPath);
         TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
         TAGBoardRec.Mstyle  = LOCALSTYLE;
         TAGBoardRec.Mtype   = RAFORMAT;
         TAGBoardRec.AccessAR = '@';
         TAGBoardRec.RaBoard = config.recBoard;
-        write (folderHandle, &TAGBoardRec, sizeof(MboardType));
+        write(folderHandle, &TAGBoardRec, sizeof(MboardType));
       }
 
       for (count = 0; count < MAX_NETAKAS; count++)
@@ -1441,31 +1431,25 @@ if (*config.autoRAPath != 0)
     strcpy (tempStr, config.autoRAPath);
     strcat (tempStr, "messages.ra");
 
-    if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
-                             O_TRUNC|O_BINARY|O_DENYNONE,
-                             S_IREAD|S_IWRITE)) == -1)
-    {
-      displayMessage ("Can't open MESSAGES.RA for output");
-    }
+    if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      displayMessage("Can't open MESSAGES.RA for output");
     else
     {
       if (config.bbsProgram == BBS_RA1X)
       {
         for (count2 = 1; count2 <= MBBOARDS; count2++)
         {
-          memset (&messageRaRec, 0, sizeof(messageRaType));
+          memset(&messageRaRec, 0, sizeof(messageRaType));
 
           count = 0;
-          while ((count < MAX_NETAKAS) &&
-                 (config.netmailBoard[count] != count2))
-          {
+          while (count < MAX_NETAKAS && config.netmailBoard[count] != count2)
             count++;
-          }
+
           if (count < MAX_NETAKAS)
           {
             if (*config.descrAKA[count])
             {
-              strncpy (messageRaRec.name, config.descrAKA[count], 40);
+              strncpy(messageRaRec.name, config.descrAKA[count], 40);
             }
             else
             {
@@ -1581,21 +1565,16 @@ if (*config.autoRAPath != 0)
         strcat (tempStr, "messages.rdx");
 
         if ((config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB) &&
-            ((indexHandle = open(tempStr, O_WRONLY|O_CREAT|
-                                 O_TRUNC|O_BINARY|O_DENYNONE,
-                                 S_IREAD|S_IWRITE)) == -1))
-        {
-          displayMessage ("Can't open MESSAGES.RDX for output");
-        }
+            ((indexHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1))
+          displayMessage("Can't open MESSAGES.RDX for output");
         else
         {
           for (count2 = 1; count2 <= maxBoardNumRA; count2++)
           {
-            memset (&messageRa2Rec, 0, sizeof(messageRa2Type));
+            memset(&messageRa2Rec, 0, sizeof(messageRa2Type));
 
             count = 0;
-            while ((count < MAX_NETAKAS) &&
-                   (config.netmailBoard[count] != count2))
+            while (count < MAX_NETAKAS && config.netmailBoard[count] != count2)
             {
               count++;
             }
@@ -1603,12 +1582,12 @@ if (*config.autoRAPath != 0)
             {
               if (*config.descrAKA[count])
               {
-                strncpy (messageRa2Rec.name, config.descrAKA[count], 40);
+                strncpy(messageRa2Rec.name, config.descrAKA[count], 40);
               }
               else
               {
                 if (count)
-                  sprintf (messageRa2Rec.name, "Netmail AKA %2u", count);
+                  sprintf(messageRa2Rec.name, "Netmail AKA %2u", count);
                 else
                   strcpy (messageRa2Rec.name, "Netmail Main");
               }
@@ -1844,52 +1823,37 @@ if (*config.autoRAPath != 0)
 
   if (config.bbsProgram == BBS_SBBS)
   {
-    memset (SBBSakaUsed, 0, MBBOARDS);
+    memset(SBBSakaUsed, 0, MBBOARDS);
 
-    strcpy (tempStr, config.autoRAPath);
-    strcat (tempStr, "boards.bbs");
+    strcpy(tempStr, config.autoRAPath);
+    strcat(tempStr, "boards.bbs");
 
-    if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
-                             O_TRUNC|O_BINARY|O_DENYNONE,
-                             S_IREAD|S_IWRITE)) == -1)
-    {
-      displayMessage ("Can't open BOARDS.BBS for output");
-    }
+    if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      displayMessage("Can't open BOARDS.BBS for output");
     else
     {
       for (count2 = 1; count2 <= MBBOARDS; count2++)
       {
-        memset (&SBBSBoardRec, 0, sizeof(SBBSBoardRecType));
+        memset(&SBBSBoardRec, 0, sizeof(SBBSBoardRecType));
 
         count = 0;
-        while ((count < MAX_NETAKAS) &&
-               (config.netmailBoard[count] != count2))
-        {
+        while (count < MAX_NETAKAS && config.netmailBoard[count] != count2)
           count++;
-        }
+
         if (count < MAX_NETAKAS)
         {
           if (*config.descrAKA[count])
-          {
-            strncpy (SBBSBoardRec.Name, config.descrAKA[count], 30);
-            /*                   strncpy (SBBSBoardRec.QwkName, config.descrAKA[count], 12); */
-          }
+            strncpy(SBBSBoardRec.Name, config.descrAKA[count], 30);
           else
           {
             if (count)
-            {
-              sprintf (SBBSBoardRec.Name, "Netmail AKA %2u", count);
-              /*                      sprintf (SBBSBoardRec.QwkName, "Netm. AKA %2u", count); */
-            }
+              sprintf(SBBSBoardRec.Name, "Netmail AKA %2u", count);
             else
-            {
-              strcpy (SBBSBoardRec.Name, "Netmail Main");
-              /*                      strcpy (SBBSBoardRec.QwkName, "Netmail Main"); */
-            }
+              strcpy(SBBSBoardRec.Name, "Netmail Main");
           }
           SBBSBoardRec.NameLength = strlen(SBBSBoardRec.Name);
 
-          memcpy (SBBSBoardRec.QwkName, config.qwkName[count], 12);
+          memcpy(SBBSBoardRec.QwkName, config.qwkName[count], 12);
           SBBSBoardRec.QwkNameLength = strlen(config.qwkName[count]);
 
           SBBSBoardRec.Typ         = 1;
@@ -2017,33 +1981,26 @@ if (*config.autoRAPath != 0)
       strcpy (tempStr, config.autoRAPath);
       strcat (tempStr, "config.bbs");
 
-      if (((folderHandle = open(tempStr, O_WRONLY|O_BINARY|O_DENYNONE,
-                                S_IREAD|S_IWRITE)) == -1) ||
+      if (((folderHandle = open(tempStr, O_WRONLY | O_BINARY)) == -1) ||
           (lseek(folderHandle, 0x442, SEEK_SET) == -1)             ||
           (write(folderHandle, SBBSakaUsed, MBBOARDS) != MBBOARDS)           ||
           (close(folderHandle) == -1))
-      {
-        displayMessage ("Could not update CONFIG.BBS");
-      }
+        displayMessage("Could not update CONFIG.BBS");
     }
   }
 #endif
   if (config.bbsProgram == BBS_QBBS)
   {
-    strcpy (tempStr, config.autoRAPath);
-    strcat (tempStr, "msgcfg.dat");
+    strcpy(tempStr, config.autoRAPath);
+    strcat(tempStr, "msgcfg.dat");
 
-    if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
-                             O_TRUNC|O_BINARY|O_DENYNONE,
-                             S_IREAD|S_IWRITE)) == -1)
-    {
+    if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       displayMessage ("Can't open MSGCFG.DAT for output");
-    }
     else
     {
       for (count2 = 1; count2 <= MBBOARDS; count2++)
       {
-        memset (&QBBSBoardRec, 0, sizeof(QBBSBoardRecType));
+        memset(&QBBSBoardRec, 0, sizeof(QBBSBoardRecType));
 
         count = 0;
         while ((count < MAX_NETAKAS) &&
@@ -2192,39 +2149,31 @@ if (*config.autoRAPath != 0)
     strcpy (tempStr, config.autoRAPath);
     strcat (tempStr, "messages.pb");
 
-    if ((folderHandle = open(tempStr, O_WRONLY|O_CREAT|
-                             O_TRUNC|O_BINARY|O_DENYNONE,
-                             S_IREAD|S_IWRITE)) == -1)
-    {
+    if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       displayMessage ("Can't open MESSAGES.PB for output");
-    }
     else
     {
       for (count2 = 1; count2 <= maxBoardNumRA; count2++)
       {
-        memset (&proBoardRec, 0, sizeof(proBoardType));
+        memset(&proBoardRec, 0, sizeof(proBoardType));
 
         proBoardRec.areaNum = count2;
         proBoardRec.hudsonBase = count2;
 
         count = 0;
-        while ((count < MAX_NETAKAS) &&
-               (config.netmailBoard[count] != count2))
-        {
+        while (count < MAX_NETAKAS && config.netmailBoard[count] != count2)
           count++;
-        }
+
         if (count < MAX_NETAKAS)
         {
           if (*config.descrAKA[count])
-          {
-            strncpy (proBoardRec.name, config.descrAKA[count], 40);
-          }
+            strncpy(proBoardRec.name, config.descrAKA[count], 40);
           else
           {
             if (count)
-              sprintf (proBoardRec.name, "Netmail AKA %2u", count);
+              sprintf(proBoardRec.name, "Netmail AKA %2u", count);
             else
-              strcpy (proBoardRec.name, "Netmail Main");
+              strcpy(proBoardRec.name, "Netmail Main");
           }
           proBoardRec.msgType = (config.msgKindsRA[count] <= 3) ? config.msgKindsRA[count] : 0;
           proBoardRec.msgKind = MSGKIND_NET;;

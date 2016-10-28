@@ -33,23 +33,12 @@
 #pragma message "__MSDOS__ is defined"
 #endif
 
-#ifdef __OS2__
-#define INCL_DOSPROCESS
-#include <os2.h>
-
-extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
-
-#endif
-
-#ifndef __32BIT__
-#include <bios.h>
-#else
 #include <conio.h>
-#endif
 #include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <io.h>
+#include <share.h>     // SH_DENY* flags
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,22 +65,10 @@ extern  u16 allowConversion;
 #ifdef __32BIT__
 #define WaitForKey() kbhit()
 #define GetKey()     getch()
-#else
-#define WaitForKey() bioskey(0)
-#define GetKey()     bioskey(1)
-#endif
-
-#if !(defined(__FMAILX__) || defined(__32BIT) || defined(__WIN32__))
-extern unsigned cdecl _stklen = 16384;
 #endif
 
 extern uplinkNodeStrType uplinkNodeStr;
-#ifndef __32BIT__
-extern screenCharType far *screen;
-char promptStr[128];
-#endif
 extern s16 color;
-
 
 u16 defaultEnumRA;
 s16 boardEdit = 0;
@@ -99,14 +76,14 @@ s16 boardEdit = 0;
 badEchoType  badEchos[MAX_BAD_ECHOS];
 u16          badEchoCount = 0;
 
-funcParType boardSelect[MAX_AKAS+3];
+funcParType boardSelect[MAX_AKAS + 3];
 
 configType     config;
-char    configPath[128];
+char           configPath[FILENAME_MAX];
 windowLookType windowLook;
 
 u16             nodeInfoCount;
-nodeInfoType    *nodeInfo[MAX_NODES];
+nodeInfoType   *nodeInfo[MAX_NODES];
 rawEchoType     rawEchoRec;
 
 rawEchoType     echoDefaultsRec; /* used in IMPORT.C */
@@ -140,13 +117,11 @@ struct  COUNTRY
   struct country countryInfo;
 #endif
 
-int cdecl main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   s16       ch;
   menuType *mainMenu     = NULL;
-  menuType *arcMenu      = NULL;
   menuType *arc32Menu    = NULL;
-  menuType *deArcMenu    = NULL;
   menuType *deArc32Menu  = NULL;
   menuType *sysMiscMenu  = NULL;
   menuType *systemMenu   = NULL;
@@ -170,22 +145,11 @@ int cdecl main(int argc, char *argv[])
   menuType *autoExpMenu  = NULL;
   menuType *anImpMenu    = NULL;
   menuType *impExpMenu   = NULL;
-#ifndef __FMAILX__
-#ifndef __32BIT__
-  menuType *swapMenu     = NULL;
-#endif
-#endif
   toggleType bbsToggle;
   toggleType logStyleToggle;
   toggleType tearToggle;
   toggleType arcToggle;
   toggleType colorToggle;
-#ifndef __FMAILX__
-#ifndef __32BIT__
-  toggleType bufferToggle;
-  toggleType ftBufferToggle;
-#endif
-#endif
   fhandle     configHandle;
   s16         update = 0;
   u16         mode = 0;
@@ -203,22 +167,12 @@ int cdecl main(int argc, char *argv[])
   rawEchoType *adefBuf;
   time_t      time1, time2, time2a;
 
+#ifdef __BORLANDC__
   putenv("TZ=LOC0");
   tzset();
-#ifdef __OS2__
-  WinSetTitle(FSETUP_VER_STRING);
-#endif
+#endif // __BORLANDC__
 
   allowConversion = 1;
-
-#ifndef __32BIT__
-  strcpy(promptStr, "PROMPT=Enter the command \"EXIT\" to return to "FSNAME".$_");
-  if ((helpPtr = getenv("PROMPT")) != NULL && strlen(helpPtr) <= 64)
-    strcat(promptStr, helpPtr);
-  else
-    strcat(promptStr, "$n$g");
-  putenv(promptStr);
-#endif
 
 #ifndef __WIN32__
   country(0, &countryInfo);
@@ -241,21 +195,24 @@ int cdecl main(int argc, char *argv[])
 
   if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0)
   {
-    strcpy (configPath, argv[0]);
-    *(strrchr(configPath, '\\') + 1) = 0;
+    strcpy(configPath, argv[0]);
+    if ((helpPtr = strrchr(configPath, '\\')) == NULL)
+      strcpy(configPath, ".\\");
+    else
+      helpPtr[1] = 0;
   }
   else
   {
-    strcpy (configPath, helpPtr);
-    if (configPath[strlen(configPath)-1] != '\\')
+    strcpy(configPath, helpPtr);
+    if (configPath[strlen(configPath) - 1] != '\\')
       strcat(configPath, "\\");
   }
 
   memset(&config, 0, sizeof(configType));
   strcpy(stpcpy(configFileName, configPath), dCFGFNAME);
 
-  if (((configHandle = open(configFileName, O_BINARY | O_RDWR)) == -1) ||
-      ((count = _read(configHandle, &config, sizeof (configType))) == 0) ||
+  if (((configHandle = open(configFileName, O_BINARY | O_RDONLY)) == -1) ||
+      ((count = read(configHandle, &config, sizeof (configType))) == 0) ||
       (close(configHandle) == -1))
   {
     memset(&config, 0, sizeof(configType));
@@ -270,72 +227,15 @@ int cdecl main(int argc, char *argv[])
 
     config.mailOptions.dupDetection = 1;
     config.mailOptions.checkPktDest = 1;
-    config.genOptions.useEMS        = 1;
-    config.genOptions.swap          = 1;
-    config.genOptions.swapEMS       = 1;
-    config.genOptions.swapXMS       = 1;
-
     config.mbOptions.mbSharing      = 1;
 
     config.logInfo = LOG_INBOUND |LOG_OUTBOUND|LOG_PKTINFO|LOG_XPKTINFO|
                      LOG_UNEXPPWD|LOG_SENTRCVD|LOG_STATS;
-
-    strcpy (config.arc.programName, "PKArc.Com -a");
-#ifdef __FMAILX__
-    strcpy (config.zip.programName, "PKZip.Exe -ex -)");
-#else
-    strcpy (config.zip.programName, "PKZip.Exe -ex");
-#endif
-    strcpy (config.lzh.programName, "LHA.Exe a /m /o");
-    strcpy (config.pak.programName, "Pak.Exe a /ST /P /WN");
-    strcpy (config.zoo.programName, "Zoo.Exe aP:");
-    strcpy (config.arj.programName, "ARJ.Exe a -e -u -y");
-    strcpy (config.sqz.programName, "SQZ.Exe a /p3");
-    strcpy (config.uc2.programName, "UC.Exe a");
-    strcpy (config.rar.programName, "RAR.Exe a -y -s -m5 -ep -std -cfg-");
-    strcpy (config.jar.programName, "JAR.Exe a -y");
-    config.arc.memRequired = 0;
-    config.lzh.memRequired = 0;
-    config.pak.memRequired = 0;
-    config.zoo.memRequired = 0;
-    config.arj.memRequired = 0;
-    config.sqz.memRequired = 0;
-    config.uc2.memRequired = 0;
-    config.rar.memRequired = 0;
-    config.jar.memRequired = 0;
-
-    strcpy (config.unArc.programName, "PKXArc.Com -r");
-#ifdef __FMAILX__
-    strcpy (config.unZip.programName, "PKUnzip.Exe -o -)");
-#else
-    strcpy (config.unZip.programName, "PKUnzip.Exe -o");
-#endif
-    strcpy (config.unLzh.programName, "LHA.Exe e /cm");
-    strcpy (config.unPak.programName, "PAK.Exe E /WA");
-    strcpy (config.unZoo.programName, "Zoo.Exe eO");
-    strcpy (config.unArj.programName, "ARJ.Exe e -c -y");
-    strcpy (config.unSqz.programName, "SQZ.Exe e /o1");
-    strcpy (config.unUc2.programName, "UC.Exe e");
-    strcpy (config.unRar.programName, "RAR.Exe e -y -std -cfg-");
-    strcpy (config.unJar.programName, "JAR.Exe e -y");
-    config.unArc.memRequired = 0;
-    config.unLzh.memRequired = 0;
-    config.unPak.memRequired = 0;
-    config.unZoo.memRequired = 0;
-    config.unArj.memRequired = 0;
-    config.unSqz.memRequired = 0;
-    config.unUc2.memRequired = 0;
-    config.unRar.memRequired = 0;
-    config.unJar.memRequired = 0;
   }
   if (count == 0)
   {
     strcpy (config.arc32.programName, "PKArc.Com -a");
-#ifdef __FMAILX__
-    strcpy (config.zip32.programName, "PKZip.Exe -ex -)");
-#else
     strcpy (config.zip32.programName, "PKZip.Exe -ex");
-#endif
     strcpy (config.lzh32.programName, "LHA.Exe a /m /o");
     strcpy (config.pak32.programName, "Pak.Exe a /ST /P /WN");
     strcpy (config.zoo32.programName, "Zoo.Exe aP:");
@@ -355,11 +255,7 @@ int cdecl main(int argc, char *argv[])
     config.jar32.memRequired = 0;
 
     strcpy (config.unArc32.programName, "PKXArc.Com -r");
-#ifdef __FMAILX__
-    strcpy (config.unZip32.programName, "PKUnzip.Exe -o -)");
-#else
     strcpy (config.unZip32.programName, "PKUnzip.Exe -o");
-#endif
     strcpy (config.unLzh32.programName, "LHA.Exe e /cm");
     strcpy (config.unPak32.programName, "PAK.Exe E /WA");
     strcpy (config.unZoo32.programName, "Zoo.Exe eO");
@@ -381,11 +277,7 @@ int cdecl main(int argc, char *argv[])
   else if (count <= 8192)
   {
     strcpy (config.arc32.programName, config.arc.programName);
-#ifdef __FMAILX__
     strcpy (config.zip32.programName, config.zip.programName);
-#else
-    strcpy (config.zip32.programName, config.zip.programName);
-#endif
     strcpy (config.lzh32.programName, config.lzh.programName);
     strcpy (config.pak32.programName, config.pak.programName);
     strcpy (config.zoo32.programName, config.zoo.programName);
@@ -396,11 +288,7 @@ int cdecl main(int argc, char *argv[])
     strcpy (config.jar32.programName, config.jar.programName);
 
     strcpy (config.unArc32.programName, config.unArc.programName);
-#ifdef __FMAILX__
     strcpy (config.unZip32.programName, config.unZip.programName);
-#else
-    strcpy (config.unZip32.programName, config.unZip.programName);
-#endif
     strcpy (config.unLzh32.programName, config.unLzh.programName);
     strcpy (config.unPak32.programName, config.unPak.programName);
     strcpy (config.unZoo32.programName, config.unZoo.programName);
@@ -521,13 +409,6 @@ int cdecl main(int argc, char *argv[])
       mode = 1;
     if (stricmp(argv[1], "/C") == 0)
       mode = 2;
-#ifndef __32BIT__
-#ifdef __FMAILX__
-    if ( !stricmp(argv[1], "/OS2") || !stricmp (argv[1], "/WIN") ||
-         !stricmp(argv[1], "/X32") || !stricmp (argv[1], "/32") )
-      xOS2 = 1;
-#endif
-#endif
   }
   arcToggle.data = (char*)&config.defaultArc;
   arcToggle.text  [ 0] = "None";
@@ -587,34 +468,6 @@ int cdecl main(int argc, char *argv[])
   colorToggle.text[2] = "Marine";
   colorToggle.retval[2] = 2;
 
-#ifndef __FMAILX__
-#ifndef __32BIT__
-  bufferToggle.data    = (char*)&config.bufSize;
-  bufferToggle.text[0] = "Huge";
-  bufferToggle.retval[0] = 0;
-  bufferToggle.text[1] = "Large";
-  bufferToggle.retval[1] = 1;
-  bufferToggle.text[2] = "Medium";
-  bufferToggle.retval[2] = 2;
-  bufferToggle.text[3] = "Small";
-  bufferToggle.retval[3] = 3;
-  bufferToggle.text[4] = "Tiny";
-  bufferToggle.retval[4] = 4;
-
-  ftBufferToggle.data    = (char*)&config.ftBufSize;
-  ftBufferToggle.text[0] = "Huge";
-  ftBufferToggle.retval[0] = 0;
-  ftBufferToggle.text[1] = "Large";
-  ftBufferToggle.retval[1] = 1;
-  ftBufferToggle.text[2] = "Medium";
-  ftBufferToggle.retval[2] = 2;
-  ftBufferToggle.text[3] = "Small";
-  ftBufferToggle.retval[3] = 3;
-  ftBufferToggle.text[4] = "Tiny";
-  ftBufferToggle.retval[4] = 4;
-#endif
-#endif
-
   bbsToggle.data    = (char*)&config.bbsProgram;
   bbsToggle.text[0] = "RemoteAccess < 2.00";
   bbsToggle.retval[0] = BBS_RA1X;
@@ -646,9 +499,7 @@ int cdecl main(int argc, char *argv[])
   tearToggle.retval[4] = 6;
 
   initWindow (mode);
-#ifdef __32BIT__
   color = 1;
-#endif
   windowLook.background   = RED;
   windowLook.actvborderfg = YELLOW;
   windowLook.editfg       = RED;
@@ -661,10 +512,6 @@ int cdecl main(int argc, char *argv[])
     deInit(5);
     return 1;
   }
-#ifndef __32BIT__
-  if (!color)
-    screen[81].attr = 0;
-#endif
   sprintf(versionStr, "%s - Configuration utility", VersionStr());
 
   printString(versionStr, 3, 1, YELLOW, RED, MONO_HIGH);
@@ -757,7 +604,7 @@ int cdecl main(int argc, char *argv[])
     *helpPtr = 0;
 
   if  (  !access(tempStr2, 0)
-      && (fmailLocHandle = open(tempStr, O_WRONLY | O_DENYWRITE | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1
+      && (fmailLocHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYWR, S_IREAD | S_IWRITE)) == -1
       && errno != ENOFILE
       )
   {
@@ -768,7 +615,7 @@ int cdecl main(int argc, char *argv[])
     time2 = time1;
 
     ch = 0;
-    while (  (fmailLocHandle = open(tempStr, O_WRONLY | O_DENYALL | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1
+    while (  (fmailLocHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
           && (!config.activTimeOut || time2 - time1 < config.activTimeOut)
           && (ch = GetKey() & 0xff) != 27
           )
@@ -942,263 +789,82 @@ int cdecl main(int argc, char *argv[])
   addItem(impExpMenu, NEW_WINDOW, "AutoExport", 0, autoExpMenu, 0, 0,
            "Automatically create GoldEd/FM/RA/Other BBS's area files and Areas.BBS");
 
-#ifdef __FMAILX__
-#define __MEM__ DISPLAY
-#else
-#define __MEM__ NUM_INT
-#endif
-
-  if ((arcMenu = createMenu(" Compression programs ")) == NULL)
-    goto nomem;
-
-  addItem(arcMenu, ENUM_INT, "Def", 0, &arcToggle, 0, 11,
-           "Compression program to be used for nodes not listed in the Node Manager");
-  addItem(arcMenu, TEXT, "ARC", 0, config.arc.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.arc.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(arcMenu, TEXT, "ZIP", 0, config.zip.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.zip.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(arcMenu, TEXT, "LZH", 0, config.lzh.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.lzh.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(arcMenu, TEXT, "PAK", 0, config.pak.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.pak.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(arcMenu, TEXT, "ZOO", 0, config.zoo.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.zoo.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(arcMenu, TEXT, "ARJ", 0, config.arj.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.arj.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(arcMenu, TEXT, "SQZ", 0, config.sqz.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.sqz.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(arcMenu, TEXT, "UC2", 0, config.uc2.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.uc2.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(arcMenu, TEXT, "RAR", 0, config.rar.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.rar.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(arcMenu, TEXT, "JAR", 0, config.jar.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.jar.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(arcMenu, TEXT, "-?-", 0, config.customArc.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches> of extra compression utility");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.customArc.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(arcMenu, TEXT, "Pre", 0, config.preArc.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches> of program called before compression");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.preArc.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(arcMenu, TEXT, "Post", 0, config.postArc.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches> of program called after compression");
-  addItem(arcMenu, __MEM__, "Mem", 52, &config.postArc.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-
-  if ((arc32Menu = createMenu(" Compression programs/32 ")) == NULL)
+  if ((arc32Menu = createMenu(" Compression programs ")) == NULL)
     goto nomem;
 
   addItem(arc32Menu, ENUM_INT, "Def", 0, &arcToggle, 0, 11,
            "Compression program to be used for nodes not listed in the Node Manager");
   addItem(arc32Menu, TEXT, "ARC", 0, config.arc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.arc32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(arc32Menu, TEXT, "ZIP", 0, config.zip32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.zip32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(arc32Menu, TEXT, "LZH", 0, config.lzh32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.lzh32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(arc32Menu, TEXT, "PAK", 0, config.pak32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.pak32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(arc32Menu, TEXT, "ZOO", 0, config.zoo32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.zoo32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(arc32Menu, TEXT, "ARJ", 0, config.arj32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.arj32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(arc32Menu, TEXT, "SQZ", 0, config.sqz32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.sqz32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(arc32Menu, TEXT, "UC2", 0, config.uc232.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.uc232.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(arc32Menu, TEXT, "RAR", 0, config.rar32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.rar32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(arc32Menu, TEXT, "JAR", 0, config.jar32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.jar32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(arc32Menu, TEXT, "-?-", 0, config.customArc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches> of extra compression utility");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.customArc32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(arc32Menu, TEXT, "Pre", 0, config.preArc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches> of program called before compression");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.preArc32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(arc32Menu, TEXT, "Post", 0, config.postArc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches> of program called after compression");
-  addItem(arc32Menu, __MEM__, "Mem", 52, &config.postArc32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
 
-  if ((deArcMenu = createMenu(" Decompression programs ")) == NULL)
-    goto nomem;
-
-  addItem(deArcMenu, TEXT, "ARC", 0, config.unArc.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.unArc.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(deArcMenu, TEXT, "ZIP", 0, config.unZip.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.unZip.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(deArcMenu, TEXT, "LZH", 0, config.unLzh.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.unLzh.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(deArcMenu, TEXT, "PAK", 0, config.unPak.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.unPak.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(deArcMenu, TEXT, "ZOO", 0, config.unZoo.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.unZoo.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(deArcMenu, TEXT, "ARJ", 0, config.unArj.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.unArj.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(deArcMenu, TEXT, "SQZ", 0, config.unSqz.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.unSqz.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(deArcMenu, TEXT, "UC2", 0, config.unUc2.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.unUc2.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(deArcMenu, TEXT, "RAR", 0, config.unRar.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.unRar.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(deArcMenu, TEXT, "JAR", 0, config.unJar.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches>");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.unJar.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(deArcMenu, TEXT, "GUS", 0, config.GUS.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches> of General Unpack Shell");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.GUS.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(deArcMenu, TEXT, "Pre", 0, config.preUnarc.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches> of program called before decompression");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.preUnarc.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-  addItem(deArcMenu, TEXT, "Post", 0, config.postUnarc.programName, sizeof(archiverInfo)-3, 0,
-           "<program name>.<extension> <switches> of program called after decompression");
-  addItem(deArcMenu, __MEM__, "Mem", 52, &config.postUnarc.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-
-  if ((deArc32Menu = createMenu(" Decompression programs/32 ")) == NULL)
+  if ((deArc32Menu = createMenu(" Decompression programs ")) == NULL)
     goto nomem;
 
   addItem(deArc32Menu, TEXT, "ARC", 0, config.unArc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.unArc32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(deArc32Menu, TEXT, "ZIP", 0, config.unZip32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.unZip32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(deArc32Menu, TEXT, "LZH", 0, config.unLzh32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.unLzh32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(deArc32Menu, TEXT, "PAK", 0, config.unPak32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.unPak32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(deArc32Menu, TEXT, "ZOO", 0, config.unZoo32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.unZoo32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(deArc32Menu, TEXT, "ARJ", 0, config.unArj32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.unArj32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(deArc32Menu, TEXT, "SQZ", 0, config.unSqz32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.unSqz32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(deArc32Menu, TEXT, "UC2", 0, config.unUc232.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.unUc232.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(deArc32Menu, TEXT, "RAR", 0, config.unRar32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.unRar32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(deArc32Menu, TEXT, "JAR", 0, config.unJar32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.unJar32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(deArc32Menu, TEXT, "GUS", 0, config.GUS32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches> of General Unpack Shell");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.GUS32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(deArc32Menu, TEXT, "Pre", 0, config.preUnarc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches> of program called before decompression");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.preUnarc32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
   addItem(deArc32Menu, TEXT, "Post", 0, config.postUnarc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches> of program called after decompression");
-  addItem(deArc32Menu, __MEM__, "Mem", 52, &config.postUnarc32.memRequired, 3, 640,
-           "Amount of memory required (0-640 Kb, 0 = always swap)");
-#undef __MEM__
 
   if ((pathMenu = createMenu(" Directories ")) == NULL)
     goto nomem;
 
-  addItem(pathMenu, PATH, "Message base", 0, config.bbsPath, sizeof(pathType)-1, 0,
-           "Where the RemoteAccess/SuperBBS/QuickBBS/TAG message base files are located");
-  addItem(pathMenu, PATH, "Netmail", 0, config.netPath, sizeof(pathType)-1, 0,
-           "Where the netmail messages are stored");
-  addItem(pathMenu, PATH, "Incoming mail", 0, config.inPath, sizeof(pathType)-1, 0,
-           "Where the incoming mailbundles are stored");
-  addItem(pathMenu, PATH, "Outgoing mail", 0, config.outPath, sizeof(pathType)-1, 0,
-           "Where the outgoing mailbundles are stored");
+  addItem(pathMenu, PATH, "Message base"    , 0, config.bbsPath      , sizeof(pathType) - 1, 0, "Where the RemoteAccess/SuperBBS/QuickBBS/TAG message base files are located");
+  addItem(pathMenu, PATH, "Netmail"         , 0, config.netPath      , sizeof(pathType) - 1, 0, "Where the netmail messages are stored");
+  addItem(pathMenu, PATH, "Incoming mail"   , 0, config.inPath       , sizeof(pathType) - 1, 0, "Where the incoming mailbundles are stored");
+  addItem(pathMenu, PATH, "Outgoing mail"   , 0, config.outPath      , sizeof(pathType) - 1, 0, "Where the outgoing mailbundles are stored");
+  addItem(pathMenu, PATH, "Outgoing backup" , 0, config.outBakPath   , sizeof(pathType) - 1, 0, "Where backups of the outgoing mail files are stored");
   addItem(pathMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(pathMenu, PATH, "Local PKTs", 0, config.securePath, sizeof(pathType)-1, 0,
-           "Used for local programs that generate PKT files with bad address info (optional)");
-  addItem(pathMenu, PATH, "Sent netmail", 0, config.sentPath, sizeof(pathType)-1, 0,
-           "Where sent netmail messages are moved to (optional)");
-  addItem(pathMenu, PATH, "Received netmail", 0, config.rcvdPath, sizeof(pathType)-1, 0,
-           "Where received netmail messages are moved to (optional)");
-  addItem(pathMenu, PATH, "Sent echomail", 0, config.sentEchoPath, sizeof(pathType)-1, 0,
-           "Where sent echomail messages are copied to (optional)");
-  addItem(pathMenu, PATH, "Semaphore", 0, config.semaphorePath, sizeof(pathType)-1, 0,
-           "Where the rescan semaphore files of your mailer should be created (optional)");
+  addItem(pathMenu, PATH, "Local PKTs"      , 0, config.securePath   , sizeof(pathType) - 1, 0, "Used for local programs that generate PKT files with bad address info (optional)");
+  addItem(pathMenu, PATH, "Sent netmail"    , 0, config.sentPath     , sizeof(pathType) - 1, 0, "Where sent netmail messages are moved to (optional)");
+  addItem(pathMenu, PATH, "Received netmail", 0, config.rcvdPath     , sizeof(pathType) - 1, 0, "Where received netmail messages are moved to (optional)");
+  addItem(pathMenu, PATH, "Sent echomail"   , 0, config.sentEchoPath , sizeof(pathType) - 1, 0, "Where sent echomail messages are copied to (optional)");
+  addItem(pathMenu, PATH, "Semaphore"       , 0, config.semaphorePath, sizeof(pathType) - 1, 0, "Where the rescan semaphore files of your mailer should be created (optional)");
 
   if ((logMenu = createMenu(" Log files ")) == NULL)
     goto nomem;
@@ -1501,21 +1167,6 @@ int cdecl main(int argc, char *argv[])
   addItem(groupMenu, TEXT, "Z", 32, config.groupDescr[25], 26, 0,
            "Description of a group of echomail conferences");
 
-#ifndef __FMAILX__
-#ifndef __32BIT__
-  if ((swapMenu = createMenu(" Swapping ")) == NULL)
-    goto nomem;
-
-  addItem(swapMenu, BOOL_INT, "Swapping", 0, &config.genOptions, BIT2, 0,
-           "Swap FMail out of memory before executing de-/compression programs");
-  addItem(swapMenu, BOOL_INT, "ÌÍ> Use EMS", 0, &config.genOptions, BIT3, 0,
-           "Use EMS memory if possible instead of the harddisk");
-  addItem(swapMenu, BOOL_INT, "ÈÍ> Use XMS", 0, &config.genOptions, BIT4, 0,
-           "Use XMS memory if possible instead of the harddisk");
-  addItem(swapMenu, PATH, "Swap file path", 0, config.swapPath, sizeof(pathType)-1, 0,
-           "Where the swap file will be located");
-#endif
-#endif
   if ((address1Menu = createMenu(" Addresses 1 ")) == NULL)
     goto nomem;
 
@@ -1646,43 +1297,16 @@ int cdecl main(int argc, char *argv[])
     goto nomem;
 
   addItem(sysMiscMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(sysMiscMenu, BOOL_INT, "Long file names", 0, &config.genOptions, BIT5, 0,
-           "Use long file names for JAM bases if possible");
   addItem(sysMiscMenu, NUM_INT, "Max exports", 0, &config.maxForward, 3, 256,
            "The max number of export addresses that can be used in the Area Manager (>= 64)");
   addItem(sysMiscMenu, BOOL_INT, "FMail MT aware", 0, &config.genOptions, BIT13, 0,
            "Let FMail return time slices in Multi Tasking environments (SLOWS FMAIL DOWN!)");
   addItem(sysMiscMenu, BOOL_INT, "FTools MT aware", 0, &config.genOptions, BIT14, 0,
            "Let FTools return time slices in Multi Tasking environments (SLOWS FTOOLS DOWN!)");
-  addItem(sysMiscMenu,
-#ifdef __32BIT__
-           NUM_INT|NO_EDIT,
-#else
-           NUM_INT|(xOS2?NO_EDIT:0),
-#endif
-           "Extra handles", 0, &config.extraHandles, 3, 235,
-           "Use up to 235 extra file handles in addition to the standard 20 file handles");
   addItem(sysMiscMenu, NUM_INT, "Active time out", 0, &config.activTimeOut, 3, 999,
            "How long FMail should wait for another copy to finish, 0 = keep waiting");
-  addItem(sysMiscMenu, BOOL_INT, "Ctrl-Break", 0, &config.genOptions, BIT1, 0,
-           "Let FMail check for Ctrl-Break");
   addItem(sysMiscMenu, BOOL_INT, "Control codes", 0, &config.genOptions, BIT12, 0,
            "Allow control codes (ASCII 1-26) in area descriptions (use at your own risk)");
-  addItem(sysMiscMenu,
-#if defined(__FMAILX__) || defined(__32BIT__)
-           DISPLAY, "Buffer size", 0, NULL, 0, 5, "");
-
-#else
-           ENUM_INT, "Buffer size", 0, &bufferToggle, 0, 5,
-           "Size of FMail's internal file buffers");
-#endif
-  addItem(sysMiscMenu,
-#if defined(__FMAILX__) || defined(__32BIT__)
-           DISPLAY, "FT buf size", 0, NULL, 0, 5, "");
-#else
-           ENUM_INT, "FT buf size", 0, &ftBufferToggle, 0, 5,
-           "Size of FTools's internal file buffers");
-#endif
   addItem(sysMiscMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(sysMiscMenu, BOOL_INT, "Monochrome", 0, &config.genOptions, BIT6, 0,
            "Do not use color even if a color card is detected (same as /M switch)");
@@ -1692,30 +1316,14 @@ int cdecl main(int argc, char *argv[])
   if ((systemMenu = createMenu(" System info ")) == NULL)
     goto nomem;
 
-  addItem(systemMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(systemMenu, NEW_WINDOW, "Miscellaneous", 0, sysMiscMenu, 2, -2,
-           "File handles, colors, buffer sizes");
-  addItem(systemMenu, NEW_WINDOW, "Directories", 0, pathMenu, 2, 0,
-           "Various path and file names");
-  addItem(systemMenu, NEW_WINDOW, "Log files", 0, logMenu, 0, -3,
-           "Log file settings");
-  addItem(systemMenu, NEW_WINDOW, "Internet", 0, internetMenu, -4, 4,
-           "Internet mail settings");
-#if defined __FMAILX__ || defined __32BIT__
-  addItem(systemMenu, DISPLAY, "Swapping", 0, NULL, 2, 3, "");
-#else
-  addItem(systemMenu, NEW_WINDOW, "Swapping", 0, swapMenu, 2, 3,
-           "How FMail should handle swapping");
-#endif
-  addItem(systemMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(systemMenu, NEW_WINDOW, "Compression", 0, arcMenu, 2, -2,
-           "Programs and switches used to compress mailbundles by 16-bit versions of FMail");
-  addItem(systemMenu, NEW_WINDOW, "Decompression", 0, deArcMenu, 2, -1,
-           "Programs and switches used to decompress mailbundles by 16-bit versions of FMail");
-  addItem(systemMenu, NEW_WINDOW, "Compression/32", 0, arc32Menu, 2, -2,
-           "Programs and switches used to compress mailbundles by 32-bit versions of FMail");
-  addItem(systemMenu, NEW_WINDOW, "Decompression/32", 0, deArc32Menu, 2, -1,
-           "Programs and switches used to decompress mailbundles by 32-bit versions of FMail");
+  addItem(systemMenu, DISPLAY   , NULL           , 0, NULL        ,  0,  0, NULL);
+  addItem(systemMenu, NEW_WINDOW, "Miscellaneous", 0, sysMiscMenu ,  2, -2, "File handles, colors, buffer sizes");
+  addItem(systemMenu, NEW_WINDOW, "Directories"  , 0, pathMenu    ,  2,  0, "Various path and file names");
+  addItem(systemMenu, NEW_WINDOW, "Log files"    , 0, logMenu     ,  0, -3, "Log file settings");
+  addItem(systemMenu, NEW_WINDOW, "Internet"     , 0, internetMenu, -4,  4, "Internet mail settings");
+  addItem(systemMenu, DISPLAY   , NULL           , 0, NULL        ,  0,  0, NULL);
+  addItem(systemMenu, NEW_WINDOW, "Compression"  , 0, arc32Menu   ,  2, -2, "Programs and switches used to compress mailbundles");
+  addItem(systemMenu, NEW_WINDOW, "Decompression", 0, deArc32Menu ,  2, -1, "Programs and switches used to decompress mailbundles");
 
   memset (uplinkNodeStr, 0, sizeof(uplinkNodeStrType));
   for ( count = 0; count < MAX_UPLREQ; count++ )
@@ -1811,17 +1419,16 @@ nomem:
 
   if (ch == 'Y')
   {
-    if (((configHandle = _creat (configFileName, 0)) == -1) ||
-        (_write (configHandle, &config, sizeof (configType)) != sizeof (configType)) ||
-        (close (configHandle) == -1))
-    {
+    if (((configHandle = open(configFileName, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1) ||
+        (write(configHandle, &config, sizeof (configType)) != sizeof (configType)) ||
+        (close(configHandle) == -1))
       displayMessage ("Can't write to "dCFGFNAME);
-    }
-    if ( *config.autoFMail102Path )
+
+    if (*config.autoFMail102Path)
     {
-      if ( !stricmp(config.autoFMail102Path, configPath) )
+      if (!stricmp(config.autoFMail102Path, configPath))
         displayMessage("AutoExport for FMail 1.02 format should be set to another directory");
-      else if ( (configHandle = open(strcat(strcpy(tempStr, config.autoFMail102Path), dCFGFNAME), O_WRONLY|O_BINARY|O_CREAT|O_TRUNC, S_IREAD|S_IWRITE)) != -1 )
+      else if ((configHandle = open(strcat(strcpy(tempStr, config.autoFMail102Path), dCFGFNAME), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1 )
       {
         memcpy(config._optionsAKA,        config.optionsAKA,        2*MAX_NA_OLD);
         memcpy(config._groupsQBBS,        config.groupsQBBS,          MAX_NA_OLD);
@@ -1876,9 +1483,7 @@ nomem:
   deInit(5);
 
   if (mainMenu    ) free(mainMenu    );
-  if (arcMenu     ) free(arcMenu     );
   if (arc32Menu   ) free(arc32Menu   );
-  if (deArcMenu   ) free(deArcMenu   );
   if (deArc32Menu ) free(deArc32Menu );
   if (sysMiscMenu ) free(sysMiscMenu );
   if (systemMenu  ) free(systemMenu  );
@@ -1902,11 +1507,6 @@ nomem:
   if (autoExpMenu ) free(autoExpMenu );
   if (anImpMenu   ) free(anImpMenu   );
   if (impExpMenu  ) free(impExpMenu  );
-#ifndef __FMAILX__
-#ifndef __32BIT__
-  if (swapMenu    ) free(swapMenu    );
-#endif
-#endif
 
   if (fmailLocHandle != -1)
     close(fmailLocHandle);

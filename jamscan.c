@@ -193,7 +193,7 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   {
     if (jam_idxrec.HdrOffset != UINT32_MAX)
     {
-      // returnTimeSlice(0);
+      returnTimeSlice(0);
       if (count-- <= maxRescan)
       {
         memset(message, 0, INTMSG_SIZE);

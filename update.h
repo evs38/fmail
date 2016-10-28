@@ -20,4 +20,4 @@
  */
 
 
-void autoUpdate (void);
+void autoUpdate(void);

@@ -52,8 +52,6 @@
 //---------------------------------------------------------------------------
 u16 PKT_BUFSIZE = 32000;
 
-extern time_t startTime;
-
 #include <pshpack1.h>
 
 typedef struct
@@ -186,7 +184,7 @@ s16 openPktRd(char *pktName, s16 secure)
          globVars.packetDestAka++;
 
 #ifdef _DEBUG0
-      sprintf(tempStr, "Type 2+ dest zone: %d", msgPktHdr.destZone);
+      sprintf(tempStr, "DEBUG Type 2+ dest zone: %d", msgPktHdr.destZone);
       logEntry(tempStr, LOG_DEBUG, 0);
 #endif
       // FSC-0048 rev. 2
@@ -228,7 +226,7 @@ s16 openPktRd(char *pktName, s16 secure)
             globVars.packetDestAka++;
 
 #ifdef _DEBUG0
-         sprintf(tempStr, "FSC-0045 dest AKA: %d", globVars.packetDestAka);
+         sprintf(tempStr, "DEBUG FSC-0045 dest AKA: %d", globVars.packetDestAka);
          logEntry(tempStr, LOG_DEBUG, 0);
 #endif
          globVars.packetSrcNode .net   = ((FSC45pktHdrType*)&msgPktHdr)->origNet;
@@ -258,7 +256,7 @@ s16 openPktRd(char *pktName, s16 secure)
             globVars.packetDestAka++;
 
 #ifdef _DEBUG0
-         sprintf(tempStr, "Type 2 dest AKA: %d", globVars.packetDestAka);
+         sprintf(tempStr, "DEBUG Type 2 dest AKA: %d", globVars.packetDestAka);
          logEntry(tempStr, LOG_DEBUG, 0);
 #endif
          globVars.packetSrcNode .zone  = 0;
@@ -334,9 +332,11 @@ s16 openPktRd(char *pktName, s16 secure)
 
   {
     struct stat statbuf = { 0 };
-    if (0 == fstat(pktHandle, &statbuf))
+    struct tm *tm;
+    if (  0 == fstat(pktHandle, &statbuf)
+       && (tm = localtime(&statbuf.st_mtime)) != NULL  // localtime OK: pkt file time is logged correctly
+       )
     {
-      struct tm *tm = localtime(&statbuf.st_mtime);
       globVars.hour  = tm->tm_hour;
       globVars.min   = tm->tm_min;
       globVars.sec   = tm->tm_sec;
@@ -353,7 +353,7 @@ s16 openPktRd(char *pktName, s16 secure)
       globVars.sec   = 0;
       globVars.day   =
       globVars.month = 1;
-      globVars.year  = 1980;
+      globVars.year  = 1970;
 
       globVars.packetSize = 0;
     }
@@ -595,7 +595,7 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
 
    sprintf (nfInfoRec->pktFileName, "%s%08x.tmp", config.outPath, uniqueID());
 
-   if ((pktHandle = _sopen(nfInfoRec->pktFileName, O_RDWR | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+   if ((pktHandle = _sopen(nfInfoRec->pktFileName, O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
    {
       nfInfoRec->pktHandle    = 0;
       *nfInfoRec->pktFileName = 0;
@@ -606,7 +606,7 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
    memset(&msgPktHdr, 0, sizeof (pktHdrType));
 
    time(&ti);
-   tm = localtime(&ti);
+   tm = localtime(&ti);  // localtime -> ok, used for current time in pkt header
 
    msgPktHdr.year          = tm->tm_year + 1900;
    msgPktHdr.month         = tm->tm_mon;

@@ -69,8 +69,6 @@ extern fhandle fmailLockHandle;
 // Borland C number of files
 extern unsigned int _nfile;
 
-extern time_t	startTime;
-
 // Global available datastructures
 configType config;
 s16        zero = 0;
@@ -78,7 +76,6 @@ char funcStr[32] = "undefined?";
 
 extern s16 diskError;
 
-extern char configPath[FILENAME_MAX];
 extern internalMsgType *message;
 
 extern psRecType *seenByArray;
@@ -177,7 +174,7 @@ void handlesReset40 (void)
 
 #endif // __32BIT__
 //---------------------------------------------------------------------------
-s16 getNetmailBoard (nodeNumType *akaNode)
+s16 getNetmailBoard(nodeNumType *akaNode)
 {
   s16 count = MAX_NETAKAS;
 
@@ -192,7 +189,7 @@ s16 getNetmailBoard (nodeNumType *akaNode)
   return config.netmailBoard[count];
 }
 //---------------------------------------------------------------------------
-s16 isNetmailBoard (u16 board)
+s16 isNetmailBoard(u16 board)
 {
   s16 count = MAX_NETAKAS;
 
@@ -212,13 +209,12 @@ void initFMail(const char *_funcStr, s32 switches)
   tempStrType tempStr
             , tempStr2;
   char       *helpPtr;
-  int         readlen = -1;
 
   strcpy(funcStr, _funcStr);
   strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
-  if ( (configHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1
-     || (readlen = read(configHandle, &config, sizeof(configType))) < (int)sizeof(configType)
+  if (  (configHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1
+     || read(configHandle, &config, sizeof(configType)) < (int)sizeof(configType)
      || close(configHandle) == -1
      )
   {
@@ -260,7 +256,7 @@ void initFMail(const char *_funcStr, s32 switches)
     {
       if (ch == 0 || ch == -1)
       {
-        time2a = time2+1;
+        time2a = time2 + 1;
         while (time(&time2) <= time2a)
           returnTimeSlice(1);
       }
@@ -299,9 +295,6 @@ void initFMail(const char *_funcStr, s32 switches)
      || (existDir(config.bbsPath, "message base") == 0)
      || (existDir(config.inPath,  "inbound"     ) == 0)
      || (existDir(config.outPath, "outbound"    ) == 0)
-#if !defined(__FMAILX__) && !defined(__32BIT__)
-     || (*config.swapPath            && existDir(config.swapPath           , "swap"         ) == 0)
-#endif
      || (*config.pmailPath           && existDir(config.pmailPath          , "personal mail") == 0)
      || (*config.sentEchoPath        && existDir(config.sentEchoPath       , "sent echomail") == 0)
      || (*config.autoGoldEdAreasPath && existDir(config.autoGoldEdAreasPath, "AREAS.GLD"    ) == 0)
@@ -326,7 +319,12 @@ void initFMail(const char *_funcStr, s32 switches)
   config.bbsProgram = BBS_QBBS;
 #endif
 
-  initLog(funcStr, switches);
+  initLog(switches);
+
+#ifdef _DEBUG
+  sprintf(tempStr, "DEBUG daylight=%d timezone=%ld tzname=%s-%s", _daylight, _timezone, _tzname[0], _tzname[1]);
+  logEntry(tempStr, LOG_DEBUG, 0);
+#endif
 
   if (  NULL == (message       = (internalMsgType *)malloc(INTMSG_SIZE                          ))
      || NULL == (seenByArray   = (psRecType       *)malloc(sizeof(psRecType) * MAX_MSGSEENBY    ))
@@ -336,15 +334,8 @@ void initFMail(const char *_funcStr, s32 switches)
      )
     logEntry("Not enough memory to initialize FMail", LOG_ALWAYS, 2);
 
-#if !defined(__FMAILX__) && !defined(__32BIT__)
-  if (!(*config.swapPath))
-    strcpy(config.swapPath, configPath);
-#endif
   strupr(config.topic1);
   strupr(config.topic2);
-#ifndef __STDIO__
-  handles40(); // Only effective if necessary
-#endif
 
   puts("\n");
 }
@@ -352,11 +343,11 @@ void initFMail(const char *_funcStr, s32 switches)
 void deinitFMail(void)
 {
   fhandle     configHandle;
-  tempStrType tempStr;
+  tempStrType configFileStr;
 
-  strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
+  strcpy(stpcpy(configFileStr, configPath), dCFGFNAME);
 
-  if (  (configHandle = open(tempStr, O_WRONLY | O_BINARY)) == -1
+  if (  (configHandle = open(configFileStr, O_WRONLY | O_BINARY)) == -1
      || lseek(configHandle, offsetof(configType, uplinkReq), SEEK_SET) == -1L
      || write(configHandle, &config.uplinkReq, sizeof(uplinkReqType)*MAX_UPLREQ) < (int)sizeof(uplinkReqType)*MAX_UPLREQ
      || lseek(configHandle, offsetof(configType, lastUniqueID), SEEK_SET) == -1L
@@ -364,9 +355,12 @@ void deinitFMail(void)
      || close(configHandle) == -1
      )
   {
+    tempStrType tempStr;
     if (configHandle != -1)
       close(configHandle);
-    logEntry("Can't write "dCFGFNAME, LOG_ALWAYS, 0);
+
+    sprintf(tempStr, "Can't write: %s [%s]", configFileStr, strError(errno));
+    logEntry(tempStr, LOG_ALWAYS, 0);
   }
   freeNull(message      );
   freeNull(seenByArray  );

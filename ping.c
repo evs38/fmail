@@ -106,7 +106,7 @@ int Ping(internalMsgType *message, int localAkaNum)
   char            *funcText = localAkaNum >= 0 ? "PING" : "TRACE";
 
 #ifdef _DEBUG
-  sprintf(tempStr, "Processing PING message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
+  sprintf(tempStr, "DEBUG Processing PING message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
   logEntry(tempStr, LOG_DEBUG, 0);
 #endif
 

@@ -443,13 +443,13 @@ s16 importFolderFD(void)
    if ( !askFMArExist(&echoCount) )
       return 0;
    memset(echoNumCheck, 0, MBBOARDS);
-   if ( (folderHandle = open(getSourceFileName(" Source file "), O_BINARY|O_RDONLY)) == -1 )
+   if ( (folderHandle = open(getSourceFileName(" Source file "), O_BINARY | O_RDONLY)) == -1 )
    {  displayMessage("Can't find the requested file.");
       releaseAreas(echoCount);
       return 0;
    }
    working();
-   while ( _read(folderHandle, &folderRec, sizeof(FOLDER)) == sizeof(FOLDER) )
+   while ( read(folderHandle, &folderRec, sizeof(FOLDER)) == sizeof(FOLDER) )
    {  if ((folderRec.behave & (FD_QUICKBBS|FD_JAMAREA)) &&
 	  (folderRec.behave & FD_ECHOMAIL))
       {  if ( echoCount == MAX_AREAS )
@@ -512,15 +512,14 @@ s16 importAreaFileFD(void)
    if ( !askFMArExist(&echoCount) )
       return 0;
    memset(echoNumCheck, 0, MBBOARDS);
-   if ( (fileHandle = open(getSourceFileName(" Source file "),
-			   O_BINARY|O_RDWR)) == -1 )
+   if ((fileHandle = open(getSourceFileName(" Source file "), O_BINARY | O_RDWR)) == -1)
    {  displayMessage("Can't find the requested file.");
       releaseAreas(echoCount);
       return 0;
    }
    lseek(fileHandle, 4, SEEK_SET);
    working();
-   while ( _read(fileHandle, &fdAreaFileRec, sizeof(fdAreaFileType)) ==
+   while ( read(fileHandle, &fdAreaFileRec, sizeof(fdAreaFileType)) ==
 					     sizeof(fdAreaFileType) )
    {  if ( !(fdAreaFileRec.deleted || fdAreaFileRec.tsAreaFlags.deleted) )
       {
@@ -602,16 +601,14 @@ s16 importNodeFileFD(void)
 
    if ( !askFMNodExist(&nodeCount) )
       return 0;
-   if ( (fileHandle = open(getSourceFileName(" Source file "),
-			   O_BINARY|O_RDWR)) == -1 )
+   if ((fileHandle = open(getSourceFileName(" Source file "), O_BINARY | O_RDWR)) == -1)
    {  displayMessage("Can't find the requested file.");
       releaseNodes(nodeCount);
       return 0;
    }
    lseek(fileHandle, 4, SEEK_SET);
    working();
-   while ( _read(fileHandle, &fdNodeFileRec, sizeof(fdNodeFileType)) ==
-					     sizeof(fdNodeFileType) )
+   while (read(fileHandle, &fdNodeFileRec, sizeof(fdNodeFileType)) == sizeof(fdNodeFileType))
    {  if ( !fdNodeFileRec.deleted )
       {  if ( nodeCount == MAX_NODES )
 	 {  displayMessage("Too many nodes listed in NodeFile.FD");
@@ -886,16 +883,15 @@ s16 importFEAr(void)
       return 0;
    memset(echoNumCheck, 0, MBBOARDS);
    for ( count = 0; count < echoCount; ++count )
-      if ( echoAreaList[count]->board > 0 && echoAreaList[count]->board <= MBBOARDS )
-	 echoNumCheck[echoAreaList[count]->board-1] = 1;
-   if ( (fileHandle = open(getSourceFileName(" Source file "),
-			   O_BINARY|O_RDWR)) == -1 )
+     if ( echoAreaList[count]->board > 0 && echoAreaList[count]->board <= MBBOARDS )
+       echoNumCheck[echoAreaList[count]->board-1] = 1;
+   if ((fileHandle = open(getSourceFileName(" Source file "), O_BINARY | O_RDWR)) == -1)
    {  displayMessage("Can't find the requested file.");
       releaseAreas(echoCount);
       return 0;
    }
    working();
-   if ( _read(fileHandle, &configFE, sizeof(CONFIG)) != sizeof(CONFIG) )
+   if (read(fileHandle, &configFE, sizeof(CONFIG)) != sizeof(CONFIG))
       goto ret0msg;
    for( xu = 0; xu < configFE.AreaCnt; xu++ )
    {  if( lseek(fileHandle, (u32)sizeof(CONFIG) + (u32)configFE.offset +
@@ -905,7 +901,7 @@ s16 importFEAr(void)
 	 releaseAreas(echoCount);
 	 return 0;
       }
-      if ( _read(fileHandle, &areaFE, sizeof(Area)) != sizeof(Area) )
+      if (read(fileHandle, &areaFE, sizeof(Area)) != sizeof(Area))
 	 goto ret0msg;
       if ( !*areaFE.name || *areaFE.name == ' ' )
 	 continue;
@@ -961,9 +957,9 @@ s16 importFEAr(void)
    {  if ( lseek(fileHandle, (u32)sizeof(CONFIG) + (u32)configFE.offset +
 			     (u32)xu * (u32)configFE.NodeRecSize, SEEK_SET) == -1 )
 	 goto ret0msg;
-      if ( _read(fileHandle, &nodeFE, sizeof(Node)-1) != sizeof(Node)-1 )
+      if (read(fileHandle, &nodeFE, sizeof(Node)-1) != sizeof(Node) - 1)
 	 goto ret0msg;
-      if ( _read(fileHandle, &nodeBits, (configFE.MaxAreas+7)/8) != (configFE.MaxAreas+7)/8 )
+      if (read(fileHandle, &nodeBits, (configFE.MaxAreas + 7) / 8) != (configFE.MaxAreas + 7) / 8)
 ret0msg:
       {  displayMessage("Read error");
 	 releaseAreas(echoCount);
@@ -999,16 +995,15 @@ s16 importFENd(void)
    CONFIG       configFE;
    Node         nodeFE;
 
-   if ( !askFMNodExist(&nodeCount) )
+   if (!askFMNodExist(&nodeCount))
       return 0;
-   if ( (fileHandle = open(getSourceFileName(" Source file "),
-			   O_BINARY|O_RDWR)) == -1 )
+   if ((fileHandle = open(getSourceFileName(" Source file "), O_BINARY | O_RDWR)) == -1)
    {  displayMessage("Can't find the requested file.");
       releaseNodes(nodeCount);
       return 0;
    }
    working();
-   if ( _read(fileHandle, &configFE, sizeof(CONFIG)) != sizeof(CONFIG) )
+   if (read(fileHandle, &configFE, sizeof(CONFIG)) != sizeof(CONFIG))
       goto ret0msg;
    for ( xu = 0; xu < configFE.NodeCnt; xu++ )
    {  if ( lseek(fileHandle, (u32)sizeof(CONFIG) +
@@ -1018,7 +1013,7 @@ ret0msg:
       {  displayMessage("Read error");
 	 goto ret0;
       }
-      if ( _read (fileHandle, &nodeFE, sizeof(Node)) != sizeof(Node) )
+      if (read(fileHandle, &nodeFE, sizeof(Node)) != sizeof(Node))
 	 goto ret0msg;
       if ( nodeCount == MAX_NODES )
       {  displayMessage("Too many nodes listed");
@@ -1081,15 +1076,13 @@ s16 importImailAr(void)
    if ( !askFMArExist(&echoCount) )
       return 0;
    memset(echoNumCheck, 0, MBBOARDS);
-   if ( (fileHandle = open(getSourceFileName(" Source file "),
-			   O_BINARY|O_RDWR)) == -1 )
+   if ( (fileHandle = open(getSourceFileName(" Source file "), O_BINARY | O_RDWR)) == -1 )
    {  displayMessage("Can't find the requested file.");
       releaseAreas(echoCount);
       return 0;
    }
    working();
-   while ( _read(fileHandle, &imailArRec, sizeof(imailArType)) ==
-					  sizeof(imailArType))
+   while (read(fileHandle, &imailArRec, sizeof(imailArType)) == sizeof(imailArType))
    {  if ( imailArRec.imArFlags.deleted == 0 &&
 	  ((imailArRec.msgBaseType & 0x0f) == 0x03 ||
 	   (imailArRec.msgBaseType & 0x0f) == 0x0f) &&
@@ -1178,8 +1171,7 @@ s16 importImailNd(void)
       return 0;
    }
    working();
-   while( _read(fileHandle, &imailNdRec, sizeof(imailNdType)) ==
-					 sizeof(imailNdType) )
+   while(read(fileHandle, &imailNdRec, sizeof(imailNdType)) == sizeof(imailNdType) )
    {  if (nodeCount == MAX_NODES)
       {  displayMessage("Too many nodes listed in IMAIL.Nd");
 ret0:    releaseNodes(nodeCount);
@@ -1240,7 +1232,7 @@ s16 importRAInfo(void)
    if ( config.bbsProgram != BBS_RA1X && config.bbsProgram != BBS_RA20 &&
         config.bbsProgram != BBS_RA25 && config.bbsProgram != BBS_ELEB )
       displayMessage("This function only supports RemoteAccess");
-   if ( (RAHandle = open(getSourceFileName(" MESSAGES.RA file "), O_RDONLY|O_BINARY|O_DENYNONE)) == -1 )
+   if ((RAHandle = open(getSourceFileName(" MESSAGES.RA file "), O_RDONLY | O_BINARY)) == -1)
    {  displayMessage("Can't find the requested file.");
       return 0;
    }
@@ -1364,11 +1356,11 @@ s16 importNAInfo(void)
    headerType	  *areaHeader;
    rawEchoType    *areaBuf;
 
-   if ( (NAHandle = open(getSourceFileName(" BACKBONE.NA file "), O_RDONLY|O_BINARY|O_DENYNONE)) == -1 )
+   if ((NAHandle = open(getSourceFileName(" BACKBONE.NA file "), O_RDONLY | O_BINARY)) == -1)
    {  displayMessage("Can't find the requested file.");
       return 0;
    }
-   if ( (buf = malloc(bufsize = min((u16)filelength(NAHandle)+1, 0xFFF0))) == NULL )
+   if ((buf = malloc(bufsize = min((u16)filelength(NAHandle) + 1, 0xFFF0))) == NULL)
    {  displayMessage("Not enough memory");
       return 0;
    }

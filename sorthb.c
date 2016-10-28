@@ -41,6 +41,7 @@
 #include "log.h"
 #include "msgpkt.h"
 #include "msgra.h"    // expandName()
+#include "msgradef.h"
 #include "mtask.h"
 #include "sorthb.h"
 #include "stpcpy.h"
@@ -87,7 +88,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
                ,*sli_msgNum
                ,*sli_prevReply = NULL
                ,*sli_nextReply = NULL;
-  char          *sli_areaNum;
+  u8            *sli_areaNum;
   u16           *sli_subjectCrcHi
                ,*sli_subjectCrcLo
                ,*sli_bsTimeStampHi = NULL
@@ -104,9 +105,9 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
                                ((config.ftBufSize==2) ? 5 : 7))));
 #endif
 
-   if ((msgHdrHandle = open(expandNameHudson("MSGHDR", 0), O_RDONLY | O_BINARY)) == -1)
+   if ((msgHdrHandle = open(expandNameHudson(dMSGHDR, 0), O_RDONLY | O_BINARY)) == -1)
    {
-      puts("Can't open MsgHdr."MBEXTN" for update.");
+      puts("Can't open "dMSGHDR"."MBEXTN" for update.");
       return;
    }
    if (config.mbOptions.sortNew && (fileLength(msgHdrHandle) > diskFree(config.bbsPath)))
@@ -156,14 +157,14 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       }
    }
 
-   if (((sli_recNum        = (u16 *)calloc(newTotalMsgBBS, 2)) == NULL) ||
-       ((sli_msgNum        = (u16 *)calloc(newTotalMsgBBS, 2)) == NULL) ||
-       ((sli_areaNum       = (char*)calloc(newTotalMsgBBS, 1)) == NULL) ||
-       ((sli_subjectCrcHi  = (u16 *)calloc(newTotalMsgBBS, 2)) == NULL) ||
-       ((sli_subjectCrcLo  = (u16 *)calloc(newTotalMsgBBS, 2)) == NULL) ||
-       ((msgHdrBuf         = (msgHdrRec  *)malloc(HDR_BUFSIZE * sizeof(msgHdrRec))) == NULL) ||
-       ((msgIdxBuf         = (msgIdxRec  *)malloc(HDR_BUFSIZE * sizeof(msgIdxRec))) == NULL) ||
-       ((msgToIdxBuf       = (msgToIdxRec*)malloc(HDR_BUFSIZE * sizeof(msgToIdxRec))) == NULL))
+   if (((sli_recNum       = (u16*)calloc(newTotalMsgBBS, 2)) == NULL) ||
+       ((sli_msgNum       = (u16*)calloc(newTotalMsgBBS, 2)) == NULL) ||
+       ((sli_areaNum      = (u8 *)calloc(newTotalMsgBBS, 1)) == NULL) ||
+       ((sli_subjectCrcHi = (u16*)calloc(newTotalMsgBBS, 2)) == NULL) ||
+       ((sli_subjectCrcLo = (u16*)calloc(newTotalMsgBBS, 2)) == NULL) ||
+       ((msgHdrBuf        = (msgHdrRec  *)malloc(HDR_BUFSIZE * sizeof(msgHdrRec))) == NULL) ||
+       ((msgIdxBuf        = (msgIdxRec  *)malloc(HDR_BUFSIZE * sizeof(msgIdxRec))) == NULL) ||
+       ((msgToIdxBuf      = (msgToIdxRec*)malloc(HDR_BUFSIZE * sizeof(msgToIdxRec))) == NULL))
    {
       close (msgHdrHandle);
       logEntry ("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
@@ -183,8 +184,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
          bufCount = 0;
       }
 
-      sli_recNum [count]  = count;
-      sli_msgNum [count]  = msgHdrBuf[bufCount].MsgNum;
+      sli_recNum [count] = count;
+      sli_msgNum [count] = msgHdrBuf[bufCount].MsgNum;
       sli_areaNum[count] = msgHdrBuf[bufCount].Board;
 
       if (!(msgHdrBuf[bufCount].MsgAttr & RA_DELETED))
@@ -308,13 +309,12 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       putStr("Updating reply-chains in memory... ");
       memset(areaSubjChain, 0xff, sizeof (areaSubjChain));
       for (count = 0; count < newTotalMsgBBS; count++)
-      {
          if ((sli_areaNum[temp = sli_recNum[count]]) <= MBBOARDS)
          {
             sli_prevReply[temp] = areaSubjChain[(int)sli_areaNum[temp]];
             areaSubjChain[(int)sli_areaNum[temp]] = count;
          }
-      }
+
       for (count = 1; count <= MBBOARDS; count++)
       {
          returnTimeSlice(0);
@@ -347,10 +347,10 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
    if (config.mbOptions.sortNew)
    {
-      putStr("Writing MsgHdr."MBEXTN" and index files... ");
+      putStr("Writing "dMSGHDR"."MBEXTN" and index files... ");
 
-      if (  ((msgIdxHandle   = open(expandNameHudson("MSGIDX"  , 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
-         || ((msgToIdxHandle = open(expandNameHudson("MSGTOIDX", 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if (  ((msgIdxHandle   = open(expandNameHudson(dMSGIDX  , 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+         || ((msgToIdxHandle = open(expandNameHudson(dMSGTOIDX, 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
          )
       {
          close(msgIdxHandle);
@@ -358,11 +358,11 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
          logEntry("Can't create sorted/linked message files", LOG_ALWAYS, 0);
          goto exit1;
       }
-      strcpy(tempStr1, expandNameHudson("MSGHDR", 0));
-      strcpy(stpcpy(tempStr2, config.bbsPath), "MSGHDR.ZZZ");
-      strcpy(stpcpy(tempStr3, config.bbsPath), "MSGHDR.!!!");
+      strcpy(tempStr1, expandNameHudson(dMSGHDR, 0));
+      strcpy(stpcpy(tempStr2, config.bbsPath), dMSGHDR".ZZZ");
+      strcpy(stpcpy(tempStr3, config.bbsPath), dMSGHDR".!!!");
 
-      if (((unlink (tempStr2) == -1) && (errno != ENOENT)) ||
+      if (((unlink(tempStr2) == -1) && (errno != ENOENT)) ||
           ((msgHdrHandle = open(tempStr3, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
           ((oldHdrHandle = open(tempStr1, O_RDONLY | O_BINARY)) == -1))
       {
@@ -409,8 +409,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
             msgHdrBuf[bufCount].ReplyTo    = sli_prevReply[temp];
             msgHdrBuf[bufCount].SeeAlsoNum = sli_nextReply[temp];
          }
-         msgIdxBuf[bufCount].MsgNum     = sli_msgNum[temp];
-         msgIdxBuf[bufCount].Board      = sli_areaNum[temp];
+         msgIdxBuf[bufCount].MsgNum = sli_msgNum [temp];
+         msgIdxBuf[bufCount].Board  = sli_areaNum[temp];
 
          if (msgHdrBuf[bufCount].MsgAttr & RA_DELETED)
          {
@@ -455,9 +455,9 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
    }
    else
    {
-      putStr("Updating MsgHdr."MBEXTN"...");
+      putStr("Updating "dMSGHDR"."MBEXTN"...");
 
-      strcpy(tempStr1, expandNameHudson("MSGHDR", 0));
+      strcpy(tempStr1, expandNameHudson(dMSGHDR, 0));
 
       if (  ((msgHdrHandle = open(tempStr1, O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1)
          || ((oldHdrHandle = open(tempStr1, O_RDONLY | O_BINARY)) == -1)

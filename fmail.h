@@ -29,15 +29,6 @@
 #include <stdio.h>       // FILENAME_MAX
 #include <sys/types.h>   // stat.off_t
 
-#define FA_SPEC 0x1F
-// #define FA_NORMAL   0x00        /* Normal file, no attributes */
-// #define FA_RDONLY   0x01        /* Read only attribute */
-// #define FA_HIDDEN   0x02        /* Hidden file */
-// #define FA_SYSTEM   0x04        /* System file */
-// #define FA_LABEL    0x08        /* Volume label */
-// #define FA_DIREC    0x10        /* Directory */
-// #define FA_ARCH     0x20        /* Archive */
-
 #define CONFIG_MAJOR   0
 #define CONFIG_MINOR  94 // do not change
 
@@ -64,8 +55,6 @@
 #define PRODUCTCODE_HIGH  0x00
 #define PRODUCTCODE_LOW   0x81  // ftscprod
 
-#define TABLE_SIZE 255 // max 40 handles
-
 #define DEF_TEXT_SIZE 0xC000
 #ifdef __32BIT__
 // 1 megabyte
@@ -87,8 +76,14 @@
 #define TINY_PATH_SIZE 128
 #define NORM_PATH_SIZE 1024
 
+#define dEXTTMP  "$$$"
 
-extern char configPath[FILENAME_MAX];
+extern long       gmtOffset;
+extern time_t     startTime;
+extern struct tm  timeBlock;
+extern char       funcStr[32];
+extern char       configPath[FILENAME_MAX];
+extern configType config;
 
 typedef struct
 {

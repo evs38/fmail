@@ -23,10 +23,10 @@
 //
 //---------------------------------------------------------------------------
 
+#include <pshpack1.h>
+
 #define BCLH_ISLIST   0x00000001L  // File is complete list
 #define BCLH_ISUPDATE 0x00000002L  // File contains update/diff information
-
-#include <pshpack1.h>
 
 typedef struct
 {

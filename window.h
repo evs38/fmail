@@ -204,9 +204,9 @@ typedef struct
 
 typedef struct
 {
-  unsigned uchar *data;
-  txtPtr         text[34];
-  uchar          retval[34];
+  uchar   *data;
+  txtPtr   text[34];
+  uchar    retval[34];
 } toggleType;
 
 typedef struct

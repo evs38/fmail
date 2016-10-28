@@ -103,7 +103,6 @@ nodeInfoType *getNodeInfo(nodeNumType *nodeNum)
 }
 //---------------------------------------------------------------------------
 extern u32 totalBundleSize[MAX_NODES];
-extern time_t startTime;
 
 void closeNodeInfo(void)
 {
@@ -158,7 +157,7 @@ void closeNodeInfo(void)
         }
         else
           if (  nodeBuf->passiveDays && nodeBuf->referenceLNBDat
-             && startTime-nodeBuf->referenceLNBDat >= (u32)nodeBuf->passiveDays*86400L)
+             && startTime - nodeBuf->referenceLNBDat >= (u32)nodeBuf->passiveDays * 86400L)
           {
             message->destNode = config.akaList[0].nodeNum;
             strcpy(message->toUserName, config.sysopName);

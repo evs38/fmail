@@ -57,8 +57,7 @@ static int make_send_msg(u16 xu, char *attachName, u16 msg_tfs, u16 msg_kfs)
   strcpy(message->fromUserName, config.sysopName);
   strcpy(message->toUserName, nodeInfo[xu]->sysopName);
   strcpy(message->subject, "Mail attach");
-  strcpy(txtName, configPath);
-  strcat(txtName, "email.txt");
+  strcpy(stpcpy(txtName, configPath), "email.txt");
   if ( (handle = open(txtName, O_RDONLY | O_TEXT)) != -1 )
   {
     if ( (xs = read(handle, message->text, TEXT_SIZE - 1)) != - 1)
@@ -75,13 +74,13 @@ static int make_send_msg(u16 xu, char *attachName, u16 msg_tfs, u16 msg_kfs)
     {
       do
       {
-        if (msg_tfs && (handle = _sopen(fileName, O_WRONLY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) != -1)
+        if (msg_tfs && (handle = _sopen(fileName, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) != -1)
           close(handle);
         else
           if (msg_kfs)
             unlink(fileName);
       }
-      while ( nextFile(&fileName) );
+      while (nextFile(&fileName));
     }
 
     return 1;

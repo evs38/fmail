@@ -1,5 +1,14 @@
-2016-10-05  1.73.0.0
-  * Made all the sources compile with code::blocks/mingw32
+2016-10-28  1.73.1.20-Beta
+  * Removed some of the OS2, DOS and FMAILX code: extra-handles, buffers, 16bit compressors, swap, ems
+  * New option "Outgoing backup".
+  * Use time.h functions instead of Borland specific functions.
+  * More changes for MingW32 compilation. Partly done with FTools code too.
+  * Create lowercase bcl and hudson message base names.
+  * Fixed return timeslice bug.
+  * Fixed other minor bugs.
+
+2016-10-05  1.73.0.0-Beta
+  * Made all the sources for FMailW32 compile with code::blocks/mingw32
   * Prevented 'Error opening ...\0.msg: No such file or directory' log line on rescans.
 
 2016-09-18  1.72.0.0

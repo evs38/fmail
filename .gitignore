@@ -34,7 +34,7 @@
 /NETMAIL
 /obj.45/ob*/*.obj
 /OBJ.6/*/*.obj
-/obj/Debug
+/obj
 /old
 /Release/W32
 /test
@@ -44,4 +44,3 @@
 /bcl/*.BCL
 /bcl/NEW_IN.148A
 /bcl/fsc-0057.003
-/obj/Release

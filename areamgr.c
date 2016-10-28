@@ -207,7 +207,7 @@ u16            am__cp;
 
 extern windowLookType windowLook;
 extern configType     config;
-extern char           configPath[128];
+extern char           configPath[FILENAME_MAX];
 u16                  *boardPtr;
 
 char boardCodeInfo[512];
@@ -337,7 +337,7 @@ static void freeAreaInfo(u16 index)
   free(areaInfo[index]->msgBasePath);
 }
 //---------------------------------------------------------------------------
-const char *AMGetAreaPath(int i)
+const char *AMGetAreaPath(u16 i)
 {
   if (i >= areaInfoCount)
     return NULL;
@@ -393,10 +393,10 @@ s16 areaMgr(void)
       unlink(areaInfoPath);
       strcpy(helpPtr, dARFNAME);
       helpPtr = stpcpy(tempStr, areaInfoPath);
-      strcpy(helpPtr, "FMAIL.$$$");
+      strcpy(helpPtr, "fmail."dEXTTMP);
       rename(tempStr, areaInfoPath);
 
-      if ((areaInfoHandle = open(areaInfoPath, O_BINARY|O_RDWR)) == -1)
+      if ((areaInfoHandle = open(areaInfoPath, O_BINARY | O_RDWR)) == -1)
          areaInfoCount = 0;
       else
       {
@@ -905,7 +905,7 @@ s16 areaMgr(void)
 				    tempInfo.address = badEchos[badEchoCount].destAka;
 
             if (tempInfo.board == 2) // JAM
-// todo: Testen!
+// TODO Testen!
               MakeJamAreaPath(&tempInfo, AMGetAreaPath);
 
             update = 1;
@@ -1107,7 +1107,7 @@ s16 areaMgr(void)
          {  if ( !stricmp(config.autoFMail102Path, configPath) )
                displayMessage("AutoExport for FMail 1.02 format should be set to another directory");
 	    else
-	    if ( (fml102handle = open(strcpy(stpcpy(tempStr, config.autoFMail102Path), dARFNAME), O_WRONLY|O_BINARY|O_CREAT|O_TRUNC, S_IREAD|S_IWRITE)) != -1 )
+	    if ( (fml102handle = open(strcpy(stpcpy(tempStr, config.autoFMail102Path), dARFNAME), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1 )
 	    {
 	       areaHeader2 = *areaHeader;
 	       strcpy(strchr(areaHeader2.versionString, '\x1a'), "/conv\x1a");

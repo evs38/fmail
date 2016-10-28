@@ -36,27 +36,13 @@
 #include <windows.h>
 #endif
 
-#ifdef __OS2__
-	#define PTYPE "/OS2"
-	#define P386
-#elif defined __WIN32__ && !defined __DPMI32__
-	#define PTYPE "-W32"
-   #define P386
-#elif defined __FMAILX__
-	#ifdef __DPMI32__
-		#define PTYPE "X32"
-		#define P386
-	#elif defined __DPMI16__
-		#define PTYPE "X"
-		#define P386
-	#else
-		#define PTYPE "W"
-		#define P386
-	#endif
+#ifdef __WIN32__
+  #define PTYPE "-W32"
+  #define P386
 #elif defined P386
-	#define PTYPE "/386"
+  #define PTYPE "/386"
 #else
-	#define PTYPE ""
+  #define PTYPE ""
 #endif
 
 #ifdef GOLDBASE

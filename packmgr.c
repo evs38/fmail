@@ -25,6 +25,7 @@
 #include <dos.h>
 #include <fcntl.h>
 #include <io.h>
+#include <share.h>     // SH_DENY* flags
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -38,7 +39,7 @@
 
 extern configType config;
 extern windowLookType windowLook;
-extern char configPath[128];
+extern char configPath[FILENAME_MAX];
 
 
 void displayPack (packType pack, u16 elemCount,
@@ -77,7 +78,7 @@ void displayPack (packType pack, u16 elemCount,
 
 
 
-s16 packMgr (void)
+s16 packMgr(void)
 {
    u16 update = 0;
    u16 elemCount = 0;
@@ -95,9 +96,9 @@ s16 packMgr (void)
 
    strcpy(stpcpy(tempStr, configPath), dPCKFNAME);
 
-   if ((packHandle = open(tempStr, O_RDONLY|O_BINARY)) != -1)
+   if ((packHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1)
    {
-      if ((_read(packHandle, pack, sizeof(packType)) < (sizeof(packType)>>1)) ||
+      if ((read(packHandle, pack, sizeof(packType)) < (sizeof(packType)>>1)) ||
           (close(packHandle) == -1))
          displayMessage("Can't read "dPCKFNAME);
    }
@@ -256,7 +257,7 @@ s16 packMgr (void)
          ch = 'Y';
       else
          if (update)
-            ch = askBoolean ("Save changes in pack manager ?", 'Y');
+            ch = askBoolean("Save changes in pack manager ?", 'Y');
          else
             ch = 0;
    }
@@ -266,9 +267,8 @@ s16 packMgr (void)
    {
       strcpy(stpcpy(tempStr, configPath), dPCKFNAME);
 
-      if (((packHandle = open(tempStr, O_WRONLY|O_CREAT|O_BINARY|O_DENYALL,
-                                       S_IREAD|S_IWRITE)) == -1) ||
-          (_write(packHandle, pack, sizeof(packType)) != sizeof(packType)) ||
+      if (((packHandle = _sopen(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1) ||
+          (write(packHandle, pack, sizeof(packType)) != sizeof(packType)) ||
           (close(packHandle) == -1))
          displayMessage("Can't write to "dPCKFNAME);
    }

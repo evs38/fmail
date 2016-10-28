@@ -42,17 +42,16 @@
 // **** Modify the type definitions below if necessary for your compiler ****
 
 #define fhandle int
-#define u8    uint8_t
-#define uchar unsigned char
-//#define schar char
-#define u16   uint16_t
-#define s16   int16_t
-#define u32   uint32_t
-#define s32   int32_t
-#define udef  unsigned int
+#define u8      uint8_t
+#define uchar   unsigned char
+#define u16     uint16_t
+#define s16     int16_t
+#define u32     uint32_t
+#define s32     int32_t
+#define udef    unsigned int
 //#define sdef  signed int
 #ifdef __CANUSE64BIT
-#define u64   uint64_t
+#define u64     uint64_t
 #endif
 
 //#define MAXU16 0xFFFF
@@ -191,11 +190,11 @@ typedef nodeFakeType  akaListType[MAX_AKAS_F  ];
 
 typedef struct
 {
-  u16 useEMS       : 1;  // BIT 0
-  u16 checkBreak   : 1;  // BIT 1
-  u16 swap         : 1;  // BIT 2
-  u16 swapEMS      : 1;  // BIT 3
-  u16 swapXMS      : 1;  // BIT 4
+  u16              : 1;  // BIT 0  (was useEMS)
+  u16              : 1;  // BIT 1  (was checkBreak)
+  u16              : 1;  // BIT 2  (was swap)
+  u16              : 1;  // BIT 3  (was swapEMS)
+  u16              : 1;  // BIT 4  (was swapXMS)
   u16              : 1;  // BIT 5  (was lfn)
   u16 monochrome   : 1;  // BIT 6
   u16 commentFFD   : 1;  // BIT 7
@@ -332,18 +331,19 @@ typedef struct
   u16              aka;
 } akaMatchType;
 
+//---------------------------------------------------------------------------
 // ATTENTION: FMAIL.CFG does NOT use the new config file type yet (no header) !!!
-
+//
 typedef struct
 {
-  uchar           versionMajor;
-  uchar           versionMinor;
-  s32             creationDate;
+  u8              versionMajor;
+  u8              versionMinor;
+  time_t          creationDate;
   u32             key_NotUsed;
   u32             reservedKey_NotUsed;
   u32             relKey1_NotUsed;
   u32             relKey2_NotUsed;
-  uchar           reserved1[14];
+  u8              reserved1[14];
   u32             lastUniqueID;
   inetOptionsType inetOptions;
   u16             maxForward;
@@ -359,7 +359,7 @@ typedef struct
   u16             mailer;
   u16             bbsProgram;
   u16             maxBundleSize;
-  u16             extraHandles; /* 0-235 */
+  u16             RESERVE9;        // Was: extraHandles;  // 0-235
   u16             autoRenumber;
   u16             bufSize;
   u16             ftBufSize;
@@ -371,7 +371,7 @@ typedef struct
   u16             defMaxRescan;
   u16             oldMsgDays;
   pingOptionsType pingOptions;
-  uchar           reserved2[59];
+  u8              reserved2[59];
   u16             colorSet;
   char            sysopName[36];
   u16             defaultArc;
@@ -379,7 +379,7 @@ typedef struct
   u16             _adiscDaysPoint;
   u16             _adiscSizeNode;
   u16             _adiscSizePoint;
-  uchar           reserved3[16];
+  u8              reserved3[16];
   uchar           tearType;
   char            tearLine[25];
   pathType        summaryLogName;
@@ -396,7 +396,7 @@ typedef struct
   pathType        outPath;
   pathType        securePath;
   pathType        logName;
-  pathType        swapPath;
+  pathType        reserve8;             // (was swapPath)
   pathType        semaphorePath;
   pathType        pmailPath;
   pathType        areaMgrLogName;
@@ -421,7 +421,7 @@ typedef struct
   archiverInfo    sqz;
   archiverInfo    customArc;
   pathType        autoFMail102Path;
-  uchar           reserved4[35];
+  u8              reserved4[35];
   areaOptionsType _optionsAKA[MAX_NA_OLD];
   uchar           _groupsQBBS[MAX_NA_OLD];
   u16             _templateSecQBBS[MAX_NA_OLD];
@@ -436,7 +436,7 @@ typedef struct
   uchar           _replyStatSBBS[MAX_NA_OLD];
   u16             _attrSBBS[MAX_NA_OLD];
   uchar           groupDescr[26][27];
-  uchar           reserved5[9];
+  u8              reserved5[9];
   uchar           _msgKindsRA[MAX_NA_OLD];
   uchar           _attrRA[MAX_NA_OLD];
   u16             _readSecRA[MAX_NA_OLD];
@@ -450,7 +450,8 @@ typedef struct
   uchar           _descrAKA[MAX_NA_OLD][51];
   userType        users[MAX_USERS];
   akaMatchType    akaMatch[MAX_MATCH];     // not used yet
-  uchar           reserved6[752-10*MAX_MATCH];
+  u8              reserved6[704 - MAX_MATCH * sizeof(akaMatchType)];  // == 704 - 16 * 10 = 544
+  pathType        outBakPath;
   char            emailAddress[80];        // max 56 chars used
   char            pop3Server[80];          // max 56 chars used
   char            smtpServer[80];          // max 56 chars used

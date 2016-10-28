@@ -42,6 +42,7 @@
 #include "mtask.h"
 #include "nodeinfo.h"
 #include "spec.h"
+#include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
 
@@ -56,7 +57,7 @@ udef openBCL(uplinkReqType *uplinkReq)
   tempStrType tempStr;
   nodeNumType tempNode;
 
-  sprintf(tempStr, "%s%s", configPath, uplinkReq->fileName);
+  strcpy(stpcpy(tempStr, configPath), uplinkReq->fileName);
   if ( (bclHandle = _sopen(tempStr, O_RDONLY | O_BINARY, SH_DENYRW)) == -1
      || read(bclHandle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header)
      )
@@ -100,14 +101,14 @@ void LogFileDetails(const char *fname, const char *txt)
 {
   struct stat statbuf;
   tempStrType tempStr;
+  struct tm *tm;
 
-  if (0 == stat(fname, &statbuf))
-  {
-    struct tm *tm = localtime(&statbuf.st_mtime);
+  if (  0 == stat(fname, &statbuf)
+     && (tm = localtime(&statbuf.st_mtime)) != NULL  // TODO (Wilfred#1#10/21/16): Check if correct time (of bcl file) is logged
+     )
     sprintf(tempStr, "%s %s %lu, %04d-%02d-%02d %02d:%02d:%02d", txt, fname, statbuf.st_size
                    , tm->tm_year + 1900, tm->tm_mon +1, tm->tm_mday
                    , tm->tm_hour, tm->tm_min, tm->tm_sec);
-  }
   else
     sprintf(tempStr, "%s %s", txt, fname);
 
@@ -123,7 +124,7 @@ udef process_bcl(char *fileName)
   u16         index;
   nodeNumType tempNode;
 
-  sprintf(tempStr, "%s%s", config.inPath, fileName);
+  strcpy(stpcpy(tempStr, config.inPath), fileName);
   if ( (handle = _sopen(tempStr, O_RDONLY | O_BINARY, SH_DENYRW)) == -1
      || read(handle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header)
      )
@@ -150,13 +151,13 @@ udef process_bcl(char *fileName)
   if (index == MAX_UPLREQ)
     return 0;
 
-  sprintf(newFileName, "%08X.BCL", uniqueID());
-  sprintf(tempStr2, "%s%s", configPath, newFileName);
+  sprintf(newFileName, "%08x.bcl", uniqueID());
+  strcpy(stpcpy(tempStr2, configPath), newFileName);
   if (!moveFile(tempStr, tempStr2))
   {
     sprintf(tempStr, "New BCL file received from uplink %s", nodeStr(&tempNode));
     logEntry(tempStr, LOG_ALWAYS, 0);
-    sprintf(tempStr, "%s%s", configPath, config.uplinkReq[index].fileName);
+    strcpy(stpcpy(tempStr, configPath), config.uplinkReq[index].fileName);
     LogFileDetails(tempStr , "Old:");
     unlink(tempStr);
     LogFileDetails(tempStr2, "New:");
@@ -169,7 +170,9 @@ void ChkAutoBCL(void)
 {
   u16 index;
 
-  logEntry("Check AutoBCL", LOG_DEBUG, 0);
+#ifdef _DEBUG
+  logEntry("DEBUG Check AutoBCL", LOG_DEBUG, 0);
+#endif
 
   for (index = 0; index < nodeCount; index++)
   {
@@ -190,7 +193,9 @@ udef ScanNewBCL(void)
   DIR           *dir;
   struct dirent *ent;
 
-  logEntry("Scan for received BCL files", LOG_DEBUG, 0);
+#ifdef _DEBUG
+  logEntry("DEBUG Scan for received BCL files", LOG_DEBUG, 0);
+#endif
 
   if ((dir = opendir(config.inPath)) != NULL)
   {
@@ -208,16 +213,16 @@ udef ScanNewBCL(void)
 //---------------------------------------------------------------------------
 void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInfoPtr)
 {
-  u16          count;
-  tempStrType  tempStr;
-  fhandle      helpHandle;
+  u16           count;
+  tempStrType   tempStr;
+  fhandle       helpHandle;
   headerType  *areaHeader;
   rawEchoType *areaBuf;
 
   if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
     return;
 
-  sprintf(tempStr, "%s%08X.$$$", config.outPath, uniqueID());
+  sprintf(tempStr, "%s%08x."dEXTTMP, config.outPath, uniqueID());
   if ((helpHandle = open(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
   {
     tempStrType logStr;
@@ -225,9 +230,9 @@ void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInf
     logEntry(logStr, LOG_ALWAYS, 0);
 
     memset(&bcl_header, 0, sizeof(bcl_header));
-    strcpy(bcl_header.FingerPrint, "BCL");
+    strcpy (bcl_header.FingerPrint, "BCL");
     strncpy(bcl_header.ConfMgrName, VersionStr(), 30);
-    strcpy(bcl_header.Origin, nodeStr(srcNode));
+    strcpy (bcl_header.Origin, nodeStr(srcNode));
     bcl_header.CreationTime = time(NULL);
     bcl_header.flags = BCLH_ISLIST;
     write(helpHandle, &bcl_header, sizeof(bcl_header));
@@ -245,8 +250,8 @@ void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInf
                  | (areaBuf->options.allowPrivate ? FLG1_PRIVATE : 0)
                  | ((nodeInfoPtr->writeLevel < areaBuf->writeLevel) ? FLG1_READONLY : 0);
       write(helpHandle, &bcl, sizeof(bcl));
-      write(helpHandle, areaBuf->areaName, strlen(areaBuf->areaName)+1);
-      write(helpHandle, areaBuf->comment, strlen(areaBuf->comment)+1);
+      write(helpHandle, areaBuf->areaName, strlen(areaBuf->areaName) + 1);
+      write(helpHandle, areaBuf->comment , strlen(areaBuf->comment ) + 1);
       write(helpHandle, "", 1);
     }
     close(helpHandle);

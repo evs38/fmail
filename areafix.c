@@ -93,9 +93,6 @@ typedef areaNameType badAreaListType[MAX_BADAREA];
 badAreaListType *badAreaList;
 u16              badAreaCount = 0;
 
-extern char configPath[FILENAME_MAX];
-extern configType config;
-
 extern char *version;
 
 //---------------------------------------------------------------------------
@@ -163,22 +160,21 @@ static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
           }
           else
           {
-            memset (fileStr+64, 0x0d, 64);
-            memset (fileStr2+64, 0x0d, 64);
+            memset(fileStr + 64, 0x0d, 64);
+            memset(fileStr2 + 64, 0x0d, 64);
             fileStr[128] = 0;
             fileStr2[128] = 0;
             do
             {
-              memcpy (fileStr, fileStr+64, 64);
-              memcpy (fileStr2, fileStr+64, 64);
-              memset (fileStr+64, 0, 64);
-              memset (fileStr2+64, 0, 64);
-              read (textHandle, fileStr+64, 64);
-              memcpy (fileStr2+64, fileStr+64, 64);
-              strupr (fileStr+64);
+              memcpy(fileStr, fileStr + 64, 64);
+              memcpy(fileStr2, fileStr + 64, 64);
+              memset(fileStr + 64, 0, 64);
+              memset(fileStr2 + 64, 0, 64);
+              read(textHandle, fileStr + 64, 64);
+              memcpy(fileStr2 + 64, fileStr + 64, 64);
+              strupr(fileStr + 64);
               helpPtr = fileStr;
-              while ((found == -1) &&
-                     ((helpPtr = strstr(helpPtr+2, areaName)) != NULL))
+              while (found == -1 && (helpPtr = strstr(helpPtr + 2, areaName)) != NULL)
               {
                 if ((isspace(*(helpPtr+strlen(areaName)))) &&
                     (isspace(*(--helpPtr))) &&
@@ -190,27 +186,27 @@ static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
                   found = count;
                   memcpy(fileStr, fileStr2, 128);
 
-                  /* copy the description of the area */
+                  // copy the description of the area
 
                   if (config.uplinkReq[count].fileType == 1)
                   {
-                    helpPtr += strlen(areaName)+1;
+                    helpPtr += strlen(areaName) + 1;
                     while (*helpPtr == ' ')
                     {
                       helpPtr++;
-                      if (helpPtr == fileStr+128)
+                      if (helpPtr == fileStr + 128)
                       {
-                        read (textHandle, fileStr, 128);
+                        read(textHandle, fileStr, 128);
                         helpPtr = fileStr;
                       }
                     }
                     copyPtr = descrStr;
-                    while ((*helpPtr >= ' ') && (copyPtr < descrStr+ECHONAME_LEN-1))
+                    while (*helpPtr >= ' ' && copyPtr < descrStr + ECHONAME_LEN - 1)
                     {
                       *copyPtr++ = *helpPtr++;
-                      if (helpPtr == fileStr+128)
+                      if (helpPtr == fileStr + 128)
                       {
-                        read (textHandle, fileStr, 128);
+                        read(textHandle, fileStr, 128);
                         helpPtr = fileStr;
                       }
                     }
@@ -219,13 +215,13 @@ static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
                 }
               }
             }
-            while ((found == -1) && (!eof(textHandle)));
-            close (textHandle);
+            while (found == -1 && !eof(textHandle));
+            close(textHandle);
           }
         }
       }
     }
-    while ((++count < MAX_UPLREQ) && (found == -1));
+    while (++count < MAX_UPLREQ && found == -1);
   }
   return(found);
 }
@@ -1500,7 +1496,7 @@ Send:
       msgHandle2 = open(tempStr, O_WRONLY | O_BINARY | O_APPEND, 0);
     }
 
-    strcpy(stpcpy(tempStr, config.bbsPath), "areamgr.$$$");
+    strcpy(stpcpy(tempStr, config.bbsPath), "areamgr."dEXTTMP);
     if (nodeInfoPtr->options.allowRescan)
     {
       if ((helpHandle = open(tempStr, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)

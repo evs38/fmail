@@ -73,7 +73,7 @@ static areaInfoPtrArrO areaInfo;
 //extern u16             nodeInfoCount;
 //extern nodeInfoType    *nodeInfo;
 
-extern char configPath[128];
+extern char configPath[FILENAME_MAX];
 extern windowLookType  windowLook;
 extern configType      config;
 
@@ -504,21 +504,19 @@ s16 listPackConfig (void)
       return (0);
    }
    strcpy(stpcpy(tempStr, configPath), dPCKFNAME);
-   if ((packHandle = open(tempStr, O_RDONLY|O_BINARY|O_DENYNONE)) == -1)
+   if ((packHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1)
    {
       displayMessage ("Can't open "dPCKFNAME);
       return (0);
    }
-   fprintf (textFile, "\n%s  -  Pack Manager  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
+   fprintf(textFile, "\n%s  -  Pack Manager  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
    count = 0;
-   while ((read (packHandle, tempStr, PACK_STR_SIZE) == PACK_STR_SIZE) &&
-          (*tempStr))
-   {
+   while (read(packHandle, tempStr, PACK_STR_SIZE) == PACK_STR_SIZE && *tempStr)
        fprintf (textFile, "%3u.   %s\n", ++count, tempStr);
-   }
-   fclose (textFile);
-   close (packHandle);
-   return (0);
+
+   fclose(textFile);
+   close(packHandle);
+   return 0;
 }
 
 
@@ -912,11 +910,6 @@ s16 listGeneralConfig (void)
    fprintf (textFile, "Toss summary       : %s\n\n", *config.summaryLogName?config.summaryLogName : "Not defined");
 
    fprintf (textFile, "Dup detection      : %s\n", config.mailOptions.dupDetection ? "Yes":"No");
-#ifndef __FMAILX__
-#ifndef __32BIT__
-   fprintf (textFile, "+-> Use 64k EMS    : %s\n", config.genOptions.useEMS ? "Yes":"No");
-#endif
-#endif
    fprintf (textFile, "Maximum PKT size   : ");
       if (config.maxPktSize == 0)
          fprintf (textFile, "Not defined\n");
@@ -963,17 +956,6 @@ s16 listGeneralConfig (void)
    fprintf (textFile, "Strip soft cr      : %s\n"  , config.mbOptions.removeSr ? "Yes":"No");
    fprintf (textFile, "Strip lf           : %s\n\n", config.mbOptions.removeLf ? "Yes":"No");
 
-#ifndef __FMAILX__
-#ifndef __32BIT__
-   fprintf (textFile, "Swapping           : %s\n", config.genOptions.swap ? "Yes":"No");
-   fprintf (textFile, "+-> Use EMS        : %s\n", config.genOptions.swapEMS ? "Yes":"No");
-   fprintf (textFile, "+-> Use XMS        : %s\n", config.genOptions.swapXMS ? "Yes":"No");
-   fprintf (textFile, "Swap file path     : %s\n\n", *config.swapPath ? config.swapPath : "Not defined");
-   fprintf (textFile, "FMail Buffer size  : %s\n", bufSizeName[config.bufSize]);
-   fprintf (textFile, "FTools buffer size : %s\n", bufSizeName[config.ftBufSize]);
-#endif
-#endif
-   fprintf (textFile, "Extra handles      : %u\n", config.extraHandles);
    fprintf (textFile, "Monochrome         : %s\n\n", config.genOptions.monochrome ? "Yes":"No");
 
    count2 = 0;
@@ -983,7 +965,7 @@ s16 listGeneralConfig (void)
       {
          if (count2++ == 0)
          {
-	         fprintf(textFile, "Netmail boards\n");
+           fprintf(textFile, "Netmail boards\n");
          }
          if (count == 0)
             fprintf(textFile, "\n  Main              : ");
@@ -992,9 +974,9 @@ s16 listGeneralConfig (void)
          fprintf(textFile, "%u\n", config.netmailBoard[count]);
 
          fprintf(textFile, "    Comment         : %-51s\n", config.descrAKA[count]);
-      	 fprintf(textFile, "    # Messages      : %u\n", config.msgsAKA[count]);
-      	 fprintf(textFile, "    # Days old      : %u\n", config.daysAKA[count]);
-      	 fprintf(textFile, "    # Days rcvd     : %u\n", config.daysRcvdAKA[count]);
+         fprintf(textFile, "    # Messages      : %u\n", config.msgsAKA[count]);
+         fprintf(textFile, "    # Days old      : %u\n", config.daysAKA[count]);
+         fprintf(textFile, "    # Days rcvd     : %u\n", config.daysRcvdAKA[count]);
       }
    }
 
@@ -1005,7 +987,8 @@ s16 listGeneralConfig (void)
    fprintf(textFile, "Message base       : %s\n", config.bbsPath);
    fprintf(textFile, "Netmail messages   : %s\n", config.netPath);
    fprintf(textFile, "Incoming mail      : %s\n", config.inPath);
-   fprintf(textFile, "Outgoing mail      : %s\n\n", config.outPath);
+   fprintf(textFile, "Outgoing mail      : %s\n", config.outPath);
+   fprintf(textFile, "Outgoing backup    : %s\n\n", config.outBakPath);
 
    fprintf(textFile, "Local PKTs         : %s\n", *config.securePath ? config.securePath : "Not defined");
    fprintf(textFile, "Semaphore          : %s\n", *config.semaphorePath ? config.semaphorePath : "Not defined");
@@ -1017,33 +1000,7 @@ s16 listGeneralConfig (void)
    else
      archiver++;
 
-   fprintf(textFile, "\nCompression programs (16-bit FMail)\n\n"
-		      "           Default : %s\n"
-		      "           ARC     : %s\n"
-		      "           ZIP     : %s\n"
-		      "           LZH     : %s\n"
-		      "           PAK     : %s\n"
-		      "           ZOO     : %s\n"
-		      "           ARJ     : %s\n"
-		      "           SQZ     : %s\n"
-          "           UC2     : %s\n"
-          "           RAR     : %s\n"
-          "           JAR     : %s\n"
-          "           -?-     : %s\n",
-		      arcName[archiver],
-		      *config.arc.programName ? config.arc.programName : "Not defined",
-		      *config.zip.programName ? config.zip.programName : "Not defined",
-		      *config.lzh.programName ? config.lzh.programName : "Not defined",
-		      *config.pak.programName ? config.pak.programName : "Not defined",
-		      *config.zoo.programName ? config.zoo.programName : "Not defined",
-          *config.arj.programName ? config.arj.programName : "Not defined",
-          *config.sqz.programName ? config.sqz.programName : "Not defined",
-          *config.uc2.programName ? config.uc2.programName : "Not defined",
-          *config.rar.programName ? config.rar.programName : "Not defined",
-          *config.jar.programName ? config.jar.programName : "Not defined",
-          *config.customArc.programName ? config.customArc.programName : "Not defined");
-
-   fprintf(textFile, "\nCompression programs (32-bit FMail)\n\n"
+   fprintf(textFile, "\nCompression programs\n\n"
 		      "           Default : %s\n"
 		      "           ARC     : %s\n"
 		      "           ZIP     : %s\n"
@@ -1069,31 +1026,7 @@ s16 listGeneralConfig (void)
           *config.jar.programName ? config.jar32.programName : "Not defined",
           *config.customArc.programName ? config.customArc32.programName : "Not defined");
 
-   fprintf(textFile, "\nDecompression programs (16-bit FMail)\n\n"
-		      "           ARC     : %s\n"
-		      "           ZIP     : %s\n"
-		      "           LZH     : %s\n"
-		      "           PAK     : %s\n"
-		      "           ZOO     : %s\n"
-		      "           ARJ     : %s\n"
-		      "           SQZ     : %s\n"
-          "           UC2     : %s\n"
-          "           RAR     : %s\n"
-          "           JAR     : %s\n"
-          "           GUS     : %s\n",
-		      *config.unArc.programName ? config.unArc.programName:"Not defined",
-		      *config.unZip.programName ? config.unZip.programName:"Not defined",
-		      *config.unLzh.programName ? config.unLzh.programName:"Not defined",
-		      *config.unPak.programName ? config.unPak.programName:"Not defined",
-		      *config.unZoo.programName ? config.unZoo.programName:"Not defined",
-		      *config.unArj.programName ? config.unArj.programName:"Not defined",
-		      *config.unSqz.programName ? config.unSqz.programName:"Not defined",
-          *config.unUc2.programName ? config.unUc2.programName:"Not defined",
-          *config.unRar.programName ? config.unRar.programName:"Not defined",
-          *config.unJar.programName ? config.unJar.programName:"Not defined",
-          *config.GUS.programName ? config.GUS.programName:"Not defined");
-
-   fprintf(textFile, "\nDecompression programs (32-bit FMail)\n\n"
+   fprintf(textFile, "\nDecompression programs\n\n"
 		      "           ARC     : %s\n"
 		      "           ZIP     : %s\n"
 		      "           LZH     : %s\n"

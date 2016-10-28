@@ -71,22 +71,22 @@
 
 typedef struct
 {
-  uchar wtLength;
-  uchar WhoTo[35];
+  u8   wtLength;
+  char WhoTo[35];
 } msgToIdxRec;
 
 typedef struct
 {
-   uchar txtLength;
-   uchar txtStr[255];
+  u8   txtLength;
+  char txtStr[255];
 } msgTxtRec;
 
 #ifdef GOLDBASE
 
 typedef struct
 {
-  u32           MsgNum,
-		 ReplyTo,
+   u32           MsgNum,
+                 ReplyTo,
                  SeeAlsoNum;
    u16           TRead;
    u32           StartRec;
@@ -102,15 +102,15 @@ typedef struct
 		 NetAttr,
 		 Board;
    uchar         ptLength;
-   schar         PostTime[5];
+   char          PostTime[5];
    uchar         pdLength;
-   schar         PostDate[8];
+   char          PostDate[8];
    uchar         wtLength;
-   schar         WhoTo[35];
+   char          WhoTo[35];
    uchar         wfLength;
-   schar         WhoFrom[35];
+   char          WhoFrom[35];
    uchar         sjLength;
-   schar         Subj[56];    // 72 - 16
+   char          Subj[56];    // 72 - 16
    u32           subjCrc;
    u32           wrTime;
    s32           recTime;
@@ -136,41 +136,41 @@ typedef struct
 typedef struct
 {
   u16           MsgNum,
-                 ReplyTo,
-                 SeeAlsoNum,
-                 TRead,
-                 StartRec,
-                 NumRecs,
-                 DestNet,
-                 DestNode,
-                 OrigNet,
-                 OrigNode;
-   uchar         DestZone,
-                 OrigZone;
-   u16           Cost;
-   uchar         MsgAttr,
-                 NetAttr,
-                 Board;
-   uchar         ptLength;
-   schar         PostTime[5];
-   uchar         pdLength;
-   schar         PostDate[8];
-   uchar         wtLength;
-   schar         WhoTo[35];
-   uchar         wfLength;
-   schar         WhoFrom[35];
-   uchar         sjLength;
-   schar         Subj[56];    // 72 - 16
-   u32           subjCrc;
-   u32           wrTime;
-   s32           recTime;
-   u32           checkSum;
+                ReplyTo,
+                SeeAlsoNum,
+                TRead,
+                StartRec,
+                NumRecs,
+                DestNet,
+                DestNode,
+                OrigNet,
+                OrigNode;
+  u8            DestZone,
+                OrigZone;
+  u16           Cost;
+  u8            MsgAttr,
+                NetAttr,
+                Board;
+  u8            ptLength;
+  char          PostTime[5];
+  u8            pdLength;
+  char          PostDate[8];
+  u8            wtLength;
+  char          WhoTo[35];
+  u8            wfLength;
+  char          WhoFrom[35];
+  u8            sjLength;
+  char          Subj[56];    // 72 - 16
+  u32           subjCrc;
+  u32           wrTime;
+  time_t        recTime;
+  u32           checkSum;
 } msgHdrRec;
 
 typedef struct
 {
-  u16   MsgNum;
-  uchar Board;
+  u16 MsgNum;
+  u8  Board;
 } msgIdxRec;
 
 typedef struct
@@ -184,7 +184,7 @@ typedef struct
 #endif
 
 void openBBSWr(void);
-void closeBBS(void);
-s16  writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail);
+void closeBBS (void);
+s16  writeBBS (internalMsgType *message, u16 boardNum, s16 isNetmail);
 
 #endif  // hudsonH

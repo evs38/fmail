@@ -33,11 +33,16 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <io.h>
+#include <share.h>
+#include <stddef.h>    // offsetof()
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef __MINGW32__
+#include <windef.h>    // min() max()
+#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -53,21 +58,16 @@
 #include "jam.h"
 #include "jamfun.h"
 #include "jammaint.h"
+#include "lock.h"
 #include "msgmsg.h"
+#include "msgradef.h"
 #include "mtask.h"
 #include "pp_date.h"
-#include "spec.h"
 #include "sorthb.h"
+#include "spec.h"
+#include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
-
-#ifdef __OS2__
-#define INCL_DOSPROCESS
-#include <os2.h>
-
-extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
-
-#endif
 
 // linkfout FTools voorkomen!
 u16 echoCount;
@@ -82,15 +82,11 @@ u16 echoCount;
 #define RENUM_BUFSIZE 32760 // MAX 32760
 #define DELRECNUM      8192
 
-#ifndef __FMAILX__
-extern unsigned cdecl _stklen = 16384;
-#endif
-
 #ifdef __WIN32__
 const char *smtpID;
 #endif
 
-extern s32 startTime;
+extern time_t startTime;
 
 const char *semaphore[6] =
 {
@@ -130,7 +126,7 @@ boardInfoType boardInfo[MBBOARDS == 200 ? 256 : 512];
 
 fhandle msgInfoHandle;
 
-char configPath[128];
+char configPath[FILENAME_MAX];
 configType config;
 
 u32 lastSavedUniqID = 0;
@@ -216,14 +212,6 @@ void Usage(void)
   puts(str);
 }
 //----------------------------------------------------------------------------
-s16 breakPressed = 0;
-
-s16 cdecl c_break(void)
-{
-  breakPressed = 1;
-  return 1;
-}
-//----------------------------------------------------------------------------
 s16 readAreaInfo(void)
 {
   u16 count;
@@ -298,9 +286,10 @@ s32 getSwitchFT(int *argc, char *argv[], s32 mask)
 }
 //----------------------------------------------------------------------------
 void addNew(s32);
+void myexit(void);
 
 //----------------------------------------------------------------------------
-int cdecl main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   s16 ch;
   tempStrType tempStr, tempStr2, tempStr3;
@@ -394,18 +383,18 @@ int cdecl main(int argc, char *argv[])
   u16 HDR_BUFSIZE;
 #endif
 
+  atexit(myexit);
+
+#ifdef __BORLANDC__
   putenv("TZ=LOC0");
   tzset();
-#ifdef __OS2__
-  WinSetTitle(FTOOLS_VER_STRING);
-#endif
-
-#ifndef __STDIO__
-  ctrlbrk(c_break);
-#endif
+#endif // __BORLANDC__
 #ifdef __WIN32__
+  // Set default open mode:
+  _fmode = O_BINARY;
+
   smtpID = TIDStr();
-#endif
+#endif // __WIN32__
 
   printf("%s - The Fast Message Base Utility\n\n", VersionStr());
   printf("Copyright (C) 1991-%s by FMail Developers - All rights reserved\n\n", __DATE__ + 7);
@@ -427,8 +416,8 @@ int cdecl main(int argc, char *argv[])
 
   strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
-  if (  (configHandle = open(tempStr, O_RDONLY | O_BINARY | O_DENYWRITE)) == -1
-     || _read(configHandle, &config, sizeof(configType)) < sizeof(configType)
+  if (  (configHandle = _sopen(tempStr, O_RDONLY | O_BINARY, SH_DENYWR)) == -1
+     || read(configHandle, &config, sizeof(configType)) < sizeof(configType)
      || close(configHandle) == -1
      )
   {
@@ -457,7 +446,7 @@ int cdecl main(int argc, char *argv[])
     *helpPtr = 0;
 
   if  (  !access(tempStr2, 0)
-      && (semaHandle = open(tempStr, O_WRONLY | O_DENYWRITE | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1
+      && (semaHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYWR, S_IREAD | S_IWRITE)) == -1
       && errno != ENOFILE
       )
   {
@@ -467,7 +456,7 @@ int cdecl main(int argc, char *argv[])
     time2 = time1;
 
     ch = 0;
-    while (((semaHandle = open(tempStr, O_WRONLY | O_DENYALL | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1)
+    while (((semaHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
            && (!config.activTimeOut || time2 - time1 < config.activTimeOut) && ((ch = (keyWaiting & 0xff)) != 27))
     {
       if (ch == 0 || ch == -1)
@@ -699,15 +688,14 @@ int cdecl main(int argc, char *argv[])
     if ((lastReadHandle = open(expandName("LASTREAD."MBEXTN), O_RDONLY | O_BINARY)) == -1)
       logEntry("Can't read file LastRead."MBEXTN, LOG_ALWAYS, 1);
 
-    if (_read(lastReadHandle, &(lastReadRec[1]), 400) != 400)
+    if (read(lastReadHandle, &(lastReadRec[1]), 400) != 400)
     {
       close(lastReadHandle);
       logEntry("Can't read file LastRead."MBEXTN, LOG_ALWAYS, 1);
     }
     close(lastReadHandle);
 
-    if (((msgTxtHandle = open(expandName("MSGTXT."MBEXTN)
-                              , O_RDONLY | O_BINARY | O_DENYALL)) == -1)
+    if (((msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
         || ((fileSize = filelength(msgTxtHandle)) == -1)
         || (close(msgTxtHandle) == -1))
       logEntry("File status request error", LOG_ALWAYS, 1);
@@ -724,8 +712,8 @@ int cdecl main(int argc, char *argv[])
 
     // Read MSGINFO.BBS
 
-    if (((msgInfoHandle = open(expandName("msginfo."MBEXTN), O_RDONLY | O_BINARY | O_DENYALL)) == -1)
-        || (_read(msgInfoHandle, &oldInfoRec, sizeof(infoRecType)) == -1))
+    if (((msgInfoHandle = _sopen(expandName(dMSGINFO"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
+        || (read(msgInfoHandle, &oldInfoRec, sizeof(infoRecType)) == -1))
       logEntry("Can't open file MsgInfo."MBEXTN " for input", LOG_ALWAYS, 1);
     close(msgInfoHandle);
 
@@ -737,11 +725,11 @@ int cdecl main(int argc, char *argv[])
 
     puts("Analyzing the message base...");
 
-    if ((msgHdrHandle = open(expandName("msghdr."MBEXTN), O_RDWR | O_BINARY | O_DENYALL)) == -1)
-      logEntry( "Can't open MsgHdr."MBEXTN " for update", LOG_ALWAYS, 1);
+    if ((msgHdrHandle = _sopen(expandName(dMSGHDR"."MBEXTN), O_RDWR | O_BINARY, SH_DENYRW)) == -1)
+      logEntry("Can't open MsgHdr."MBEXTN " for update", LOG_ALWAYS, 1);
     if ((switches & SW_T))
-      if ((msgTxtHandle = open(expandName("msgtxt."MBEXTN), O_RDONLY | O_BINARY | O_DENYALL)) == -1)
-        logEntry( "Can't open MsgTxt."MBEXTN " for read-only",  LOG_ALWAYS, 1);
+      if ((msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
+        logEntry("Can't open MsgTxt."MBEXTN " for read-only",  LOG_ALWAYS, 1);
 
     oldHdrSize = (u16)(filelength(msgHdrHandle) / sizeof(msgHdrRec));
 
@@ -755,7 +743,7 @@ int cdecl main(int argc, char *argv[])
       logEntry("Not enough free memory", LOG_ALWAYS, 2);
     }
 
-    while ((bufCount = _read(msgHdrHandle, msgHdrBuf, HDR_BUFSIZE
+    while ((bufCount = read(msgHdrHandle, msgHdrBuf, HDR_BUFSIZE
                              * sizeof(msgHdrRec)) / sizeof(msgHdrRec)) > 0)
     {
       for (count = 0; count < bufCount; count++)
@@ -792,8 +780,7 @@ int cdecl main(int argc, char *argv[])
 
         if ((switches & SW_X)
             && (!(msgHdrBuf[count].MsgAttr & RA_DELETED)))
-          if (scanDate(&msgHdrBuf[count].ptLength
-                       , &year, &month, &day, &hours, &minutes) != 0)
+          if (scanDate((char*)&msgHdrBuf[count].ptLength, &year, &month, &day, &hours, &minutes) != 0)
           {
             msgHdrBuf[count].MsgAttr |= RA_DELETED;
             badDateCount++;
@@ -820,8 +807,7 @@ int cdecl main(int argc, char *argv[])
                 ^ msgHdrBuf[count].wrTime ^ msgHdrBuf[count].recTime
                 ^ CS_SECURITY)
             {
-              if (scanDate(&msgHdrBuf[count].ptLength
-                           , &year, &month, &day, &hours, &minutes) != 0)
+              if (scanDate((char*)&msgHdrBuf[count].ptLength, &year, &month, &day, &hours, &minutes) != 0)
               {
                 newLine();
                 sprintf(tempStr, "Bad date in message base: message #%u in board #%u"
@@ -916,11 +902,9 @@ int cdecl main(int argc, char *argv[])
               ^ msgHdrBuf[count].wrTime ^ msgHdrBuf[count].recTime
               ^ CS_SECURITY)
           {
-            helpPtr = strncpy(tempStr, msgHdrBuf[count].Subj
-                              , temp = min(72, msgHdrBuf[count].sjLength));
+            helpPtr = strncpy(tempStr, msgHdrBuf[count].Subj, temp = min(72, msgHdrBuf[count].sjLength));
             tempStr[temp] = 0;
-            while ((!strnicmp(helpPtr, "RE:", 3))
-                   || (!strnicmp(helpPtr, "(R)", 3)))
+            while (!strnicmp(helpPtr, "RE:", 3) || !strnicmp(helpPtr, "(R)", 3))
             {
               helpPtr += 3;
 
@@ -1094,11 +1078,11 @@ int cdecl main(int argc, char *argv[])
 
     if ((switches & SW_P) && !(switches & SW_F))
     {
-      unlink(expandName("msghdr.bak"));
-      unlink(expandName("msgidx.bak"));
-      unlink(expandName("msgtoidx.bak"));
-      unlink(expandName("msgtxt.bak"));
-      unlink(expandName("msginfo.bak"));
+      unlink(expandName(dMSGHDR".bak"));
+      unlink(expandName(dMSGIDX".bak"));
+      unlink(expandName(dMSGTOIDX".bak"));
+      unlink(expandName(dMSGTXT".bak"));
+      unlink(expandName(dMSGINFO".bak"));
       if (diskFree(config.bbsPath) < (u32)(
             newHdrSize * (s32)sizeof(msgHdrRec)
             + newHdrSize * (s32)sizeof(msgToIdxRec)
@@ -1121,22 +1105,18 @@ int cdecl main(int argc, char *argv[])
 
     newMsgNum = 0;
 
-    if (((msgIdxHandle   = open(expandName((switches & SW_F) ? "msgidx."MBEXTN : "msgidx.$$$")
-                                , O_WRONLY | O_BINARY | O_CREAT | O_TRUNC | O_DENYALL
-                                , S_IREAD | S_IWRITE)) == -1)
-        || ((msgToIdxHandle = open(expandName((switches & SW_F) ? "msgtoidx."MBEXTN : "msgtoidx.$$$")
-                                   , O_WRONLY | O_BINARY | O_CREAT | O_TRUNC | O_DENYALL
-                                   , S_IREAD | S_IWRITE)) == -1))
+    if (((msgIdxHandle = _sopen(expandName((switches & SW_F) ? dMSGIDX"."MBEXTN : dMSGIDX"."dEXTTMP)
+                               , O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+        || ((msgToIdxHandle = _sopen(expandName((switches & SW_F) ? dMSGTOIDX"."MBEXTN : dMSGTOIDX"."dEXTTMP)
+                                    , O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1))
     {
       close(msgIdxHandle);
       logEntry("Can't create purged/packed message files", LOG_ALWAYS, 1);
     }
 
-    if (((msgHdrHandle = open(expandName((switches & SW_F) ? "msghdr."MBEXTN : "msghdr.$$$")
-                              , O_WRONLY | O_BINARY | O_CREAT | O_DENYWRITE
-                              , S_IREAD | S_IWRITE)) == -1)
-        || ((oldHdrHandle = open(expandName("msghdr."MBEXTN)
-                                 , O_RDONLY | O_BINARY | O_DENYNONE)) == -1))
+    if (((msgHdrHandle = _sopen(expandName((switches & SW_F) ? dMSGHDR"."MBEXTN : dMSGHDR"."dEXTTMP)
+                               , O_WRONLY | O_BINARY | O_CREAT, SH_DENYWR, S_IREAD | S_IWRITE)) == -1)
+        || ((oldHdrHandle = open(expandName(dMSGHDR"."MBEXTN), O_RDONLY | O_BINARY)) == -1))
     {
       close(msgHdrHandle);
       logEntry("Can't create purged/packed message files", LOG_ALWAYS, 1);
@@ -1147,7 +1127,7 @@ int cdecl main(int argc, char *argv[])
     keepIdx = 0;
     keepBit = 1;
 
-    while ((bufCount = _read(oldHdrHandle, msgHdrBuf, HDR_BUFSIZE
+    while ((bufCount = read(oldHdrHandle, msgHdrBuf, HDR_BUFSIZE
                              * sizeof(msgHdrRec)) / sizeof(msgHdrRec)) > 0)
     {
       newBufCount = 0;
@@ -1252,9 +1232,9 @@ int cdecl main(int argc, char *argv[])
 
       if (newBufCount != 0)
       {
-        _write(msgHdrHandle,   msgHdrBuf,   newBufCount * sizeof(msgHdrRec));
-        _write(msgIdxHandle,   msgIdxBuf,   newBufCount * sizeof(msgIdxRec));
-        _write(msgToIdxHandle, msgToIdxBuf, newBufCount * sizeof(msgToIdxRec));
+        write(msgHdrHandle,   msgHdrBuf,   newBufCount * sizeof(msgHdrRec));
+        write(msgIdxHandle,   msgIdxBuf,   newBufCount * sizeof(msgIdxRec));
+        write(msgToIdxHandle, msgToIdxBuf, newBufCount * sizeof(msgToIdxRec));
       }
     }
     chsize(msgHdrHandle, tell(msgHdrHandle));
@@ -1283,25 +1263,23 @@ int cdecl main(int argc, char *argv[])
         else
           temp = renumArray[count];
       }
-      if ((lastReadHandle = open(expandName("lastread."MBEXTN)
-                                 , O_RDWR | O_CREAT | O_BINARY | O_DENYALL
-                                 , S_IREAD | S_IWRITE)) == -1)
+      if ((lastReadHandle = _sopen(expandName("lastread."MBEXTN), O_RDWR | O_CREAT | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
         logEntry("Can't open file LastRead."MBEXTN " for update", LOG_ALWAYS, 0);
       else
       {
         puts("Updating LastRead."MBEXTN"...");
 
-        while ((bufCount = _read(lastReadHandle, lruBuf, LRU_BUFSIZE)) > 0)
+        while ((bufCount = read(lastReadHandle, lruBuf, LRU_BUFSIZE)) > 0)
         {
           for (count = 0; count < (bufCount >> 1); count++)
             lruBuf[count] = renumArray[min(lruBuf[count], RENUM_BUFSIZE - 1)];
           lseek(lastReadHandle, -(s32)bufCount, SEEK_CUR);
-          _write(lastReadHandle, lruBuf, bufCount);
+          write(lastReadHandle, lruBuf, bufCount);
         }
         close(lastReadHandle);
       }
 
-      if ((usersBBSHandle = open(expandName("users.bbs"), O_RDWR | O_BINARY | O_DENYNONE)) != -1)
+      if ((usersBBSHandle = open(expandName("users.bbs"), O_RDWR | O_BINARY)) != -1)
       {
         puts("Updating Users.BBS...");
         c = 0;
@@ -1319,11 +1297,11 @@ int cdecl main(int argc, char *argv[])
           else
           {
             while (((lseek(usersBBSHandle, 452 + (1016 * (s32)c++), SEEK_SET) != -1)
-                    && (_read(usersBBSHandle, &temp4, 4)) == 4))
+                    && (read(usersBBSHandle, &temp4, 4)) == 4))
             {
               temp4 = renumArray[min((u16)temp4, RENUM_BUFSIZE - 1)];
               lseek(usersBBSHandle, -4, SEEK_CUR);
-              _write(usersBBSHandle, &temp4, 4);
+              write(usersBBSHandle, &temp4, 4);
             }
           }
         }
@@ -1338,11 +1316,11 @@ int cdecl main(int argc, char *argv[])
           else
           {
             while (((lseek(usersBBSHandle, 130 + (158 * (s32)c++), SEEK_SET) != -1)
-                    && (_read(usersBBSHandle, &temp, 2)) == 2))
+                    && (read(usersBBSHandle, &temp, 2)) == 2))
             {
               temp = renumArray[min(temp, RENUM_BUFSIZE - 1)];
               lseek(usersBBSHandle, -2, SEEK_CUR);
-              _write(usersBBSHandle, &temp, 2);
+              write(usersBBSHandle, &temp, 2);
             }
           }
         }
@@ -1355,10 +1333,9 @@ int cdecl main(int argc, char *argv[])
       msgTxtBuf = (msgTxtRec *)msgHdrBuf;
 
       puts("Writing MsgTxt."MBEXTN"...");
-      if (((msgTxtHandle = open(expandName((switches & SW_F) ? "msgtxt."MBEXTN : "msgtxt.$$$")
-                                , O_WRONLY | O_BINARY | O_CREAT | O_DENYWRITE
-                                , S_IREAD | S_IWRITE)) == -1)
-          || ((oldTxtHandle = open(expandName("msgtxt."MBEXTN), O_RDONLY | O_BINARY | O_DENYNONE)) == -1))
+      if (((msgTxtHandle = _sopen(expandName((switches & SW_F) ? dMSGTXT"."MBEXTN : dMSGTXT"."dEXTTMP)
+                                 , O_WRONLY | O_BINARY | O_CREAT, SH_DENYWR, S_IREAD | S_IWRITE)) == -1)
+          || ((oldTxtHandle = open(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY)) == -1))
       {
         close(msgTxtHandle);
         logEntry("Can't create purged/packed message files", LOG_ALWAYS, 1);
@@ -1368,8 +1345,7 @@ int cdecl main(int argc, char *argv[])
       keepIdx = 0;
       keepBit = 1;
 
-      while ((bufCount = _read(oldTxtHandle, msgTxtBuf, TXT_BUFSIZE
-                               * sizeof(msgTxtRec)) / sizeof(msgTxtRec)) > 0)
+      while ((bufCount = read(oldTxtHandle, msgTxtBuf, TXT_BUFSIZE * sizeof(msgTxtRec)) / sizeof(msgTxtRec)) > 0)
       {
         newBufCount = 0;
 
@@ -1388,7 +1364,7 @@ int cdecl main(int argc, char *argv[])
         }
 
         if (newBufCount != 0)
-          _write(msgTxtHandle, msgTxtBuf, newBufCount * sizeof(msgTxtRec));
+          write(msgTxtHandle, msgTxtBuf, newBufCount * sizeof(msgTxtRec));
       }
       chsize(msgTxtHandle, tell(msgTxtHandle));
       newTxtSize = (u16)(filelength(msgTxtHandle) >> 8);
@@ -1402,50 +1378,50 @@ int cdecl main(int argc, char *argv[])
 
     // Write MSGINFO.BBS
 
-    if (((msgInfoHandle = open(expandName((switches & SW_F) ? "msginfo."MBEXTN : "msginfo.$$$")
-                               , O_RDWR | O_CREAT | O_BINARY | O_DENYALL
-                               , S_IREAD | S_IWRITE)) == -1)
-        || (_write(msgInfoHandle, &infoRec, sizeof(infoRecType)) == -1))
-      logEntry("Can't open file MsgInfo."MBEXTN " for output", LOG_ALWAYS, 0);
+    if (((msgInfoHandle = _sopen(expandName((switches & SW_F) ? dMSGINFO"."MBEXTN : dMSGINFO"."dEXTTMP)
+                                , O_RDWR | O_CREAT | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+        || (write(msgInfoHandle, &infoRec, sizeof(infoRecType)) == -1))
+      logEntry("Can't open file "dMSGINFO"."MBEXTN " for output", LOG_ALWAYS, 0);
     close(msgInfoHandle);
 
     if (!(switches & SW_F))
     {
       if (switches & SW_B)
       {
-        rename(expandName("msghdr."MBEXTN),    expandName("msghdr.bak"));
-        rename(expandName("msgidx."MBEXTN),    expandName("msgidx.bak"));
-        rename(expandName("msgtoidx."MBEXTN),  expandName("msgtoidx.bak"));
-        rename(expandName("msgtxt."MBEXTN),    expandName("msgtxt.bak"));
-        rename(expandName("msginfo."MBEXTN),   expandName("msginfo.bak"));
+        rename(expandName(dMSGHDR"."MBEXTN),    expandName(dMSGHDR".bak"));
+        rename(expandName(dMSGIDX"."MBEXTN),    expandName(dMSGIDX".bak"));
+        rename(expandName(dMSGTOIDX"."MBEXTN),  expandName(dMSGTOIDX".bak"));
+        rename(expandName(dMSGTXT"."MBEXTN),    expandName(dMSGTXT".bak"));
+        rename(expandName(dMSGINFO"."MBEXTN),   expandName(dMSGINFO".bak"));
       }
       else
       {
-        unlink(expandName("msghdr."MBEXTN));
-        unlink(expandName("msgidx."MBEXTN));
-        unlink(expandName("msgtoidx."MBEXTN));
-        unlink(expandName("msgtxt."MBEXTN));
-        unlink(expandName("msginfo."MBEXTN));
+        unlink(expandName(dMSGHDR"."MBEXTN));
+        unlink(expandName(dMSGIDX"."MBEXTN));
+        unlink(expandName(dMSGTOIDX"."MBEXTN));
+        unlink(expandName(dMSGTXT"."MBEXTN));
+        unlink(expandName(dMSGINFO"."MBEXTN));
       }
 
-      rename(expandName("msghdr.$$$"),   expandName("msghdr."MBEXTN));
-      rename(expandName("msgidx.$$$"),   expandName("msgidx."MBEXTN));
-      rename(expandName("msgtoidx.$$$"), expandName("msgtoidx."MBEXTN));
-      rename(expandName("msgtxt.$$$"),   expandName("msgtxt."MBEXTN));
-      rename(expandName("msginfo.$$$"),  expandName("msginfo."MBEXTN));
+      rename(expandName(dMSGHDR"."dEXTTMP),   expandName(dMSGHDR"."MBEXTN));
+      rename(expandName(dMSGIDX"."dEXTTMP),   expandName(dMSGIDX"."MBEXTN));
+      rename(expandName(dMSGTOIDX"."dEXTTMP), expandName(dMSGTOIDX"."MBEXTN));
+      rename(expandName(dMSGTXT"."dEXTTMP),   expandName(dMSGTXT"."MBEXTN));
+      rename(expandName(dMSGINFO"."dEXTTMP),  expandName(dMSGINFO"."MBEXTN));
     }
 
     if (switches & SW_P)
     {
-      sprintf(tempStr, "Space saved ("MBNAME ") : %lu bytes"
-              , oldHdrSize * (s32)sizeof(msgHdrRec)
-              + oldHdrSize * (s32)sizeof(msgToIdxRec)
-              + oldHdrSize * (s32)sizeof(msgIdxRec)
-              + oldTxtSize * (s32)sizeof(msgTxtRec)
-              - newHdrSize * (s32)sizeof(msgHdrRec)
-              - newHdrSize * (s32)sizeof(msgToIdxRec)
-              - newHdrSize * (s32)sizeof(msgIdxRec)
-              - newTxtSize * (s32)sizeof(msgTxtRec));
+      sprintf(tempStr, "Space saved ("MBNAME ") : %u bytes"
+             , oldHdrSize * sizeof(msgHdrRec  )
+             + oldHdrSize * sizeof(msgToIdxRec)
+             + oldHdrSize * sizeof(msgIdxRec  )
+             + oldTxtSize * sizeof(msgTxtRec  )
+             - newHdrSize * sizeof(msgHdrRec  )
+             - newHdrSize * sizeof(msgToIdxRec)
+             - newHdrSize * sizeof(msgIdxRec  )
+             - newTxtSize * sizeof(msgTxtRec  )
+             );
       logEntry(tempStr, LOG_STATS, 0);
     }
 
@@ -1479,10 +1455,16 @@ JAMonly:
           {
             if (argc >= 3 && *argv[2] != '/')
             {
+              int cont = 0;
               count2 = 2;
               while (stricmp(argv[count2], areaBuf->areaName))
                 if (argc <= ++count2 || *argv[count2] == '/')
-                  goto nextarea;
+                {
+                  cont = 1;
+                  break;
+                }
+              if (cont)
+                continue;
               processed |= 1 << (count2 - 2);
             }
             if (!temp)
@@ -1497,7 +1479,6 @@ JAMonly:
               putRec(CFG_ECHOAREAS, count);
             }
           }
-nextarea:
         }
         closeConfig(CFG_ECHOAREAS);
         count2 = 1;
@@ -1509,7 +1490,7 @@ nextarea:
           }
         if (spaceSavedJAM > 0)
         {
-          sprintf(tempStr, "Space saved (JAM) : %lu bytes", spaceSavedJAM);
+          sprintf(tempStr, "Space saved (JAM) : %d bytes", spaceSavedJAM);
           logEntry(tempStr, LOG_STATS, 0);
         }
       }
@@ -1541,7 +1522,7 @@ nextarea:
       {
         if ((msgIdxBuf = malloc(512 * sizeof(msgIdxRec))) == NULL)
           logEntry( "Not enough free memory",     LOG_ALWAYS, 2);
-        if ((lastReadHandle = open(expandName("lastread."MBEXTN), O_RDONLY | O_BINARY | O_DENYNONE)) == -1)
+        if ((lastReadHandle = open(expandName("lastread."MBEXTN), O_RDONLY | O_BINARY)) == -1)
           logEntry( "Can't open LastRead."MBEXTN, LOG_ALWAYS, 1);
         maxRead = 0;
         while (read(lastReadHandle, &lastReadRec, 400) == 400)
@@ -1551,7 +1532,7 @@ nextarea:
 
         close(lastReadHandle);
 
-        if ((msgIdxHandle = open(expandName("msgidx."MBEXTN), O_RDONLY | O_BINARY | O_DENYNONE)) == -1)
+        if ((msgIdxHandle = open(expandName(dMSGIDX"."MBEXTN), O_RDONLY | O_BINARY)) == -1)
           logEntry("Can't open MsgIdx."MBEXTN, LOG_ALWAYS, 1);
         index = 0;
         while ((msgIdxBufCount = (read(msgIdxHandle, msgIdxBuf, 512 * sizeof(msgIdxRec)) / 3)) != 0)
@@ -1581,7 +1562,7 @@ nextarea:
 
         puts("Analyzing the message base...");
 
-        if ((msgHdrHandle = open(expandName("msghdr."MBEXTN), O_RDONLY | O_BINARY | O_DENYWRITE)) == -1)
+        if ((msgHdrHandle = _sopen(expandName(dMSGHDR"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYWR)) == -1)
           logEntry("Can't open MsgHdr."MBEXTN " for reading", LOG_ALWAYS, 1);
 
         totalMsgs    = 0;
@@ -1592,10 +1573,8 @@ nextarea:
         lowMsgNum    = 0;
         oldHdrSize   = (u16)(filelength(msgHdrHandle) / sizeof(msgHdrRec));
 
-        while ((bufCount = _read(msgHdrHandle, msgHdrBuf, HDR_BUFSIZE
-                                 * sizeof(msgHdrRec)) / sizeof(msgHdrRec)) > 0)
+        while ((bufCount = read(msgHdrHandle, msgHdrBuf, HDR_BUFSIZE * sizeof(msgHdrRec)) / sizeof(msgHdrRec)) > 0)
         {
-
           totalMsgs += bufCount;
           for (count = 0; count < bufCount; count++)
           {
@@ -1614,7 +1593,7 @@ nextarea:
         }
         close(msgHdrHandle);
 
-        if (((msgTxtHandle = open(expandName("msgtxt."MBEXTN), O_RDONLY | O_BINARY | O_DENYALL)) == -1)
+        if (((msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
             || ((fileSize = filelength(msgTxtHandle)) == -1)
             || (close(msgTxtHandle) == -1))
           logEntry("File status request error", LOG_ALWAYS, 1);
@@ -1627,34 +1606,34 @@ nextarea:
 
         newLine();
 
-        sprintf(tempStr, "Total messages : %5lu", totalMsgs);
+        sprintf(tempStr, "Total messages : %5u", totalMsgs);
         logEntry(tempStr, LOG_STATS, 0);
-        sprintf(tempStr, "* Deleted      : %5lu  (%3lu%%)", totalDeleted, totalDeleted * 100 / (totalMsgs ? totalMsgs : 1));
+        sprintf(tempStr, "* Deleted      : %5u  (%3u%%)", totalDeleted, totalDeleted * 100 / (totalMsgs ? totalMsgs : 1));
         logEntry(tempStr, LOG_STATS, 0);
-        sprintf(tempStr, "* Active       : %5lu  (%3lu%%)", totalMsgs - totalDeleted, (totalMsgs - totalDeleted) * 100 / (totalMsgs ? totalMsgs : 1));
+        sprintf(tempStr, "* Active       : %5u  (%3u%%)", totalMsgs - totalDeleted, (totalMsgs - totalDeleted) * 100 / (totalMsgs ? totalMsgs : 1));
         logEntry(tempStr, LOG_STATS, 0);
-        sprintf(tempStr, "  - Inbound    : %5lu  (%3lu%%)", totalMsgs - totalDeleted - totalLocal
+        sprintf(tempStr, "  - Inbound    : %5u  (%3u%%)", totalMsgs - totalDeleted - totalLocal
                 , (totalMsgs - totalDeleted - totalLocal) * 100 / (totalMsgs - totalDeleted ? totalMsgs - totalDeleted : 1));
         logEntry(tempStr, LOG_STATS, 0);
-        sprintf(tempStr, "  - Local      : %5lu  (%3lu%%)", totalLocal, totalLocal * 100 / (totalMsgs - totalDeleted ? totalMsgs - totalDeleted : 1));
+        sprintf(tempStr, "  - Local      : %5u  (%3u%%)", totalLocal, totalLocal * 100 / (totalMsgs - totalDeleted ? totalMsgs - totalDeleted : 1));
         logEntry(tempStr, LOG_STATS, 0);
 
         newLine();
 
-        sprintf(tempStr, "MSGTXT records : %5lu", (u32)totalTxtBBS);
+        sprintf(tempStr, "MSGTXT records : %5u", (u32)totalTxtBBS);
         logEntry(tempStr, LOG_STATS, 0);
-        sprintf(tempStr, "* Used         : %5lu  (%3lu%%)", totalTxtHdr, totalTxtHdr * 100 / (totalTxtBBS ? totalTxtBBS : 1));
+        sprintf(tempStr, "* Used         : %5u  (%3u%%)", totalTxtHdr, totalTxtHdr * 100 / (totalTxtBBS ? totalTxtBBS : 1));
         logEntry(tempStr, LOG_STATS, 0);
-        sprintf(tempStr, "* Not used     : %5lu  (%3lu%%)", (totalTxtBBS - totalTxtHdr), (totalTxtBBS - totalTxtHdr) * 100 / (totalTxtBBS ? totalTxtBBS : 1));
+        sprintf(tempStr, "* Not used     : %5u  (%3u%%)", (totalTxtBBS - totalTxtHdr), (totalTxtBBS - totalTxtHdr) * 100 / (totalTxtBBS ? totalTxtBBS : 1));
         logEntry(tempStr, LOG_STATS, 0);
 
         newLine();
-        sprintf(tempStr, "Message base   : %9lu bytes", (u32)totalTxtBBS * 256 + totalMsgs * 226 + 406);
+        sprintf(tempStr, "Message base   : %9u bytes", (u32)totalTxtBBS * 256 + totalMsgs * 226 + 406);
         logEntry(tempStr, LOG_STATS, 0);
 #ifdef __CANUSE64BIT
         sprintf(tempStr, "Disk space     : %9s bytes free on message base drive", fmtU64(diskFree64(config.bbsPath)));
 #else
-        sprintf(tempStr, "Disk space     : %9lu bytes free on message base drive", diskFree(config.bbsPath));
+        sprintf(tempStr, "Disk space     : %9u bytes free on message base drive", diskFree(config.bbsPath));
 #endif
         logEntry(tempStr, LOG_STATS, 0);
 
@@ -1811,18 +1790,15 @@ nextarea:
         // JAM
         if (postBoard == -1)
         {
-          struct date dateRec;
-          struct time timeRec;
+          time_t t = time(NULL);
+          struct tm *tm = localtime(&t);
 
-          getdate(&dateRec);
-          gettime(&timeRec);
-
-          message->hours   = timeRec.ti_hour;
-          message->minutes = timeRec.ti_min;
-          message->seconds = timeRec.ti_sec;
-          message->day     = dateRec.da_day;
-          message->month   = dateRec.da_mon;
-          message->year    = dateRec.da_year;
+          message->hours   = tm->tm_hour;
+          message->minutes = tm->tm_min;
+          message->seconds = tm->tm_sec;
+          message->day     = tm->tm_mday;
+          message->month   = tm->tm_mon + 1;
+          message->year    = tm->tm_year + 1900;
 
           message->attribute = ((switches & SW_C) ? CRASH   : 0)
                              | ((switches & SW_P) ? PRIVATE : 0) | LOCAL;
@@ -1903,22 +1879,22 @@ nextarea:
                 if (*config.semaphorePath && (config.mailer == 1))
                 {
                   sprintf(tempStr, "%simrenum.now", config.semaphorePath);
-                  if (((semaHandle = open(tempStr, O_RDWR | O_BINARY | O_CREAT | O_TRUNC | O_DENYALL, S_IREAD | S_IWRITE)) == -1)
+                  if (((semaHandle = _sopen(tempStr, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
                       || (lock(semaHandle, 0, 1000) == -1))
                   {
                     close(semaHandle);
                     helpPtr2 = NULL;
-                      logEntry( "Can't renumber netmail directory", LOG_ALWAYS, 0);
+                    logEntry("Can't renumber netmail directory", LOG_ALWAYS, 0);
                   }
                 }
-                      logEntry( "Processing netmail directory",     LOG_ALWAYS, 0);
+                logEntry("Processing netmail directory", LOG_ALWAYS, 0);
               }
               else
                 if (stricmp(argv[c], "-sent") == 0)
                 {
                   helpPtr2 = stpcpy(tempStr2, config.sentPath);
                   helpPtr3 = stpcpy(tempStr3, config.sentPath);
-                      logEntry("Processing sent messages directory", LOG_ALWAYS, 0);
+                  logEntry("Processing sent messages directory", LOG_ALWAYS, 0);
                 }
                 else
                   if (stricmp(argv[c], "-rcvd") == 0)
@@ -1989,7 +1965,7 @@ nextarea:
                     newLine();
 
                   strcpy(helpPtr2, "lastread");
-                  if ((lastReadHandle = open(tempStr2, O_RDWR | O_BINARY | O_DENYALL)) != -1)
+                  if ((lastReadHandle = _sopen(tempStr2, O_RDWR | O_BINARY, SH_DENYRW)) != -1)
                   {
                     while (((signed)(newBufCount = read(lastReadHandle, &lastReadRec, 400))) > 0)
                     {
@@ -2059,8 +2035,6 @@ nextarea:
 //----------------------------------------------------------------------------
 void myexit(void)
 {
-#pragma exit myexit
-
   if (lastSavedUniqID != 0 && lastSavedUniqID != config.lastUniqueID)
   {
     // UniqID changed, save it
@@ -2069,7 +2043,7 @@ void myexit(void)
 
     strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
-    if ( (configHandle = open(tempStr, O_WRONLY | O_BINARY | O_DENYNONE, S_IREAD | S_IWRITE)) == -1
+    if ( (configHandle = _sopen(tempStr, O_WRONLY | O_BINARY, SH_DENYWR, S_IREAD | S_IWRITE)) == -1
        || lseek(configHandle, offsetof(configType, lastUniqueID), SEEK_SET) == -1L
        || write(configHandle, &config.lastUniqueID, sizeof(config.lastUniqueID)) < sizeof(config.lastUniqueID)
        || close(configHandle) == -1
@@ -2082,16 +2056,5 @@ void myexit(void)
   getch();
   newLine();
 #endif
-}
-//----------------------------------------------------------------------------
-#undef open
-fhandle openP(const char *pathname, int access, u16 mode)
-{
-  return open(pathname, access, mode);
-}
-//----------------------------------------------------------------------------
-fhandle fsopenP(const char *pathname, int access, u16 mode)
-{
-  return open(pathname, access, mode);
 }
 //----------------------------------------------------------------------------

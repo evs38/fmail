@@ -25,7 +25,7 @@
 
 typedef struct
 {
-  uchar          *name;
+  char           *name;
   uchar           aka;
   uchar           defined;
   areaOptionsType options;

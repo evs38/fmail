@@ -231,7 +231,7 @@ void jam_closeall(void)
 u16 jam_initmsghdrrec(JAMHDR *jam_msghdrrec, internalMsgType *message, u16 local)
 {
   struct tm tm;
-  time_t timer;
+  time_t ti;
 
   memset(jam_msghdrrec, 0, sizeof(JAMHDR));
   memcpy(&jam_msghdrrec->Signature, "JAM", 3);
@@ -245,10 +245,21 @@ u16 jam_initmsghdrrec(JAMHDR *jam_msghdrrec, internalMsgType *message, u16 local
   tm.tm_min   = message->minutes;
   tm.tm_sec   = message->seconds;
   tm.tm_isdst = -1;
-  jam_msghdrrec->DateWritten = mktime(&tm);
-  timer = time(NULL);
-  tm = *gmtime(&timer);
-  jam_msghdrrec->DateProcessed = mktime(&tm);
+  jam_msghdrrec->DateWritten = mktime(&tm) + gmtOffset;
+
+  ti = time(NULL);  // TODO is DateProcessed in Jam message is right?
+#if 0
+  jam_msghdrrec->DateProcessed = mktime(localtime(&timer));
+#else
+#ifdef _DEBUG
+  {
+    tempStrType tempStr;
+    sprintf(tempStr, "DEBUG time: %ld %s", ti, time_t2str(ti));
+    logEntry(tempStr, LOG_DEBUG, 0);
+  }
+#endif
+  jam_msghdrrec->DateProcessed = ti + gmtOffset;
+#endif
   jam_msghdrrec->Attribute = (local ? (MSG_LOCAL|MSG_TYPEECHO) : MSG_TYPEECHO)
                            | ((message->attribute & PRIVATE) ? MSG_PRIVATE : 0);
   jam_msghdrrec->MsgNum = filelength(jam_idxhandle) / sizeof(JAMIDXREC) + 1;
@@ -566,12 +577,29 @@ u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_su
   if (message != NULL)
   {
     struct tm *tm = gmtime((const time_t *)&jam_hdrrec->DateWritten);
-    message->year    = tm->tm_year + 1900;
-    message->month   = tm->tm_mon + 1;
-    message->day     = tm->tm_mday;
-    message->hours   = tm->tm_hour;
-    message->minutes = tm->tm_min;
-    message->seconds = tm->tm_sec;
+    if (tm == NULL)
+    {
+#ifdef _DEBUG
+      tempStrType tempStr;
+      sprintf(tempStr, "DEBUG jam_gethdr, illegal DateWritten: %d on MsgNum: %d", jam_hdrrec->DateWritten, jam_hdrrec->MsgNum);
+      logEntry(tempStr, LOG_DEBUG, 0);
+#endif // _DEBUG
+      message->year    = 1970;
+      message->month   = 1;
+      message->day     = 1;
+      message->hours   = 0;
+      message->minutes = 0;
+      message->seconds = 0;
+    }
+    else
+    {
+      message->year    = tm->tm_year + 1900;
+      message->month   = tm->tm_mon + 1;
+      message->day     = tm->tm_mday;
+      message->hours   = tm->tm_hour;
+      message->minutes = tm->tm_min;
+      message->seconds = tm->tm_sec;
+    }
     message->attribute = ((jam_hdrrec->Attribute & MSG_PRIVATE) ? PRIVATE : 0);
   }
   return 1;
@@ -581,10 +609,10 @@ u16 jam_puthdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec)
 {
   dummy = jam_code;
 
-  if ( (u32)fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 3) != jam_hdroffset )
+  if ((u32)fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 3) != jam_hdroffset)
     return 0;
 
-  if ( write(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR) )
+  if (write(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR))
     return 0;
 
   return 1;
@@ -715,7 +743,7 @@ u32 jam_writemsg(char *msgbasename, internalMsgType *message, u16 local)
   JAMHDRINFO *jam_hdrinforec;
   JAMHDR      jam_msghdrrec;
   JAMIDXREC   jam_idxrec;
-  u32         msgNum;
+  u32         msgNum = 0;
 
   returnTimeSlice(0);
 
@@ -746,8 +774,7 @@ u32 jam_writemsg(char *msgbasename, internalMsgType *message, u16 local)
     fhandle handle;
     int     len;
 
-    strcpy(tempStr, config.bbsPath);
-    strcat(tempStr, "ECHOMAIL.JAM");
+    strcpy(stpcpy(tempStr, config.bbsPath), "echomail.jam");
     if ((handle = open(tempStr, O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
     {
       len = sprintf(tempStr, "%s %u\r\n", msgbasename, msgNum);

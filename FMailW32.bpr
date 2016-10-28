@@ -4,19 +4,19 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="FMailW32.exe"/>
-    <OBJFILES value="OBJ.6\FMailW32\ARCHIVE.obj OBJ.6\FMailW32\AREAFIX.obj
-      OBJ.6\FMailW32\AREAINFO.obj OBJ.6\FMailW32\BCLFUN.obj
-      OBJ.6\FMailW32\CFGFILE.obj OBJ.6\FMailW32\CONFIG.obj
-      OBJ.6\FMailW32\crc.obj OBJ.6\FMailW32\DUPS32.obj OBJ.6\FMailW32\FILESYS.obj
-      OBJ.6\FMailW32\FMAIL.obj OBJ.6\FMailW32\FTSCPROD.obj
-      OBJ.6\FMailW32\ispathch.obj OBJ.6\FMailW32\JAMFUN.obj
-      OBJ.6\FMailW32\JAMMAINT.obj OBJ.6\FMailW32\JAMSCAN.obj
-      OBJ.6\FMailW32\log.obj OBJ.6\FMailW32\MSGMSG.obj OBJ.6\FMailW32\MSGPKT.obj
-      OBJ.6\FMailW32\MSGRA.obj OBJ.6\FMailW32\MTASK.obj
-      OBJ.6\FMailW32\NODEINFO.obj OBJ.6\FMailW32\pack.obj
-      OBJ.6\FMailW32\ping.obj OBJ.6\FMailW32\SENDSMTP.obj OBJ.6\FMailW32\SMTP.obj
-      OBJ.6\FMailW32\SORTHB.obj OBJ.6\FMailW32\spec.obj OBJ.6\FMailW32\UTILS.obj
-      OBJ.6\FMailW32\UTILS2.obj OBJ.6\FMailW32\Version.obj"/>
+    <OBJFILES value="OBJ.6\FMailW32\archive.obj OBJ.6\FMailW32\areafix.obj 
+      OBJ.6\FMailW32\areainfo.obj OBJ.6\FMailW32\bclfun.obj 
+      OBJ.6\FMailW32\cfgfile.obj OBJ.6\FMailW32\config.obj 
+      OBJ.6\FMailW32\crc.obj OBJ.6\FMailW32\dups32.obj OBJ.6\FMailW32\fmail.obj 
+      OBJ.6\FMailW32\ftscprod.obj OBJ.6\FMailW32\ispathch.obj 
+      OBJ.6\FMailW32\jamfun.obj OBJ.6\FMailW32\jammaint.obj 
+      OBJ.6\FMailW32\jamscan.obj OBJ.6\FMailW32\log.obj 
+      OBJ.6\FMailW32\msgmsg.obj OBJ.6\FMailW32\msgpkt.obj 
+      OBJ.6\FMailW32\msgra.obj OBJ.6\FMailW32\mtask.obj 
+      OBJ.6\FMailW32\nodeinfo.obj OBJ.6\FMailW32\pack.obj 
+      OBJ.6\FMailW32\ping.obj OBJ.6\FMailW32\sendsmtp.obj OBJ.6\FMailW32\smtp.obj 
+      OBJ.6\FMailW32\sorthb.obj OBJ.6\FMailW32\spec.obj OBJ.6\FMailW32\utils.obj 
+      OBJ.6\FMailW32\utils2.obj OBJ.6\FMailW32\version.obj"/>
     <RESFILES value="FMailW32.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -31,7 +31,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="FMAIL;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG"/>
+    <USERDEFINES value="FMAIL;__32BIT__;__STDIO__;__PENTIUMPRO__;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FMailW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -62,28 +62,27 @@
       <FILE FILENAME="bclfun.c" FORMNAME="" UNITNAME="bclfun" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="cfgfile.c" FORMNAME="" UNITNAME="cfgfile" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="config.c" FORMNAME="" UNITNAME="config" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="crc.c" FORMNAME="" UNITNAME="crc" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="crc.c" FORMNAME="" UNITNAME="crc" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="dups32.c" FORMNAME="" UNITNAME="dups32" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="filesys.c" FORMNAME="" UNITNAME="filesys" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="fmail.c" FORMNAME="" UNITNAME="fmail" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="fmail.c" FORMNAME="" UNITNAME="fmail" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ftscprod.c" FORMNAME="" UNITNAME="ftscprod" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ispathch.c" FORMNAME="" UNITNAME="ispathch" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="jamfun.c" FORMNAME="" UNITNAME="jamfun" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="jammaint.c" FORMNAME="" UNITNAME="jammaint" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="jamscan.c" FORMNAME="" UNITNAME="jamscan" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="log.c" FORMNAME="" UNITNAME="log" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="log.c" FORMNAME="" UNITNAME="log" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="msgmsg.c" FORMNAME="" UNITNAME="msgmsg" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="msgpkt.c" FORMNAME="" UNITNAME="msgpkt" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="msgra.c" FORMNAME="" UNITNAME="msgra" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="mtask.c" FORMNAME="" UNITNAME="mtask" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="msgra.c" FORMNAME="" UNITNAME="msgra" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="mtask.c" FORMNAME="" UNITNAME="mtask" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="nodeinfo.c" FORMNAME="" UNITNAME="nodeinfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="pack.c" FORMNAME="" UNITNAME="pack" coNTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="ping.c" FORMNAME="" UNITNAME="ping" coNTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="pack.c" FORMNAME="" UNITNAME="pack" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ping.c" FORMNAME="" UNITNAME="ping" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="sendsmtp.c" FORMNAME="" UNITNAME="sendsmtp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="smtp.c" FORMNAME="" UNITNAME="smtp" coNTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="smtp.c" FORMNAME="" UNITNAME="smtp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="sorthb.c" FORMNAME="" UNITNAME="sorthb" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="spec.c" FORMNAME="" UNITNAME="spec" coNTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="utils.c" FORMNAME="" UNITNAME="utils" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="spec.c" FORMNAME="" UNITNAME="spec" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="utils.c" FORMNAME="" UNITNAME="utils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="utils2.c" FORMNAME="" UNITNAME="utils2" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="version.c" FORMNAME="" UNITNAME="version" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
@@ -97,7 +96,7 @@ AutoIncBuild=0
 MajorVer=1
 MinorVer=73
 Release=0
-Build=0
+Build=7
 Debug=0
 PreRelease=0
 Special=0
@@ -109,7 +108,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FMail mail tosser
-FileVersion=1.73.0.0
+FileVersion=1.73.0.7
 InternalName=fmail
 LegalCopyright=Copyright (c) 1991 - 2016 FMail developers
 LegalTrademarks=
@@ -155,19 +154,20 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=12
-Item0=FMAIL;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item1=FMAIL;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item2=FMAIL;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item3=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item4=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item5=BETA;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item6=BETA;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
-Item7=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
-Item8=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA;_DEBUG
-Item9=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item10=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__486__
-Item11=_DEBUG
+Count=13
+Item0=FMAIL;__32BIT__;__STDIO__;__PENTIUMPRO__;_DEBUG
+Item1=FMAIL;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item2=FMAIL;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item3=FMAIL;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item4=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item5=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item6=BETA;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item7=BETA;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item8=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA
+Item9=FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA;_DEBUG
+Item10=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
+Item11=_DEBUG;FMAIL;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__486__
+Item12=_DEBUG
 
 [HistoryLists\hlIntOutputDir]
 Count=3

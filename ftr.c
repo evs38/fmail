@@ -33,6 +33,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef __MINGW32__
+#include <windef.h>    // min() max()
+#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -41,10 +44,11 @@
 #include "crc.h"
 #include "ftools.h"
 #include "ftr.h"
-#include "log.h"
+#include "ftlog.h"
 #include "msgmsg.h"
 #include "msgra.h"
 #include "spec.h"
+#include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
 
@@ -76,8 +80,6 @@ s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16
   char          *helpPtr;
   s32            highMsgNum;
   msgMsgType     msgMsg;
-  struct date    dateRec;
-  struct time    timeRec;
   DIR           *dir;
   struct dirent *ent;
 
@@ -123,20 +125,21 @@ s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16
   strcpy(msgMsg.toUserName, message->toUserName);
   strcpy(msgMsg.subject, message->subject);
 
-  gettime(&timeRec);
-  getdate(&dateRec);
+  {
+    time_t t = time(NULL);
+    struct tm *tm = localtime(&t);
 
-  sprintf( msgMsg.dateTime, "%02u %.3s %02u  %02u:%02u:%02u"
-         , dateRec.da_day,      months+(dateRec.da_mon-1)*3
-         , dateRec.da_year%100, timeRec.ti_hour
-         , timeRec.ti_min,      timeRec.ti_sec
-         );
-  msgMsg.wrTime.hours    = timeRec.ti_hour;
-  msgMsg.wrTime.minutes  = timeRec.ti_min;
-  msgMsg.wrTime.dSeconds = timeRec.ti_sec >> 1;
-  msgMsg.wrTime.day      = dateRec.da_day;
-  msgMsg.wrTime.month    = dateRec.da_mon;
-  msgMsg.wrTime.year     = dateRec.da_year-1980;
+    sprintf( msgMsg.dateTime, "%02u %.3s %02u  %02u:%02u:%02u"
+           , tm->tm_mday, months + (tm->tm_mon) * 3, tm->tm_year % 100
+           , tm->tm_hour, tm->tm_min, tm->tm_sec
+           );
+    msgMsg.wrTime.hours    = tm->tm_hour;
+    msgMsg.wrTime.minutes  = tm->tm_min;
+    msgMsg.wrTime.dSeconds = tm->tm_sec >> 1;
+    msgMsg.wrTime.day      = tm->tm_mday;
+    msgMsg.wrTime.month    = tm->tm_mon + 1;
+    msgMsg.wrTime.year     = tm->tm_year - 80;
+  }
 
   msgMsg.origNet  = message->srcNode.net;
   msgMsg.origNode = message->srcNode.node;
@@ -151,7 +154,7 @@ s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16
 
   highMsgNum = 0;
   strcpy(helpPtr, "lastread");
-  if ((msgHandle = open(tempStr, O_RDONLY|O_BINARY|O_DENYNONE, S_IREAD|S_IWRITE)) != -1)
+  if ((msgHandle = open(tempStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) != -1)
   {
     if (read(msgHandle, &highMsgNum, 2) != 2)
       highMsgNum = 0;
@@ -171,17 +174,13 @@ s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16
   }
 
   // Try to open file
-
   count = 0;
-  sprintf(helpPtr, "%lu.msg", ++highMsgNum);
+  sprintf(helpPtr, "%u.msg", ++highMsgNum);
 
-  while ((count < 20) &&
-         ((msgHandle = open(tempStr, O_RDWR|O_CREAT|O_EXCL|
-                            O_TRUNC|O_BINARY|O_DENYNONE,
-                            S_IREAD|S_IWRITE)) == -1))
+  while (count < 20 && (msgHandle = open(tempStr, O_RDWR | O_CREAT | O_EXCL | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
   {
     highMsgNum += count++ < 10 ? 1 : 10;
-    sprintf(helpPtr, "%lu.msg", highMsgNum);
+    sprintf(helpPtr, "%u.msg", highMsgNum);
   }
 
   if (msgHandle == -1)
@@ -192,9 +191,9 @@ s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16
 
   len = strlen(message->text)+1;
 
-  if ((_write (msgHandle, &msgMsg, sizeof(msgMsgType)) !=
-       sizeof(msgMsgType)) ||
-      (_write (msgHandle, message->text, len) != len))
+  if (  (write(msgHandle, &msgMsg, sizeof(msgMsgType)) != sizeof(msgMsgType))
+     || (write(msgHandle, message->text, len) != len)
+     )
   {
     close(msgHandle);
     puts("Can't write to output file.");
@@ -314,7 +313,7 @@ s16 readNodeNum(char *nodeString, nodeNumType *nodeNum, u16 *valid)
   return (-1);
 }
 //---------------------------------------------------------------------------
-extern char configPath[128];
+extern char configPath[FILENAME_MAX];
 
 #define HDR_BUFSIZE 32
 

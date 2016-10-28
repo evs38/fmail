@@ -60,7 +60,6 @@ cookedEchoType   *echoAreaList;
 echoToNodePtrType echoToNode[MAX_AREAS];
 nodeFileType      nodeFileInfo;
 
-extern time_t           startTime;
 extern configType       config;
 extern internalMsgType *message;
 extern u16              status;

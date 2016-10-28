@@ -102,7 +102,7 @@ int lockMB(void)
   {
     testMBUnlockNow();
     if (  lock(lockHandle, sizeof(infoRecType) + 1, 1) == -1
-       && _doserrno == 0x21
+       && errno == EACCES
        )
     {
       puts("Retrying to lock the message base\n");
@@ -113,14 +113,13 @@ int lockMB(void)
       do
       {
         time(&time2);
-        _doserrno = 0;
       }
       while (  lock(lockHandle, sizeof(infoRecType) + 1, 1) == -1
-            && _doserrno == 0x21
+            && errno == EACCES
             && (time2 - time1 < 15)
             );
 
-      if (_doserrno == 0x21)
+      if (errno == EACCES)
       {
         logEntry("Can't lock the message base for update", LOG_ALWAYS, 0);
         close(lockHandle);
@@ -134,7 +133,9 @@ int lockMB(void)
 //---------------------------------------------------------------------------
 void unlockMB(void)
 {
+#ifdef FMAIL
   if (config.mbOptions.mbSharing)
+#endif
     unlock(lockHandle, sizeof(infoRecType) + 1, 1);
 
   close(lockHandle);

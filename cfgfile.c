@@ -34,6 +34,7 @@
 #include "fmail.h"
 
 #include "cfgfile.h"
+#include "stpcpy.h"
 
 // set to non-zero value if automatic conversion is desired
 u16  allowConversion = 0;
@@ -114,11 +115,7 @@ static configFileInfoType fileData[MAX_CFG_FILES] =
   }
 };
 //---------------------------------------------------------------------------
-
 static configFileInfoType cfiArr[MAX_CFG_FILES];
-
-
-extern char configPath[FILENAME_MAX];  // Path to directory with FMail config files
 
 //---------------------------------------------------------------------------
 s16 openConfig(u16 fileType, headerType **header, void **buf)
@@ -142,8 +139,7 @@ s16 openConfig(u16 fileType, headerType **header, void **buf)
       fileData[fileType].recordSize -= (MAX_FORWARDDEF - config.maxForward) * sizeof(nodeNumXType);
 
 restart:
-   strcpy(areaInfoPath, configPath);
-   strcat(areaInfoPath, fileData[fileType].fileName);
+   strcpy(stpcpy(areaInfoPath, configPath), fileData[fileType].fileName);
 
    memset(&cfiArr[fileType].header, 0, sizeof(headerType));
    cfiArr[fileType].status = 0;
@@ -199,7 +195,7 @@ error:   close(cfiArr[fileType].handle);
          strcpy(tempPath, areaInfoPath);
          if ( (helpPtr = strrchr(tempPath, '.')) == NULL )
             goto error;
-         strcpy(helpPtr+1, "$$$");
+         strcpy(helpPtr + 1, dEXTTMP);
          if ( (cfiArr[fileType].recBuf = (char*)malloc(fileData[fileType].bufferSize)) == NULL )
             goto error;
          if ( (nodeNumBuf = (nodeNumType*)malloc(MAX_FORWARDOLD * sizeof(nodeNumType))) == NULL )

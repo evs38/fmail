@@ -32,14 +32,14 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-#include <windef.h>   // min()
 #ifdef _DEBUG
 #include <dir.h>      // mkdir
 #include <windows.h>  // CopyFile DeleteFile MoveFile
 #if 0
 #define _COMPOLD_
 #endif
-#endif
+#endif // _DEBUG
+#include <windef.h>   // min()
 
 #include "fmail.h"
 
@@ -55,7 +55,6 @@
 #include "utils.h"
 
 extern configType config;
-extern time_t     startTime;
 
 //---------------------------------------------------------------------------
 s16 JAMremoveRe(char *buf, u32 *bufsize)
@@ -426,7 +425,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   maxMsg = sizeJDX / sizeof(JAMIDXREC);
 
 #ifdef _DEBUG
-  sprintf(tempStr, "Size old: no:%u jhr:%u jdt:%u jdx:%u jlr:%u tot:%u", maxMsg, sizeJHR, sizeJDT, sizeJDX, sizeJLR, sizeJHR + sizeJDT + sizeJDX + sizeJLR);
+  sprintf(tempStr, "DEBUG Size old: no:%u jhr:%u jdt:%u jdx:%u jlr:%u tot:%u", maxMsg, sizeJHR, sizeJDT, sizeJDX, sizeJLR, sizeJHR + sizeJDT + sizeJDX + sizeJLR);
   logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
 
@@ -442,7 +441,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   }
 
 #ifdef _DEBUG
-  logEntry("Updating", LOG_DEBUG | LOG_NOSCRN, 0);
+  logEntry("DEBUG Updating", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
   putStr("Updating ");
 
@@ -477,7 +476,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   }
 
 #ifdef _DEBUG
-  logEntry("Maint", LOG_DEBUG | LOG_NOSCRN, 0);
+  logEntry("DEBUG Maint", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
   rpJDX = d.ibJDX;
   woJDX = 0;
@@ -512,9 +511,9 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
       // TEST MSG AND MARK DELETED
       if (  (  (switches & SW_D)
             && (  delCount
-               || (areaPtr->days && areaPtr->days * 86400L + msgTime < startTime)
+               || (areaPtr->days && areaPtr->days * 86400L + msgTime < startTime)  // TODO gmtOffset needed?
                || (  (headerRec->Attribute & MSG_READ)
-                  && (areaPtr->daysRcvd && areaPtr->daysRcvd * 86400L + msgTime < startTime)
+                  && (areaPtr->daysRcvd && areaPtr->daysRcvd * 86400L + msgTime < startTime)  // TODO gmtOffset needed?
                   )
                )
             )
@@ -573,7 +572,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 
   // Update reply chains
 #ifdef _DEBUG
-  logEntry("Update reply chains", LOG_DEBUG | LOG_NOSCRN, 0);
+  logEntry("DEBUG Update reply chains", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
 
   putStr("Reply chains ");
@@ -631,7 +630,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 
   // Update last read info
 #ifdef _DEBUG
-  logEntry("Update last read info", LOG_DEBUG | LOG_NOSCRN, 0);
+  logEntry("DEBUG Update last read info", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
   if (!JAMerror && sizeJLR > 0)
   {
@@ -673,7 +672,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
            + sizeJDT - highJDT
            + sizeJHR - highJHR;
 #ifdef _DEBUG
-    sprintf(tempStr, "Size new: no:%u jhr:%u jdt:%u jdx:%u jlr:%u tot:%u", msgNumNew, highJHR, highJDT, highJDX, sizeJLR, highJHR + highJDT + highJDX + sizeJLR);
+    sprintf(tempStr, "DEBUG Size new: no:%u jhr:%u jdt:%u jdx:%u jlr:%u tot:%u", msgNumNew, highJHR, highJDT, highJDX, sizeJLR, highJHR + highJDT + highJDX + sizeJLR);
     logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
 
     if (ss != 0)
@@ -720,7 +719,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
     }
 #endif
 #ifdef _DEBUG
-    logEntry("Save data", LOG_DEBUG | LOG_NOSCRN, 0);
+    logEntry("DEBUG Save data", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
     // save data.
     if (  0 != writefile(d.hJLR, d.ibJLR, sizeJLR, d.obJLR, sizeJLR)
@@ -820,7 +819,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
   s32           spaceSaved;
 
 #ifdef _DEBUG
-  sprintf(tempStr, "O Processing JAM area: %s", areaPtr->areaName);
+  sprintf(tempStr, "DEBUG O Processing JAM area: %s", areaPtr->areaName);
   logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
 
@@ -907,7 +906,7 @@ jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->are
 
   printf("%s... ", tempStr);
 #ifdef _DEBUG
-  logEntry("O Updating", LOG_DEBUG | LOG_NOSCRN, 0);
+  logEntry("DEBUG O Updating", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
   putStr("Updating ");
   fflush(stdout);
@@ -950,7 +949,7 @@ jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->are
   }
 
 #ifdef _DEBUG
-  logEntry("O Maint", LOG_DEBUG | LOG_NOSCRN, 0);
+  logEntry("DEBUG O Maint", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
   while (!JAMerror && !eof(JDXhandle))
   {
@@ -1122,7 +1121,7 @@ jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->are
 
   // Update reply chains
 #ifdef _DEBUG
-  logEntry("O Update reply chains", LOG_DEBUG | LOG_NOSCRN, 0);
+  logEntry("DEBUG O Update reply chains", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
 
   putStr("Reply chains ");
@@ -1212,7 +1211,7 @@ jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->are
 
   // Update last read info
 #ifdef _DEBUG
-  logEntry("O Update last read info", LOG_DEBUG | LOG_NOSCRN, 0);
+  logEntry("DEBUG O Update last read info", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
   if ( !JAMerror && JLRhandle != -1 )
   {
@@ -1272,7 +1271,7 @@ jamx: sprintf(tempStr, "O JAM area %s was not found or was locked", areaPtr->are
     puts("Ready");
 
 #ifdef _DEBUG
-  logEntry("O Ready", LOG_DEBUG | LOG_NOSCRN, 0);
+  logEntry("DEBUG O Ready", LOG_DEBUG | LOG_NOSCRN, 0);
 #endif
   return JAMerror;
 }

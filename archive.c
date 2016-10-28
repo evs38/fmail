@@ -20,9 +20,6 @@
 //
 // ----------------------------------------------------------------------------
 
-#ifdef __BORLANDC__
-#include <alloc.h>
-#endif  // __BORLANDC__
 #include <dir.h>
 #include <dirent.h>    // opendir()
 #include <dos.h>
@@ -44,9 +41,9 @@
 #include "fmail.h"
 
 #include "archive.h"
-
 #include "areainfo.h"
 #include "config.h"
+#include "copyFile.h"
 #include "crc.h"
 #include "log.h"
 #include "msgmsg.h"
@@ -56,20 +53,10 @@
 #include "stpcpy.h"
 #include "utils.h"
 
-#if !defined(__FMAILX__) && !defined(__32BIT__)
-#include "spawno.h"
-#endif
-
-#ifdef __32BIT__
 #define MAX_PARSIZE 256
-#else
-#define MAX_PARSIZE 128
-#endif
 // ----------------------------------------------------------------------------
 
 extern s16 ems;
-extern time_t startTime;
-extern struct tm timeBlock;
 extern configType config;
 
 extern fAttInfoType fAttInfo[MAX_ATTACH];
@@ -156,18 +143,7 @@ static u8 archiveType(char *fullFileName)
   return 0xFF;
 }
 // ----------------------------------------------------------------------------
-#if !defined __WIN32__ && !defined __OS2__
-static s16 _Cdecl spawnlo(const char *overlay_path, const char *prog_name, ...)
-{
-  return __spawnv(overlay_path, prog_name, _va_ptr, 0);
-}
-#endif
-// ----------------------------------------------------------------------------
-static s16 execute(const char *arcType, const char *program, const char *parameters, const char *archiveName, char *pktName, const char *privPath
-#if !defined __FMAILX__ && !defined __32BIT__
-                  , u16 memReq
-#endif
-                  )
+static s16 execute(const char *arcType, const char *program, const char *parameters, const char *archiveName, char *pktName, const char *privPath)
 {
   s16         dosExitCode = -1;
   char        tempStr[MAX_PARSIZE];
@@ -175,9 +151,6 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
   char       *helpPtr;
   u16         len = 0;
   clock_t     ct = clock();
-#if !defined __FMAILX__ && !defined __32BIT__
-  fhandle     EMSHandle;
-#endif
 
   while ((helpPtr = strstr(parameters, "\%a")) != NULL)
   {
@@ -238,49 +211,6 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
 
   printf("<-- %s Start -->\n", arcType);
 
-#if !defined __FMAILX__ && !defined __32BIT__
-  if ((config.genOptions.swap)
-      && ((memReq == 0) || ((coreleft() >> 10) < memReq)))
-  {
-#ifdef DEBUG
-    puts("SPAWNLO");
-#endif
-    if (ems)
-    {
-      _AH = 0x43;
-      _BX = 1;                    /* 1 dummy page */
-      geninterrupt(0x67);       /* Open handle */
-      if (_AH == 0)
-      {
-        EMSHandle = _DX;
-        _AH = 0x47;
-        geninterrupt(0x67);
-      }
-      else
-      {
-        logEntry("Cannot save EMS pageframe before swapping", LOG_ALWAYS, 0);
-        return 1;
-      }
-    }
-    __spawn_xms = config.genOptions.swapXMS;
-
-    handles20();
-    dosExitCode = spawnlo(config.swapPath, program, program, parameters, NULL);
-    handlesReset40();
-
-    if (ems) /* Restore page frame */
-    {
-      _DX = EMSHandle;
-      _AH = 0x48;
-      geninterrupt(0x67);
-
-      _DX = EMSHandle;
-      _AH = 0x45;
-      geninterrupt(0x67);
-    }
-  }
-#endif
-#ifndef __OS2__
 #ifndef __NOSPAWNL__
 // for Win16 compile
   if (dosExitCode == -1)
@@ -288,26 +218,6 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
     dosExitCode = spawnl(P_WAIT, program, program, parameters, NULL);
     // flush();
   }
-
-#endif
-#else
-  printf("Running %s utility in an OS/2 shell...", arcType);
-  if (  (dosExitCode = spawnl(P_WAIT, program, program, parameters, NULL)) == -1
-     && errno == ENOEXEC)
-  {
-    static char *cmdPtr = NULL;
-
-    putchar('\r');
-    if (cmdPtr == NULL && (cmdPtr = getenv("OS2_SHELL")) == NULL)
-    {
-      logEntry("Can't find command shell (OS2_SHELL environment var)", LOG_ALWAYS, 0);
-      return 1;
-    }
-    printf("Running %s utility in a DOS shell...\n", arcType);
-    dosExitCode = spawnl(P_WAIT, cmdPtr, cmdPtr, "/C", program, parameters, NULL);
-  }
-  else
-    puts("\n");
 #endif
   printf("<-- %s End [%.2f] -->\n", arcType, ((double)(clock() - ct)) / CLK_TCK);
   // flush();
@@ -348,6 +258,29 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
   return 0;
 }
 // ----------------------------------------------------------------------------
+static void outboundBackup(const char *path)
+{
+  tempStrType bakPath
+            , logStr;
+  const char *helpPtr;
+
+  if (path == NULL || *path == 0 || *config.outBakPath == 0)
+    return;
+
+  if ((helpPtr = strrchr(path, '\\')) == NULL)
+    helpPtr = path;
+  else
+    helpPtr++;
+
+  strcpy(stpcpy(bakPath, config.outBakPath), helpPtr);
+  if (copyFile(path, bakPath, 0))
+    sprintf(logStr, "Backup %s -> %s", path, bakPath);
+  else
+    sprintf(logStr, "Backup Failed! %s -> %s", path, bakPath);
+
+  logEntry(logStr, LOG_OUTBOUND | LOG_PACK | LOG_PKTINFO, 0);
+}
+// ----------------------------------------------------------------------------
 void unpackArc(const struct bt *bp)
 {
   tempStrType tempStr
@@ -362,9 +295,6 @@ void unpackArc(const struct bt *bp)
   char procStr1[64];
   char procStr2[MAX_PARSIZE];
   s16 arcType;
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-  u16 memReq;
-#endif
 
   *arcPath = 0;
   strcpy(stpcpy(fullFileName, config.inPath), bp->fname);
@@ -372,122 +302,52 @@ void unpackArc(const struct bt *bp)
   switch (arcType = archiveType(fullFileName))
   {
   case  0:      // ARC
-#ifdef __32BIT__
     strcpy(arcPath, config.unArc32.programName);
-#else
-    strcpy(arcPath, config.unArc.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.unArc.memRequired;
-#endif
     extPtr = (char*)"arc";
     break;
 
   case  1:      // ZIP
-#ifdef __32BIT__
     strcpy(arcPath, config.unZip32.programName);
-#else
-    strcpy(arcPath, config.unZip.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.unZip.memRequired;
-#endif
     extPtr = (char*)"zip";
     break;
 
   case  2:      // LZH
-#ifdef __32BIT__
     strcpy(arcPath, config.unLzh32.programName);
-#else
-    strcpy(arcPath, config.unLzh.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.unLzh.memRequired;
-#endif
     extPtr = (char*)"lzh";
     break;
 
   case  3:      // PAK
-#ifdef __32BIT__
     strcpy(arcPath, config.unPak32.programName);
-#else
-    strcpy(arcPath, config.unPak.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.unPak.memRequired;
-#endif
     extPtr = (char*)"pak";
     break;
 
   case  4:      // ZOO
-#ifdef __32BIT__
     strcpy(arcPath, config.unZoo32.programName);
-#else
-    strcpy(arcPath, config.unZoo.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.unZoo.memRequired;
-#endif
     extPtr = (char*)"zoo";
     break;
 
   case  5:      // ARJ
-#ifdef __32BIT__
     strcpy(arcPath, config.unArj32.programName);
-#else
-    strcpy(arcPath, config.unArj.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.unArj.memRequired;
-#endif
     extPtr = (char*)"arj";
     break;
 
   case  6:      // SQZ
-#ifdef __32BIT__
     strcpy(arcPath, config.unSqz32.programName);
-#else
-    strcpy(arcPath, config.unSqz.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.unSqz.memRequired;
-#endif
     extPtr = (char*)"sqz";
     break;
 
   case  8:      // UC2
-#ifdef __32BIT__
     strcpy(arcPath, config.unUc232.programName);
-#else
-    strcpy(arcPath, config.unUc2.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.unUc2.memRequired;
-#endif
     extPtr = (char*)"uc2";
     break;
 
   case  9:      // RAR
-#ifdef __32BIT__
     strcpy(arcPath, config.unRar32.programName);
-#else
-    strcpy(arcPath, config.unRar.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.unRar.memRequired;
-#endif
     extPtr = (char*)"rar";
     break;
 
   case 10:      // JAR
-#ifdef __32BIT__
     strcpy(arcPath, config.unJar32.programName);
-#else
-    strcpy(arcPath, config.unJar.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.unJar.memRequired;
-#endif
     extPtr = (char*)"jar";
     break;
 
@@ -512,9 +372,6 @@ void unpackArc(const struct bt *bp)
       return;
     }
     strcpy(arcPath, config.GUS.programName);
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-    memReq = config.GUS.memRequired;
-#endif
     extPtr = (char*)"gus";
   }
   if (checkExist(arcPath, pathStr, parStr))
@@ -526,33 +383,25 @@ void unpackArc(const struct bt *bp)
   sprintf(tempStr, "Decompressing %s (%s)", fullFileName, extPtr);
   logEntry(tempStr, LOG_INBOUND, 0);
   {
-    struct tm *tm = localtime(&bp->mtime);
-    sprintf(tempStr, "Archive info: %ld, %04u-%02u-%02u %02u:%02u:%02u"
-                   , bp->size
-                   , tm->tm_year + 1900, tm->tm_mon +1, tm->tm_mday
-                   , tm->tm_hour, tm->tm_min, tm->tm_sec);
+    struct tm *tm = localtime(&bp->mtime);  // TODO (Wilfred#1#10/21/16): Check if correct value is logged
+    if (tm != NULL)
+      sprintf(tempStr, "Archive info: %ld, %04u-%02u-%02u %02u:%02u:%02u"
+                     , bp->size
+                     , tm->tm_year + 1900, tm->tm_mon +1, tm->tm_mday
+                     , tm->tm_hour, tm->tm_min, tm->tm_sec);
+    else
+      sprintf(tempStr, "Archive info: %ld, 1970-01-01 00:00:00", bp->size);
+
     logEntry(tempStr, LOG_INBOUND, 0);
   }
   strcpy(unpackPathStr, config.inPath);  // pktPath
 
   // preprocessor
-#ifdef __32BIT__
   if (*config.preUnarc32.programName)
   {
     strcpy(tempStr, config.preUnarc32.programName);
-#else
-  if (*config.preUnarc.programName)
-  {
-    strcpy(tempStr, config.preUnarc.programName);
-#endif
     if (!checkExist(tempStr, procStr1, procStr2))
-    {
-#if (defined __FMAILX__ || defined __32BIT__)
       execute("Pre-Unpack", procStr1, procStr2, fullFileName, unpackPathStr,  NULL);
-#else
-      execute("Pre-Unpack", procStr1, procStr2, fullFileName, unpackPathStr,  NULL, config.preUnarc.memRequired);
-#endif
-    }
   }
   if (arcType == 4)  // ZOO
   {
@@ -568,11 +417,7 @@ void unpackArc(const struct bt *bp)
     memmove(unpackPathStr + 1, unpackPathStr, strlen(unpackPathStr) + 1);
     *unpackPathStr = '#';
   }
-#if (defined __FMAILX__ || defined __32BIT__)
   if (execute(extPtr, pathStr, parStr, fullFileName, unpackPathStr, NULL))
-#else
-  if (execute(extPtr, pathStr, parStr, fullFileName, unpackPathStr, NULL, memReq))
-#endif
   {
     if (arcType == 4)  // ZOO
       ChDir(dirStr);
@@ -594,23 +439,11 @@ void unpackArc(const struct bt *bp)
     strcpy(unpackPathStr, unpackPathStr + 1);
 
   // postprocessor
-#ifdef __32BIT__
   if (*config.postUnarc32.programName)
   {
     strcpy(tempStr, config.postUnarc32.programName);
-#else
-  if (*config.postUnarc.programName)
-  {
-    strcpy(tempStr, config.postUnarc.programName);
-#endif
     if (!checkExist(tempStr, procStr1, procStr2))
-    {
-#if (defined __FMAILX__ || defined __32BIT__)
       execute("Post-Unpack", procStr1, procStr2, fullFileName, unpackPathStr, NULL);
-#else
-      execute("Post-Unpack", procStr1, procStr2, fullFileName, unpackPathStr, NULL, config.postUnarc.memRequired);
-#endif
-    }
   }
 
   if (!existPattern(config.inPath, "*.pkt") && !existPattern(config.inPath, "*.bcl"))
@@ -665,18 +498,15 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   const char   *exto
              , *extn
              , *cPtr = "";
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-  u16           memReq;
-#endif
 
 #ifdef _DEBUG
   sprintf(tempStr, "DEBUG packArc: file %s  %s -> %s  outStatus:%d", qqqName, nodeStr(srcNode), nodeStr(destNode), nodeInfo->outStatus);
   logEntry(tempStr, LOG_DEBUG, 0);
 #endif
 
-  if (!stricmp(qqqName + strlen(qqqName) - 3, "$$$"))
+  if (!stricmp(qqqName + strlen(qqqName) - 3, dEXTTMP))
   {
-    exto = "$$$";
+    exto = dEXTTMP;
     extn = "bcl";
   }
   else
@@ -703,6 +533,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 
       return 1;
     }
+    outboundBackup(pktName);
     return 0;
   }
 
@@ -930,134 +761,57 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     switch (archiver)
     {
       case  0:      // ARC
-#ifdef __32BIT__
         strcpy(arcPath, config.arc32.programName);
-#else
-        strcpy(arcPath, config.arc.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-        memReq = config.arc.memRequired;
-#endif
         cPtr = "arc";
         break;
 
       case  1:      // ZIP
-#ifdef __32BIT__
         strcpy(arcPath, config.zip32.programName);
-#else
-        strcpy(arcPath, config.zip.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-        memReq = config.zip.memRequired;
-#endif
         cPtr = "zip";
         break;
 
       case  2:      // LZH
-#ifdef __32BIT__
         strcpy(arcPath, config.lzh32.programName);
-#else
-        strcpy(arcPath, config.lzh.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-        memReq = config.lzh.memRequired;
-#endif
         cPtr = "lzh";
         break;
 
       case  3:      // PAK
-#ifdef __32BIT__
         strcpy(arcPath, config.pak32.programName);
-#else
-        strcpy(arcPath, config.pak.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-        memReq = config.pak.memRequired;
-#endif
         cPtr = "pak";
         break;
 
       case  4:      // ZOO
-#ifdef __32BIT__
         strcpy(arcPath, config.zoo32.programName);
-#else
-        strcpy(arcPath, config.zoo.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-        memReq = config.zoo.memRequired;
-#endif
         cPtr = "zoo";
         break;
 
       case  5:      // ARJ
-#ifdef __32BIT__
         strcpy(arcPath, config.arj32.programName);
-#else
-        strcpy(arcPath, config.arj.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-        memReq = config.arj.memRequired;
-#endif
         cPtr = "arj";
         break;
 
       case  6:      // SQZ
-#ifdef __32BIT__
         strcpy(arcPath, config.sqz32.programName);
-#else
-        strcpy(arcPath, config.sqz.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-        memReq = config.sqz.memRequired;
-#endif
         cPtr = "sqz";
         break;
 
       case  7:      // User
-#ifdef __32BIT__
         strcpy(arcPath, config.customArc32.programName);
-#else
-        strcpy(arcPath, config.customArc.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-        memReq = config.customArc.memRequired;
-#endif
         cPtr = "Custom";
         break;
 
       case  8:      // UC2
-#ifdef __32BIT__
         strcpy(arcPath, config.uc232.programName);
-#else
-        strcpy(arcPath, config.uc2.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-        memReq = config.uc2.memRequired;
-#endif
         cPtr = "uc2";
         break;
 
       case  9:      // RAR
-#ifdef __32BIT__
         strcpy(arcPath, config.rar32.programName);
-#else
-        strcpy(arcPath, config.rar.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-        memReq = config.rar.memRequired;
-#endif
         cPtr = "rar";
         break;
 
       case 10:      // JAR
-#ifdef __32BIT__
         strcpy(arcPath, config.jar32.programName);
-#else
-        strcpy(arcPath, config.jar.programName);
-#endif
-#if (!defined(__FMAILX__) && !defined(__32BIT__))
-        memReq = config.jar.memRequired;
-#endif
         cPtr = "jar";
         break;
 
@@ -1100,34 +854,20 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     strcpy(archivePtr, helpPtr + 1);
   }
 
+  outboundBackup(pktName);
+
   // preprocessor
-#ifdef __32BIT__
   if (*config.preArc32.programName)
   {
     strcpy(tempStr, config.preArc32.programName);
-#else
-  if (*config.preArc.programName)
-  {
-    strcpy(tempStr, config.preArc.programName);
-#endif
     if (!checkExist(tempStr, procStr1, procStr2))
-    {
-#if (defined __FMAILX__ || defined __32BIT__)
       execute("Pre-Pack", procStr1, procStr2, archiveStr, pktName, nodeInfo->pktOutPath);
-#else
-      execute("Pre-Pack", procStr1, procStr2, archiveStr, pktName, nodeInfo->pktOutPath, config.preArc.memRequired);
-#endif
-    }
   }
 
   okArc = 1;
   if (nodeInfo->archiver != 0xFF)
   {
-#if (defined __FMAILX__ || defined __32BIT__)
     if (execute(cPtr, pathStr, parStr, archiveStr, pktName, nodeInfo->pktOutPath))
-#else
-    if (execute(extPtr, pathStr, parStr, archiveStr, pktName, nodeInfo->pktOutPath, memReq))
-#endif
       okArc = 0;
   }
   else
@@ -1148,23 +888,11 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   }
 
   // postprocessor
-#ifdef __32BIT__
   if (*config.postArc32.programName)
   {
     strcpy(tempStr, config.postArc32.programName);
-#else
-  if (*config.postArc.programName)
-  {
-    strcpy(tempStr, config.postArc.programName);
-#endif
     if (!checkExist(tempStr, procStr1, procStr2))
-    {
-#if (defined __FMAILX__ || defined __32BIT__)
       execute("Post-Pack",  procStr1, procStr2, archiveStr, pktName,  nodeInfo->pktOutPath);
-#else
-      execute("Post-Pack",  procStr1, procStr2, archiveStr, pktName,  nodeInfo->pktOutPath, config.postArc.memRequired);
-#endif
-    }
   }
 
   if (nodeInfo->archiver != 0xFF)
@@ -1242,11 +970,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 
         return 1;
       }
-#ifdef __WINDOWS32__
       strcpy(archiveStr, tempStr);
-#else
-      strcpy(archiveStr, strupr(tempStr));             // for 4DOS
-#endif
       memset(arcPath, 0x20, sizeof(tempStrType) - 2);
       arcPath[sizeof(tempStrType) - 2] = 0;
       do
@@ -1265,6 +989,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
       }
       else
         sprintf(tempStr, "Mail bundle already going from %s to %s", nodeStr(srcNode), nodeStr(destNode));
+
       close(tempHandle);
       logEntry(tempStr, LOG_OUTBOUND, 0);
     }

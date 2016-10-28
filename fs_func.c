@@ -45,7 +45,7 @@ extern u16            areaInfoBoard;
 
 
 extern configType     config;
-extern char configPath[128];
+extern char configPath[FILENAME_MAX];
 extern windowLookType windowLook;
 
 extern rawEchoType tempInfo, updInfo;
@@ -1308,8 +1308,8 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
                      "Use SEEN-BYs for duplicate prevention (Should normally be on)");
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Security    ", 18, &tempInfo.options, BIT2, 0,
                      "Check origin of incoming mailbundles");
-   addItem(areaMenu, NUM_INT, "# Messages ", 37, &tempInfo.msgs, 4, 9999,
-                     "Maximum number of messages in an area (1-9999, 0 = no maximum)");
+   addItem(areaMenu, NUM_INT, "# Messages ", 37, &tempInfo.msgs, 5, 65535,
+                     "Maximum number of messages in an area (1-65535, 0 = no maximum)");
    addItem(areaMenu, BOOL_INT, "Arrival date", 56, &tempInfo.options, BIT14, 0,
                      "Use the date that a message arrived on your system when deleting messages");
    addItem(areaMenu, echoDefOnly(editType, BOOL_INT), "Tiny SeenBy", 0, &tempInfo.options, BIT1, 0,

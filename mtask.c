@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,147 +21,41 @@
 //
 //---------------------------------------------------------------------------
 
-#ifdef __OS2__
+#if defined(__WIN32__)
+  #include <windows.h>
+#elif defined(__linux__)
+  #include <sched.h>
+  #include <unistd.h>
+#endif
 
-#define INCL_DOSPROCESS
-
-#include <os2.h>
-
-#include "fmstruct.h"
-#include "config.h"
 #include "mtask.h"
 
-void returnTimeSlice(u16 arg)
-{
-#ifdef FMAIL
-   if ( !arg && !config.genOptions.timeSliceFM )
-      return;
-#elif !defined(FSETUP)
-   if ( !arg && !config.genOptions.timeSliceFT )
-      return;
-#else
-   arg = arg;
-#endif
-
-   DosSleep(1);
-}
-
-#endif
-
-#if defined __32BIT__ && !defined __OS2__
-#ifdef __WIN32__
-#include <windows.h>
-#endif
-#include "dos.h"
-
-#include "fmstruct.h"
 #include "config.h"
-#include "mtask.h"
 
-void returnTimeSlice(u16 arg)
+//---------------------------------------------------------------------------
+// arg == 0 : Just give up current timeslice
+// arg != 0 : For busy loops, wait about 10 milliseconds
+//---------------------------------------------------------------------------
+void returnTimeSlice(int arg)
 {
-#if defined(FTOOLS)
-#define SLEEPTIME 0
-  if (!arg || !config.genOptions.timeSliceFT)
+#if   defined(FTOOLS)
+  if (!arg && !config.genOptions.timeSliceFT)
     return;
 #elif defined(FMAIL)
-#define SLEEPTIME 0
-  if (!arg || !config.genOptions.timeSliceFM)
+  if (!arg && !config.genOptions.timeSliceFM)
     return;
+#endif
+
+#if   defined(__WIN32__)
+  Sleep(arg ? 10 : 0);      // milliseconds
+#elif defined(__linux__)
+  if (arg)
+    usleep(10000);  // microseconds
+  else
+    sched_yield();
 #else
-#define SLEEPTIME 10
-#endif
-#ifdef __WIN32__
-  Sleep(SLEEPTIME);  // milliseconds
-#else
-  sleep(1);
+  #error "Specify a sleep function"
 #endif
 }
-#endif
+//---------------------------------------------------------------------------
 
-#if !defined __OS2__ && !defined __32BIT__
-
-#include <dos.h>
-
-#include "fmstruct.h"
-#include "config.h"
-#include "mtask.h"
-
-#define  DESQVIEW  1
-#define  WINDOWS   2
-#define  OS2       3
-
-
-static udef multitasker = 0;
-
-
-void getMultiTasker(void)
-{
-   multitasker = 0;
-
-   /* check DesqView */
-
-   _AX = 0x2B01;
-   _CX = 'ED';
-   _DX = 'QS';
-   geninterrupt(0x21);
-   if ( _AL != 0xFF )
-   {  multitasker = DESQVIEW;
-      return;
-   }
-
-   /* check Windows */
-
-   _AX = 0x1600;
-   geninterrupt(0x2F);
-   if ( _AL != 0x00 && _AL != 0x80 )
-   {  multitasker = WINDOWS;
-      return;
-   }
-
-   /* check OS/2 */
-
-   _AX = 0x3001;
-   geninterrupt(0x21);
-   if ( _AL == 0x0A || _AL == 0x14 )
-   {  multitasker = OS2;
-      return;
-   }
-}
-
-void returnTimeSlice(u16 arg)
-{
-#ifndef FMAIL
-   if ( !arg && !config.genOptions.timeSliceFT )
-      return;
-#else
-   if ( !arg && !config.genOptions.timeSliceFM )
-      return;
-#endif
-
-   switch ( multitasker )
-   {
-      case DESQVIEW  : _AX = 0x1000;
-                       geninterrupt(0x15);
-                       break;
-      case WINDOWS   :
-      case OS2       : _AX = 0x1680;
-                       geninterrupt(0x2F);
-                       break;
-   }
-}
-
-#if 0
-u8 *multiTxt(void)
-{
-   switch ( multitasker )
-   {
-      case DESQVIEW  : return "desqVIEW";
-      case WINDOWS   : return "Windows";
-      case OS2       : return "OS/2";
-      default        : return "";
-   }
-}
-#endif
-
-#endif

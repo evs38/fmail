@@ -47,10 +47,7 @@ extern configType config;
 extern char      *dayName[7];
 extern char      *months;
 
-time_t            startTime;
 clock_t           at;
-struct tm         timeBlock;
-u16               dayOfWeek;
 
 u16               mgrLogUsed = 0;
 //---------------------------------------------------------------------------
@@ -77,7 +74,7 @@ static void writeLogLine(fhandle logHandle, const char *s)
   }
 #else // __WIN32__
   time(&timer);
-  tm = *gmtime(&timer);
+  tm = *localtime(&timer);
 #endif // __WIN32__
 
   switch (config.logStyle)
@@ -124,7 +121,7 @@ static void writeLogLine(fhandle logHandle, const char *s)
   write(logHandle, "\n", 1);
 }
 //---------------------------------------------------------------------------
-void initLog(const char *funcStr, s32 switches)
+void initLog(s32 switches)
 {
   fhandle     logHandle;
   tempStrType tempStr
@@ -134,10 +131,6 @@ void initLog(const char *funcStr, s32 switches)
   char       *helpPtr;
 
   at = clock();
-
-  time(&startTime);
-  timeBlock = *gmtime(&startTime);
-  dayOfWeek = timeBlock.tm_wday;
 
   if (!*config.logName)
     config.logInfo = 0;
@@ -326,7 +319,7 @@ void logActive(void)
   tempStrType timeStr;
 
   newLine();
-  sprintf(timeStr, "Active: %.3f sec.", ((double)(clock() - at)) / CLK_TCK);
+  sprintf(timeStr, "%s Active: %.3f sec.", funcStr, ((double)(clock() - at)) / CLK_TCK);
   logEntry(timeStr, LOG_STATS, 0);
 }
 //---------------------------------------------------------------------------

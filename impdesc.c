@@ -29,6 +29,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef __MINGW32__
+#include <windef.h>    // min() max()
+#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -50,7 +53,7 @@ s16 importNAInfo(char *fileName)
    u16            bufsize;
    char           *helpPtr, *helpPtr2;
 
-   if ((NAHandle = open(fileName, O_RDONLY|O_BINARY|O_DENYNONE)) == -1)
+   if ((NAHandle = open(fileName, O_RDONLY | O_BINARY)) == -1)
       logEntry("Can't find file", LOG_ALWAYS, 4);
 
    if ( (buf = malloc(bufsize = min((u16)filelength(NAHandle)+1, 0xFFF0))) == NULL )

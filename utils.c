@@ -369,7 +369,7 @@ void touch(const char *path, const char *filename, const char *t)
   fhandle     tempHandle;
 
   strcpy(stpcpy(tempStr, path), filename);
-  if ((tempHandle = open(tempStr, O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
+  if ((tempHandle = open(tempStr, O_RDWR | O_CREAT | O_TRUNC | O_TEXT, S_IREAD | S_IWRITE)) != -1)
   {
     write(tempHandle, t, strlen(t));
     close(tempHandle);
@@ -561,7 +561,6 @@ s32 getSwitch(int *argc, char *argv[], s32 mask)
 // 4: The new ID is a log smaller than the stored ID: The new ID probably
 //    overflowed past the MAXINT value.
 //
-extern time_t startTime;
 u32 lastID = 0;
 
 u32 uniqueID(void)
@@ -576,7 +575,7 @@ u32 uniqueID(void)
 #ifdef _DEBUG
     {
       tempStrType tempStr;
-      sprintf(tempStr, "UID: Saved:%08X New:%08X", config.lastUniqueID, lastID);
+      sprintf(tempStr, "DEBUG UID Saved:%08X New:%08X", config.lastUniqueID, lastID);
       logEntry(tempStr, LOG_DEBUG, 0);
     }
 #endif
@@ -660,7 +659,7 @@ void removeLf(char *msgText)
   if (n > 0)
   {
     tempStrType tempStr;
-    sprintf(tempStr, "Removed/replaced %d line feed characters", n);
+    sprintf(tempStr, "DEBUG Removed/replaced %d line feed characters", n);
     logEntry(tempStr, LOG_DEBUG, 0);
   }
 #endif
@@ -698,7 +697,7 @@ void removeSr(char *msgText)
   if (n > 0)
   {
     tempStrType tempStr;
-    sprintf(tempStr, "Removed/replaced %d soft carriage return characters", n);
+    sprintf(tempStr, "DEBUG Removed/replaced %d soft carriage return characters", n);
     logEntry(tempStr, LOG_DEBUG, 0);
   }
 #endif
@@ -1451,12 +1450,12 @@ void setViaStr(char *buf, const char *preStr, u16 aka)
       logEntry(tStr, LOG_DEBUG, 0);
     }
 #endif
-#elif defined(linux)
+#elif defined(__linux__)
     struct timeval tv;
     struct tm *tm;
 
     if (  0 != gettimeofday(&tv, NULL)
-       || NULL == (tm = gmtime(&tv.tv_sec))
+       || NULL == (tm = gmtime(&tv.tv_sec))  // gmt ok!
        )
       sprintf(buf, "%s %s @00000000.000000 %s(%s) %s\r"
                  , preStr, getAkaStr(aka, 1)
@@ -1472,8 +1471,8 @@ void setViaStr(char *buf, const char *preStr, u16 aka)
              );
 #else
     struct tm *tmPtr;
-    tmPtr = gmtime(&startTime);
-    sprintf(buf, "%s %s @%04u%02u%02u.%02u%02u%02u %s(%s) %s\r"
+    tmPtr = gmtime(&startTime);  // gmt ok!
+    sprintf(buf, "%s %s @%04u%02u%02u.%02u%02u%02u.UTC %s(%s) %s\r"
                , preStr, getAkaStr(aka, 1)
                , tmPtr->tm_year + 1900, tmPtr->tm_mon + 1, tmPtr->tm_mday
                , tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec
@@ -1778,7 +1777,7 @@ void setCurDateMsg(internalMsgType *msg)
   *msg->dateStr = 0;
 
   time(&ti);
-  tm = localtime(&ti);
+  tm = localtime(&ti);  // localtime -> ok, used as current time in internalMsgType
 
   msg->year    = tm->tm_year + 1900;
   msg->month   = tm->tm_mon + 1;
@@ -1786,6 +1785,30 @@ void setCurDateMsg(internalMsgType *msg)
   msg->hours   = tm->tm_hour;
   msg->minutes = tm->tm_min;
   msg->seconds = tm->tm_sec;
+}
+//---------------------------------------------------------------------------
+const char *time_t2strGmt(const time_t t)
+{
+  return tm2str(gmtime(&t));  // gmt ok!
+}
+//---------------------------------------------------------------------------
+const char *time_t2str(const time_t t)
+{
+  return tm2str(localtime(&t));  // localtime ok
+}
+//---------------------------------------------------------------------------
+const char *tm2str(struct tm *tm)
+{
+  static tempStrType tStr;
+  if (NULL != tm)
+    sprintf( tStr, "%04d-%02d-%02d %02d:%02d:%02d dst:%d"
+           , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
+           , tm->tm_hour, tm->tm_min, tm->tm_sec, tm->tm_isdst
+           );
+  else
+    strcpy(tStr, "*** Illegal time ***");
+
+  return tStr;
 }
 //---------------------------------------------------------------------------
 static tempStrType searchString;

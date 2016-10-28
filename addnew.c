@@ -21,10 +21,10 @@
 //
 //---------------------------------------------------------------------------
 
-#include <alloc.h>
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <io.h>
 #include <fcntl.h>
 
@@ -35,6 +35,7 @@
 #include "ftools.h"
 #include "ispathch.h"
 #include "log.h"
+#include "stpcpy.h"
 #include "update.h"
 #include "utils.h"
 
@@ -53,18 +54,16 @@ const char *ANGetAreaPath(u16 i)
   if (i >= areaInfoCount)
     return NULL;
 
-  if (NULL == (*mbPaths)[index])
+  if (NULL == (*mbPaths)[i])
     return "";
 
-  return (*mbPaths)[index];
+  return (*mbPaths)[i];
 }
 //---------------------------------------------------------------------------
 void addNew(s32 switches)
 {
   anType      *areaNames;
   u8           usedArea[MBBOARDS];
-  u8          *tempPtr
-            , *tempPtr2;
   u16          badEchoCount
              , count
              , index;

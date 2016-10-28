@@ -5,16 +5,15 @@
     <VERSION value="BCB.06.00"/>
     <PROJECT value="FToolsW32.exe"/>
     <OBJFILES value="OBJ.6\FToolsW32\addnew.obj OBJ.6\FToolsW32\cfgfile.obj 
-      OBJ.6\FToolsW32\crc.obj OBJ.6\FToolsW32\filesys.obj 
-      OBJ.6\FToolsW32\ftlog.obj OBJ.6\FToolsW32\ftnotify.obj 
-      OBJ.6\FToolsW32\ftools.obj OBJ.6\FToolsW32\ftr.obj 
-      OBJ.6\FToolsW32\hudson.obj OBJ.6\FToolsW32\impdesc.obj 
-      OBJ.6\FToolsW32\ispathch.obj OBJ.6\FToolsW32\jamfun.obj 
-      OBJ.6\FToolsW32\jammaint.obj OBJ.6\FToolsW32\mtask.obj 
-      OBJ.6\FToolsW32\smtp.obj OBJ.6\FToolsW32\sorthb.obj 
-      OBJ.6\FToolsW32\spec.obj OBJ.6\FToolsW32\update.obj 
-      OBJ.6\FToolsW32\utils.obj OBJ.6\FToolsW32\utils2.obj 
-      OBJ.6\FToolsW32\version.obj"/>
+      OBJ.6\FToolsW32\crc.obj OBJ.6\FToolsW32\ftlog.obj 
+      OBJ.6\FToolsW32\ftnotify.obj OBJ.6\FToolsW32\ftools.obj 
+      OBJ.6\FToolsW32\ftr.obj OBJ.6\FToolsW32\hudson.obj 
+      OBJ.6\FToolsW32\impdesc.obj OBJ.6\FToolsW32\ispathch.obj 
+      OBJ.6\FToolsW32\jamfun.obj OBJ.6\FToolsW32\jammaint.obj 
+      OBJ.6\FToolsW32\mtask.obj OBJ.6\FToolsW32\smtp.obj 
+      OBJ.6\FToolsW32\sorthb.obj OBJ.6\FToolsW32\spec.obj 
+      OBJ.6\FToolsW32\update.obj OBJ.6\FToolsW32\utils.obj 
+      OBJ.6\FToolsW32\utils2.obj OBJ.6\FToolsW32\version.obj"/>
     <RESFILES value="FToolsW32.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -29,7 +28,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__"/>
+    <USERDEFINES value="FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FToolsW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -38,11 +37,11 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -Q -Vx -Ve -C -X- -a1 -6 -b -d -k- -vi -tWC -tWM- -c"/>
-    <PFLAGS value="-N2OBJ.6\FToolsW32 -N0OBJ.6\FToolsW32 -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
+    <CFLAG1 value="-Od -Q -Vx -Ve -C -X- -r- -a1 -6 -b -d -k -y -v -vi- -tWC -tWM- -c"/>
+    <PFLAGS value="-N2OBJ.6\FToolsW32 -N0OBJ.6\FToolsW32 -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-IOBJ.6\FToolsW32 -D&quot;&quot; -ap -Tpe -x -Gn"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-IOBJ.6\FToolsW32 -D&quot;&quot; -ap -Tpe -x -Gn -v"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -57,7 +56,6 @@
       <FILE FILENAME="addnew.c" FORMNAME="" UNITNAME="addnew" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="cfgfile.c" FORMNAME="" UNITNAME="cfgfile" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="crc.c" FORMNAME="" UNITNAME="crc" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="filesys.c" FORMNAME="" UNITNAME="filesys" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ftlog.c" FORMNAME="" UNITNAME="ftlog" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ftnotify.c" FORMNAME="" UNITNAME="ftnotify" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ftools.c" FORMNAME="" UNITNAME="ftools" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -84,10 +82,10 @@
 IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=1
-MinorVer=72
+MinorVer=73
 Release=0
-Build=0
-Debug=0
+Build=4
+Debug=1
 PreRelease=0
 Special=0
 Private=0
@@ -98,13 +96,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FTools Windows 32 bit version
-FileVersion=1.72.0.0
+FileVersion=1.73.0.4
 InternalName=FTools
 LegalCopyright=Copyright (c) 1991 - 2015 FMail developers
 LegalTrademarks=
 OriginalFilename=FToolsW32.exe
 ProductName=FMail
-ProductVersion=1.72
+ProductVersion=1.73
 
 [Excluded Packages]
 C:\Program Files\Borland\CBuilder6\Bin\dclstd60.bpl=Borland Standard Components
@@ -145,8 +143,8 @@ Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=12
-Item0=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
-Item1=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item0=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
+Item1=FTOOLS;__FMAILX__;__32BIT__;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
 Item2=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;_DEBUG
 Item3=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__
 Item4=FTOOLS;__FMAILX__;__32BIT__;STDO;__STDIO__;__WINDOWS32__;__PENTIUMPRO__;BETA

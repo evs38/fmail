@@ -4,25 +4,25 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="FConfigW32.exe"/>
-    <OBJFILES value="OBJ.6\FConfigW32\AMGR_UTL.obj OBJ.6\FConfigW32\AREAMGR.obj
-      OBJ.6\FConfigW32\CFGFILE.obj OBJ.6\FConfigW32\CRC.obj
-      OBJ.6\FConfigW32\EXPORT.obj OBJ.6\FConfigW32\FILESYS.obj
-      OBJ.6\FConfigW32\FS_FUNC.obj OBJ.6\FConfigW32\FS_UTIL.obj
-      OBJ.6\FConfigW32\FSETUP.obj OBJ.6\FConfigW32\IMPORT.obj
-      OBJ.6\FConfigW32\ispathch.obj OBJ.6\FConfigW32\MTASK.obj
-      OBJ.6\FConfigW32\NODEMGR.obj OBJ.6\FConfigW32\PACKMGR.obj
-      OBJ.6\FConfigW32\UPDATE.obj OBJ.6\FConfigW32\UTILS2.obj
-      OBJ.6\FConfigW32\Version.obj OBJ.6\FConfigW32\WINDOW.obj"/>
+    <OBJFILES value="OBJ.6\FConfigW32\amgr_utl.obj OBJ.6\FConfigW32\areamgr.obj 
+      OBJ.6\FConfigW32\cfgfile.obj OBJ.6\FConfigW32\crc.obj 
+      OBJ.6\FConfigW32\export.obj OBJ.6\FConfigW32\fs_func.obj 
+      OBJ.6\FConfigW32\fs_util.obj OBJ.6\FConfigW32\fsetup.obj 
+      OBJ.6\FConfigW32\import.obj OBJ.6\FConfigW32\ispathch.obj 
+      OBJ.6\FConfigW32\mtask.obj OBJ.6\FConfigW32\nodemgr.obj 
+      OBJ.6\FConfigW32\packmgr.obj OBJ.6\FConfigW32\update.obj 
+      OBJ.6\FConfigW32\utils2.obj OBJ.6\FConfigW32\version.obj 
+      OBJ.6\FConfigW32\window.obj"/>
     <RESFILES value="FConfigW32.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
-    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi
-      inetdbxpress.bpi visualclx.bpi dbrtl.bpi bdertl.bpi vcldb.bpi vcldbx.bpi
-      dsnap.bpi cds.bpi bdecds.bpi teeui.bpi teedb.bpi tee.bpi teeqr.bpi
-      ibxpress.bpi visualdbclx.bpi inetdb.bpi bcbie.bpi soaprtl.bpi
+    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi 
+      inetdbxpress.bpi visualclx.bpi dbrtl.bpi bdertl.bpi vcldb.bpi vcldbx.bpi 
+      dsnap.bpi cds.bpi bdecds.bpi teeui.bpi teedb.bpi tee.bpi teeqr.bpi 
+      ibxpress.bpi visualdbclx.bpi inetdb.bpi bcbie.bpi soaprtl.bpi 
       dbexpress.bpi dbxcds.bpi bcb2kaxserver.bpi adortl.bpi"/>
     <PATHCPP value=".;"/>
     <PATHPAS value=".;"/>
@@ -31,7 +31,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__"/>
+    <USERDEFINES value="FSETUP;__32BIT__;__PENTIUMPRO__;__STDIO__"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="FConfigW32.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -56,24 +56,23 @@
   <FILELIST>
       <FILE FILENAME="FConfigW32.res" FORMNAME="" UNITNAME="FConfigW32.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="FConfigW32.bpf" FORMNAME="" UNITNAME="FConfigW32" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="amgr_utl.c" formname="" unitname="amgr_utl" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="areamgr.c" formname="" unitname="areamgr" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="cfgfile.c" formname="" unitname="cfgfile" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="crc.c" formname="" unitname="crc" containerID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="export.c" formname="" unitname="export" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="filesys.c" formname="" unitname="filesys" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="fs_func.c" formname="" unitname="fs_func" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="fs_util.c" formname="" unitname="fs_util" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="fsetup.c" formname="" unitname="fsetup" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="import.c" formname="" unitname="import" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="ispathch.c" formname="" unitname="ispathch" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="mtask.c" formname="" unitname="mtask" contaINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="nodemgr.c" formname="" unitname="nodemgr" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="packmgr.c" formname="" unitname="packmgr" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="update.c" formname="" unitname="update" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="utils2.c" formname="" unitname="utils2" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="version.c" formname="" unitname="version" cONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="window.c" formname="" unitname="window" conTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="amgr_utl.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="areamgr.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="cfgfile.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="crc.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="export.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="fs_func.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="fs_util.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="fsetup.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="import.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ispathch.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="mtask.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="nodemgr.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="packmgr.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="update.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="utils2.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="version.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="window.c" FORMNAME="" UNITNAME="" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -83,9 +82,9 @@
 IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=1
-MinorVer=72
-Release=0
-Build=0
+MinorVer=73
+Release=1
+Build=1
 Debug=0
 PreRelease=0
 Special=0
@@ -97,13 +96,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=FMail GPL
 FileDescription=FMail mail tosser configuration program
-FileVersion=1.72.0.0
+FileVersion=1.73.1.1
 InternalName=FConfig
 LegalCopyright=Copyright (c) 1991 - 2016 FMail developers
 LegalTrademarks=
 OriginalFilename=FConfigW32.exe
 ProductName=FMail
-ProductVersion=1.72
+ProductVersion=1.73
 
 [HistoryLists\hlIncludePath]
 Count=1
@@ -118,12 +117,13 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=5
-Item0=FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
-Item1=FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__;_DEBUG
-Item2=_DEBUG;FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
-Item3=_DEBUG;FSETUP;PENTIUMPRO;__FMAILX__
-Item4=_DEBUG
+Count=6
+Item0=FSETUP;__32BIT__;__PENTIUMPRO__;__STDIO__
+Item1=FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
+Item2=FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__;_DEBUG
+Item3=_DEBUG;FSETUP;__32BIT__;__FMAILX__;__PENTIUMPRO__;__STDIO__;__WINDOWS32__
+Item4=_DEBUG;FSETUP;PENTIUMPRO;__FMAILX__
+Item5=_DEBUG
 
 [HistoryLists\hlIntOutputDir]
 Count=1

@@ -36,14 +36,11 @@
 #include "crc.h"
 #include "dups.h"
 #include "log.h"
-//#include "msgpkt.h" // for openP
+#include "stpcpy.h"
 #include "time.h"
 #include "utils.h"
 
 //---------------------------------------------------------------------------
-extern char       configPath[FILENAME_MAX];
-extern configType config;
-
 #define DUP_LEVEL  1
 
 static s16 dupOpened  = 0;
@@ -104,8 +101,7 @@ void openDup(void)
    if ( config.kDupRecs < 16 )
       config.kDupRecs = 16;
 
-   strcpy(tempPath, configPath);
-   strcat(tempPath, "FMAIL32.DUP");
+   strcpy(stpcpy(tempPath, configPath), "fmail32.dup");
 
    if (  (dupHandle = open(tempPath, O_RDONLY | O_BINARY)) == -1
       || read(dupHandle, &dupHdr, sizeof(dupHdrStruct)) != sizeof(dupHdrStruct)
@@ -254,8 +250,7 @@ void closeDup(void)
   }
   memcpy(dupHdr.nextDup, nextDupOld, sizeof(dupHdr.nextDup));
 
-  strcpy(tempPath, configPath);
-  strcat(tempPath, "FMAIL32.DUP");
+  strcpy(stpcpy(tempPath, configPath), "fmail32.dup");
 
   if (  (dupHandle = open(tempPath, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1
      || write(dupHandle, &dupHdr, sizeof(dupHdrStruct)) != sizeof(dupHdrStruct)

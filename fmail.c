@@ -21,14 +21,6 @@
 //
 //---------------------------------------------------------------------------
 
-#ifdef __OS2__
-#define INCL_DOSPROCESS
-#include <os2.h>
-
-extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
-
-#endif
-
 #include <conio.h>
 #include <ctype.h>
 #include <dir.h>      // getcwd()
@@ -72,17 +64,16 @@ extern APIRET16 APIENTRY16 WinSetTitle(PSZ16);
 #include "version.h"
 
 //---------------------------------------------------------------------------
-#if defined __WIN32__ && !defined __DPMI32__
+#ifdef __WIN32__
 #include "sendsmtp.h"
-#endif
+#define dSENDMAIL
+#endif // __WIN32__
 
 #if !defined(__FMAILX__) && !defined(__32BIT__)
 extern unsigned cdecl _stklen = 16384;
 #endif
 
 fhandle fmailLockHandle;
-
-extern u16 dayOfWeek;
 
 u16 status;
 
@@ -249,9 +240,9 @@ const char *semaphore[6] = {
                            , "xmrescan.flg"
                            };
 
-extern time_t    startTime;
-extern struct tm timeBlock;
-
+long            gmtOffset;
+time_t          startTime;
+struct tm       timeBlock;
 extern u16      echoCount;
 extern u16      forwNodeCount;
 
@@ -424,14 +415,17 @@ const char *badTimeStr(void)
          );
 #else // __WIN32__
   time_t      timer;
-  struct tm   tm;
+  struct tm  *tm;
 
   time(&timer);
-  tm = *gmtime(&timer);
-  sprintf(tStr, "%04u-%02u-%02u %02u:%02u:%02u"
-              , tm.tm_year + 1900 , tm.tm_mon + 1 , tm.tm_mday
-              , tm.tm_hour, tm.tm_min, tm.tm_sec
-         );
+  tm = localtime(&timer);
+  if (tm != NULL)
+    sprintf(tStr, "%04u-%02u-%02u %02u:%02u:%02u"
+                , tm->tm_year + 1900 , tm->tm_mon + 1 , tm->tm_mday
+                , tm->tm_hour, tm->tm_min, tm->tm_sec
+           );
+  else
+    strcpy(tStr, "1970-01-01 00:00:00");
 #endif // __WIN32__
 
   return tStr;
@@ -763,7 +757,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                   tm.tm_hour = message->hours;
                   tm.tm_min  = message->minutes;
                   tm.tm_sec  = message->seconds;
-                  msgTime = mktime(&tm);
+                  msgTime = mktime(&tm);  // todo: Possibly need to add gmtOffset!
 
                   if (msgTime < oldMsgTime)
                   {
@@ -1022,7 +1016,7 @@ void Toss(int argc, char *argv[])
 
     if (config.oldMsgDays)
       // Set after initFMail() and before processPkt()
-      oldMsgTime = startTime - config.oldMsgDays * 24 * 60 * 60;
+      oldMsgTime = startTime - config.oldMsgDays * 24 * 60 * 60;  // TODO check oldMsgTime usage
 
     diskError = processPkt(1, (u16)(switches & SW_A));
 
@@ -1124,7 +1118,7 @@ void Toss(int argc, char *argv[])
   }
 
   closeBBSWr(0);
-#ifdef __WINDOWS32__
+#ifdef dSENDMAIL
   sendmail_smtp();
 #endif
   closeNodeInfo();
@@ -1605,7 +1599,7 @@ void Scan(int argc, char *argv[])
 
       if (infoBad || config.mbOptions.scanAlways || (switches & SW_S))
       {
-        for (count=0; count < echoCount; count++)
+        for (count = 0; count < echoCount; count++)
         {
           if ((echoAreaList[count].JAMdirPtr != NULL &&
                echoAreaList[count].options.active &&
@@ -1613,8 +1607,7 @@ void Scan(int argc, char *argv[])
               (config.mbOptions.scanAlways || (switches & SW_S) ||
                echoAreaList[count].options._reserved))
           {
-            if ((infoBad || config.mbOptions.scanAlways ||
-                 (switches & SW_S)) && infoBad != -1)
+            if ((infoBad || config.mbOptions.scanAlways || (switches & SW_S)) && infoBad != -1)
             {
               if (config.mbOptions.scanAlways || (switches & SW_S))
                 puts("Rescanning all JAM areas");
@@ -1622,7 +1615,8 @@ void Scan(int argc, char *argv[])
                 puts("Rescanning selected JAM areas\n");
               infoBad = -1;
             }
-            printf("Scanning JAM area %s...\n", echoAreaList[count].areaName);
+            sprintf(tempStr, "Scanning JAM area: %s", echoAreaList[count].areaName);
+            logEntry(tempStr, LOG_ALWAYS, 0);
             msgNum = 0;
             while (!diskError && (msgNum = jam_scan(count, ++msgNum, 0, message)) != 0)
             {
@@ -1659,7 +1653,7 @@ void Scan(int argc, char *argv[])
     puts("Scanning "MBNAME" message base for outgoing messages...");
     infoBad = 0;
 
-    if ((!config.mbOptions.scanAlways) && (!(switches & SW_S)))
+    if (!config.mbOptions.scanAlways && !(switches & SW_S))
     {
       for (count = 0; count <= 1; count++)
       {
@@ -1709,8 +1703,9 @@ void Scan(int argc, char *argv[])
     if (infoBad || config.mbOptions.scanAlways || (switches & SW_S))
     {
       index = 0;
-      while (((boardNum = scanBBS (index++, message, 0)) != 0) &&
-             (!diskError) && (!breakPressed))
+      while (  (boardNum = scanBBS(index++, message, 0)) != 0
+            && !diskError && !breakPressed
+            )
       {
         if ((boardNum != -1) &&
             (((!isNetmailBoard(boardNum)) && (!(switches & SW_N))) ||
@@ -1734,7 +1729,7 @@ void Scan(int argc, char *argv[])
     diskError = DERR_CLPKTE;
 
   closeBBSWr(1);
-#ifdef __WINDOWS32__
+#ifdef dSENDMAIL
   sendmail_smtp();
 #endif
   closeNodeInfo();
@@ -1907,7 +1902,7 @@ void Pack(int argc, char *argv[])
 
   pack(argc, argv, switches);
 
-#ifdef __WINDOWS32__
+#ifdef dSENDMAIL
   sendmail_smtp();
 #endif
   closeNodeInfo();
@@ -1937,7 +1932,7 @@ void Mgr(int argc, char *argv[])
   initMsg(0);  // after initNodeInfo
 //ScanNewBCL();
 
-#ifdef __WINDOWS32__
+#ifdef dSENDMAIL
   sendmail_smtp();
 #endif
   closeNodeInfo();
@@ -1948,48 +1943,50 @@ int main(int argc, char *argv[])
   tempStrType  tempStr;
   char        *helpPtr;
 
+#ifdef __WIN32__
+  // Set default open mode:
+  _fmode = O_BINARY;
+#endif // __WIN32__
+
+#ifdef __BORLANDC__
   putenv("TZ=LOC0");
   tzset();
-#ifdef __OS2__
-  WinSetTitle(VERSION_STRING);
-#endif
-#if defined __WIN32__ && !defined __DPMI32__
+#endif // __BORLANDC__
+  startTime = time(NULL);
+  timeBlock = *localtime(&startTime);  // localtime -> should be ok
+  {
+    struct tm *tm = gmtime(&startTime);  // gmt ok!
+    tm->tm_isdst = -1;
+    gmtOffset = startTime - mktime(tm);
+  }
+
+#ifdef dSENDMAIL
   smtpID = TIDStr();
 #endif
-
-  // initOutput();
-
-#ifndef __32BIT__
-  if (_osmajor < 3 || (_osmajor == 3 && _osminor < 30))
-  {
-    puts("FMail requires at least DOS 3.30");
-    exit(4);
-  }
-#endif
-  // cls();
 
   printf("%s - The Fast Echomail Processor\n\n", VersionStr());
   printf("Copyright (C) 1991-%s by FMail Developers - All rights reserved\n\n", __DATE__ + 7);
 
   memset(&globVars, 0, sizeof(globVarsType));
 
-#ifdef __FMAILX__
-  strcpy(programPath, argv[0]);
-  *(strrchr(programPath, '\\') + 1) = 0;
-#endif
-
 #ifdef _DEBUG
-    {
-      tempStrType cwd;
-      getcwd(cwd, dTEMPSTRLEN);
-      printf("DEBUG: cwd: %s\n", cwd);
-    }
+  getcwd(tempStr, dTEMPSTRLEN);
+  printf("DEBUG cwd: %s\n", tempStr);
+
+  {
+    int i;
+    for (i = 0; i < argc; i++)
+      printf("DEBUG arg %d: %s\n", i, argv[i]);
+  }
 #endif
 
   if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0)
   {
     strcpy(configPath, argv[0]);
-    *(strrchr(configPath, '\\') + 1) = 0;
+    if ((helpPtr = strrchr(configPath, '\\')) == NULL)
+      strcpy(configPath, ".\\");
+    else
+      helpPtr[1] = 0;
   }
   else
   {
@@ -1997,6 +1994,9 @@ int main(int argc, char *argv[])
     if (configPath[strlen(configPath) - 1] != '\\')
       strcat(configPath, "\\");
   }
+#ifdef _DEBUG
+  printf("DEBUG configPath: %s\n", configPath);
+#endif
 
   if      (argc >= 2 && (stricmp(argv[1], "A") == 0 || stricmp(argv[1], "ABOUT" ) == 0))
     About();
@@ -2133,7 +2133,7 @@ void myexit(void)
 {
 #pragma exit myexit
 #ifdef _DEBUG0
-  putStr("\nPress any key to continue... ");
+  putStr("\nDEBUG Press any key to continue... ");
   getch();
   newLine();
 #endif

@@ -38,6 +38,9 @@
 #include "areainfo.h"
 #include "dups.h"
 #include "msgpkt.h"
+#include "msgra.h"
+#include "msgradef.h"
+#include "stpcpy.h"
 #include "version.h"
 
 //---------------------------------------------------------------------------
@@ -50,36 +53,11 @@ u16     logUsed = 0;
 const char *months     = "JanFebMarAprMayJunJulAugSepOctNovDec";
 const char *dayName[7] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 
-#ifdef __BORLANDC__
-#ifdef __WIN32__
-#ifndef __DPMI32__
-struct  COUNTRY
-{
-  short co_date;
-  char  co_curr [ 5];
-  char  co_thsep[ 2];
-  char  co_desep[ 2];
-  char  co_dtsep[ 2];
-  char  co_tmsep[ 2];
-  char  co_currstyle;
-  char  co_digits;
-  char  co_time;
-  long  co_case;
-  char  co_dasep[ 2];
-  char  co_fill [10];
-};
-#endif
-#endif
-   struct COUNTRY countryInfo;
-#else
-   struct country countryInfo;
-#endif
-
 //---------------------------------------------------------------------------
 char *expandName(char *fileName)
 {
   static tempStrType tempStr[2];
-  static tempIndex = 0;
+  static int tempIndex = 0;
   char *ts = tempStr[tempIndex = 1 - tempIndex];
 
   strcpy(stpcpy(ts, config.bbsPath), fileName);
@@ -89,9 +67,8 @@ char *expandName(char *fileName)
 //---------------------------------------------------------------------------
 void writeLogLine(fhandle logHandle, const char *s)
 {
-	time_t      timer;
-	struct tm   tm;
-	tempStrType tempStr;
+  struct tm   tm;
+  tempStrType tempStr;
   int         sl;
 
 #ifdef __WIN32__
@@ -107,7 +84,7 @@ void writeLogLine(fhandle logHandle, const char *s)
     tm.tm_sec  = st.wSecond;
   }
 #else
-  time(&timer);
+  time_t timer = time(NULL);
   tm = *gmtime(&timer);
 #endif
 
@@ -147,11 +124,7 @@ void writeLogLine(fhandle logHandle, const char *s)
       break;
 #endif
     default:  // FrontDoor
-      sl = sprintf( tempStr, "  %2u%c%02u%c%02u  %s\n"
-                  , tm.tm_hour, countryInfo.co_tmsep[0]
-                  , tm.tm_min , countryInfo.co_tmsep[0]
-                  , tm.tm_sec , s
-                  );
+      sl = sprintf(tempStr, "  %2u:%02u:%02u  %s\n", tm.tm_hour, tm.tm_min , tm.tm_sec , s);
       break;
   }
   write(logHandle, tempStr, sl);
@@ -178,13 +151,7 @@ void initLog(char *s, s32 switches)
   if (!config.logInfo)
     return;
 
-#ifndef __WIN32__
-   country(0, &countryInfo);
-#else
-   countryInfo.co_tmsep[0] = ':';
-#endif
-
-  if ((logHandle = openP(config.logName, O_RDWR | O_CREAT | O_APPEND | O_TEXT | O_DENYNONE, S_IREAD | S_IWRITE)) == -1)
+  if ((logHandle = open(config.logName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) == -1)
   {
     puts("WARNING: Can't open log file\n");
     config.logInfo = 0;
@@ -270,7 +237,7 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
   if (  (  ((config.logInfo | LOG_ALWAYS) & entryType) == 0
         && ( config.logInfo & LOG_DEBUG              ) == 0
         )
-     || (logHandle = open(config.logName, O_RDWR | O_APPEND | O_TEXT | O_DENYNONE, 0)) == -1
+     || (logHandle = open(config.logName, O_WRONLY | O_APPEND | O_TEXT)) == -1
      )
   {
     if (errorLevel)
@@ -294,11 +261,11 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
     close(logHandle);
     putStr(tempStr);
 
-    unlink(expandName("MSGHDR.$$$"));
-    unlink(expandName("MSGIDX.$$$"));
-    unlink(expandName("MSGTOIDX.$$$"));
-    unlink(expandName("MSGTXT.$$$"));
-    unlink(expandName("MSGINFO.$$$"));
+    unlink(expandName(dMSGHDR"."dEXTTMP));
+    unlink(expandName(dMSGIDX"."dEXTTMP));
+    unlink(expandName(dMSGTOIDX"."dEXTTMP));
+    unlink(expandName(dMSGTXT"."dEXTTMP));
+    unlink(expandName(dMSGINFO"."dEXTTMP));
 
     exit(errorLevel);
   }
@@ -310,7 +277,7 @@ void logActive(void)
   tempStrType timeStr;
 
   newLine();
-  sprintf(timeStr, "Active: %.3f sec.", (clock() - at) / CLK_TCK);
+  sprintf(timeStr, "FTools Active: %.3f sec.", ((double)(clock() - at)) / CLK_TCK);
   logEntry(timeStr, LOG_STATS, 0);
 }
 //---------------------------------------------------------------------------

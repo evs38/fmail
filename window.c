@@ -824,7 +824,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                 (fieldType & MASK) == FILE_NAME ||
                 (fieldType & MASK) == MB_NAME ||
                 (fieldType & MASK) == EMAIL ||
-                (fieldType & MASK) == SFILE_NAME) && (config.genOptions.lfn && fieldType & LFN) && ch == ' ') ||
+                (fieldType & MASK) == SFILE_NAME) && ch == ' ') ||
               (((fieldType & MASK) == PATH) && (ch > ' ') && (ch <= '~') &&
                                                (ch != '<') && (ch != '>') &&
                                                (ch != '|') && (ch != '+') &&
@@ -869,8 +869,8 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                if (strlen(tempStr) < (size_t)width - 1)
                {
                   memmove(&tempStr[sPos+1], &tempStr[sPos], width - 1 - sPos);
-                  if ( (fieldType & UPCASE) &&
-                       (!config.genOptions.lfn || !(fieldType & LFN)) )
+//                if ((fieldType & UPCASE) && (!config.genOptions.lfn || !(fieldType & LFN)))
+                  if ((fieldType & UPCASE) && !(fieldType & LFN))
                      tempStr[sPos++] = toupper(ch);
                   else
                      tempStr[sPos++] = ch;
@@ -1016,7 +1016,8 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                if ((fieldType & MASK) == MB_NAME)
                {
                   helpPtr = strrchr(testStr,'\\');
-                  if ( (!config.genOptions.lfn || !(fieldType & LFN)) && helpPtr != NULL && strchr(helpPtr, '.') != NULL )
+//                if ( (!config.genOptions.lfn || !(fieldType & LFN)) && helpPtr != NULL && strchr(helpPtr, '.') != NULL )
+                  if ( (                          !(fieldType & LFN)) && helpPtr != NULL && strchr(helpPtr, '.') != NULL )
                   {
                      error = 1;
                      redo = (askBoolean ("File name may not contain an extension. Edit filename ?", 'Y') == 'Y');
@@ -1056,7 +1057,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
             }
             if ((!error) && (*testStr) &&
                 ((strlen(testStr) > 2) || (testStr[1] != ':')) &&
-                ((fsfindfirst(testStr, &ffblkTest, FA_DIREC, fieldType & LFN) != 0) ||
+                ((findfirst(testStr, &ffblkTest, FA_DIREC) != 0) ||
                  ((ffblkTest.ff_attrib & FA_DIREC) == 0)))
             {
                if (askBoolean ("Path not found. Create ?", 'N') == 'Y')
@@ -1065,27 +1066,27 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                   while ((helpPtr = strchr(helpPtr, '\\')) != NULL)
                   {
                      *helpPtr = 0;
-                     fsmkdir (tempStr, fieldType & LFN);
+                     mkdir(tempStr);
                      *helpPtr++ = '\\';
                   }
-                  if ((fsfindfirst(testStr, &ffblkTest, FA_DIREC, fieldType & LFN) != 0) ||
+                  if ((findfirst(testStr, &ffblkTest, FA_DIREC) != 0) ||
                       ((ffblkTest.ff_attrib & FA_DIREC) == 0))
                   {
                      error = 1;
-                     redo = (askBoolean ("Can't create subdirectory. Edit path ?", 'Y') == 'Y');
+                     redo = askBoolean("Can't create subdirectory. Edit path ?", 'Y') == 'Y';
                   }
                }
                else
                {
                   error = 1;
                   if ((fieldType & MASK) == FILE_NAME)
-                     redo = (askBoolean ("Edit filename ?", 'Y') == 'Y');
+                     redo = askBoolean("Edit filename ?", 'Y') == 'Y';
                   else
-                     redo = (askBoolean ("Edit path ?", 'Y') == 'Y');
+                     redo = askBoolean("Edit path ?", 'Y') == 'Y';
                }
             }
             if ((!redo) && ((fieldType & MASK) == FILE_NAME) &&
-                ((fsfindfirst(tempStr, &ffblkTest, FA_DIREC, fieldType & LFN) == 0) &&
+                ((findfirst(tempStr, &ffblkTest, FA_DIREC) == 0) &&
                   (ffblkTest.ff_attrib & FA_DIREC))
                )
             {
@@ -2041,7 +2042,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
 
                                  sprintf(tempStr2, "%s%s", configPath, menu->menuEntry[count].data);
 
-                                 if ( !fsfindfirst(tempStr2, &ffblk, 0, menu->menuEntry[count].entryType & LFN) )
+                                 if (!findfirst(tempStr2, &ffblk, 0))
                                     break;
                                  displayMessage("File not found");
                                  strcpy(menu->menuEntry[count].data, tempStr);
@@ -2477,24 +2478,23 @@ char *getDestFileName (char *title)
 
    if (*fileNameStr)
    {
-      fnsplit (fileNameStr, drive, dir, file, ext);
+      fnsplit(fileNameStr, drive, dir, file, ext);
       if ((strcmp (file, "FMAIL") == 0) &&
           ((strcmp (ext, ".AR") == 0)  || (strcmp (ext, ".NOD") == 0) ||
            (strcmp (ext, ".PCK") == 0) || (strcmp (ext, ".CFG") == 0) ||
            (strcmp (ext, ".DUP") == 0) || (strcmp (ext, ".LOG") == 0)))
       {
-                        displayMessage ("Can't write to FMail system files");
+         displayMessage ("Can't write to FMail system files");
          *fileNameStr = 0;
       }
    }
    if ((*fileNameStr) &&
-       (findfirst (fileNameStr, &testBlk,
-                   FA_RDONLY|FA_HIDDEN|FA_SYSTEM|/*FA_LABEL|*/FA_DIREC/*|FA_ARCH*/) == 0) &&
+       (findfirst(fileNameStr, &testBlk, FA_RDONLY|FA_HIDDEN|FA_SYSTEM|FA_DIREC) == 0) &&
        (askBoolean ("File already exists. Overwrite ?", 'N') != 'Y'))
    {
       *fileNameStr = 0;
    }
-   return (fileNameStr);
+   return fileNameStr;
 }
 
 
@@ -2751,8 +2751,7 @@ void askRemoveDir(char *path)
    do
         {
       strcpy(stpcpy(mask, path), "\\*.*");
-      if ((!findfirst(path, &ffblk, FA_DIREC)) &&
-                         (ffblk.ff_attrib & FA_DIREC) &&
+      if ((!findfirst(path, &ffblk, FA_DIREC)) && (ffblk.ff_attrib & FA_DIREC) &&
           (findfirst(mask, &ffblk, 0)) &&
           (again || askBoolean("Delete empty path ?", 'Y') == 'Y'))
       {
@@ -2781,17 +2780,18 @@ void askRemoveJAM(char *msgBasePath)
 
    helpPtr = stpcpy(tempStr, msgBasePath);
    strcpy(helpPtr, ".J*");
-   if (*msgBasePath && !fsfindfirst(tempStr, &ffblkJAM, 0, 1) &&
-    (askBoolean("Delete JAM files of this area ?", 'Y') == 'Y'))
+   if (  *msgBasePath && !findfirst(tempStr, &ffblkJAM, 0)
+      && askBoolean("Delete JAM files of this area ?", 'Y') == 'Y'
+      )
    {
       strcpy(helpPtr, EXT_IDXFILE);
-      fsunlink(tempStr, 1);
+      unlink(tempStr);
       strcpy(helpPtr, EXT_HDRFILE);
-      fsunlink(tempStr, 1);
+      unlink(tempStr);
       strcpy(helpPtr, EXT_TXTFILE);
-      fsunlink(tempStr, 1);
+      unlink(tempStr);
       strcpy(helpPtr, EXT_LRDFILE);
-      fsunlink(tempStr, 1);
+      unlink(tempStr);
       if ((helpPtr = strrchr(msgBasePath, '\\')) != NULL)
       {  *helpPtr = 0;
          askRemoveDir(msgBasePath);

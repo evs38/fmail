@@ -56,9 +56,9 @@ typedef struct
 
 
 extern configType config;
-extern char configPath[128];
+extern char configPath[FILENAME_MAX];
 
-static wildCards;
+static int wildCards;
 
 
 s16 packValid (nodeNumType *node, char *packedNodes)
