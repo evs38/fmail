@@ -1,23 +1,26 @@
-/*
- *  Copyright (C) 2007 Folkert J. Wijnstra
- *
- *
- *  This file is part of FMail.
- *
- *  FMail is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  FMail is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+#ifndef imfolderH
+#define imfolderH
+//---------------------------------------------------------------------------
+//
+//  Copyright (C) 2007         Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2016  Wilfred van Velzen
+//
+//  This file is part of FMail.
+//
+//  FMail is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FMail is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//---------------------------------------------------------------------------
 
 
 /*
@@ -75,6 +78,8 @@
 #define F_JAM       4
 #define F_PASSTHRU  5
 
+#include <pshpack1.h>
+
 /*
 **  Folder structure
 **
@@ -82,27 +87,27 @@
 */
 
 typedef struct
-    {
-    uchar    path[65];      /* Path if "board==0", otherwise empty (65) */
-    uchar    ftype;         /* Folder type                              */
-    uchar    areatag[39];   /* Echomail area tag                        */
-    uchar    origin;        /* Default origin line, 0-19                */
-    uchar    title[41];     /* Title to appear on screen                */
-    uchar    useaka;        /* AKA to use, 0==primary                   */
-    u16      board;         /* QuickBBS/RemoteAccess/WC conf number     */
-    u16      upzone;        /* Uplink zone                              */
-    u16      upnet;         /* Uplink net                               */
-    u16      upnode;        /* Uplink node                              */
-    u16      uppoint;       /* Uplink point                             */
-    u32      behave;        /* Behavior, see above                      */
-    u32      hiwater;       /* Highwater mark for echomail              */
-    u32      pwdcrc;        /* CRC32 of password or -1L if unprotected  */
-    u32      userok;        /* Users with initial access                */
-    u32      accflags;      /* access flags, for network environment    */
-    u32      timestamp;     /* Time stamp for detecting msg base updates*/
-    uchar    reserved[4];   /* for future expansion                     */
-    }
-    IMFOLDER;
+{
+  char     path[65];      /* Path if "board==0", otherwise empty (65) */
+  u8       ftype;         /* Folder type                              */
+  char     areatag[39];   /* Echomail area tag                        */
+  u8       origin;        /* Default origin line, 0-19                */
+  char     title[41];     /* Title to appear on screen                */
+  u8       useaka;        /* AKA to use, 0==primary                   */
+  u16      board;         /* QuickBBS/RemoteAccess/WC conf number     */
+  u16      upzone;        /* Uplink zone                              */
+  u16      upnet;         /* Uplink net                               */
+  u16      upnode;        /* Uplink node                              */
+  u16      uppoint;       /* Uplink point                             */
+  u32      behave;        /* Behavior, see above                      */
+  u32      hiwater;       /* Highwater mark for echomail              */
+  u32      pwdcrc;        /* CRC32 of password or -1L if unprotected  */
+  u32      userok;        /* Users with initial access                */
+  u32      accflags;      /* access flags, for network environment    */
+  u32      timestamp;     /* Time stamp for detecting msg base updates*/
+  u8       reserved[4];   /* for future expansion                     */
+
+} IMFOLDER;
 
 //  The following struct was used in IM 2.00-2.25, file name FOLDER.CFG.
 //
@@ -119,4 +124,8 @@ typedef struct
 //    }
 //    OLDFOLDER, far *OLDFOLDERPTR;
 
+#include <poppack.h>
+
 /* end of file "folder.h" */
+
+#endif

@@ -147,7 +147,7 @@ s16 packValid(nodeNumType *node, char *packedNodes)
         if (nodeTempStr[count + 1] != 0)
         {
           free(buf);
-          logEntry ("Asterisk only allowed as last character of node number", LOG_ALWAYS, 4);
+          logEntry("Asterisk only allowed as last character of node number", LOG_ALWAYS, 4);
         }
 
         nodeTempStr[count] = 0;
@@ -235,7 +235,6 @@ static void processPackLine(char *line, s32 switches)
   u16         count;
   char        destType;
   nodeNumType destNode;
-  tempStrType tempStr;
   int         lineLen = strlen(line);
   char       *lineBuf = malloc(lineLen + 16);
   char       *helpPtr;
@@ -264,10 +263,7 @@ static void processPackLine(char *line, s32 switches)
            || (helpPtr[1] != 'I' && helpPtr[1] != 'L' && helpPtr[1] != 'C' && helpPtr[1] != 'H' && helpPtr[1] != 'O')
            || helpPtr[2] != 0
            )
-        {
-          sprintf(tempStr, "Bad switch in Pack Manager: %s", helpPtr);
-          logEntry(tempStr, LOG_ALWAYS, 0);
-        }
+          flogEntry(LOG_ALWAYS, 0, "Bad switch in Pack Manager: %s", helpPtr);
         else
           switches |= 1L << (helpPtr[1] - 'A');
 

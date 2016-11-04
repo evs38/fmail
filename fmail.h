@@ -76,7 +76,10 @@
 #define TINY_PATH_SIZE 128
 #define NORM_PATH_SIZE 1024
 
-#define dEXTTMP  "$$$"
+#define dEXTTMP        "$$$"
+#define dECHOMAIL_JAM  "echomail.jam"
+#define dFMAIL_LOC     "fmail.loc"
+#define dFMAIL32_DUP   "fmail32.dup"
 
 extern long       gmtOffset;
 extern time_t     startTime;
@@ -279,7 +282,6 @@ typedef struct
 #define _K_ALTY_  0x1500
 #define _K_ALTZ_  0x2C00
 
-extern s16 breakPressed;
 extern internalMsgType *message;
 
 u16 getAreaCode(char *msgText);

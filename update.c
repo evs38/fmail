@@ -32,10 +32,12 @@
 #include "fmail.h"
 
 #include "areainfo.h"
+#include "bits.h"
 #include "cfgfile.h"
 #include "fdfolder.h"
 #include "fs_util.h"
 #include "imfolder.h"
+#include "minmax.h"
 #include "msgra.h"
 #include "utils.h"
 #include "version.h"
@@ -81,6 +83,7 @@ extern configType config;
 //extern windowLookType windowLook;
 extern char configPath[FILENAME_MAX];
 
+#include <pshpack1.h>
 
 typedef struct
 {
@@ -137,10 +140,9 @@ typedef struct
 
 /*---------------------------------------------------------------------------*/
 
-typedef char     Byte;
-typedef char     Boolean;
+typedef int8_t   Byte;
+typedef int8_t   Boolean;
 typedef u16      Word;
-typedef unsigned bit;
 
 typedef struct      /* Fidonet Style Address (23 Bytes) */
 {
@@ -171,29 +173,28 @@ typedef Byte NoYesForcedType;   /* Message section type */
 
 typedef struct      /* Set of Fido attr flags */
 {
-  bit fPrivate : 1;                   /* Private */
-  bit fCrash : 1;                     /* Crash */
-  bit fReceived : 1;                  /* Received */
-  bit fSent : 1;                      /* Sent */
-  bit fFileAttached : 1;              /* File attach */
-  bit fInTransit : 1;                 /* In-transit */
-  bit fOrphan : 1;                    /* Orphan */
-  bit fKillSent : 1;                  /* Kill/sent */
-  bit fLocal : 1;                     /* Local */
-  bit fHoldForPickup : 1;             /* Hold */
-  bit fUnusedBit10 : 1;               /* Reserved */
-  bit fFileRequest : 1;               /* File request */
-  bit fReturnReceiptRequest : 1;      /* Return receipt request */
-  bit fIsReturnReceipt : 1;           /* Return receipt */
-  bit fAuditRequest : 1;              /* Audit request */
-  bit fFileUpdateRequest : 1;         /* File update request */
-  bit fRaDeleted : 1;
-  bit fRaNetPendingExport : 1;
-  bit fRaNetmailMessage : 1;
-  bit fRaEchoPendingExport : 1;
-  bit unused : 12;
-}
-MsgAttrFlagSet;
+  u32 fPrivate : 1;                   /* Private */
+  u32 fCrash : 1;                     /* Crash */
+  u32 fReceived : 1;                  /* Received */
+  u32 fSent : 1;                      /* Sent */
+  u32 fFileAttached : 1;              /* File attach */
+  u32 fInTransit : 1;                 /* In-transit */
+  u32 fOrphan : 1;                    /* Orphan */
+  u32 fKillSent : 1;                  /* Kill/sent */
+  u32 fLocal : 1;                     /* Local */
+  u32 fHoldForPickup : 1;             /* Hold */
+  u32 fUnusedBit10 : 1;               /* Reserved */
+  u32 fFileRequest : 1;               /* File request */
+  u32 fReturnReceiptRequest : 1;      /* Return receipt request */
+  u32 fIsReturnReceipt : 1;           /* Return receipt */
+  u32 fAuditRequest : 1;              /* Audit request */
+  u32 fFileUpdateRequest : 1;         /* File update request */
+  u32 fRaDeleted : 1;
+  u32 fRaNetPendingExport : 1;
+  u32 fRaNetmailMessage : 1;
+  u32 fRaEchoPendingExport : 1;
+  u32 unused : 12;
+} MsgAttrFlagSet;
 
 #define UUMBBSTYLE      0       /* Private Mail Board */
 #define LOCALSTYLE      1       /* Local Board */
@@ -247,7 +248,7 @@ typedef struct      /* Message boards - MBOARDS.DAT */
   /* Message Board SubOpts List  - Up to 10 - User Numbers */
   /*********************************************************/
 
-  s16  SubOps[MAXSUBOPS+1];    /* SubOps - Item 0 = How many */
+  s16  SubOps[MAXSUBOPS + 1];    /* SubOps - Item 0 = How many */
 
   char EchoTagLen;
   char EchoTag[32];               /* Echo Tag for Writing ECHOMAIL.BBS */
@@ -282,44 +283,45 @@ typedef struct      /* Message boards - MBOARDS.DAT */
 
 typedef struct
 {
-  u16 areaNum;              /* # of message area (1-10000)                    */
-  u16 hudsonBase;           /* Number of Hudson message base                  */
-  uchar name[81];             /* Name of message area                           */
-  uchar msgType;              /* Kind of message area (Net/Echo/Local)          */
-  uchar msgKind;              /* Type of message (Private only/Public only/...) */
-  uchar msgBaseType;          /* Type of message base                           */
-  uchar path[81];             /* Path to Squish or *.MSG                        */
-  uchar flags;                /* Alias allowed/forced/prohibited                */
-  u16 readLevel;            /* Minimum level needed to read msgs              */
-  u32 readFlags;     /* flags needed to read msgs                      */
-  u32 readFlagsNot;  /* flags non-grata to read msgs                   */
-  u16 writeLevel;           /* Minimum level needed to write msgs             */
-  u32 writeFlags;    /* flags needed to write msgs                     */
-  u32 writeFlagsNot; /* flags non-grata to read msgs                   */
-  u16 sysopLevel;           /* Minimum level needed to change msgs            */
-  u32 sysopFlags;    /* flags needed to change msgs                    */
-  u32 sysopFlagsNot; /* flags non-grata to read msgs                   */
+  u16  areaNum;              /* # of message area (1-10000)                    */
+  u16  hudsonBase;           /* Number of Hudson message base                  */
+  char name[81];             /* Name of message area                           */
+  u8   msgType;              /* Kind of message area (Net/Echo/Local)          */
+  u8   msgKind;              /* Type of message (Private only/Public only/...) */
+  u8   msgBaseType;          /* Type of message base                           */
+  char path[81];             /* Path to Squish or *.MSG                        */
+  u8   flags;                /* Alias allowed/forced/prohibited                */
+  u16  readLevel;            /* Minimum level needed to read msgs              */
+  u32  readFlags;            /* flags needed to read msgs                      */
+  u32  readFlagsNot;         /* flags non-grata to read msgs                   */
+  u16  writeLevel;           /* Minimum level needed to write msgs             */
+  u32  writeFlags;           /* flags needed to write msgs                     */
+  u32  writeFlagsNot;        /* flags non-grata to read msgs                   */
+  u16  sysopLevel;           /* Minimum level needed to change msgs            */
+  u32  sysopFlags;           /* flags needed to change msgs                    */
+  u32  sysopFlagsNot;        /* flags non-grata to read msgs                   */
 
-  uchar origin[62];           /* Origin line                                    */
-  u16 aka;                   /* AKA                                            */
+  char origin[62];           /* Origin line                                    */
+  u16  aka;                  /* AKA                                            */
 
-  u16 rcvKillDays;          /* Kill received after xx days                    */
-  u16 msgKillDays;          /* Kill after xx days                             */
-  u16 maxMsgs;              /* Max # msgs                                     */
+  u16  rcvKillDays;          /* Kill received after xx days                    */
+  u16  msgKillDays;          /* Kill after xx days                             */
+  u16  maxMsgs;              /* Max # msgs                                     */
 
-  uchar sysop[36];            /* Area Sysop                                     */
+  char sysop[36];            /* Area Sysop                                     */
   u16  replyBoard;           /* Area number where replies should go            */
 
-  uchar echoTag[61];          /* Echomail Tag Name                              */
-  uchar qwkTag[13];           /* QWK Area Name                                  */
+  char echoTag[61];          /* Echomail Tag Name                              */
+  char qwkTag[13];           /* QWK Area Name                                  */
 
-  uchar groups[4];            /* Groups belonging to                            */
-  uchar allGroups;            /* Belongs to all groups                          */
-  uchar minAge;               /* Minimum age for this area                      */
+  u8   groups[4];            /* Groups belonging to                            */
+  u8   allGroups;            /* Belongs to all groups                          */
+  u8   minAge;               /* Minimum age for this area                      */
 
-  uchar extra[112];
+  u8   extra[112];
 } proBoardType;
 
+#include <poppack.h>
 
 #define MSGTYPE_BOTH     0 /* Private/Public */
 #define MSGTYPE_PVT      1 /* Private Only   */
@@ -379,8 +381,8 @@ static u32 bitSwap(u32 v)
 #define checkMax(v,max) ((v)>(max)?0:(v))
 
 
-typedef u16 aiType[MAX_AREAS];
-typedef u8 *anType[MAX_AREAS];
+typedef u16   aiType[MAX_AREAS];
+typedef char *anType[MAX_AREAS];
 
 
 void autoUpdate(void)
@@ -732,20 +734,15 @@ if (*config.autoGoldEdAreasPath != 0)
         {
           if (count == 0)
           {
-            fprintf (textFile, "AREADEF NETMAIL_MAIN         \x22%s\x22%*c Net Hudson %u %s (Loc)\n",
-                     *config.descrAKA[0]?config.descrAKA[0]:"Netmail Main",
-                     44-strlen(*config.descrAKA[0]?config.descrAKA[0]:"Netmail Main"), '0',
-                     config.netmailBoard[count],
-                     nodeStrP(&config.akaList[count].nodeNum));
+            const char *t = *config.descrAKA[0] ? config.descrAKA[0] : "Netmail Main";
+            fprintf( textFile, "AREADEF NETMAIL_MAIN         \x22%s\x22%*c Net Hudson %u %s (Loc)\n"
+                   , t, 44 - strlen(t), '0', config.netmailBoard[count], nodeStrP(&config.akaList[count].nodeNum));
           }
           else
           {
-            fprintf (textFile, "AREADEF NETMAIL_AKA_%-8u \x22""%s\x22%*c Net Hudson %u %s (Loc)\n",
-                     count,
-                     *config.descrAKA[count]?config.descrAKA[count]:"Netmail AKA (use comment)",
-                     44-strlen(*config.descrAKA[count]?config.descrAKA[count]:"Netmail AKA (use comment)"), '0',
-                     config.netmailBoard[count],
-                     nodeStrP(&config.akaList[count].nodeNum));
+            const char *t = *config.descrAKA[count] ? config.descrAKA[count] : "Netmail AKA (use comment)";
+            fprintf( textFile, "AREADEF NETMAIL_AKA_%-8u \x22""%s\x22%*c Net Hudson %u %s (Loc)\n"
+                   , count, t, 44 - strlen(t), '0', config.netmailBoard[count], nodeStrP(&config.akaList[count].nodeNum));
           }
         }
       }
@@ -801,9 +798,9 @@ if ( (*config.autoFolderFdPath ||
     for (count = 0; count < areaInfoCount; count++)
     {
       if ( !getRec(CFG_ECHOAREAS, count) ||
-           ((*areaNames)[count] = malloc(strlen(*areaBuf->comment?areaBuf->comment:areaBuf->areaName)+1)) == NULL )
+           ((*areaNames)[count] = malloc(strlen(*areaBuf->comment ? areaBuf->comment : areaBuf->areaName) + 1)) == NULL )
         goto error;
-      strcpy((*areaNames)[count], *areaBuf->comment?areaBuf->comment:areaBuf->areaName);
+      strcpy((*areaNames)[count], *areaBuf->comment ? areaBuf->comment : areaBuf->areaName);
     }
     for (count = 1; count < areaInfoCount; count++)
     {
@@ -813,8 +810,8 @@ if ( (*config.autoFolderFdPath ||
       while (low < high)
       {
         mid = (low + high) >> 1;
-        if ( stricmp (areaInfoNamePtr, (*areaNames)[mid]) > 0 )
-          low = mid+1;
+        if (stricmp(areaInfoNamePtr, (*areaNames)[mid]) > 0)
+          low = mid + 1;
         else
           high = mid;
       }
@@ -962,8 +959,8 @@ if (*config.autoFolderFdPath != 0)
 
             folderFdRec.useaka = count;
             folderFdRec.board  = config.netmailBoard[count];
-            folderFdRec.behave = FD_PRIVATE | FD_NETMAIL | FD_QUICKBBS | FD_EXPORT_OK |
-                                 (config.attrRA[count] & BIT0 ? FD_ECHO_INFO:0);
+            folderFdRec.behave = FD_PRIVATE | FD_NETMAIL | FD_QUICKBBS | FD_EXPORT_OK
+                               | (config.attrRA[count] & BIT0 ? FD_ECHO_INFO : 0);
             folderFdRec.userok = 0x03ff;
             folderFdRec.origin = min(count, 19);
             folderFdRec.pwdcrc = -1L;
@@ -1004,8 +1001,7 @@ if (*config.autoFolderFdPath != 0)
     }
     else
     {
-      if (*config.sentPath &&
-          !strcmp (config.sentPath, config.rcvdPath))
+      if (*config.sentPath && !strcmp(config.sentPath, config.rcvdPath))
       {
         memset (&folderImRec, 0, sizeof(IMFOLDER));
         strcpy (folderImRec.title, "Sent/Received netmail");
@@ -1239,8 +1235,8 @@ if (*config.autoRAPath != 0)
           TAGBoardRec.Mstyle  = LOCALSTYLE;
           TAGBoardRec.Mtype   = FIDOFORMAT;
           TAGBoardRec.AccessAR = '@';
-          TAGBoardRec.AccessSL = 32000;
-          TAGBoardRec.PostSL   = 32000;
+          TAGBoardRec.AccessSL = 0;   // was 32000, maar dit is een byte...?
+          TAGBoardRec.PostSL   = 0;   // was 32000, maar dit is een byte...?
           /*                TAGBoardRec.MsgCount = 0; */
           TAGBoardRec.MaxMsgs  = 0;
           TAGBoardRec.uuMaxOld = 0;
@@ -2274,7 +2270,7 @@ if (*config.autoRAPath != 0)
             proBoardRec.flags     = areaBuf->attrRA & BIT3 ?
                                     ((areaBuf->attrRA & BIT5) ? 3 : 1) : 0;
             proBoardRec.replyBoard = areaBuf->netReplyBoardRA;
-            strcpy (proBoardRec.origin, areaBuf->originLine);
+            strcpy(proBoardRec.origin, areaBuf->originLine);
 
             proBoardRec.aka    = areaBuf->address; //checkMax(areaBuf->address, 10);
             proBoardRec.rcvKillDays = areaBuf->daysRcvd;

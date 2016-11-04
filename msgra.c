@@ -258,8 +258,7 @@ s16 multiUpdate(void)
       if (filelength(srcTxtHandle) + filelength(destTxtHandle) >= 0x1000000L)
       {
          logEntry("Maximum message base size has been reached (text size)", LOG_ALWAYS, 0);
-         sprintf(tempStr, "- new txt size: %lu, orig txt size: %lu", filelength(srcTxtHandle), filelength(destTxtHandle));
-         logEntry(tempStr, LOG_ALWAYS, 0);
+         flogEntry(LOG_ALWAYS, 0, "- new txt size: %lu, orig txt size: %lu", filelength(srcTxtHandle), filelength(destTxtHandle));
          close(destTxtHandle);
          close(destToIdxHandle);
          close(destIdxHandle);
@@ -457,7 +456,7 @@ static void writeMsgInfo(u16 orgName)
 
    if ( ((msgInfoHandle = open(expandNameHudson(dMSGINFO, orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
         write (msgInfoHandle, &infoRecValid, sizeof(infoRecType)) == -1 )
-      logEntry ("Can't open file "dMSGINFO"."MBEXTN" for output", LOG_ALWAYS, 1);
+      logEntry("Can't open file "dMSGINFO"."MBEXTN" for output", LOG_ALWAYS, 1);
 
    close(msgInfoHandle);
 }
@@ -470,7 +469,7 @@ void openBBSWr(u16 orgName)
        ((msgIdxBuf   = (msgIdxRec  *)malloc(HDR_BUFSIZE * sizeof(msgIdxRec))) == NULL) ||
        ((msgToIdxBuf = (msgToIdxRec*)malloc(HDR_BUFSIZE * sizeof(msgToIdxRec))) == NULL) ||
        ((msgTxtBuf   = (msgTxtRec  *)malloc(TXT_BUFSIZE * 256)) == NULL))
-      logEntry ("Not enough memory to allocate message base file buffers", LOG_ALWAYS, 2);
+      logEntry("Not enough memory to allocate message base file buffers", LOG_ALWAYS, 2);
 
    if ((msgHdrHandle = open(expandNameHudson(dMSGHDR, orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
@@ -478,17 +477,17 @@ void openBBSWr(u16 orgName)
    lseek(msgHdrHandle, 0, SEEK_END);
 
    if ((msgTxtHandle = open(expandNameHudson(dMSGTXT, orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
-      logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
+      logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgTxtHandle, 0, SEEK_END);
 
    if ((msgToIdxHandle = open(expandNameHudson(dMSGTOIDX, orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
-      logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
+      logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgToIdxHandle, 0, SEEK_END);
 
    if ((msgIdxHandle = open(expandNameHudson(dMSGIDX, orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
-      logEntry ("Can't open message base files for output", LOG_ALWAYS, 1);
+      logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgIdxHandle, 0, SEEK_END);
 
@@ -514,7 +513,6 @@ static s16 writeText (char *msgText, char *seenBy, char *path, u16 skip,
 {
    char *textPtr,
         *helpPtr;
-   tempStrType tempStr;
 
    // Skip AREA tag
    if (skip && (strncmp (msgText, "AREA:", 5) == 0))
@@ -574,8 +572,7 @@ static s16 writeText (char *msgText, char *seenBy, char *path, u16 skip,
       {
          newLine();
          logEntry("Maximum message base size has been reached (# records)", LOG_ALWAYS, 0);
-         sprintf(tempStr, "- new txt recs: %hu, orig txt recs: %hu", msgTxtRecNum, globVars.baseTotalTxtRecs);
-         logEntry(tempStr, LOG_ALWAYS, 0);
+         flogEntry(LOG_ALWAYS, 0, "- new txt recs: %hu, orig txt recs: %hu", msgTxtRecNum, globVars.baseTotalTxtRecs);
          return 1;
       }
       (*numRecs)++;
@@ -603,7 +600,7 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, u16 impSeenBy)
       if ( (s16)(msgRa.MsgNum = ++infoRec.HighMsg) < 0 )
 #endif
       {
-         logEntry ("Highest allowed message number has been reached", LOG_ALWAYS, 0);
+         logEntry("Highest allowed message number has been reached", LOG_ALWAYS, 0);
          return 1;
       }
       if ( !infoRec.LowMsg || msgRa.MsgNum < infoRec.LowMsg )
@@ -907,7 +904,7 @@ static s16 processMsg(u16 areaIndex)
          if (!jam_writemsg(echoAreaList[areaIndex].JAMdirPtr, message, 0))
          {
            newLine();
-           logEntry ("Can't write JAM message", LOG_ALWAYS, 0);
+           logEntry("Can't write JAM message", LOG_ALWAYS, 0);
            diskError = DERR_WRJECHO;
          }
          globVars.jamCountV++;
@@ -1049,21 +1046,26 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
    msgTxtRec   txtRa;
    s16         count;
    char       *helpPtr;
-   tempStrType tempStr;
    int         temp;
 
    returnTimeSlice(0);
 
-   if (lseek(msgHdrHandle, index * (u32)sizeof(msgHdrRec), SEEK_SET) == -1)
+   if (lseek(msgHdrHandle, index * (u32)sizeof(msgHdrRec), SEEK_SET) < 0)
       return 0;
+#ifdef _DEBUG
+  {
+    struct stat statbuf;
+    if (fstat(msgHdrHandle, &statbuf) != 0)
+      flogEntry(LOG_DEBUG, 0, "DEBUG fstat error on msgHdrHandle=%d, error=%s", msgHdrHandle, strError(errno));
 
+    flogEntry(LOG_DEBUG, 0, "DEBUG before read "dMSGHDR"."MBEXTN": handle=%d, &msgRa=%p, sizeof(msgHdrRec)=%u", msgHdrHandle, &msgRa, sizeof(msgHdrRec));
+  }
+#endif // _DEBUG
    if ((temp = read(msgHdrHandle, &msgRa, sizeof(msgHdrRec))) != sizeof(msgHdrRec))
    {
       if (temp != 0)
-      {
-        sprintf(tempStr, "Can't read "dMSGHDR"."MBEXTN", index=%u, filelength=%ld, sizeof-record=%u, read=%d, error=%s", index, filelength(msgHdrHandle), sizeof(msgHdrRec), temp, strError(errno));
-        logEntry(tempStr, LOG_ALWAYS, 0);
-      }
+        flogEntry(LOG_ALWAYS, 0, "Can't read "dMSGHDR"."MBEXTN", index=%u, filelength=%ld, sizeof-record=%u, read=%d, error=%s", index, filelength(msgHdrHandle), sizeof(msgHdrRec), temp, strError(errno));
+
       return 0;
    }
 
@@ -1084,9 +1086,7 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
       if ((u32)msgRa.NumRecs > ((u32)((u32)TEXT_SIZE - 2048) >> 8))
       {
          putchar('\r');
-         sprintf(tempStr, "Message too big: message #%u in board #%u "dARROW" Skipped",
-                           msgRa.MsgNum, (u16)msgRa.Board);
-         logEntry(tempStr, LOG_ALWAYS, 0);
+         flogEntry(LOG_ALWAYS, 0, "Message too big: message #%u in board #%u "dARROW" Skipped", msgRa.MsgNum, (u16)msgRa.Board);
          return -1;
       }
 
@@ -1100,9 +1100,7 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
                    &message->hours, &message->minutes) != 0)
       {
          putchar('\r');
-         sprintf(tempStr, "Bad date in message base: message #%u in board #%u "dARROW" Skipped",
-                           msgRa.MsgNum, msgRa.Board);
-         logEntry(tempStr, LOG_MSGBASE, 0);
+         flogEntry(LOG_MSGBASE, 0, "Bad date in message base: message #%u in board #%u "dARROW" Skipped", msgRa.MsgNum, msgRa.Board);
          return -1;
       }
 
@@ -1248,7 +1246,7 @@ s16 updateCurrHdrBBS(internalMsgType *message)
          strcat(tempStr, dMSGIDX"."MBEXTN);
 
          if ((tempHandle = open(tempStr, O_RDWR | O_BINARY)) == -1)
-            logEntry ("Can't open message base files for update", LOG_ALWAYS, 1);
+            logEntry("Can't open message base files for update", LOG_ALWAYS, 1);
 
          lseek(tempHandle, recNum*(u32)sizeof(msgIdxRec), SEEK_SET);
          write(tempHandle, &deletedFlag, 2);
@@ -1258,7 +1256,7 @@ s16 updateCurrHdrBBS(internalMsgType *message)
          strcat(tempStr, dMSGTOIDX"."MBEXTN);
 
          if ((tempHandle = open(tempStr, O_RDWR | O_BINARY)) == -1)
-            logEntry ("Can't open message base files for update", LOG_ALWAYS, 1);
+            logEntry("Can't open message base files for update", LOG_ALWAYS, 1);
 
          lseek(tempHandle, recNum*(u32)sizeof(msgToIdxRec), SEEK_SET);
          write(tempHandle, "\x0b* Deleted *", 12);
@@ -1391,8 +1389,7 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
     if ((tempHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1)
       return (-1);
 
-    sprintf(tempStr, "Scanning for messages in HUDSON area: %s", echoAreaList[echoIndex].areaName);
-    logEntry(tempStr, LOG_ALWAYS, 0);
+    flogEntry(LOG_ALWAYS, 0, "Scanning for messages in HUDSON area: %s", echoAreaList[echoIndex].areaName);
 
     sprintf(tempStr2, "AREA:%s\r\1RESCANNED", echoAreaList[echoIndex].areaName);
     setViaStr(tempStr, tempStr2, echoAreaList[echoIndex].address);
@@ -1418,18 +1415,6 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
                && scanBBS(index, message, 1) == echoAreaList[echoIndex].board
                )
             {
-#ifdef _DEBUG0
-              {
-                char fname[64];
-                sprintf(fname, "DEBUG %08lx_rescanned_hudson.msg", uniqueID());
-                logEntry(fname, LOG_DEBUG, 0);
-                if ((tempHandle = open(fname, O_WRONLY | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) != -1)
-                {
-                  write(tempHandle, message->text, strlen(message->text));
-                  close(tempHandle);
-                }
-              }
-#endif
               addPathSeenBy(message, echoToNode[echoIndex], echoIndex, &nodeInfo->node);
               setSeenByPath(message, NULL, echoAreaList[echoIndex].options, nodeInfo->options);
               message->srcNode  = *getAkaNodeNum(echoAreaList[echoIndex].address, 1);
@@ -1458,8 +1443,7 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
   sprintf(tempStr, "Rescanned %u messages in area %s", msgsFound, echoAreaList[echoIndex].areaName);
   mgrLogEntry(tempStr);
 #ifdef _DEBUG
-  sprintf(tempStr2, "DEBUG %s", tempStr);
-  logEntry(tempStr2, LOG_DEBUG, 0);
+  flogEntry(LOG_DEBUG, 0, "DEBUG %s", tempStr);
 #endif
   strcat(tempStr, "\r");
   write(msgHandle1, tempStr, strlen(tempStr));

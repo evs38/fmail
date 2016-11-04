@@ -30,9 +30,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-#ifdef __MINGW32__
-#include <windef.h>  // min() max()
-#endif // __MINGW32__
 
 #include "areafix.h"
 
@@ -43,6 +40,7 @@
 #include "config.h"
 #include "crc.h"
 #include "log.h"
+#include "minmax.h"
 #include "msgmsg.h"
 #include "msgpkt.h"
 #include "msgra.h"
@@ -119,7 +117,6 @@ static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
          , *copyPtr
          , *tag
          , *descr;
-  tempStrType tempStr;
 
   if (nodeInfoPtr->options.forwardReq)
   {
@@ -127,10 +124,7 @@ static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
     do
     {
       if (config.uplinkReq[count].originAka >= MAX_AKAS)
-      {
-        sprintf(tempStr, "Bad origin AKA defined for Uplink #%u", count);
-        logEntry(tempStr, LOG_ALWAYS, 0);
-      }
+        flogEntry(LOG_ALWAYS, 0, "Bad origin AKA defined for Uplink #%u", count);
       else if (config.uplinkReq[count].node.zone &&
                ((nodeInfoPtr->groups & config.uplinkReq[count].groups) != 0))
       {
@@ -1482,8 +1476,7 @@ Send:
     fhandle msgHandle1 = -1
           , msgHandle2 = -1;
 #ifdef _DEBUG0
-    sprintf(tempStr, "DEBUG Rescan AreaFix start %s %lu.msg %lu.msg", config.netPath, msgNum1, msgNum2);
-    logEntry(tempStr, LOG_DEBUG, 0);
+    flogEntry(LOG_DEBUG, 0, "DEBUG Rescan AreaFix start %s %lu.msg %lu.msg", config.netPath, msgNum1, msgNum2);
 #endif
     if (msgNum1)
     {

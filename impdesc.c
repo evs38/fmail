@@ -29,15 +29,13 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-#ifdef __MINGW32__
-#include <windef.h>    // min() max()
-#endif // __MINGW32__
 
 #include "fmail.h"
 
 #include "cfgfile.h"
 #include "ftlog.h"
 #include "impdesc.h"
+#include "minmax.h"
 
 //---------------------------------------------------------------------------
 char *findCLiStr (char *s1, char *s2);

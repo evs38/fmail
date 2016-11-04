@@ -30,15 +30,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#ifdef __MINGW32__
-#include <windef.h>    // min() max()
-#endif // __MINGW32__
 
 #include "fmail.h"
 
 #include "areainfo.h"
 #include "crc.h"
 #include "log.h"
+#include "minmax.h"
 #include "msgpkt.h"
 #include "msgra.h"    // expandName()
 #include "msgradef.h"
@@ -140,7 +138,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
           ((sli_bsTimeStampLo = (u16*)calloc(newTotalMsgBBS, 2)) == NULL))
       {
          close (msgHdrHandle);
-         logEntry ("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
+         logEntry("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
          return;
       }
    }
@@ -151,8 +149,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
          || (sli_nextReply = (u16*)calloc(newTotalMsgBBS, 2)) == NULL
          )
       {
-         close (msgHdrHandle);
-         logEntry ("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
+         close(msgHdrHandle);
+         logEntry("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
          goto exit3;
       }
    }
@@ -166,8 +164,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
        ((msgIdxBuf        = (msgIdxRec  *)malloc(HDR_BUFSIZE * sizeof(msgIdxRec))) == NULL) ||
        ((msgToIdxBuf      = (msgToIdxRec*)malloc(HDR_BUFSIZE * sizeof(msgToIdxRec))) == NULL))
    {
-      close (msgHdrHandle);
-      logEntry ("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
+      close(msgHdrHandle);
+      logEntry("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
       goto exit2;
    }
 
@@ -178,7 +176,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       returnTimeSlice(0);
       if (bufCount == HDR_BUFSIZE)
       {
-         printf("%3u%%\b\b\b\b", (u16)((s32) 100 * count / newTotalMsgBBS));
+//       printf("%3u%%\b\b\b\b", (u16)((s32) 100 * count / newTotalMsgBBS));
 
          read(msgHdrHandle, msgHdrBuf, HDR_BUFSIZE * sizeof(msgHdrRec));
          bufCount = 0;
@@ -211,10 +209,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
                else
                {
                   putchar('\n');
-                  sprintf(tempStr1, "Bad date in message base: message #%u in board #%u",
-                                     msgHdrBuf[bufCount].MsgNum,
-                                     msgHdrBuf[bufCount].Board);
-                  logEntry(tempStr1, LOG_MSGBASE, 0);
+                  flogEntry(LOG_MSGBASE, 0, "Bad date in message base: message #%u in board #%u", msgHdrBuf[bufCount].MsgNum, msgHdrBuf[bufCount].Board);
                   sli_bsTimeStampHi[count] = 0;
                   sli_bsTimeStampLo[count] = 0;
                }
@@ -234,7 +229,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       bufCount++;
    }
    close(msgHdrHandle);
-   puts("100%");
+// puts("100%");
 
    if (config.mbOptions.sortNew)
    {
@@ -246,7 +241,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       for (count = origTotalMsgBBS + 1; count < newTotalMsgBBS; count++)
       {
          returnTimeSlice(0);
-         printf("%3u%%\b\b\b\b", (u16)((s32)100 * (count - origTotalMsgBBS - 1) / (newTotalMsgBBS - origTotalMsgBBS - 1)));
+//       printf("%3u%%\b\b\b\b", (u16)((s32)100 * (count - origTotalMsgBBS - 1) / (newTotalMsgBBS - origTotalMsgBBS - 1)));
 
          temp = sli_recNum[count];
          low = origTotalMsgBBS;
@@ -294,7 +289,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
                   (count-low) << 1);
          sli_recNum[low] = temp;
       }
-      puts("100%");
+//    puts("100%");
 
       if (origTotalMsgBBS != 0)
          temp = sli_msgNum[sli_recNum[origTotalMsgBBS-1]] + 1;
@@ -318,7 +313,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       for (count = 1; count <= MBBOARDS; count++)
       {
          returnTimeSlice(0);
-         printf("%3u%%\b\b\b\b", count >> 1);
+//       printf("%3u%%\b\b\b\b", count >> 1);
 
          p = areaSubjChain[count];
          while (p != 0xffff)
@@ -342,7 +337,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
                sli_prevReply[temp] = 0;
          }
       }
-      puts("100%");
+//    puts("100%");
    } // End Link
 
    if (config.mbOptions.sortNew)
@@ -366,9 +361,9 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
           ((msgHdrHandle = open(tempStr3, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
           ((oldHdrHandle = open(tempStr1, O_RDONLY | O_BINARY)) == -1))
       {
-         close (msgHdrHandle);
+         close(msgHdrHandle);
          newLine();
-         logEntry ("Can't create sorted/linked message files", LOG_ALWAYS, 0);
+         logEntry("Can't create sorted/linked message files", LOG_ALWAYS, 0);
          goto exit1;
       }
       bufCount = HDR_BUFSIZE;
@@ -377,7 +372,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
          returnTimeSlice(0);
          if (bufCount == HDR_BUFSIZE)
          {
-            printf("%3u%%\b\b\b\b", (u16)((s32)100 * count / newTotalMsgBBS));
+//          printf("%3u%%\b\b\b\b", (u16)((s32)100 * count / newTotalMsgBBS));
 
             if (count != 0)
             {
@@ -439,7 +434,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       close(msgToIdxHandle);
       close(msgIdxHandle);
 
-      puts("100%");
+//    puts("100%");
 
       if (temp)
       {
@@ -487,7 +482,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
              (bufCount = (read(oldHdrHandle, msgHdrBuf, HDR_BUFSIZE * sizeof(msgHdrRec)) + 1) / sizeof(msgHdrRec)) != 0)
       {
          returnTimeSlice(0);
-         printf("%3u%%\b\b\b\b", (u16)((s32)100 * count / newTotalMsgBBS));
+//       printf("%3u%%\b\b\b\b", (u16)((s32)100 * count / newTotalMsgBBS));
 
          for (p = 0; p < bufCount; p++)
          {
@@ -496,7 +491,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
          }
          write(msgHdrHandle, msgHdrBuf, bufCount * sizeof(msgHdrRec));
       }
-      puts("100%");
+//    puts("100%");
       close(oldHdrHandle);
       close(msgHdrHandle);
 #ifndef FTOOLS

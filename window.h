@@ -1,3 +1,5 @@
+#ifndef __fmail_windows_h
+#define __fmail_windows_h
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
@@ -21,8 +23,9 @@
 //
 //---------------------------------------------------------------------------
 
-#ifndef __fmail_windows_h
-#define __fmail_windows_h
+#include "bits.h"
+
+//---------------------------------------------------------------------------
 
 #define WB_DOUBLE_H      1
 #define WB_DOUBLE_V      2
@@ -68,39 +71,12 @@
 
 #define MASK        0x07ff
 
-
-
 #define FAKE             1
 
 #define MAX_WINDOWS    100
 #define MAX_ENTRIES     40 /* was 36 */
 
 
-#define BIT0   0x0001
-#define BIT1   0x0002
-#define BIT2   0x0004
-#define BIT3   0x0008
-#define BIT4   0x0010
-#define BIT5   0x0020
-#define BIT6   0x0040
-#define BIT7   0x0080
-#define BIT8   0x0100
-#define BIT9   0x0200
-#define BIT10  0x0400
-#define BIT11  0x0800
-#define BIT12  0x1000
-#define BIT13  0x2000
-#define BIT14  0x4000
-#define BIT15  0x8000
-
-
-#ifndef NULL
-#if defined(__TINY__) || defined(__SMALL__) || defined(__MEDIUM__)
-#define NULL	0
-#else
-#define NULL	0L
-#endif
-#endif
 
 
 #define COLOR_BLINK     0x08
@@ -172,11 +148,7 @@ typedef struct
   uchar   *prompt;
   uchar    key;
   u16      offset;
-#ifndef __32BIT__
-  void     far *data;
-#else
   void     *data;
-#endif
   u16      selected;
   u16      par1
          , par2;
@@ -220,141 +192,20 @@ typedef struct
 
 #define testInit() if (initMagic != 0x4657) initWindow(0);
 
-
-#ifndef __32BIT__
-#define showCharNA(px, py, chr)  screen[(py) * columns + (px)].ch = (chr)
-
-#define showChar(px, py, chr, att, matt)         \
-{                                                \
-  screen[(py) * columns + (px)].ch = (chr);      \
-  if (color)                                     \
-    screen[(py) * columns + (px)].attr = (att);  \
-  else                                           \
-    screen[(py) * columns + (px)].attr = (matt); \
-}
-
-#define shadow(px, py)                           \
-{                                                \
-  if (color)                                     \
-    screen[(py) * columns + px].attr = DARKGRAY; \
-}
-
-#define changeColor(px, py, att, matt)   \
-{                                        \
-  if (color)                             \
-    screen[(py)*columns+px].attr = att;  \
-  else                                   \
-    screen[(py)*columns+px].attr = matt; \
-}
-
-#define getChar(px, py)             (screen[(py) * columns + (px)].ch)
-
-#if 0
-#define getColor(px, py, att, matt) (screen[(py) * columns + (px)].attr)
-#endif
-#else
-//void  showCharNA (int x, int y, int chr);
 void  showChar   (int x, int y, int chr, int att, int matt);
 void  shadow     (int x, int y);
 void  changeColor(int x, int y, int att, int matt);
 uchar getChar    (int x, int y);
-#if 0
-uchar getColor   (int x, int y, int att, int matt);
-#endif
-#endif
 
 #define calcAttr(fgc, bgc)  (((fgc) & 0x0F) | (((bgc) & 0x0F) << 4))
 
-#ifdef __OS2__
-
-#define removeCursor       \
-{                          \
-   VIOCURSORINFO vci;      \
-   VioSetCurPos(1, 1, 0);  \
-   vci.yStart = 0x0000;    \
-   vci.cEnd = 0x0000;      \
-   vci.cx = 0;             \
-   vci.attr = 0xFFFF;      \
-   VioSetCurType(&vci, 0); \
-}
-
-#define locateCursor(px,py)  VioSetCurPos(py, px, 0);
-
-#define smallCursor()      \
-{                          \
-   VIOCURSORINFO vci;      \
-   vci.yStart = 14;        \
-   vci.cEnd = 15;          \
-   vci.cx = 1;             \
-   vci.attr = 0x0000;      \
-   VioSetCurType(&vci, 0); \
-}
-
-#define largeCursor()      \
-{                          \
-   VIOCURSORINFO vci;      \
-   vci.yStart = 11;        \
-   vci.cEnd = 15;          \
-   vci.cx = 1;             \
-   vci.attr = 0x0000;      \
-   VioSetCurType(&vci, 0); \
-}
-
-#else
-
 void locateCursor(int x, int y);
 
-#ifndef __32BIT__
-#define removeCursor()  \
-{                       \
-   _BH = 0x00;          \
-   _DX = 0x0101;        \
-   _AH = 0x02;          \
-   geninterrupt(0x10);  \
-   _CX = 0x2000;        \
-   _AH = 0x01;          \
-   geninterrupt(0x10);  \
-}
-
-#define smallCursor()   \
-{                       \
-   if (cga)             \
-   {                    \
-      _CH = 6;          \
-      _CL = 7;          \
-   }                    \
-   else                 \
-   {                    \
-     _CH = 11;          \
-     _CL = 12;          \
-   }                    \
-   _AH = 0x01;          \
-   geninterrupt(0x10);  \
-}
-
-#define largeCursor()   \
-{                       \
-   if (cga)             \
-   {                    \
-      _CH = 4;          \
-      _CL = 7;          \
-   }                    \
-   else                 \
-   {                    \
-     _CH =  9;          \
-     _CL = 12;          \
-   }                    \
-   _AH = 0x01;          \
-   geninterrupt(0x10);  \
-}
-#else
 #define removeCursor() _setcursortype(_NOCURSOR)
 #define smallCursor()  _setcursortype(_NORMALCURSOR)
 #define largeCursor()  _setcursortype(_SOLIDCURSOR)
 
-#endif
-#endif
-
+//---------------------------------------------------------------------------
 u16  readKbd(void);
 void initWindow(u16 mode);
 menuType *createMenu(char *title);
@@ -405,4 +256,5 @@ void restoreWindowLook(void);
 void askRemoveDir(char *path);
 void askRemoveJAM(char *msgBasePath);
 
+//---------------------------------------------------------------------------
 #endif // __fmail_windows_h

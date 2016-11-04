@@ -30,9 +30,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-#ifdef __MINGW32__
-#include <windef.h>    // min() max()
-#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -43,6 +40,7 @@
 #include "jamfun.h"
 #include "lock.h"
 #include "log.h"
+#include "minmax.h"
 #include "msgpkt.h"
 #include "mtask.h"
 #include "stpcpy.h"
@@ -247,19 +245,11 @@ u16 jam_initmsghdrrec(JAMHDR *jam_msghdrrec, internalMsgType *message, u16 local
   tm.tm_isdst = -1;
   jam_msghdrrec->DateWritten = mktime(&tm) + gmtOffset;
 
-  ti = time(NULL);  // TODO is DateProcessed in Jam message is right?
-#if 0
-  jam_msghdrrec->DateProcessed = mktime(localtime(&timer));
-#else
-#ifdef _DEBUG
-  {
-    tempStrType tempStr;
-    sprintf(tempStr, "DEBUG time: %ld %s", ti, time_t2str(ti));
-    logEntry(tempStr, LOG_DEBUG, 0);
-  }
+  ti = time(NULL);
+#ifdef _DEBUG0
+  flogEntry(LOG_DEBUG, 0, "DEBUG DateProcessed time: %ld %s", ti, time_t2str(ti));
 #endif
   jam_msghdrrec->DateProcessed = ti + gmtOffset;
-#endif
   jam_msghdrrec->Attribute = (local ? (MSG_LOCAL|MSG_TYPEECHO) : MSG_TYPEECHO)
                            | ((message->attribute & PRIVATE) ? MSG_PRIVATE : 0);
   jam_msghdrrec->MsgNum = filelength(jam_idxhandle) / sizeof(JAMIDXREC) + 1;
@@ -576,13 +566,11 @@ u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_su
     return 0;
   if (message != NULL)
   {
-    struct tm *tm = gmtime((const time_t *)&jam_hdrrec->DateWritten);
+    struct tm *tm = gmtime((const time_t *)&jam_hdrrec->DateWritten);  // TODO test if this needs to be localtime? + gmtOffset?
     if (tm == NULL)
     {
-#ifdef _DEBUG
-      tempStrType tempStr;
-      sprintf(tempStr, "DEBUG jam_gethdr, illegal DateWritten: %d on MsgNum: %d", jam_hdrrec->DateWritten, jam_hdrrec->MsgNum);
-      logEntry(tempStr, LOG_DEBUG, 0);
+#ifdef _DEBUG0
+      flogEntry(LOG_DEBUG, 0, "DEBUG jam_gethdr, illegal DateWritten: %d on MsgNum: %d", jam_hdrrec->DateWritten, jam_hdrrec->MsgNum);
 #endif // _DEBUG
       message->year    = 1970;
       message->month   = 1;
@@ -733,10 +721,9 @@ u32 jam_incmsgcount(u32 jam_code)
                 return 0;
         return 1;
 }
-
-
+//---------------------------------------------------------------------------
 // !!! jam_writemsg moet gevolgd worden door jam_close() of jam_closeall() !!!
-
+//
 u32 jam_writemsg(char *msgbasename, internalMsgType *message, u16 local)
 {
   u32         jam_code = 0;
@@ -751,7 +738,6 @@ u32 jam_writemsg(char *msgbasename, internalMsgType *message, u16 local)
     jam_close(JAMCODE);
 
   if (!jam_baseopen && !(jam_code = jam_open(msgbasename, &jam_hdrinforec)))
-    //logEntry("jam_writemsg 1", LOG_ALWAYS, 0);
     return 0;
 
   if (!jam_getlock(jam_code))
@@ -770,11 +756,11 @@ u32 jam_writemsg(char *msgbasename, internalMsgType *message, u16 local)
   // create/update ECHOMAIL.JAM
   if (local)
   {
-    char    tempStr[80];
-    fhandle handle;
-    int     len;
+    tempStrType tempStr;
+    fhandle     handle;
+    int         len;
 
-    strcpy(stpcpy(tempStr, config.bbsPath), "echomail.jam");
+    strcpy(stpcpy(tempStr, config.bbsPath), dECHOMAIL_JAM);
     if ((handle = open(tempStr, O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
     {
       len = sprintf(tempStr, "%s %u\r\n", msgbasename, msgNum);

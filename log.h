@@ -24,6 +24,7 @@
 //---------------------------------------------------------------------------
 
 void initLog    (s32 switches);
+void flogEntry  (u16 entryType, u16 errorLevel, const char *fmt, ...);
 void logEntry   (const char *s, u16 entryType, u16 errorLevel);
 void mgrLogEntry(const char *s);
 void logActive  (void);

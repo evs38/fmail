@@ -101,7 +101,7 @@ void openDup(void)
    if ( config.kDupRecs < 16 )
       config.kDupRecs = 16;
 
-   strcpy(stpcpy(tempPath, configPath), "fmail32.dup");
+   strcpy(stpcpy(tempPath, configPath), dFMAIL32_DUP);
 
    if (  (dupHandle = open(tempPath, O_RDONLY | O_BINARY)) == -1
       || read(dupHandle, &dupHdr, sizeof(dupHdrStruct)) != sizeof(dupHdrStruct)
@@ -250,7 +250,7 @@ void closeDup(void)
   }
   memcpy(dupHdr.nextDup, nextDupOld, sizeof(dupHdr.nextDup));
 
-  strcpy(stpcpy(tempPath, configPath), "fmail32.dup");
+  strcpy(stpcpy(tempPath, configPath), dFMAIL32_DUP);
 
   if (  (dupHandle = open(tempPath, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1
      || write(dupHandle, &dupHdr, sizeof(dupHdrStruct)) != sizeof(dupHdrStruct)

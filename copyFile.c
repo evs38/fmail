@@ -1,6 +1,7 @@
 #ifdef __linux__
 #include "copyFile.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,7 +19,7 @@ int copyFile(const char *src, const char *dst, int failIfExists)
     , ou_fd = -1
     , t_errno;
 
-  if ((in_fd = open(src, O_RDONLY) >= 0)
+  if ((in_fd = open(src, O_RDONLY)) >= 0)
   {
     // Advise the OS, so it can do optimal read ahead
     if ((errno = posix_fadvise(in_fd, 0, 0, POSIX_FADV_SEQUENTIAL)) == 0)

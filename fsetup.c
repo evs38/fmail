@@ -598,8 +598,8 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  strcpy(tempStr2, strcpy(tempStr, config.bbsPath));
-  strcat(tempStr, "fmail.loc");
+  strcpy(stpcpy(tempStr, config.bbsPath), dFMAIL_LOC);
+  strcpy(tempStr2, config.bbsPath);
   if ((helpPtr = strrchr(tempStr2, '\\')) != NULL)
     *helpPtr = 0;
 

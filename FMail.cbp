@@ -12,7 +12,7 @@
 				<Option object_output="obj/FMail/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="PACK" />
+				<Option parameters="SCAN /S" />
 				<Compiler>
 					<Add option="-mtune=generic" />
 					<Add option="-g" />
@@ -55,7 +55,6 @@
 			<Add option="-DFMAIL" />
 			<Add option="-D__32BIT__" />
 			<Add option="-D__STDIO__" />
-			<Add option="-D__PENTIUMPRO__" />
 		</Compiler>
 		<Linker>
 			<Add option="-m32" />
@@ -135,6 +134,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="log.h" />
+		<Unit filename="minmax.h" />
 		<Unit filename="msgmsg.c">
 			<Option compilerVar="CC" />
 		</Unit>

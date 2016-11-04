@@ -1,5 +1,3 @@
-/* os2 */
-
 /*
 **  folder.h (FrontDoor)
 **
@@ -25,7 +23,7 @@
 #define FD_USE_XLAT    0x00000008L
 #define FD_PRIVATE     0x00000010L
 #define FD_READONLY    0x00000020L
-#define FD_JAMAREA    0x01000000L
+#define FD_JAMAREA     0x01000000L
 #define FD_NETMAIL     0x08000000L
 #define FD_QUICKBBS    0x10000000L
 #define FD_DELETED     0x20000000L         /* Never written to disk */
@@ -48,22 +46,24 @@
 #define USER_10     0x00000200L
 
 
+#include <pshpack1.h>
 /*
 **  Folder structure
 **
 **  The "path" and "title" fields below are NUL terminated.
 */
 typedef struct
-    {
-    uchar   path[65],       /* Path if "board==0", otherwise emtpy */
-            title[41];      /* Title to appear on screen */
-    uchar   origin;         /* Default origin line, 0-19 */
-    s32     behave;         /* Behavior, see above */
-    s32     pwdcrc;         /* CRC32 of password or -1L if unprotected */
-    s32     userok;         /* Users with initial access */
-    uchar   useaka;         /* AKA to use, 0==primary */
-    u16     board;          /* QuickBBS/RemoteAccess board number */
-    }
-    FOLDER, *FOLDERPTR;
+{
+  char    path [65],      /* Path if "board==0", otherwise emtpy */
+          title[41];      /* Title to appear on screen */
+  u8      origin;         /* Default origin line, 0-19 */
+  s32     behave;         /* Behavior, see above */
+  s32     pwdcrc;         /* CRC32 of password or -1L if unprotected */
+  s32     userok;         /* Users with initial access */
+  u8      useaka;         /* AKA to use, 0==primary */
+  u16     board;          /* QuickBBS/RemoteAccess board number */
 
+} FOLDER, *FOLDERPTR;
+
+#include <poppack.h>
 /* end of file "folder.h" */

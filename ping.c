@@ -98,16 +98,14 @@ int Ping(internalMsgType *message, int localAkaNum)
 {
   u32              msgLen;
   s32              msgNum;
-  tempStrType      tempStr
-                ,  replyStr;
+  tempStrType      replyStr;
   char            *helpPtr
                 , *helpPtr2;
   internalMsgType *replyMsg;
   char            *funcText = localAkaNum >= 0 ? "PING" : "TRACE";
 
 #ifdef _DEBUG
-  sprintf(tempStr, "DEBUG Processing PING message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
-  logEntry(tempStr, LOG_DEBUG, 0);
+  flogEntry(LOG_DEBUG, 0, "DEBUG Processing PING message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
 #endif
 
   // Maak de replyMsg aan de hand van de lengte van het ontvangen bericht.
@@ -214,8 +212,7 @@ int Ping(internalMsgType *message, int localAkaNum)
 
   free(replyMsg);
 
-  sprintf(tempStr, "Processed PING request message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
-  logEntry(tempStr, LOG_ALWAYS, 0);
+  flogEntry(LOG_ALWAYS, 0, "Processed PING request message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
 
   return msgNum < 0;
 }

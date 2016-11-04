@@ -109,7 +109,7 @@ static int sendsmtp_msg(void)
 
   if ((dir = opendir(config.netPath)) != NULL)
   {
-    while ((ent = readdir(dir)) != NULL && !breakPressed)
+    while ((ent = readdir(dir)) != NULL)
     {
       if (!match_spec("*.msg", ent->d_name))
         continue;

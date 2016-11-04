@@ -29,70 +29,70 @@
 
 typedef struct
 {
-   uchar    nameLength;
-   uchar    name[40];
-   uchar    typ;
-   uchar    msgKinds;
-   uchar    attribute;   /* Bit 0 : Enable EchoInfo
-                                1 : Combined access
-                                2 : File attaches
-                                3 : Allow aliases
-                                5 : Force handle
-                                6 : Deletes (FJ) */
-   uchar    daysKill;
-   uchar    rcvdKill;
-   u16      countKill;
-   u16      readSecurity;
-   uchar    readFlags[4];
-   u16      writeSecurity;
-   uchar    writeFlags[4];
-   u16      sysopSecurity;
-   uchar    sysopFlags[4];
-   uchar    originLength;
-   uchar    origin[60];
-   uchar    akaAddress;
+  u8       nameLength;
+  char     name[40];
+  u8       typ;
+  u8       msgKinds;
+  u8       attribute;   /* Bit 0 : Enable EchoInfo
+                              1 : Combined access
+                              2 : File attaches
+                              3 : Allow aliases
+                              5 : Force handle
+                              6 : Deletes (FJ) */
+  u8       daysKill;
+  u8       rcvdKill;
+  u16      countKill;
+  u16      readSecurity;
+  u8       readFlags[4];
+  u16      writeSecurity;
+  u8       writeFlags[4];
+  u16      sysopSecurity;
+  u8       sysopFlags[4];
+  u8       originLength;
+  char     origin[60];
+  u8       akaAddress;
 } messageRaType;
 
 
 typedef struct
 {
-   u16      areanum;
-   uchar    unused[2];
-   uchar    nameLength;
-   uchar    name[40];
-   uchar    typ;
-   uchar    msgKinds;
-   uchar    attribute;   /* Bit 0 : Enable EchoInfo
-                                1 : Combined access
-                                2 : File attaches
-                                3 : Allow aliases
-                                4 : Use SoftCRs as characters RA2
-                                5 : Force handle
-                                6 : Allow deletes
-                                7 : Is a JAM area */
-   uchar    daysKill;
-   uchar    rcvdKill;
-   u16      countKill;
-   u16      readSecurity;
-   uchar    readFlags[4];
-   uchar    readNotFlags[4];
-   u16      writeSecurity;
-   uchar    writeFlags[4];
-   uchar    writeNotFlags[4];
-   u16      sysopSecurity;
-   uchar    sysopFlags[4];
-   uchar    sysopNotFlags[4];
-   uchar    originLength;
-   uchar    origin[60];
-   uchar    akaAddress;
-   uchar    age;
-   uchar    JAMbaseLength;
-   uchar    JAMbase[60];
-   u16      group;
-   u16      altGroup[3];
-   uchar    attribute2;  /* Bit 0 : Include in all groups */
-   u16      netReply; /* FJ */
-   uchar     freeSpace[7];
+  u16      areanum;
+  u8       unused[2];
+  u8       nameLength;
+  char     name[40];
+  u8       typ;
+  u8       msgKinds;
+  u8       attribute;   /* Bit 0 : Enable EchoInfo
+                              1 : Combined access
+                              2 : File attaches
+                              3 : Allow aliases
+                              4 : Use SoftCRs as characters RA2
+                              5 : Force handle
+                              6 : Allow deletes
+                              7 : Is a JAM area */
+  u8       daysKill;
+  u8       rcvdKill;
+  u16      countKill;
+  u16      readSecurity;
+  u8       readFlags[4];
+  u8       readNotFlags[4];
+  u16      writeSecurity;
+  u8       writeFlags[4];
+  u8       writeNotFlags[4];
+  u16      sysopSecurity;
+  u8       sysopFlags[4];
+  u8       sysopNotFlags[4];
+  u8       originLength;
+  char     origin[60];
+  u8       akaAddress;
+  u8       age;
+  u8       JAMbaseLength;
+  char     JAMbase[60];
+  u16      group;
+  u16      altGroup[3];
+  u8       attribute2;  /* Bit 0 : Include in all groups */
+  u16      netReply; /* FJ */
+  u8       freeSpace[7];
 } messageRa2Type;
 
 /* RA 2
@@ -265,7 +265,7 @@ typedef struct
                  DestNode,
                  OrigNet,
                  OrigNode;
-   uchar         DestZone,
+   u8            DestZone,
                  OrigZone;
    u16           Cost;
    u8            MsgAttr,
@@ -290,7 +290,7 @@ typedef struct
 typedef struct
 {
   u16   MsgNum;
-  uchar Board;
+  u8    Board;
 } msgIdxRec;
 
 typedef struct

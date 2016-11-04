@@ -41,8 +41,6 @@
 #include "msgradef.h"
 #include "utils.h"
 
-extern configType config;
-extern time_t     startTime;
 
 fhandle msgHdrHandle;
 fhandle msgTxtHandle;
@@ -143,8 +141,8 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
   }
     {
       time_t t = time(NULL);
-      struct tm *tm = localtime(&t);
-      sprintf ((char*)&msgRa.ptLength, "\x05%02d:%02d\x08%02d-%02d-%02d"
+      struct tm *tm = localtime(&t);  // localtime ok!
+      sprintf ((char*)&msgRa.ptLength, "\x05%02d:%02d\x08%02d-%02d-%02d"  // TODO does this need to be US date format?
                                      , tm->tm_hour, tm->tm_min, tm->tm_mon + 1, tm->tm_mday, tm->tm_year % 100);
 #ifdef _DEBUG
       logEntry("DEBUG writeBBS US time format written", LOG_DEBUG, 0);

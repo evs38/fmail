@@ -33,15 +33,13 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-#ifdef __MINGW32__
-#include <windef.h>    // min() max()
-#endif // __MINGW32__
 
 #include "fmail.h"
 
 #include "archive.h"
 #include "areainfo.h"
 #include "log.h"
+#include "minmax.h"
 #include "msgpkt.h"
 #include "mtask.h"
 #include "nodeinfo.h"
@@ -89,7 +87,7 @@ extern configType   config;
 void initPkt(void)
 {
   if ((pktRdBuf = (char*)malloc(PKT_BUFSIZE)) == NULL)
-    logEntry ("Error allocating memory for packet read buffer", LOG_ALWAYS, 2);
+    logEntry("Error allocating memory for packet read buffer", LOG_ALWAYS, 2);
 
   pmHdr.two = 2;
 
@@ -126,8 +124,7 @@ s16 openPktRd(char *pktName, s16 secure)
 
    if ((pktHandle = _sopen(pktName, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
    {
-      sprintf(tempStr, "Error opening packet file: %s", pktName);
-      logEntry(tempStr, LOG_ALWAYS, 0);
+      flogEntry(LOG_ALWAYS, 0, "Error opening packet file: %s", pktName);
 
       return 1;
    }
@@ -140,8 +137,7 @@ s16 openPktRd(char *pktName, s16 secure)
       strcpy(stpcpy(newPktName, pktName) - 3, "ERR");
       rename(pktName, newPktName);
 
-      sprintf(tempStr, "Error reading packet header in file: %s, renamed to: %s", pktName, newPktName);
-      logEntry(tempStr, LOG_ALWAYS, 0);
+      flogEntry(LOG_ALWAYS, 0, "Error reading packet header in file: %s, renamed to: %s", pktName, newPktName);
 
       return 1;
    }
@@ -184,8 +180,7 @@ s16 openPktRd(char *pktName, s16 secure)
          globVars.packetDestAka++;
 
 #ifdef _DEBUG0
-      sprintf(tempStr, "DEBUG Type 2+ dest zone: %d", msgPktHdr.destZone);
-      logEntry(tempStr, LOG_DEBUG, 0);
+      flogEntry(LOG_DEBUG, 0, "DEBUG Type 2+ dest zone: %d", msgPktHdr.destZone);
 #endif
       // FSC-0048 rev. 2
 
@@ -226,8 +221,7 @@ s16 openPktRd(char *pktName, s16 secure)
             globVars.packetDestAka++;
 
 #ifdef _DEBUG0
-         sprintf(tempStr, "DEBUG FSC-0045 dest AKA: %d", globVars.packetDestAka);
-         logEntry(tempStr, LOG_DEBUG, 0);
+         flogEntry(LOG_DEBUG, 0, "DEBUG FSC-0045 dest AKA: %d", globVars.packetDestAka);
 #endif
          globVars.packetSrcNode .net   = ((FSC45pktHdrType*)&msgPktHdr)->origNet;
          globVars.packetSrcNode .zone  = ((FSC45pktHdrType*)&msgPktHdr)->origZone;
@@ -256,8 +250,7 @@ s16 openPktRd(char *pktName, s16 secure)
             globVars.packetDestAka++;
 
 #ifdef _DEBUG0
-         sprintf(tempStr, "DEBUG Type 2 dest AKA: %d", globVars.packetDestAka);
-         logEntry(tempStr, LOG_DEBUG, 0);
+         flogEntry(LOG_DEBUG, 0, "DEBUG Type 2 dest AKA: %d", globVars.packetDestAka);
 #endif
          globVars.packetSrcNode .zone  = 0;
          globVars.packetSrcNode .net   = msgPktHdr.origNet;
@@ -280,13 +273,11 @@ s16 openPktRd(char *pktName, s16 secure)
          close(pktHandle);
          strcpy(stpcpy(tempStr, pktName) - 3, "DST");
          rename(pktName, tempStr);
-         sprintf(tempStr, "Packet is addressed to another node (%s) --> packet is renamed to .DST", nodeStr(&globVars.packetDestNode));
-         logEntry(tempStr, LOG_ALWAYS, 0);
+         flogEntry(LOG_ALWAYS, 0, "Packet is addressed to another node (%s) --> packet is renamed to .DST", nodeStr(&globVars.packetDestNode));
 
          return 2;  // Destination address not found
       }
-      sprintf(tempStr, "Packet is addressed to another node (%s)!", nodeStr(&globVars.packetDestNode));
-      logEntry(tempStr, LOG_ALWAYS, 0);
+      flogEntry(LOG_ALWAYS, 0, "Packet is addressed to another node (%s)!", nodeStr(&globVars.packetDestNode));
       globVars.packetDestAka = 0;
    }
 
@@ -306,9 +297,7 @@ s16 openPktRd(char *pktName, s16 secure)
          if (strcmp(nodeInfoPtr->packetPwd, password) != 0)
          {
             close(pktHandle);
-            sprintf(tempStr, "Received password \"%s\" from node %s, expected \"%s\"",
-                              password, nodeStr(&globVars.packetSrcNode), nodeInfoPtr->packetPwd);
-            logEntry(tempStr, LOG_ALWAYS, 0);
+            flogEntry(LOG_ALWAYS, 0, "Received password \"%s\" from node %s, expected \"%s\"", password, nodeStr(&globVars.packetSrcNode), nodeInfoPtr->packetPwd);
             strcpy(tempStr, pktName);
             strcpy(tempStr+strlen(tempStr)-3, "SEC");
             rename(pktName, tempStr);
@@ -322,11 +311,7 @@ s16 openPktRd(char *pktName, s16 secure)
       else
       {
          if (*password)
-         {
-            sprintf( tempStr, "Unexpected packet password \"%s\" from node %s"
-                   , password, nodeStr(&globVars.packetSrcNode));
-            logEntry(tempStr, LOG_UNEXPPWD, 0);
-         }
+            flogEntry(LOG_UNEXPPWD, 0, "Unexpected packet password \"%s\" from node %s", password, nodeStr(&globVars.packetSrcNode));
       }
    }
 
@@ -680,10 +665,7 @@ char *setSeenByPath( internalMsgType *msg, char *txtEnd
                    , areaOptionsType areaOptions, nodeOptionsType nodeOptions)
 {
 #ifdef _DEBUG0
-  tempStrType tempStr;
-
-  sprintf(tempStr, "DEBUG setSeenByPath areaOptions.tinySeenBy:%u nodeOptions.tinySeenBy:%u areaOptions.tinyPath:%u", areaOptions.tinySeenBy, nodeOptions.tinySeenBy, areaOptions.tinyPath);
-  logEntry(tempStr, LOG_DEBUG, 0);
+  flogEntry(LOG_DEBUG, 0, "DEBUG setSeenByPath areaOptions.tinySeenBy:%u nodeOptions.tinySeenBy:%u areaOptions.tinyPath:%u", areaOptions.tinySeenBy, nodeOptions.tinySeenBy, areaOptions.tinyPath);
 #endif
 
   if (NULL == txtEnd)
@@ -856,7 +838,7 @@ s16 validateEchoPktWr(void)
          if (((tempLen[count] = filelength(nodeFileInfo[count]->pktHandle)) == -1) ||
              (close(nodeFileInfo[count]->pktHandle) == -1))
          {
-            logEntry ("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
+            logEntry("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
             return 1;
          }
          nodeFileInfo[count]->pktHandle = 0;
@@ -873,7 +855,7 @@ s16 validateEchoPktWr(void)
                 ((tempLen[count] = filelength(tempHandle)) == -1) ||
                 (close(tempHandle) == -1))
             {
-               logEntry ("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
+               logEntry("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
                return 1;
             }
          }
@@ -947,7 +929,7 @@ s16 closeEchoPktWr(void)
              (write(pktHandle, &zero, 2) != 2) ||
              (close(pktHandle) == -1))
          {
-            logEntry ("ERROR: Cannot adjust length of file", LOG_ALWAYS, 0);
+            logEntry("ERROR: Cannot adjust length of file", LOG_ALWAYS, 0);
             return 1;
          }
       }
@@ -1012,7 +994,7 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
       {
          if (openPktWr (nfInfo) == -1)
          {
-            logEntry ("Cannot create new netmail PKT file", LOG_ALWAYS, 0);
+            logEntry("Cannot create new netmail PKT file", LOG_ALWAYS, 0);
             return 1;
          }
       }
@@ -1021,7 +1003,7 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
          if ((nfInfo->pktHandle = _sopen(nfInfo->pktFileName, O_WRONLY | O_BINARY, SH_DENYRW)) == -1)
          {
             nfInfo->pktHandle = 0;
-            logEntry ("Cannot open netmail PKT file", LOG_ALWAYS, 0);
+            logEntry("Cannot open netmail PKT file", LOG_ALWAYS, 0);
             return 1;
          }
          lseek(nfInfo->pktHandle, 0, SEEK_END);
@@ -1072,7 +1054,7 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
    if ((tempLen = filelength(pktHandle)) == -1)
    {
       close(pktHandle);
-      logEntry ("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
+      logEntry("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
       nfInfo->pktHandle = 0;
 
       return 1;
@@ -1106,7 +1088,7 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
 
    if (error)
    {
-      logEntry ("ERROR: Cannot write to PKT file", LOG_ALWAYS, 0);
+      logEntry("ERROR: Cannot write to PKT file", LOG_ALWAYS, 0);
 
       return 1;
    }
@@ -1137,7 +1119,7 @@ s16 closeNetPktWr(nodeFileRecType *nfInfo)
             (write (pktHandle, &zero, 2) != 2) ||
             (close(pktHandle) == -1))
       {
-         logEntry ("ERROR: Cannot adjust length of file", LOG_ALWAYS, 0);
+         logEntry("ERROR: Cannot adjust length of file", LOG_ALWAYS, 0);
          return 1;
       }
 

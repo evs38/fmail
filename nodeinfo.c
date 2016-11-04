@@ -27,9 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#ifdef __MINGW32__
-#include <windef.h>    // min() max()
-#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -39,6 +36,7 @@
 #include "cfgfile.h"
 #include "config.h"
 #include "log.h"
+#include "minmax.h"
 #include "msgmsg.h"
 #include "utils.h"
 #include "version.h"
@@ -66,7 +64,7 @@ void initNodeInfo(void)
   for (count = 0; count < nodeCount; count++)
   {
     if ((nodeInfo[count] = (nodeInfoType*)malloc(sizeof(nodeInfoType))) == NULL)
-      logEntry ("Not enough memory available", LOG_ALWAYS, 2);
+      logEntry("Not enough memory available", LOG_ALWAYS, 2);
 
     getRec(CFG_NODES, count);
     memcpy(nodeInfo[count], nodeBuf, sizeof(nodeInfoType));

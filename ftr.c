@@ -33,9 +33,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-#ifdef __MINGW32__
-#include <windef.h>    // min() max()
-#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -45,6 +42,7 @@
 #include "ftools.h"
 #include "ftr.h"
 #include "ftlog.h"
+#include "minmax.h"
 #include "msgmsg.h"
 #include "msgra.h"
 #include "spec.h"
@@ -127,7 +125,7 @@ s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16
 
   {
     time_t t = time(NULL);
-    struct tm *tm = localtime(&t);
+    struct tm *tm = localtime(&t);  // localtime ok!
 
     sprintf( msgMsg.dateTime, "%02u %.3s %02u  %02u:%02u:%02u"
            , tm->tm_mday, months + (tm->tm_mon) * 3, tm->tm_year % 100

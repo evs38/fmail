@@ -212,6 +212,19 @@ void initLog(s32 switches)
   }
 }
 //---------------------------------------------------------------------------
+void flogEntry(u16 entryType, u16 errorLevel, const char *fmt, ...)
+{
+  char buf[1024];
+  va_list argptr;
+
+  va_start(argptr, fmt);
+  vsnprintf(buf, sizeof(buf) - 1, fmt, argptr);
+  buf[sizeof(buf) - 1] = 0;
+  va_end(argptr);
+
+  logEntry(buf, entryType, errorLevel);
+}
+//---------------------------------------------------------------------------
 void logEntry(const char *s, u16 entryType, u16 errorLevel)
 {
   fhandle     logHandle;

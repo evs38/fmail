@@ -68,6 +68,7 @@
 #define QBBS_RET_REC   64
 #define QBBS_FREQ     128
 
+#include <pshpack1.h>
 
 typedef struct
 {
@@ -182,6 +183,7 @@ typedef struct
 } infoRecType;
 
 #endif
+#include <poppack.h>
 
 void openBBSWr(void);
 void closeBBS (void);

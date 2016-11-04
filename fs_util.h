@@ -20,6 +20,6 @@
  */
 
 
-s32  getGroupCode    (uchar *groupString);
-char getGroupChar    (s32 groupCode);
+s32    getGroupCode  (uchar *groupString);
+char   getGroupChar  (s32 groupCode);
 uchar *getGroupString(s32 groupCode, uchar *groupString);

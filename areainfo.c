@@ -27,9 +27,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef __MINGW32__
-#include <windef.h>  // min() max()
-#endif // __MINGW32__
 
 #include "fmail.h"
 
@@ -38,6 +35,7 @@
 #include "cfgfile.h"
 #include "crc.h"
 #include "log.h"
+#include "minmax.h"
 #include "msgmsg.h"
 #include "nodeinfo.h"
 #include "time.h"
@@ -67,8 +65,7 @@ extern u16              status;
 //---------------------------------------------------------------------------
 s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
 {
-   tempStrType tempStr;
-   s16         errorDisplay = 0;
+   s16 errorDisplay = 0;
 
    memset(nfInfo, 0, sizeof(nodeFileRecType));
 
@@ -87,8 +84,7 @@ s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
 
    if (nfInfo->nodePtr->node.zone == 0)
    {
-      sprintf (tempStr, "Warning: Node %s is not defined in the node manager", nodeStr(&nfInfo->destNode4d));
-      logEntry (tempStr, LOG_ALWAYS, 0);
+      flogEntry(LOG_ALWAYS, 0, "Warning: Node %s is not defined in the node manager", nodeStr(&nfInfo->destNode4d));
       errorDisplay++;
    }
 
@@ -103,14 +99,10 @@ s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
           (nfInfo->destNode.point != 0))
       {
          if (nfInfo->srcAka)
-         {
-            sprintf (tempStr, "Warning: Fakenet not defined but required for AKA %u", nfInfo->srcAka);
-            logEntry (tempStr, LOG_ALWAYS, 0);
-         }
+            flogEntry(LOG_ALWAYS, 0, "Warning: Fakenet not defined but required for AKA %u", nfInfo->srcAka);
          else
-         {
-            logEntry ("Warning: Fakenet not defined but required for the main node number", LOG_ALWAYS, 0);
-	 }
+            logEntry("Warning: Fakenet not defined but required for the main node number", LOG_ALWAYS, 0);
+
          errorDisplay++;
       }
    }
@@ -159,18 +151,12 @@ void initAreaInfo(void)
     areaBuf->board   = min(areaBuf->board, MBBOARDS);
 
     if (echoCount == MAX_AREAS)
-    {
-       sprintf(tempStr, "More than %u areas listed in "dARFNAME, MAX_AREAS);
-       logEntry(tempStr, LOG_ALWAYS, 4);
-    }
+       flogEntry(LOG_ALWAYS, 4, "More than %u areas listed in "dARFNAME, MAX_AREAS);
 
     if (config.akaList[areaBuf->address].nodeNum.zone == 0)
     {
       error = 1;
-      sprintf(tempStr, "ERROR: Origin address of area %s (AKA %u) is not defined",
-      areaBuf->areaName,
-      areaBuf->address);
-      logEntry(tempStr, LOG_ALWAYS, 0);
+      flogEntry(LOG_ALWAYS, 0, "ERROR: Origin address of area %s (AKA %u) is not defined", areaBuf->areaName, areaBuf->address);
       errorDisplay++;
     }
 
@@ -195,7 +181,7 @@ void initAreaInfo(void)
     if (*areaBuf->msgBasePath)
     {
       if ((echoAreaList[echoCount].JAMdirPtr = (char*)malloc(strlen(areaBuf->msgBasePath) + 1)) == NULL)
-        logEntry ("Not enough memory available", LOG_ALWAYS, 2);
+        logEntry("Not enough memory available", LOG_ALWAYS, 2);
 
       strcpy(echoAreaList[echoCount].JAMdirPtr, areaBuf->msgBasePath);
     }
@@ -216,7 +202,7 @@ void initAreaInfo(void)
     if (olHelpPtr == NULL)
     {
       if ((olHelpPtr = (struct orgLineListType *)malloc(5 + strlen(areaBuf->originLine))) == NULL)
-        logEntry ("Not enough memory available", LOG_ALWAYS, 2);
+        logEntry("Not enough memory available", LOG_ALWAYS, 2);
 
       strcpy(olHelpPtr->originLine, areaBuf->originLine);
       olHelpPtr->next = orgLineListPtr;
@@ -241,8 +227,7 @@ void initAreaInfo(void)
 
       if (c < MAX_AKAS)
       {
-        sprintf(tempStr, "Warning: Can't forward area %s to a local AKA", areaBuf->areaName);
-        logEntry(tempStr, LOG_ALWAYS, 0);
+        flogEntry(LOG_ALWAYS, 0, "Warning: Can't forward area %s to a local AKA", areaBuf->areaName);
         errorDisplay++;
       }
       else
@@ -256,7 +241,7 @@ void initAreaInfo(void)
           c++;
 
         if (c >= MAX_OUTPKT)
-          logEntry ("Can't send mail to more than "MAX_OUTPKT_STR" nodes in one run", LOG_ALWAYS, 4);
+          logEntry("Can't send mail to more than "MAX_OUTPKT_STR" nodes in one run", LOG_ALWAYS, 4);
 
         if (c == forwNodeCount)
         {
@@ -328,7 +313,7 @@ void initAreaInfo(void)
     newLine();
 
   if (error != 0)
-    logEntry ("One or more origin addresses are not defined", LOG_ALWAYS, 4);
+    logEntry("One or more origin addresses are not defined", LOG_ALWAYS, 4);
 
   memset (message, 0, INTMSG_SIZE);
 
@@ -367,10 +352,7 @@ void initAreaInfo(void)
     {
       if (echoAreaList[count].options._reserved)
 	    {
-        sprintf(tempStr, "Area %s has been disconnected from %s",
-			  echoAreaList[count].areaName,
-			  nodeStr(&config.uplinkReq[echoAreaList[count].msgCount].node));
-	      logEntry (tempStr, LOG_ALWAYS, 0);
+	      flogEntry(LOG_ALWAYS, 0, "Area %s has been disconnected from %s", echoAreaList[count].areaName, nodeStr(&config.uplinkReq[echoAreaList[count].msgCount].node));
 	      helpPtr += sprintf (helpPtr, "%s\r", tempStr);
 
         echoAreaList[count].options._reserved = 0;
@@ -386,8 +368,7 @@ void initAreaInfo(void)
   for (count = 0; count < echoCount; count++)
   {
     const char *c = echoAreaList[count].JAMdirPtr != NULL ? echoAreaList[count].JAMdirPtr : "";
-    sprintf(tempStr, "DEBUG Area: %d '%s' '%s'", count, echoAreaList[count].areaName, c);
-    logEntry(tempStr, LOG_DEBUG, 0);
+    flogEntry(LOG_DEBUG, 0, "DEBUG Area: %d '%s' '%s'", count, echoAreaList[count].areaName, c);
   }
 #endif
 }
@@ -406,7 +387,7 @@ void deInitAreaInfo(void)
       free (helpPtr);
    }
    if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
-      logEntry ("Bad or missing "dARFNAME, LOG_ALWAYS, 1);
+      logEntry("Bad or missing "dARFNAME, LOG_ALWAYS, 1);
 
    for (count = 0; count < areaHeader->totalRecords; count++)
    {

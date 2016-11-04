@@ -155,8 +155,7 @@ udef process_bcl(char *fileName)
   strcpy(stpcpy(tempStr2, configPath), newFileName);
   if (!moveFile(tempStr, tempStr2))
   {
-    sprintf(tempStr, "New BCL file received from uplink %s", nodeStr(&tempNode));
-    logEntry(tempStr, LOG_ALWAYS, 0);
+    flogEntry(LOG_ALWAYS, 0, "New BCL file received from uplink %s", nodeStr(&tempNode));
     strcpy(stpcpy(tempStr, configPath), config.uplinkReq[index].fileName);
     LogFileDetails(tempStr , "Old:");
     unlink(tempStr);
@@ -225,9 +224,7 @@ void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInf
   sprintf(tempStr, "%s%08x."dEXTTMP, config.outPath, uniqueID());
   if ((helpHandle = open(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
   {
-    tempStrType logStr;
-    sprintf(logStr, "Creating BCL file for node %s: %s", nodeStr(destNode), tempStr);
-    logEntry(logStr, LOG_ALWAYS, 0);
+    flogEntry(LOG_ALWAYS, 0, "Creating BCL file for node %s: %s", nodeStr(destNode), tempStr);
 
     memset(&bcl_header, 0, sizeof(bcl_header));
     strcpy (bcl_header.FingerPrint, "BCL");

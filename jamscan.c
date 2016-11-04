@@ -108,33 +108,34 @@ u32 jam_scan(u16 echoIndex, u32 jam_msgnum, u16 scanOne, internalMsgType *messag
 //---------------------------------------------------------------------------
 u32 jam_update(u16 echoIndex, u32 jam_msgnum, internalMsgType *message)
 {
-   u32        jam_code;
+   u32         jam_code;
    JAMHDRINFO *jam_hdrinforec;
-   JAMHDR     jam_msghdrrec;
-   JAMIDXREC  jam_idxrec;
-// char       jam_subfields[_JAM_MAXSUBLENTOT];
-   u32        txtlen;
+   JAMHDR      jam_msghdrrec;
+   JAMIDXREC   jam_idxrec;
+// char        jam_subfields[_JAM_MAXSUBLENTOT];
+   u32         txtlen;
 
-   if ( !(jam_code = jam_open(echoAreaList[echoIndex].JAMdirPtr, &jam_hdrinforec)) )
+   if (!(jam_code = jam_open(echoAreaList[echoIndex].JAMdirPtr, &jam_hdrinforec)))
       return 0;
 
-   if ( jam_msgnum < jam_hdrinforec->BaseMsgNum )
+   if (jam_msgnum < jam_hdrinforec->BaseMsgNum)
    {
       jam_close(jam_code);
       return 0;
    }
 
-   if ( !jam_getlock(jam_code) )
+   if (!jam_getlock(jam_code))
    {
       jam_close(jam_code);
       return 0;
    }
 
-   if ( jam_getidx(jam_code, &jam_idxrec, jam_msgnum+1-jam_hdrinforec->BaseMsgNum) &&
-        jam_idxrec.HdrOffset != UINT32_MAX &&
-        jam_gethdr(jam_code, jam_idxrec.HdrOffset, &jam_msghdrrec, jam_subfields, NULL) )
+   if (  jam_getidx(jam_code, &jam_idxrec, jam_msgnum+1-jam_hdrinforec->BaseMsgNum)
+      && jam_idxrec.HdrOffset != UINT32_MAX
+      && jam_gethdr(jam_code, jam_idxrec.HdrOffset, &jam_msghdrrec, jam_subfields, NULL)
+      )
    {
-      if ( config.mbOptions.scanUpdate )
+      if (config.mbOptions.scanUpdate)
       {
          jam_msghdrrec.Attribute |= MSG_DELETED;
          txtlen = jam_msghdrrec.TxtLen;
@@ -180,8 +181,7 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   if (!(jam_code = jam_open(echoAreaList[echoIndex].JAMdirPtr, &jam_hdrinforec)))
     return 0;
 
-  sprintf(tempStr,"Scanning for messages in JAM area: %s", echoAreaList[echoIndex].areaName);
-  logEntry(tempStr, LOG_ALWAYS, 0);
+  flogEntry(LOG_ALWAYS, 0, "Scanning for messages in JAM area: %s", echoAreaList[echoIndex].areaName);
 
   sprintf(tempStr2, "AREA:%s\r\1RESCANNED", echoAreaList[echoIndex].areaName);
   setViaStr(tempStr, tempStr2, echoAreaList[echoIndex].address);

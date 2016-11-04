@@ -33,15 +33,13 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-#ifdef __MINGW32__
-#include <windef.h>    // min() max()
-#endif // __MINGW32__
 
 #include "fmail.h"
 
 #include "areafix.h"
 #include "areainfo.h"
 #include "log.h"
+#include "minmax.h"
 #include "msgmsg.h"
 //#include "msgpkt.h"  // for openP
 #include "nodeinfo.h"
@@ -77,8 +75,7 @@ s16 messagesMoved = 0;
 void moveMsg(char *msgName, char *destDir)
 {
   s32            highMsgNum = 0;
-  tempStrType    tempStr
-               , tempStr2;
+  tempStrType    tempStr;
   DIR           *dir;
   struct dirent *ent;
   static s32     highMsgNumSent = 0
@@ -109,8 +106,7 @@ void moveMsg(char *msgName, char *destDir)
     sprintf(tempStr, "%s%u.msg", destDir, (u32)++highMsgNum);
     if (!moveFile(msgName, tempStr))
     {
-      sprintf(tempStr2, "Moving %s to %s", msgName, tempStr);
-      logEntry(tempStr2, LOG_SENTRCVD, 0);
+      flogEntry(LOG_SENTRCVD, 0, "Moving %s to %s", msgName, tempStr);
       messagesMoved = 1;
     }
     if (destDir == config.sentPath)
@@ -132,8 +128,7 @@ static void removeTrunc(char *path)
                , pattern;
 
 #ifdef _DEBUG0
-  sprintf(fileNameStr, "DEBUG removeTrunc: %s", path);
-  logEntry(fileNameStr, LOG_DEBUG | LOG_NOSCRN, 0);
+  flogEntry(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG removeTrunc: %s", path);
 #endif
 
   if ((dir = opendir(path)) != NULL)
@@ -166,9 +161,7 @@ static void removeTrunc(char *path)
           {
             if (fileSize(fileNameStr) == 0 || count2 == fAttCount)
             {
-              tempStrType msg;
-              sprintf(msg, "Removing: %s", fileNameStr);
-              logEntry(msg, LOG_DEBUG, 0);
+              flogEntry(LOG_DEBUG, 0, "Removing: %s", fileNameStr);
               unlink(fileNameStr);
             }
           }
@@ -262,7 +255,7 @@ void initMsg(s16 noAreaFix)
 
   if ((dir = opendir(config.netPath)) != NULL)
   {
-    while ((ent = readdir(dir)) != NULL && !breakPressed)
+    while ((ent = readdir(dir)) != NULL)
     {
       if (!match_spec("*.msg", ent->d_name))
         continue;
@@ -290,8 +283,7 @@ void initMsg(s16 noAreaFix)
                && !unlink(fileNameStr)
                )
             {
-              sprintf(tempStr, "Killing empty netmail message #%u, from: %s to: %s", msgNum, msgMsg.fromUserName, msgMsg.toUserName);
-              logEntry(tempStr, LOG_SENTRCVD, 0);
+              flogEntry(LOG_SENTRCVD, 0, "Killing empty netmail message #%u, from: %s to: %s", msgNum, msgMsg.fromUserName, msgMsg.toUserName);
               messagesMoved = 1;
             }
             else
@@ -312,8 +304,7 @@ void initMsg(s16 noAreaFix)
                       emptyText(textStr) &&
                       !unlink(fileNameStr))
                   {
-                    sprintf(tempStr, "Attached file not found, killing ARCmail message #%u", msgNum);
-                    logEntry(tempStr, LOG_SENTRCVD, 0);
+                    flogEntry(LOG_SENTRCVD, 0, "Attached file not found, killing ARCmail message #%u", msgNum);
                     messagesMoved = 1;
                   }
                   else
@@ -477,8 +468,7 @@ void initMsg(s16 noAreaFix)
             {
               sprintf(fPtr, "%u.msg", pingMsgNum[count]);
               unlink(fileNameStr);
-              sprintf(tempStr, "Delete PING request message: %s", fileNameStr);
-              logEntry(tempStr, LOG_ALWAYS, 0);
+              flogEntry(LOG_ALWAYS, 0, "Delete PING request message: %s", fileNameStr);
             }
             else
               attribMsg(message->attribute | RECEIVED, pingMsgNum[count]);
@@ -516,11 +506,7 @@ void initMsg(s16 noAreaFix)
     bl = strlen(tempStr);
 
 #ifdef _DEBUG0
-    {
-      tempStrType dbStr;
-      sprintf(dbStr, "DEBUG initMsg: %s, %s", dirStr, tempStr);
-      logEntry(dbStr, LOG_DEBUG | LOG_NOSCRN, 0);
-    }
+    flogEntry(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG initMsg: %s, %s", dirStr, tempStr);
 #endif
 
     subRemTrunc(config.outPath);
@@ -550,11 +536,7 @@ void initMsg(s16 noAreaFix)
       closedir(dir);
     }
     else
-    {
-      tempStrType errStr;
-      sprintf(errStr, "*** Error opendir on: %s [%s]", dirStr, strError(errno));
-      logEntry(errStr, LOG_ALWAYS, 0);
-    }
+      flogEntry(LOG_ALWAYS, 0, "*** Error opendir on: %s [%s]", dirStr, strError(errno));
   }
   else
     removeTrunc(config.outPath);
@@ -597,8 +579,7 @@ u16 getFlags(char *text)
 //---------------------------------------------------------------------------
 s16 attribMsg(u16 attribute, s32 msgNum)
 {
-  tempStrType tempStr1
-            , tempStr2;
+  tempStrType tempStr1;
   fhandle     msgMsgHandle;
 
   sprintf(tempStr1, "%s%u.msg", config.netPath, msgNum);
@@ -608,8 +589,7 @@ s16 attribMsg(u16 attribute, s32 msgNum)
       (write(msgMsgHandle, &attribute, 2) != 2))
   {
     close(msgMsgHandle);
-    sprintf(tempStr2, "Can't update file %s", tempStr1);
-    logEntry(tempStr2, LOG_ALWAYS, 0);
+    flogEntry(LOG_ALWAYS, 0, "Can't update file %s", tempStr1);
     return -1;
   }
   close(msgMsgHandle);
@@ -628,8 +608,7 @@ extern u16           nodeCount;
 
 s16 readMsg(internalMsgType *message, s32 msgNum)
 {
-  tempStrType tempStr1
-            , tempStr2;
+  tempStrType tempStr1;
   fhandle     msgMsgHandle;
   char       *helpPtr;
   msgMsgType  msgMsg;
@@ -641,8 +620,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
 
   if ((msgMsgHandle = _sopen(tempStr1, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
   {
-    sprintf(tempStr2, "Can't open file %s", tempStr1);
-    logEntry(tempStr2, LOG_ALWAYS, 0);
+    flogEntry(LOG_ALWAYS, 0, "Can't open file %s", tempStr1);
     return -1;
   }
 
@@ -766,9 +744,6 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
   int            len;
   tempStrType    tempStr
                , tempFName
-#ifdef _DEBUG
-               , logStr
-#endif
                ;
   char          *helpPtr;
   s32            highMsgNum;
@@ -915,8 +890,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     close(msgHandle);
 
 #ifdef _DEBUG
-    sprintf(logStr, "DEBUG Message file writen: %s", tempStr);
-    logEntry(logStr, LOG_DEBUG, 0);
+    flogEntry(LOG_DEBUG, 0, "DEBUG Message file writen: %s", tempStr);
 #endif
 
     if (valid == 2)
@@ -1036,8 +1010,7 @@ void validateMsg(void)
 //---------------------------------------------------------------------------
 s16 fileAttach(char *fileName, nodeNumType *srcNd, nodeNumType *destNd, nodeInfoType *nodeInfo)
 {
-  tempStrType tempStr;
-  char       *helpPtr;
+  char *helpPtr;
 
   memset(message, 0, INTMSG_SIZE);
 
@@ -1076,8 +1049,7 @@ s16 fileAttach(char *fileName, nodeNumType *srcNd, nodeNumType *destNd, nodeInfo
   if (writeMsgLocal(message, NETMSG, 1) == -1)
     return 1;
 
-  sprintf(tempStr, "Created file attach netmail from %s to %s", nodeStr(srcNd), nodeStr(destNd));
-  logEntry(tempStr, LOG_OUTBOUND, 0);
+  flogEntry(LOG_OUTBOUND, 0, "Created file attach netmail from %s to %s", nodeStr(srcNd), nodeStr(destNd));
 
   return 0;
 }

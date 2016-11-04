@@ -3,6 +3,7 @@
 *.C~
 *.dsk
 *.exe
+*.layout
 *.tds
 *.~*
 /doc/fmail0.msg

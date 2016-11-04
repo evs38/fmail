@@ -85,7 +85,7 @@ void writeLogLine(fhandle logHandle, const char *s)
   }
 #else
   time_t timer = time(NULL);
-  tm = *gmtime(&timer);
+  tm = *localtime(&timer);  // localtime ok!
 #endif
 
   switch (config.logStyle)
@@ -142,8 +142,7 @@ void initLog(char *s, s32 switches)
 
   at = clock();
 
-  time(&startTime);
-  timeBlock = *gmtime(&startTime);
+  timeBlock = *localtime(&startTime);  // localtime ok!
 
   if (!*config.logName)
     config.logInfo = 0;
@@ -224,6 +223,19 @@ void initLog(char *s, s32 switches)
     close(logHandle);
   }
   logUsed++;
+}
+//---------------------------------------------------------------------------
+void flogEntry(u16 entryType, u16 errorLevel, const char *fmt, ...)
+{
+  char buf[1024];
+  va_list argptr;
+
+  va_start(argptr, fmt);
+  vsnprintf(buf, sizeof(buf) - 1, fmt, argptr);
+  buf[sizeof(buf) - 1] = 0;
+  va_end(argptr);
+
+  logEntry(buf, entryType, errorLevel);
 }
 //---------------------------------------------------------------------------
 void logEntry(char *s, u16 entryType, u16 errorLevel)

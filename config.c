@@ -85,94 +85,10 @@ extern psRecType *tinyPathArray;
 
 fhandle fmLockHandle;
 
-s16 breakPressed = 0;
-
 #ifdef __STDIO__
-#define keyWaiting (kbhit()?getch():0)
-#else
-#define keyWaiting bioskey(1)
-#define keyRead    bioskey(0)
+#define keyWaiting (kbhit() ? getch() : 0)
 #endif
 
-#if !defined __STDIO__ && !defined __32BIT__
-
-//---------------------------------------------------------------------------
-s16 cdecl c_break(void)
-{
-	printString ("\n+++ Ctrl-break +++\n");
-	breakPressed = 1;
-
-  return 1;
-}
-//---------------------------------------------------------------------------
-
-#ifndef __FMAILX__
-static unsigned char handle_table[TABLE_SIZE];
-#endif
-static unsigned char far * new_handle_tableptrR;     /* table of file DOS handles */
-static unsigned char far * new_handle_tableptrP;     /* table of file DOS handles */
-static unsigned char far * old_handle_tableptrR;     /* table of file DOS handles */
-static unsigned char far * old_handle_tableptrP;     /* table of file DOS handles */
-
-static unsigned char far * far * PSP_handle_ptr;     /* ptr to DOS's ptr to hand. */
-static u16           far *       PSP_handle_count;   /* ptr to handle count       */
-
-//---------------------------------------------------------------------------
-void handles40(void)
-{
-#ifdef __FMAILX__
-  u32 result;
-#endif
-
-   if (config.extraHandles)
-   {
-      PSP_handle_count = MK_FP(_psp, 0x32);     /* handle count at PSP:32h  */
-      PSP_handle_ptr   = MK_FP(_psp, 0x34);     /* table ptr at PSP:34h     */
-
-      old_handle_tableptrR = *PSP_handle_ptr;
-
-#ifndef __FMAILX__
-      old_handle_tableptrP = old_handle_tableptrR;
-      new_handle_tableptrP = new_handle_tableptrR = handle_table;
-#else
-      old_handle_tableptrP = MK_FP(_psp, 0x18);
-      if ((result = GlobalDosAlloc(TABLE_SIZE)) == 0)
-         exit(1000);
-      new_handle_tableptrP = MK_FP((u16)result, 0);
-      new_handle_tableptrR = MK_FP((u16)(result >> 16), 0);
-#endif
-      memset (new_handle_tableptrP,
-              255, TABLE_SIZE);                 /* init table               */
-      memcpy (new_handle_tableptrP,
-              old_handle_tableptrP,
-              *PSP_handle_count);               /* relocate existing table  */
-      *PSP_handle_ptr = new_handle_tableptrR;   /* set pointer to new table */
-      *PSP_handle_count = _nfile =
-         20 + min(235, config.extraHandles);    /* set new table size       */
-   }
-}
-//---------------------------------------------------------------------------
-void handles20(void)
-{
-  if (config.extraHandles)
-  {
-    memcpy(old_handle_tableptrP, new_handle_tableptrP, 20);        /* relocate existing table  */
-    *PSP_handle_count = _nfile = 20;          /* set old table size       */
-    *PSP_handle_ptr   = old_handle_tableptrR; /* set pointer to old table */
-  }
-}
-//---------------------------------------------------------------------------
-void handlesReset40 (void)
-{
-  if (config.extraHandles)
-  {
-    memcpy(new_handle_tableptrP, old_handle_tableptrP, 20);          // relocate existing table
-    *PSP_handle_ptr   = new_handle_tableptrR;                        // set pointer to new table
-    *PSP_handle_count = _nfile = 20 + min(235, config.extraHandles); // set new table size
-  }
-}
-
-#endif // __32BIT__
 //---------------------------------------------------------------------------
 s16 getNetmailBoard(nodeNumType *akaNode)
 {
@@ -221,10 +137,6 @@ void initFMail(const char *_funcStr, s32 switches)
     printf("Can't read: %s\n", tempStr);
     exit(4);
   }
-#if !defined __STDIO__ && !defined __32BIT__
-  if (config.genOptions.checkBreak)
-    ctrlbrk (c_break);              // Set control-break handler
-#endif
   if (config.versionMajor != CONFIG_MAJOR || config.versionMinor != CONFIG_MINOR)
   {
     printf("ERROR: "dCFGFNAME" is not created by FSetup %d.%d or later.\n", CONFIG_MAJOR, CONFIG_MINOR);
@@ -234,8 +146,8 @@ void initFMail(const char *_funcStr, s32 switches)
     exit(4);
   }
 
-  strcpy(tempStr2, strcpy(tempStr, config.bbsPath));
-  strcat(tempStr, "FMAIL.LOC");
+  strcpy(stpcpy(tempStr, config.bbsPath), dFMAIL_LOC);
+  strcpy(tempStr2, config.bbsPath);
   if ((helpPtr = strrchr(tempStr2, '\\')) != NULL)
     *helpPtr = 0;
 
@@ -322,8 +234,7 @@ void initFMail(const char *_funcStr, s32 switches)
   initLog(switches);
 
 #ifdef _DEBUG
-  sprintf(tempStr, "DEBUG daylight=%d timezone=%ld tzname=%s-%s", _daylight, _timezone, _tzname[0], _tzname[1]);
-  logEntry(tempStr, LOG_DEBUG, 0);
+  flogEntry(LOG_DEBUG, 0, "DEBUG gmtOffset=%ld daylight=%d timezone=%ld tzname=%s-%s", gmtOffset, _daylight, _timezone, _tzname[0], _tzname[1]);
 #endif
 
   if (  NULL == (message       = (internalMsgType *)malloc(INTMSG_SIZE                          ))
@@ -355,12 +266,10 @@ void deinitFMail(void)
      || close(configHandle) == -1
      )
   {
-    tempStrType tempStr;
     if (configHandle != -1)
       close(configHandle);
 
-    sprintf(tempStr, "Can't write: %s [%s]", configFileStr, strError(errno));
-    logEntry(tempStr, LOG_ALWAYS, 0);
+    flogEntry(LOG_ALWAYS, 0, "Can't write: %s [%s]", configFileStr, strError(errno));
   }
   freeNull(message      );
   freeNull(seenByArray  );

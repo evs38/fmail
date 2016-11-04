@@ -240,11 +240,11 @@ const char *semaphore[6] = {
                            , "xmrescan.flg"
                            };
 
-long            gmtOffset;
-time_t          startTime;
-struct tm       timeBlock;
-extern u16      echoCount;
-extern u16      forwNodeCount;
+long       gmtOffset;
+time_t     startTime;
+struct tm  timeBlock;
+extern u16 echoCount;
+extern u16 forwNodeCount;
 
 extern cookedEchoType    *echoAreaList;
 extern echoToNodePtrType echoToNode[MAX_AREAS];
@@ -254,10 +254,9 @@ extern s16 messagesMoved;
 
 internalMsgType *message   = NULL;
 s16              diskError = 0;
+s16              mailBomb  = 0;
 
-extern s16 breakPressed;
-s16        mailBomb = 0;
-
+//---------------------------------------------------------------------------
 void About(void)
 {
   const char *str =
@@ -265,15 +264,14 @@ void About(void)
               "\n"
               "    Version          : %s\n"
               "    Operating system : "
-#ifdef __OS2__
-               "OS/2\n"
-#elif defined __WIN32__ && !defined __DPMI32__
-               "Win32\n"
-#elif defined __FMAILX__
-               "DOS DPMI\n"
+#if   defined(__WIN32__)
+              "Win32\n"
+#elif defined(__linux__)
+              "Linux\n"
 #else
-               "DOS standard\n"
+              "Unknown\n"
 #endif
+#if 0
                "    Processor        : "
 #ifdef __PENTIUMPRO__
                "PentiumPro\n"
@@ -286,7 +284,8 @@ void About(void)
 #else
                "8088/8086 and up\n"
 #endif
-               "    Compiled on      : %d-%02d-%02d\n"
+#endif // 0
+               "    Compiled on      : %04u-%02u-%02u\n"
                "    Message bases    : JAM and "MBNAME"\n"
                "    Max. areas       : %u\n"
                "    Max. nodes       : %u\n";
@@ -375,15 +374,13 @@ u16 getAreaCode(char *msgText)
         return low;
 
       if (echoAreaList[low].options.local)
-        sprintf(tempStr, "Area is local: '%s'", echoName);
+        flogEntry(LOG_ALWAYS, 0, "Area is local: '%s'", echoName);
       else
-        sprintf(tempStr, "Area is not active: '%s'", echoName);
-      logEntry(tempStr, LOG_ALWAYS, 0);
+        flogEntry(LOG_ALWAYS, 0, "Area is not active: '%s'", echoName);
     }
     else
     {
-      sprintf(tempStr, "Unknown area: '%s'", echoName);
-      logEntry(tempStr, LOG_ALWAYS, 0);
+      flogEntry(LOG_ALWAYS, 0, "Unknown area: '%s'", echoName);
 
       if (badEchoCount < MAX_BAD_ECHOS)
       {
@@ -482,14 +479,13 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
     {
       tempStrType cwd;
       getcwd(cwd, dTEMPSTRLEN);
-      sprintf(tempStr, "DEBUG secure:%d, cwd:%s, scanning:%s", secure, cwd, dirStr);
-      logEntry(tempStr, LOG_DEBUG, 0);
+      flogEntry(LOG_DEBUG, 0, "DEBUG secure:%d, cwd:%s, scanning:%s", secure, cwd, dirStr);
     }
 #endif
 
     if ((dir = opendir(dirStr)) != NULL)
     {
-      while ((ent = readdir(dir)) != NULL && !diskError && !breakPressed)
+      while ((ent = readdir(dir)) != NULL && !diskError && !mailBomb)
       {
         if (!match_spec("*.pkt", ent->d_name))
           continue;
@@ -498,8 +494,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
         if (access(pktStr, 06) != 0)  // Check for read and write access
         {
-          sprintf(tempStr, "Not sufficient access rights on: %s (\"%s\")", pktStr, strError(errno));
-          logEntry(tempStr, LOG_ALWAYS, 2);
+          flogEntry(LOG_ALWAYS, 2, "Not sufficient access rights on: %s (\"%s\")", pktStr, strError(errno));
           continue;
         }
 
@@ -523,8 +518,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
             sprintf(prodCodeStr, "Program id %04hX", globVars.remoteProdCode);
             helpPtr = prodCodeStr;
           }
-          sprintf(tempStr, "Processing %s from %s to %s", ent->d_name, nodeStr(&globVars.packetSrcNode), nodeStr(&globVars.packetDestNode));
-          logEntry(tempStr, LOG_PKTINFO, 0);
+          flogEntry(LOG_PKTINFO, 0, "Processing %s from %s to %s", ent->d_name, nodeStr(&globVars.packetSrcNode), nodeStr(&globVars.packetDestNode));
 
           if ((globVars.remoteCapability & 1) == 1)
             sprintf( tempStr, "Pkt info: %s %u.%02u, Type 2+, %d, %04u-%02u-%02u %02u:%02u:%02u%s%s"
@@ -547,7 +541,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
           pktMsgCount = 0;
 
-          while (!readPkt(message) && !diskError && !breakPressed)
+          while (!readPkt(message) && !diskError && !mailBomb)
           {
             printf("\rPkt message %d "dARROW" ", ++pktMsgCount);
 
@@ -895,10 +889,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                 break;
             }
             if (config.allowedNumNetmail != 0 && globVars.netCount >= config.allowedNumNetmail)
-            {
               mailBomb++;
-              breakPressed++;
-            }
           }
           closePktRd();
 
@@ -911,14 +902,12 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
             strcpy(strchr(tempStr, '.'), ".mlb");
             rename(pktStr, tempStr);
             unlink(pktStr);
-            sprintf(tempStr, "Max # net msgs per packet exceeded in packet from %s", nodeStr(&globVars.packetSrcNode));
-            logEntry(tempStr, LOG_ALWAYS, 0);
-            sprintf(tempStr, "Packet %s has been renamed to .mlb", pktStr);
-            logEntry(tempStr, LOG_ALWAYS, 0);
+            flogEntry(LOG_ALWAYS, 0, "Max # net msgs per packet exceeded in packet from %s", nodeStr(&globVars.packetSrcNode));
+            flogEntry(LOG_ALWAYS, 0, "Packet %s has been renamed to .mlb", pktStr);
           }
           else
           {
-            if (!diskError && !breakPressed && ((validate1BBS() || validateEchoPktWr()) == 0))
+            if (!diskError && (validate1BBS() || validateEchoPktWr()) == 0)
             {
               validate2BBS(0);
               validateMsg();
@@ -930,8 +919,9 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                 echoAreaList[i].dupCountV = echoAreaList[i].dupCount;
               }
             }
-            else if (!diskError && !breakPressed)
-              diskError = DERR_VAL;
+            else
+              if (!diskError)
+                diskError = DERR_VAL;
           }
         }
       }
@@ -941,7 +931,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
       closedir(dir);
     }
   }
-  while (!diskError && !breakPressed && secure--);  // do .. while
+  while (!diskError && !mailBomb && secure--);  // do .. while
 
   jam_closeall();
 
@@ -1010,7 +1000,7 @@ void Toss(int argc, char *argv[])
 
   openBBSWr(0);
 
-  if (!diskError && !breakPressed)
+  if (!diskError)
   {
     puts("Tossing messages...");
 
@@ -1023,9 +1013,9 @@ void Toss(int argc, char *argv[])
     bundlePtr = NULL;
     if ((dir = opendir(config.inPath)) != NULL)
     {
-      while ((ent = readdir(dir)) != NULL && !diskError && !breakPressed)
+      while ((ent = readdir(dir)) != NULL && !diskError && !mailBomb)
       {
-        for (dayNum = 0; dayNum < 7 && !diskError && !breakPressed; dayNum++)
+        for (dayNum = 0; dayNum < 7 && !diskError && !mailBomb; dayNum++)
         {
           struct stat st;
           tempStrType pattern;
@@ -1039,9 +1029,7 @@ void Toss(int argc, char *argv[])
           if (  stat(tempStr, &st) != 0
              || (st.st_mode & (S_IWRITE | S_IREAD)) != (S_IWRITE | S_IREAD))
           {
-            tempStrType errStr;
-            sprintf(errStr, "Not sufficient rights on: %s", tempStr);
-            logEntry(errStr, LOG_ALWAYS, 2);
+            flogEntry(LOG_ALWAYS, 2, "Not sufficient rights on: %s", tempStr);
             continue;
           }
 
@@ -1271,7 +1259,7 @@ void Toss(int argc, char *argv[])
 
   temp = 0;
   if (  (config.mbOptions.sortNew || config.mbOptions.updateChains)
-     && globVars.mbCountV != 0 && !breakPressed)
+     && globVars.mbCountV != 0 && !mailBomb)
   {
     if (config.mbOptions.mbSharing)
     {
@@ -1321,13 +1309,13 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
       break;
   }
 
-  if ((boardNum && isNetmailBoard(boardNum)) || 0 /* If JAM netmail area */)
+  if (boardNum && isNetmailBoard(boardNum))  // If JAM netmail area
   {
     message->attribute |= LOCAL |
                           (config.mailOptions.keepExpNetmail?0:KILLSENT) |
                           ((getFlags(message->text)&FL_FILE_REQ)?FILE_REQ:0);
 
-    point4d (message);
+    point4d(message);
 
     // MSGID kludge
 
@@ -1343,8 +1331,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
     if (writeMsg(message, NETMSG, 0) == -1)
       return 1;
 
-    sprintf(tempStr, "Netmail message for %s moved to netmail directory", nodeStr(&message->destNode));
-    logEntry(tempStr, LOG_NETEXP, 0);
+    flogEntry(LOG_NETEXP, 0, "Netmail message for %s moved to netmail directory", nodeStr(&message->destNode));
 
     if (updateCurrHdrBBS(message))
       return 1;
@@ -1361,8 +1348,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
 
     if (count == echoCount)
     {
-      sprintf(tempStr, "Found message in unknown message base board (#%u)", boardNum);
-      logEntry(tempStr, LOG_ALWAYS, 0);
+      flogEntry(LOG_ALWAYS, 0, "Found message in unknown message base board (#%u)", boardNum);
 
       if (updateCurrHdrBBS(message))
         return 1;
@@ -1376,8 +1362,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
 
   if (echoAreaList[count].options.active && !echoAreaList[count].options.local)
   {
-    sprintf(tempStr, "Echomail message, area %s", echoAreaList[count].areaName);
-    logEntry(tempStr, LOG_ECHOEXP, 0);
+    flogEntry(LOG_ECHOEXP, 0, "Echomail message, area %s", echoAreaList[count].areaName);
 
     if (echoAreaList[count].options.allowPrivate)
       message->attribute &= PRIVATE;
@@ -1535,8 +1520,7 @@ void Scan(int argc, char *argv[])
       puts("Scanning JAM message bases for outgoing messages...");
       if (!config.mbOptions.scanAlways && !(switches & SW_S))
       {
-        strcpy(tempStr, config.bbsPath);
-        strcat(tempStr, "echomail.jam");
+        strcpy(stpcpy(tempStr, config.bbsPath), dECHOMAIL_JAM);
         if ((tempHandle = open(tempStr, O_RDONLY | O_TEXT)) != -1)
         {
           memset(tempStr, 0, sizeof(tempStrType));
@@ -1567,23 +1551,24 @@ void Scan(int argc, char *argv[])
                   else
                   {
                     diskErrorT = 0;
-                    if ((!echoAreaList[count].options.active) ||
-                        echoAreaList[count].options.local ||
-                        !(diskErrorT = handleScan(message, 0, count)) )
+                    if (  !echoAreaList[count].options.active
+                       ||  echoAreaList[count].options.local
+                       || !(diskErrorT = handleScan(message, 0, count))
+                       )
                     {
                       removeLine(message->text);
                       jam_update(count, msgNum, message);
                       scanCount++;
                     }
-                    if ( diskErrorT != 0 )
+                    if (diskErrorT != 0)
                       diskError = DERR_PRSCN;
                   }
                 }
-                if ((helpPtr = strchr (helpPtr, '\n')) != NULL)
+                if ((helpPtr = strchr(helpPtr, '\n')) != NULL)
                 {
-                  helpPtr = stpcpy (tempStr, helpPtr+1);
-                  count = (u16)(sizeof(tempStrType)+tempStr-helpPtr);
-                  if ((count = read(tempHandle, helpPtr, count-1)) == -1)
+                  helpPtr = stpcpy(tempStr, helpPtr + 1);
+                  count = (u16)(sizeof(tempStrType) + tempStr - helpPtr);
+                  if ((count = read(tempHandle, helpPtr, count - 1)) == -1)
                     *tempStr = 0;
                   else
                     helpPtr[count] = 0;
@@ -1601,11 +1586,15 @@ void Scan(int argc, char *argv[])
       {
         for (count = 0; count < echoCount; count++)
         {
-          if ((echoAreaList[count].JAMdirPtr != NULL &&
-               echoAreaList[count].options.active &&
-               !echoAreaList[count].options.local) &&
-              (config.mbOptions.scanAlways || (switches & SW_S) ||
-               echoAreaList[count].options._reserved))
+#ifdef _DEBUG0
+          flogEntry(LOG_DEBUG, 0, "DEBUG JAM scan count: %d", count);
+#endif // _DEBUG
+          if (  (   echoAreaList[count].JAMdirPtr != NULL
+                &&  echoAreaList[count].options.active
+                && !echoAreaList[count].options.local
+                )
+             && (config.mbOptions.scanAlways || (switches & SW_S) || echoAreaList[count].options._reserved)
+             )
           {
             if ((infoBad || config.mbOptions.scanAlways || (switches & SW_S)) && infoBad != -1)
             {
@@ -1615,8 +1604,7 @@ void Scan(int argc, char *argv[])
                 puts("Rescanning selected JAM areas\n");
               infoBad = -1;
             }
-            sprintf(tempStr, "Scanning JAM area: %s", echoAreaList[count].areaName);
-            logEntry(tempStr, LOG_ALWAYS, 0);
+            flogEntry(LOG_ALWAYS, 0, "Scanning JAM area %d: %s", count, echoAreaList[count].areaName);
             msgNum = 0;
             while (!diskError && (msgNum = jam_scan(count, ++msgNum, 0, message)) != 0)
             {
@@ -1629,14 +1617,40 @@ void Scan(int argc, char *argv[])
               if (diskErrorT)
                 diskError = DERR_PRSCN;
             }
+#ifdef _DEBUG0
+            flogEntry(LOG_DEBUG, 0, "DEBUG Done scanning JAM area, scan count: %d", scanCount);
+#endif // _DEBUG
           }
         }
       }
-      if (!diskError && !breakPressed)
+      if (!diskError)
       {
-        strcpy(tempStr, config.bbsPath);
-        strcat(tempStr, "echomail.jam");
-        unlink(tempStr);
+        strcpy(stpcpy(tempStr, config.bbsPath), dECHOMAIL_JAM);
+#ifdef _DEBUG
+        flogEntry(LOG_DEBUG, 0, "DEBUG access: %s", tempStr);
+#endif // _DEBUG
+        if (0 == access(tempStr, 02))
+        {
+#ifdef _DEBUG
+          flogEntry(LOG_DEBUG, 0, "DEBUG unlink: %s", tempStr);
+#endif // _DEBUG
+          if (0 == unlink(tempStr))
+          {
+#ifdef _DEBUG
+            flogEntry(LOG_DEBUG, 0, "DEBUG unlinked: %s", tempStr);
+#endif // _DEBUG
+          }
+          else
+          {
+#ifdef _DEBUG
+            flogEntry(LOG_DEBUG, 0, "DEBUG unlink failed on: %s [%s]", tempStr, strError(errno));
+#endif // _DEBUG
+          }
+        }
+#ifdef _DEBUG
+        else
+          flogEntry(LOG_DEBUG, 0, "DEBUG no write access on: %s [%s]", tempStr, strError(errno));
+#endif // _DEBUG
       }
       globVars.jamCountV = scanCount;
       if (scanCount == 0)
@@ -1650,7 +1664,11 @@ void Scan(int argc, char *argv[])
   }
   if (!(switches & SW_J))
   {
+#ifdef _DEBUG
+    logEntry("DEBUG Scanning "MBNAME" message base for outgoing messages", LOG_DEBUG, 0);
+#else
     puts("Scanning "MBNAME" message base for outgoing messages...");
+#endif // _DEBUG
     infoBad = 0;
 
     if (!config.mbOptions.scanAlways && !(switches & SW_S))
@@ -1664,12 +1682,12 @@ void Scan(int argc, char *argv[])
 
           if ((tempHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1)
           {
-  #ifndef GOLDBASE
+#ifndef GOLDBASE
             while ((read(tempHandle, &index, 2) == 2)
-  #else
+#else
             while ((read(tempHandle, &index, 4) == 4)
-  #endif
-                  && !diskError && !breakPressed)
+#endif
+                  && !diskError)
             {
               if ((boardNum = scanBBS(index, message, 0)) != 0)
               {
@@ -1693,7 +1711,7 @@ void Scan(int argc, char *argv[])
                 infoBad++;
             }
             close(tempHandle);
-            if ((!diskError) && (!breakPressed))
+            if (!diskError)
               unlink (tempStr);
           }
         }
@@ -1702,9 +1720,12 @@ void Scan(int argc, char *argv[])
 
     if (infoBad || config.mbOptions.scanAlways || (switches & SW_S))
     {
+#ifdef _DEBUG
+      logEntry("DEBUG Scanning all hudson mb messages", LOG_DEBUG, 0);
+#endif // _DEBUG
       index = 0;
       while (  (boardNum = scanBBS(index++, message, 0)) != 0
-            && !diskError && !breakPressed
+            && !diskError
             )
       {
         if ((boardNum != -1) &&
@@ -1831,9 +1852,8 @@ void Import(int argc, char *argv[])
                 else
                 {
                   validate2BBS(0);
-                  sprintf( tempStr, "Importing msg #%u from %s to %s (board #%u)"
-                         , msgNum, nodeStr(&message->srcNode), nodeStr(&message->destNode), boardNum);
-                  logEntry(tempStr, LOG_NETIMP, 0);
+                  flogEntry( LOG_NETIMP, 0, "Importing msg #%u from %s to %s (board #%u)"
+                           , msgNum, nodeStr(&message->srcNode), nodeStr(&message->destNode), boardNum);
                   count++;
                   globVars.nmbCountV++;
                 }
@@ -1859,7 +1879,7 @@ void Import(int argc, char *argv[])
 
   // 'Copy' from TOSS
 
-  if (config.mbOptions.updateChains && globVars.mbCountV != 0 && !breakPressed)
+  if (config.mbOptions.updateChains && globVars.mbCountV != 0)
   {
     temp = config.mbOptions.mbSharing;
     config.mbOptions.mbSharing = 0;
@@ -1952,6 +1972,12 @@ int main(int argc, char *argv[])
   putenv("TZ=LOC0");
   tzset();
 #endif // __BORLANDC__
+#ifdef __MINGW32__
+  // Clear the TZ environment variable so the OS is used
+  putenv("TZ=");
+  tzset();
+#endif // __MINGW32__
+
   startTime = time(NULL);
   timeBlock = *localtime(&startTime);  // localtime -> should be ok
   {
@@ -2035,16 +2061,13 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  sprintf( tempStr, "Netmail: %u,  Personal: %u,  "MBNAME": %u,  JAMbase: %u"
-         , globVars.netCountV, globVars.perCountV, globVars.mbCountV,  globVars.jamCountV);
-  logEntry(tempStr, LOG_STATS, 0);
-  sprintf( tempStr, "Msgbase net: %u, echo: %u, dup: %u, bad: %u"
-         , globVars.nmbCountV, globVars.echoCountV, globVars.dupCountV, globVars.badCountV);
-  logEntry(tempStr, LOG_STATS, 0);
+  flogEntry( LOG_STATS, 0, "Netmail: %u,  Personal: %u,  "MBNAME": %u,  JAMbase: %u"
+           , globVars.netCountV, globVars.perCountV, globVars.mbCountV,  globVars.jamCountV);
+  flogEntry( LOG_STATS, 0, "Msgbase net: %u, echo: %u, dup: %u, bad: %u"
+           , globVars.nmbCountV, globVars.echoCountV, globVars.dupCountV, globVars.badCountV);
 
 #ifdef _DEBUG0
-  sprintf(tempStr, "DEBUG sizeof(pingOptionsType): %u", sizeof(pingOptionsType));
-  logEntry(tempStr, LOG_DEBUG | LOG_NOSCRN, 0);
+  flogEntry(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG sizeof(pingOptionsType): %u", sizeof(pingOptionsType));
 #endif
 
   // Semaphore files
@@ -2112,13 +2135,10 @@ int main(int argc, char *argv[])
         break;
     }
   }
-  if (breakPressed)
+  if (mailBomb)
   {
     newLine();
-    if (mailBomb)
-      logEntry("Mail bomb protection", LOG_ALWAYS, 5);
-    else
-      logEntry("Control-break pressed", LOG_ALWAYS, 3);
+    logEntry("Mail bomb protection", LOG_ALWAYS, 5);
   }
 
   logActive();

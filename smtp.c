@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -67,7 +67,8 @@ static int flushsbuf(void)
    if ( !sbufcount )
       return 0;
    if ( send(ws, sbuffer, sbufcount, 0) == SOCKET_ERROR )
-   {  logEntry("Error sending data", LOG_ALWAYS, 0);
+   {
+      logEntry("Error sending data", LOG_ALWAYS, 0);
       sbufcount = 0;
       return 1;
    }
@@ -126,9 +127,8 @@ static  char    response_buf[RESPONSE_BUFFER_SIZE];
 
 static BOOL getresponse(UINT response_expected)
 {
-   char        buf[4];
-   int         response;
-   tempStrType tempStr;
+   char buf[4];
+   int  response;
 
    if ( recv(ws, response_buf, RESPONSE_BUFFER_SIZE, 0) == SOCKET_ERROR )
    {
@@ -140,10 +140,7 @@ static BOOL getresponse(UINT response_expected)
    sscanf(buf, "%d", &response);
    if ( response != response_code[response_expected] )
    {
-      sprintf(tempStr, "Expected %d, received %d: %s",
-                       response_code[response_expected], response,
-                       response_text[response_expected]);
-      logEntry(tempStr, LOG_ALWAYS, 0);
+      flogEntry(LOG_ALWAYS, 0, "Expected %d, received %d: %s", response_code[response_expected], response, response_text[response_expected]);
       return FALSE;
    }
    return TRUE;
@@ -324,11 +321,13 @@ static int openConnection(char *SMTPServerName)
    SERVENT     *servent;
 
    if ( WSAStartup(2, &wsdata) )
-   {  logEntry("WinSock startup error", LOG_ALWAYS, 0);
+   {
+      logEntry("WinSock startup error", LOG_ALWAYS, 0);
       return 1;
    }
    if ( (ws = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET )
-   {  logEntry("Socket initialization error", LOG_ALWAYS, 0);
+   {
+      logEntry("Socket initialization error", LOG_ALWAYS, 0);
       return 1;
    }
    memset(&sockaddrL, 0, sizeof(sockaddrL));
@@ -336,42 +335,46 @@ static int openConnection(char *SMTPServerName)
    sockaddrL.sin_port = 0;
    sockaddrL.sin_addr.s_addr = INADDR_ANY;
    if ( bind(ws, (SOCKADDR *)&sockaddrL, sizeof(sockaddrL)) )
-   {  logEntry("Socket bind error", LOG_ALWAYS, 0);
+   {
+      logEntry("Socket bind error", LOG_ALWAYS, 0);
       goto einde;
    }
    if ((hostent = gethostbyname(SMTPServerName)) == NULL)
-   {  sprintf(buf, "Hostname not found: %s", SMTPServerName);
-      logEntry(buf, LOG_ALWAYS, 0);
+   {
+      flogEntry(LOG_ALWAYS, 0, "Hostname not found: %s", SMTPServerName);
       goto einde;
    }
    if ( (servent = getservbyname("smtp", "tcp")) == NULL )
-   {  logEntry("Service SMTP(TCP) not found", LOG_ALWAYS, 0);
+   {
+      logEntry("Service SMTP(TCP) not found", LOG_ALWAYS, 0);
       goto einde;
    }
 
-   sprintf(buf, "Connecting to %s (%u.%u.%u.%u) on port %u (SMTP)",
-		 SMTPServerName,
-		 (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b1,
-		 (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b2,
-		 (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b3,
-		 (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b4,
-		 (int)(((servent->s_port & 0xFF) << 8) + ((servent->s_port & 0xFF00) >> 8)));
-   logEntry(buf, LOG_ALWAYS, 0);
+   flogEntry(LOG_ALWAYS, 0, "Connecting to %s (%u.%u.%u.%u) on port %u (SMTP)",
+                           SMTPServerName,
+                           (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b1,
+                           (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b2,
+                           (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b3,
+                           (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b4,
+                           (int)(((servent->s_port & 0xFF) << 8) + ((servent->s_port & 0xFF00) >> 8)));
 
    memset(&sockaddrR, 0, sizeof(sockaddrR));
    sockaddrR.sin_family = AF_INET;
    sockaddrR.sin_port = servent->s_port;
    memcpy((char FAR *)&(sockaddrR.sin_addr), hostent->h_addr_list[0], hostent->h_length);
    if ( connect(ws, (SOCKADDR *)&sockaddrR, sizeof(sockaddrR)) )
-   {  logEntry("Can't connect to host", LOG_ALWAYS, 0);
+   {
+      logEntry("Can't connect to host", LOG_ALWAYS, 0);
       goto einde;
    }
    if( !getresponse(CONNECT_SUCCESS) )
-   {  logEntry("Can't connect to host", LOG_ALWAYS, 0);
+   {
+      logEntry("Can't connect to host", LOG_ALWAYS, 0);
       goto einde;
    }
    if ( gethostname(hostnamebuf, sizeof(tempStrType)) )
-   {  logEntry("Can't get local host name", LOG_ALWAYS, 0);
+   {
+      logEntry("Can't get local host name", LOG_ALWAYS, 0);
 einde:
       closesocket(ws);
       WSACleanup();
@@ -379,11 +382,13 @@ einde:
    }
    sprintf(buf, "HELO %s\r\n", hostnamebuf);
    if ( send(ws, buf, strlen(buf), 0) == SOCKET_ERROR )
-   {   logEntry("Send HELO error", LOG_ALWAYS, 0);
+   {
+       logEntry("Send HELO error", LOG_ALWAYS, 0);
        goto einde;
    }
    if ( !getresponse(GENERIC_SUCCESS) )
-   {  logEntry("No HELO success reply", LOG_ALWAYS, 0);
+   {
+      logEntry("No HELO success reply", LOG_ALWAYS, 0);
       goto einde;
    }
    return 0;
@@ -403,40 +408,45 @@ int sendMessage(char *SMTPServerName, char *mailfrom, char *mailto, internalMsgT
          return 1;
       }
    if ( message->destNode.zone )
-      sprintf(sbuf, "Sending mail for node %s to %s", nodeStr(&message->destNode), mailto);
+      flogEntry(LOG_ALWAYS, 0, "Sending mail for node %s to %s", nodeStr(&message->destNode), mailto);
    else
-      sprintf(sbuf, "Sending mail to %s", mailto);
-   logEntry(sbuf, LOG_ALWAYS, 0);
+      flogEntry(LOG_ALWAYS, 0, "Sending mail to %s", mailto);
    error = 0;
    sprintf(sbuf, "MAIL FROM: <%s>\r\n", mailfrom);
-   if ( send(ws, sbuf, strlen(sbuf), 0) == SOCKET_ERROR )
-   {   logEntry("Send MAIL FROM: error", LOG_ALWAYS, 0);
+   if (send(ws, sbuf, strlen(sbuf), 0) == SOCKET_ERROR)
+   {
+       logEntry("Send MAIL FROM: error", LOG_ALWAYS, 0);
        ++error;
        goto einde1;
    }
    if ( !getresponse(GENERIC_SUCCESS) )
-   {  logEntry("No MAIL FROM: success reply", LOG_ALWAYS, 0);
+   {
+      logEntry("No MAIL FROM: success reply", LOG_ALWAYS, 0);
       ++error;
       goto einde1;
    }
    sprintf(sbuf, "RCPT TO: <%s>\r\n", mailto);
    if ( send(ws, sbuf, strlen(sbuf), 0) == SOCKET_ERROR )
-   {   logEntry("Send RCPT TO: error", LOG_ALWAYS, 0);
+   {
+       logEntry("Send RCPT TO: error", LOG_ALWAYS, 0);
        ++error;
        goto einde1;
    }
    if ( !getresponse(GENERIC_SUCCESS) )
-   {  logEntry("No RCPT TO: success reply", LOG_ALWAYS, 0);
+   {
+      logEntry("No RCPT TO: success reply", LOG_ALWAYS, 0);
       ++error;
       goto einde1;
    }
    if ( send(ws, "DATA\r\n", 6, 0) == SOCKET_ERROR )
-   {   logEntry("Send DATA error", LOG_ALWAYS, 0);
+   {
+      logEntry("Send DATA error", LOG_ALWAYS, 0);
       ++error;
-       goto einde1;
+      goto einde1;
    }
    if ( !getresponse(DATA_SUCCESS) )
-   {  logEntry("No DATA success reply", LOG_ALWAYS, 0);
+   {
+      logEntry("No DATA success reply", LOG_ALWAYS, 0);
       ++error;
       goto einde1;
    }
@@ -486,7 +496,8 @@ int sendMessage(char *SMTPServerName, char *mailfrom, char *mailto, internalMsgT
    flushsbuf();
 
    if ( !getresponse(GENERIC_SUCCESS) )
-   {  logEntry("No EODATA success reply", LOG_ALWAYS, 0);
+   {
+      logEntry("No EODATA success reply", LOG_ALWAYS, 0);
       ++error;
       goto einde1;
    }
@@ -504,12 +515,14 @@ int closeConnection(void)
 
    error = 0;
    if ( send(ws, "QUIT\r\n", 6, 0) == SOCKET_ERROR )
-   {  logEntry("Send QUIT error", LOG_ALWAYS, 0);
+   {
+      logEntry("Send QUIT error", LOG_ALWAYS, 0);
       ++error;
       goto einde1;
    }
    if ( !getresponse(QUIT_SUCCESS) )
-   {  logEntry("No QUIT success reply", LOG_ALWAYS, 0);
+   {
+      logEntry("No QUIT success reply", LOG_ALWAYS, 0);
       ++error;
       goto einde1;
    }

@@ -61,7 +61,7 @@ extern char configPath[FILENAME_MAX];
 static int wildCards;
 
 
-s16 packValid (nodeNumType *node, char *packedNodes)
+s16 packValid(nodeNumType *node, char *packedNodes)
 {
    tempStrType tempStr
             ,  stringNode;
@@ -212,8 +212,8 @@ s16 notify(int argc, char *argv[])
       strcat(nodeString, argv[count]);
    }
 
-   if (((message = malloc (INTMSG_SIZE)) == NULL) ||
-       ((areaSort = malloc (MAX_AREAS*sizeof(areaSortType))) == NULL))
+   if (((message  = malloc(INTMSG_SIZE)) == NULL) ||
+       ((areaSort = malloc(MAX_AREAS * sizeof(areaSortType))) == NULL))
       logEntry("Not enough memory available", LOG_ALWAYS, 2);
 
    memset(message, 0, INTMSG_SIZE);
