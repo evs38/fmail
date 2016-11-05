@@ -635,13 +635,13 @@ int main(int argc, char *argv[])
            || (oldBoard > MBBOARDS))
           && ((oldBoard = getBoardNum(argv[2], argc - 2, &temp, &areaPtr)) == -1))
       {
-        flogEntry(LOG_ALWAYS, 0, "Deleting all messages in area %s (JAM base %s)", areaPtr->areaName, areaPtr->msgBasePath);
+        logEntryf(LOG_ALWAYS, 0, "Deleting all messages in area %s (JAM base %s)", areaPtr->areaName, areaPtr->msgBasePath);
         spaceSavedJAM = 0;
         JAMmaint(areaPtr, switches, config.sysopName, &spaceSavedJAM);
 
         return 0;
       }
-      flogEntry(LOG_ALWAYS, 0, "Deleting all messages in "MBNAME" board %u", oldBoard);
+      logEntryf(LOG_ALWAYS, 0, "Deleting all messages in "MBNAME" board %u", oldBoard);
     }
     else
       if (switches & SW_M)
@@ -657,7 +657,7 @@ int main(int argc, char *argv[])
             && ((newBoard = getBoardNum(argv[3], argc - 3, &temp, &areaPtr)) == -1))
           logEntry("This function does not yet support the JAM base", LOG_ALWAYS, 1000);
 
-        flogEntry(LOG_ALWAYS, 0, "Moving all messages in board %u to board %u", oldBoard, newBoard);
+        logEntryf(LOG_ALWAYS, 0, "Moving all messages in board %u to board %u", oldBoard, newBoard);
       }
       else
         if (switches & SW_U)
@@ -668,7 +668,7 @@ int main(int argc, char *argv[])
               && ((undeleteBoard = getBoardNum(argv[2], argc - 2, &temp, &areaPtr)) == -1))
             logEntry("This function does not yet support the JAM base", LOG_ALWAYS, 1000);
 
-          flogEntry(LOG_ALWAYS, 0, "Undeleting all deleted messages in board %u", undeleteBoard);
+          logEntryf(LOG_ALWAYS, 0, "Undeleting all deleted messages in board %u", undeleteBoard);
         }
         else
         {
@@ -808,7 +808,7 @@ int main(int argc, char *argv[])
               if (scanDate((char*)&msgHdrBuf[count].ptLength, &year, &month, &day, &hours, &minutes) != 0)
               {
                 newLine();
-                flogEntry(LOG_ALWAYS, 0, "Bad date in message base: message #%u in board #%u", msgHdrBuf[count].MsgNum, msgHdrBuf[count].Board);
+                logEntryf(LOG_ALWAYS, 0, "Bad date in message base: message #%u in board #%u", msgHdrBuf[count].MsgNum, msgHdrBuf[count].Board);
                 time(&msgTime);
               }
               else
@@ -987,32 +987,32 @@ int main(int argc, char *argv[])
     close(msgHdrHandle);
 
     if (switches & SW_U)
-      flogEntry(LOG_STATS, 0, "Undeleted   : %u msgs", unDeleted);
+      logEntryf(LOG_STATS, 0, "Undeleted   : %u msgs", unDeleted);
     else
       if ((alrDeleted) && !(switches & SW_K))
-        flogEntry(LOG_STATS, 0, "Already del.: %u msgs", alrDeleted);
+        logEntryf(LOG_STATS, 0, "Already del.: %u msgs", alrDeleted);
 
     if (crossLinked)
-      flogEntry(LOG_STATS, 0, "Crosslinked : %u msgs (fixed)", crossLinked);
+      logEntryf(LOG_STATS, 0, "Crosslinked : %u msgs (fixed)", crossLinked);
 
     if (badBoardCount)
-      flogEntry(LOG_STATS, 0, "Bad board # : %u msgs%s", badBoardCount, (switches & SW_X) ? " (fixed)" : "");
+      logEntryf(LOG_STATS, 0, "Bad board # : %u msgs%s", badBoardCount, (switches & SW_X) ? " (fixed)" : "");
 
     if (badDateCount)
-      flogEntry(LOG_STATS, 0, "Bad dates   : %u msgs (fixed)", badDateCount);
+      logEntryf(LOG_STATS, 0, "Bad dates   : %u msgs (fixed)", badDateCount);
 
     if (badTxtlenCount)
-      flogEntry(LOG_STATS, 0, "Bad txt len : %u msgs (fixed)", badTxtlenCount);
+      logEntryf(LOG_STATS, 0, "Bad txt len : %u msgs (fixed)", badTxtlenCount);
 
     if (switches & SW_C)
     {
       if (config.recBoard)
-        flogEntry(LOG_STATS, 0, "Recovered   : %u msgs", recovered);
+        logEntryf(LOG_STATS, 0, "Recovered   : %u msgs", recovered);
       else
-        flogEntry(LOG_STATS, 0, "Recov'd/del : %u msgs", recovered);
+        logEntryf(LOG_STATS, 0, "Recov'd/del : %u msgs", recovered);
     }
     if (switches & (SW_D | SW_K))
-      flogEntry(LOG_STATS, 0, "Deleted     : %u msgs", nowDeleted);
+      logEntryf(LOG_STATS, 0, "Deleted     : %u msgs", nowDeleted);
 
     puts("Updating reply-chains in memory...");
 
@@ -1383,7 +1383,7 @@ int main(int argc, char *argv[])
     }
 
     if (switches & SW_P)
-      flogEntry(LOG_STATS, 0, "Space saved ("MBNAME ") : %u bytes"
+      logEntryf(LOG_STATS, 0, "Space saved ("MBNAME ") : %u bytes"
                , oldHdrSize * sizeof(msgHdrRec  )
                + oldHdrSize * sizeof(msgToIdxRec)
                + oldHdrSize * sizeof(msgIdxRec  )
@@ -1452,10 +1452,10 @@ JAMonly:
         count2 = 1;
         while (++count2 < argc && *argv[count2] != '/')
           if (!(processed & (1 << (count2 - 2))))
-            flogEntry(LOG_ALWAYS, 0, "%s is not a JAM area or does not exist", argv[count2]);
+            logEntryf(LOG_ALWAYS, 0, "%s is not a JAM area or does not exist", argv[count2]);
 
         if (spaceSavedJAM > 0)
-          flogEntry(LOG_STATS, 0, "Space saved (JAM) : %d bytes", spaceSavedJAM);
+          logEntryf(LOG_STATS, 0, "Space saved (JAM) : %d bytes", spaceSavedJAM);
       }
     }
 
@@ -1564,30 +1564,30 @@ JAMonly:
 
         newLine();
 
-        flogEntry(LOG_STATS, 0, "Messages are numbered from %u to %u", lowMsgNum, highMsgNum);
+        logEntryf(LOG_STATS, 0, "Messages are numbered from %u to %u", lowMsgNum, highMsgNum);
 
         newLine();
 
-        flogEntry(LOG_STATS, 0, "Total messages : %5u", totalMsgs);
-        flogEntry(LOG_STATS, 0, "* Deleted      : %5u  (%3u%%)", totalDeleted, totalDeleted * 100 / (totalMsgs ? totalMsgs : 1));
-        flogEntry(LOG_STATS, 0, "* Active       : %5u  (%3u%%)", totalMsgs - totalDeleted, (totalMsgs - totalDeleted) * 100 / (totalMsgs ? totalMsgs : 1));
-        flogEntry(LOG_STATS, 0, "  - Inbound    : %5u  (%3u%%)", totalMsgs - totalDeleted - totalLocal
+        logEntryf(LOG_STATS, 0, "Total messages : %5u", totalMsgs);
+        logEntryf(LOG_STATS, 0, "* Deleted      : %5u  (%3u%%)", totalDeleted, totalDeleted * 100 / (totalMsgs ? totalMsgs : 1));
+        logEntryf(LOG_STATS, 0, "* Active       : %5u  (%3u%%)", totalMsgs - totalDeleted, (totalMsgs - totalDeleted) * 100 / (totalMsgs ? totalMsgs : 1));
+        logEntryf(LOG_STATS, 0, "  - Inbound    : %5u  (%3u%%)", totalMsgs - totalDeleted - totalLocal
                  , (totalMsgs - totalDeleted - totalLocal) * 100 / (totalMsgs - totalDeleted ? totalMsgs - totalDeleted : 1));
-        flogEntry(LOG_STATS, 0, "  - Local      : %5u  (%3u%%)", totalLocal, totalLocal * 100 / (totalMsgs - totalDeleted ? totalMsgs - totalDeleted : 1));
+        logEntryf(LOG_STATS, 0, "  - Local      : %5u  (%3u%%)", totalLocal, totalLocal * 100 / (totalMsgs - totalDeleted ? totalMsgs - totalDeleted : 1));
 
         newLine();
 
-        flogEntry(LOG_STATS, 0, "MSGTXT records : %5u", (u32)totalTxtBBS);
-        flogEntry(LOG_STATS, 0, "* Used         : %5u  (%3u%%)", totalTxtHdr, totalTxtHdr * 100 / (totalTxtBBS ? totalTxtBBS : 1));
-        flogEntry(LOG_STATS, 0, "* Not used     : %5u  (%3u%%)", (totalTxtBBS - totalTxtHdr), (totalTxtBBS - totalTxtHdr) * 100 / (totalTxtBBS ? totalTxtBBS : 1));
+        logEntryf(LOG_STATS, 0, "MSGTXT records : %5u", (u32)totalTxtBBS);
+        logEntryf(LOG_STATS, 0, "* Used         : %5u  (%3u%%)", totalTxtHdr, totalTxtHdr * 100 / (totalTxtBBS ? totalTxtBBS : 1));
+        logEntryf(LOG_STATS, 0, "* Not used     : %5u  (%3u%%)", (totalTxtBBS - totalTxtHdr), (totalTxtBBS - totalTxtHdr) * 100 / (totalTxtBBS ? totalTxtBBS : 1));
 
         newLine();
 
-        flogEntry(LOG_STATS, 0, "Message base   : %9u bytes", (u32)totalTxtBBS * 256 + totalMsgs * 226 + 406);
+        logEntryf(LOG_STATS, 0, "Message base   : %9u bytes", (u32)totalTxtBBS * 256 + totalMsgs * 226 + 406);
 #ifdef __CANUSE64BIT
-        flogEntry(LOG_STATS, 0, "Disk space     : %9s bytes free on message base drive", fmtU64(diskFree64(config.bbsPath)));
+        logEntryf(LOG_STATS, 0, "Disk space     : %9s bytes free on message base drive", fmtU64(diskFree64(config.bbsPath)));
 #else
-        flogEntry(LOG_STATS, 0, "Disk space     : %9u bytes free on message base drive", diskFree(config.bbsPath));
+        logEntryf(LOG_STATS, 0, "Disk space     : %9u bytes free on message base drive", diskFree(config.bbsPath));
 #endif
 
         newLine();
@@ -1682,7 +1682,7 @@ JAMonly:
                   }
                 }
                 else
-                  flogEntry(LOG_ALWAYS, 0, "Illegal command line option: %s", argv[count]);
+                  logEntryf(LOG_ALWAYS, 0, "Illegal command line option: %s", argv[count]);
       }
 
       if ((switches & (SW_F | SW_R)) && !*message->subject)
@@ -1731,7 +1731,7 @@ JAMonly:
         }
 
         if (writeNetMsg(message, srcAka, &message->destNode, PKT_TYPE_2PLUS, 0xFFFF) == 0)
-          flogEntry(LOG_ALWAYS, 0, "Sending netmail message to node %s", nodeStr(&message->destNode));
+          logEntryf(LOG_ALWAYS, 0, "Sending netmail message to node %s", nodeStr(&message->destNode));
       }
       else
         // JAM
@@ -1755,7 +1755,7 @@ JAMonly:
           jam_writemsg(areaPtr->msgBasePath, message, 1);
           jam_closeall();
 
-          flogEntry(LOG_ALWAYS, 0, "Posting message in area %s (JAM base %s)", areaPtr->areaName, areaPtr->msgBasePath);
+          logEntryf(LOG_ALWAYS, 0, "Posting message in area %s (JAM base %s)", areaPtr->areaName, areaPtr->msgBasePath);
         }
         else
         {
@@ -1765,7 +1765,7 @@ JAMonly:
 
           openBBSWr();
           if (writeBBS(message, postBoard, isNetmail) == 0)
-            flogEntry(LOG_ALWAYS, 0, "Posting message in area %s ("MBNAME " board %u)", areaPtr->areaName, postBoard);
+            logEntryf(LOG_ALWAYS, 0, "Posting message in area %s ("MBNAME " board %u)", areaPtr->areaName, postBoard);
 
           closeBBS();
         }
@@ -1855,7 +1855,7 @@ JAMonly:
                       logEntry("Processing personal mail directory", LOG_ALWAYS, 0);
                     }
                     else
-                      flogEntry(LOG_ALWAYS, 0, "Unknown command line option: %s", argv[c]);
+                      logEntryf(LOG_ALWAYS, 0, "Unknown command line option: %s", argv[c]);
 
               if (helpPtr2 != NULL)
               {

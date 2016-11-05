@@ -209,7 +209,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
                else
                {
                   putchar('\n');
-                  flogEntry(LOG_MSGBASE, 0, "Bad date in message base: message #%u in board #%u", msgHdrBuf[bufCount].MsgNum, msgHdrBuf[bufCount].Board);
+                  logEntryf(LOG_MSGBASE, 0, "Bad date in message base: message #%u in board #%u", msgHdrBuf[bufCount].MsgNum, msgHdrBuf[bufCount].Board);
                   sli_bsTimeStampHi[count] = 0;
                   sli_bsTimeStampLo[count] = 0;
                }

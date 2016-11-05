@@ -140,7 +140,7 @@ static BOOL getresponse(UINT response_expected)
    sscanf(buf, "%d", &response);
    if ( response != response_code[response_expected] )
    {
-      flogEntry(LOG_ALWAYS, 0, "Expected %d, received %d: %s", response_code[response_expected], response, response_text[response_expected]);
+      logEntryf(LOG_ALWAYS, 0, "Expected %d, received %d: %s", response_code[response_expected], response, response_text[response_expected]);
       return FALSE;
    }
    return TRUE;
@@ -341,7 +341,7 @@ static int openConnection(char *SMTPServerName)
    }
    if ((hostent = gethostbyname(SMTPServerName)) == NULL)
    {
-      flogEntry(LOG_ALWAYS, 0, "Hostname not found: %s", SMTPServerName);
+      logEntryf(LOG_ALWAYS, 0, "Hostname not found: %s", SMTPServerName);
       goto einde;
    }
    if ( (servent = getservbyname("smtp", "tcp")) == NULL )
@@ -350,7 +350,7 @@ static int openConnection(char *SMTPServerName)
       goto einde;
    }
 
-   flogEntry(LOG_ALWAYS, 0, "Connecting to %s (%u.%u.%u.%u) on port %u (SMTP)",
+   logEntryf(LOG_ALWAYS, 0, "Connecting to %s (%u.%u.%u.%u) on port %u (SMTP)",
                            SMTPServerName,
                            (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b1,
                            (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b2,
@@ -408,9 +408,9 @@ int sendMessage(char *SMTPServerName, char *mailfrom, char *mailto, internalMsgT
          return 1;
       }
    if ( message->destNode.zone )
-      flogEntry(LOG_ALWAYS, 0, "Sending mail for node %s to %s", nodeStr(&message->destNode), mailto);
+      logEntryf(LOG_ALWAYS, 0, "Sending mail for node %s to %s", nodeStr(&message->destNode), mailto);
    else
-      flogEntry(LOG_ALWAYS, 0, "Sending mail to %s", mailto);
+      logEntryf(LOG_ALWAYS, 0, "Sending mail to %s", mailto);
    error = 0;
    sprintf(sbuf, "MAIL FROM: <%s>\r\n", mailfrom);
    if (send(ws, sbuf, strlen(sbuf), 0) == SOCKET_ERROR)

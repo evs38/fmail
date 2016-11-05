@@ -234,7 +234,7 @@ void initFMail(const char *_funcStr, s32 switches)
   initLog(switches);
 
 #ifdef _DEBUG
-  flogEntry(LOG_DEBUG, 0, "DEBUG gmtOffset=%ld daylight=%d timezone=%ld tzname=%s-%s", gmtOffset, _daylight, _timezone, _tzname[0], _tzname[1]);
+  logEntryf(LOG_DEBUG, 0, "DEBUG gmtOffset=%ld daylight=%d timezone=%ld tzname=%s-%s", gmtOffset, _daylight, _timezone, _tzname[0], _tzname[1]);
 #endif
 
   if (  NULL == (message       = (internalMsgType *)malloc(INTMSG_SIZE                          ))
@@ -269,7 +269,7 @@ void deinitFMail(void)
     if (configHandle != -1)
       close(configHandle);
 
-    flogEntry(LOG_ALWAYS, 0, "Can't write: %s [%s]", configFileStr, strError(errno));
+    logEntryf(LOG_ALWAYS, 0, "Can't write: %s [%s]", configFileStr, strError(errno));
   }
   freeNull(message      );
   freeNull(seenByArray  );

@@ -258,7 +258,7 @@ s16 multiUpdate(void)
       if (filelength(srcTxtHandle) + filelength(destTxtHandle) >= 0x1000000L)
       {
          logEntry("Maximum message base size has been reached (text size)", LOG_ALWAYS, 0);
-         flogEntry(LOG_ALWAYS, 0, "- new txt size: %lu, orig txt size: %lu", filelength(srcTxtHandle), filelength(destTxtHandle));
+         logEntryf(LOG_ALWAYS, 0, "- new txt size: %lu, orig txt size: %lu", filelength(srcTxtHandle), filelength(destTxtHandle));
          close(destTxtHandle);
          close(destToIdxHandle);
          close(destIdxHandle);
@@ -572,7 +572,7 @@ static s16 writeText (char *msgText, char *seenBy, char *path, u16 skip,
       {
          newLine();
          logEntry("Maximum message base size has been reached (# records)", LOG_ALWAYS, 0);
-         flogEntry(LOG_ALWAYS, 0, "- new txt recs: %hu, orig txt recs: %hu", msgTxtRecNum, globVars.baseTotalTxtRecs);
+         logEntryf(LOG_ALWAYS, 0, "- new txt recs: %hu, orig txt recs: %hu", msgTxtRecNum, globVars.baseTotalTxtRecs);
          return 1;
       }
       (*numRecs)++;
@@ -1056,15 +1056,15 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
   {
     struct stat statbuf;
     if (fstat(msgHdrHandle, &statbuf) != 0)
-      flogEntry(LOG_DEBUG, 0, "DEBUG fstat error on msgHdrHandle=%d, error=%s", msgHdrHandle, strError(errno));
+      logEntryf(LOG_DEBUG, 0, "DEBUG fstat error on msgHdrHandle=%d, error=%s", msgHdrHandle, strError(errno));
 
-    flogEntry(LOG_DEBUG, 0, "DEBUG before read "dMSGHDR"."MBEXTN": handle=%d, &msgRa=%p, sizeof(msgHdrRec)=%u", msgHdrHandle, &msgRa, sizeof(msgHdrRec));
+    logEntryf(LOG_DEBUG, 0, "DEBUG before read "dMSGHDR"."MBEXTN": handle=%d, &msgRa=%p, sizeof(msgHdrRec)=%u", msgHdrHandle, &msgRa, sizeof(msgHdrRec));
   }
 #endif // _DEBUG
    if ((temp = read(msgHdrHandle, &msgRa, sizeof(msgHdrRec))) != sizeof(msgHdrRec))
    {
       if (temp != 0)
-        flogEntry(LOG_ALWAYS, 0, "Can't read "dMSGHDR"."MBEXTN", index=%u, filelength=%ld, sizeof-record=%u, read=%d, error=%s", index, filelength(msgHdrHandle), sizeof(msgHdrRec), temp, strError(errno));
+        logEntryf(LOG_ALWAYS, 0, "Can't read "dMSGHDR"."MBEXTN", index=%u, filelength=%ld, sizeof-record=%u, read=%d, error=%s", index, filelength(msgHdrHandle), sizeof(msgHdrRec), temp, strError(errno));
 
       return 0;
    }
@@ -1086,7 +1086,7 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
       if ((u32)msgRa.NumRecs > ((u32)((u32)TEXT_SIZE - 2048) >> 8))
       {
          putchar('\r');
-         flogEntry(LOG_ALWAYS, 0, "Message too big: message #%u in board #%u "dARROW" Skipped", msgRa.MsgNum, (u16)msgRa.Board);
+         logEntryf(LOG_ALWAYS, 0, "Message too big: message #%u in board #%u "dARROW" Skipped", msgRa.MsgNum, (u16)msgRa.Board);
          return -1;
       }
 
@@ -1100,7 +1100,7 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
                    &message->hours, &message->minutes) != 0)
       {
          putchar('\r');
-         flogEntry(LOG_MSGBASE, 0, "Bad date in message base: message #%u in board #%u "dARROW" Skipped", msgRa.MsgNum, msgRa.Board);
+         logEntryf(LOG_MSGBASE, 0, "Bad date in message base: message #%u in board #%u "dARROW" Skipped", msgRa.MsgNum, msgRa.Board);
          return -1;
       }
 
@@ -1389,7 +1389,7 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
     if ((tempHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1)
       return (-1);
 
-    flogEntry(LOG_ALWAYS, 0, "Scanning for messages in HUDSON area: %s", echoAreaList[echoIndex].areaName);
+    logEntryf(LOG_ALWAYS, 0, "Scanning for messages in HUDSON area: %s", echoAreaList[echoIndex].areaName);
 
     sprintf(tempStr2, "AREA:%s\r\1RESCANNED", echoAreaList[echoIndex].areaName);
     setViaStr(tempStr, tempStr2, echoAreaList[echoIndex].address);
@@ -1443,7 +1443,7 @@ s16 rescan(nodeInfoType *nodeInfo, const char *areaName, u16 maxRescan, fhandle 
   sprintf(tempStr, "Rescanned %u messages in area %s", msgsFound, echoAreaList[echoIndex].areaName);
   mgrLogEntry(tempStr);
 #ifdef _DEBUG
-  flogEntry(LOG_DEBUG, 0, "DEBUG %s", tempStr);
+  logEntryf(LOG_DEBUG, 0, "DEBUG %s", tempStr);
 #endif
   strcat(tempStr, "\r");
   write(msgHandle1, tempStr, strlen(tempStr));

@@ -124,7 +124,7 @@ static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
     do
     {
       if (config.uplinkReq[count].originAka >= MAX_AKAS)
-        flogEntry(LOG_ALWAYS, 0, "Bad origin AKA defined for Uplink #%u", count);
+        logEntryf(LOG_ALWAYS, 0, "Bad origin AKA defined for Uplink #%u", count);
       else if (config.uplinkReq[count].node.zone &&
                ((nodeInfoPtr->groups & config.uplinkReq[count].groups) != 0))
       {
@@ -1476,7 +1476,7 @@ Send:
     fhandle msgHandle1 = -1
           , msgHandle2 = -1;
 #ifdef _DEBUG0
-    flogEntry(LOG_DEBUG, 0, "DEBUG Rescan AreaFix start %s %lu.msg %lu.msg", config.netPath, msgNum1, msgNum2);
+    logEntryf(LOG_DEBUG, 0, "DEBUG Rescan AreaFix start %s %lu.msg %lu.msg", config.netPath, msgNum1, msgNum2);
 #endif
     if (msgNum1)
     {

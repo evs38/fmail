@@ -84,7 +84,7 @@ s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
 
    if (nfInfo->nodePtr->node.zone == 0)
    {
-      flogEntry(LOG_ALWAYS, 0, "Warning: Node %s is not defined in the node manager", nodeStr(&nfInfo->destNode4d));
+      logEntryf(LOG_ALWAYS, 0, "Warning: Node %s is not defined in the node manager", nodeStr(&nfInfo->destNode4d));
       errorDisplay++;
    }
 
@@ -99,7 +99,7 @@ s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
           (nfInfo->destNode.point != 0))
       {
          if (nfInfo->srcAka)
-            flogEntry(LOG_ALWAYS, 0, "Warning: Fakenet not defined but required for AKA %u", nfInfo->srcAka);
+            logEntryf(LOG_ALWAYS, 0, "Warning: Fakenet not defined but required for AKA %u", nfInfo->srcAka);
          else
             logEntry("Warning: Fakenet not defined but required for the main node number", LOG_ALWAYS, 0);
 
@@ -151,12 +151,12 @@ void initAreaInfo(void)
     areaBuf->board   = min(areaBuf->board, MBBOARDS);
 
     if (echoCount == MAX_AREAS)
-       flogEntry(LOG_ALWAYS, 4, "More than %u areas listed in "dARFNAME, MAX_AREAS);
+       logEntryf(LOG_ALWAYS, 4, "More than %u areas listed in "dARFNAME, MAX_AREAS);
 
     if (config.akaList[areaBuf->address].nodeNum.zone == 0)
     {
       error = 1;
-      flogEntry(LOG_ALWAYS, 0, "ERROR: Origin address of area %s (AKA %u) is not defined", areaBuf->areaName, areaBuf->address);
+      logEntryf(LOG_ALWAYS, 0, "ERROR: Origin address of area %s (AKA %u) is not defined", areaBuf->areaName, areaBuf->address);
       errorDisplay++;
     }
 
@@ -227,7 +227,7 @@ void initAreaInfo(void)
 
       if (c < MAX_AKAS)
       {
-        flogEntry(LOG_ALWAYS, 0, "Warning: Can't forward area %s to a local AKA", areaBuf->areaName);
+        logEntryf(LOG_ALWAYS, 0, "Warning: Can't forward area %s to a local AKA", areaBuf->areaName);
         errorDisplay++;
       }
       else
@@ -352,7 +352,7 @@ void initAreaInfo(void)
     {
       if (echoAreaList[count].options._reserved)
 	    {
-	      flogEntry(LOG_ALWAYS, 0, "Area %s has been disconnected from %s", echoAreaList[count].areaName, nodeStr(&config.uplinkReq[echoAreaList[count].msgCount].node));
+	      logEntryf(LOG_ALWAYS, 0, "Area %s has been disconnected from %s", echoAreaList[count].areaName, nodeStr(&config.uplinkReq[echoAreaList[count].msgCount].node));
 	      helpPtr += sprintf (helpPtr, "%s\r", tempStr);
 
         echoAreaList[count].options._reserved = 0;
@@ -368,7 +368,7 @@ void initAreaInfo(void)
   for (count = 0; count < echoCount; count++)
   {
     const char *c = echoAreaList[count].JAMdirPtr != NULL ? echoAreaList[count].JAMdirPtr : "";
-    flogEntry(LOG_DEBUG, 0, "DEBUG Area: %d '%s' '%s'", count, echoAreaList[count].areaName, c);
+    logEntryf(LOG_DEBUG, 0, "DEBUG Area: %d '%s' '%s'", count, echoAreaList[count].areaName, c);
   }
 #endif
 }

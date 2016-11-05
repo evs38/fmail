@@ -374,13 +374,13 @@ u16 getAreaCode(char *msgText)
         return low;
 
       if (echoAreaList[low].options.local)
-        flogEntry(LOG_ALWAYS, 0, "Area is local: '%s'", echoName);
+        logEntryf(LOG_ALWAYS, 0, "Area is local: '%s'", echoName);
       else
-        flogEntry(LOG_ALWAYS, 0, "Area is not active: '%s'", echoName);
+        logEntryf(LOG_ALWAYS, 0, "Area is not active: '%s'", echoName);
     }
     else
     {
-      flogEntry(LOG_ALWAYS, 0, "Unknown area: '%s'", echoName);
+      logEntryf(LOG_ALWAYS, 0, "Unknown area: '%s'", echoName);
 
       if (badEchoCount < MAX_BAD_ECHOS)
       {
@@ -479,7 +479,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
     {
       tempStrType cwd;
       getcwd(cwd, dTEMPSTRLEN);
-      flogEntry(LOG_DEBUG, 0, "DEBUG secure:%d, cwd:%s, scanning:%s", secure, cwd, dirStr);
+      logEntryf(LOG_DEBUG, 0, "DEBUG secure:%d, cwd:%s, scanning:%s", secure, cwd, dirStr);
     }
 #endif
 
@@ -494,7 +494,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
         if (access(pktStr, 06) != 0)  // Check for read and write access
         {
-          flogEntry(LOG_ALWAYS, 2, "Not sufficient access rights on: %s (\"%s\")", pktStr, strError(errno));
+          logEntryf(LOG_ALWAYS, 2, "Not sufficient access rights on: %s (\"%s\")", pktStr, strError(errno));
           continue;
         }
 
@@ -518,7 +518,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
             sprintf(prodCodeStr, "Program id %04hX", globVars.remoteProdCode);
             helpPtr = prodCodeStr;
           }
-          flogEntry(LOG_PKTINFO, 0, "Processing %s from %s to %s", ent->d_name, nodeStr(&globVars.packetSrcNode), nodeStr(&globVars.packetDestNode));
+          logEntryf(LOG_PKTINFO, 0, "Processing %s from %s to %s", ent->d_name, nodeStr(&globVars.packetSrcNode), nodeStr(&globVars.packetDestNode));
 
           if ((globVars.remoteCapability & 1) == 1)
             sprintf( tempStr, "Pkt info: %s %u.%02u, Type 2+, %d, %04u-%02u-%02u %02u:%02u:%02u%s%s"
@@ -902,8 +902,8 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
             strcpy(strchr(tempStr, '.'), ".mlb");
             rename(pktStr, tempStr);
             unlink(pktStr);
-            flogEntry(LOG_ALWAYS, 0, "Max # net msgs per packet exceeded in packet from %s", nodeStr(&globVars.packetSrcNode));
-            flogEntry(LOG_ALWAYS, 0, "Packet %s has been renamed to .mlb", pktStr);
+            logEntryf(LOG_ALWAYS, 0, "Max # net msgs per packet exceeded in packet from %s", nodeStr(&globVars.packetSrcNode));
+            logEntryf(LOG_ALWAYS, 0, "Packet %s has been renamed to .mlb", pktStr);
           }
           else
           {
@@ -1029,7 +1029,7 @@ void Toss(int argc, char *argv[])
           if (  stat(tempStr, &st) != 0
              || (st.st_mode & (S_IWRITE | S_IREAD)) != (S_IWRITE | S_IREAD))
           {
-            flogEntry(LOG_ALWAYS, 2, "Not sufficient rights on: %s", tempStr);
+            logEntryf(LOG_ALWAYS, 2, "Not sufficient rights on: %s", tempStr);
             continue;
           }
 
@@ -1331,7 +1331,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
     if (writeMsg(message, NETMSG, 0) == -1)
       return 1;
 
-    flogEntry(LOG_NETEXP, 0, "Netmail message for %s moved to netmail directory", nodeStr(&message->destNode));
+    logEntryf(LOG_NETEXP, 0, "Netmail message for %s moved to netmail directory", nodeStr(&message->destNode));
 
     if (updateCurrHdrBBS(message))
       return 1;
@@ -1348,7 +1348,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
 
     if (count == echoCount)
     {
-      flogEntry(LOG_ALWAYS, 0, "Found message in unknown message base board (#%u)", boardNum);
+      logEntryf(LOG_ALWAYS, 0, "Found message in unknown message base board (#%u)", boardNum);
 
       if (updateCurrHdrBBS(message))
         return 1;
@@ -1362,7 +1362,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
 
   if (echoAreaList[count].options.active && !echoAreaList[count].options.local)
   {
-    flogEntry(LOG_ECHOEXP, 0, "Echomail message, area %s", echoAreaList[count].areaName);
+    logEntryf(LOG_ECHOEXP, 0, "Echomail message, area %s", echoAreaList[count].areaName);
 
     if (echoAreaList[count].options.allowPrivate)
       message->attribute &= PRIVATE;
@@ -1587,7 +1587,7 @@ void Scan(int argc, char *argv[])
         for (count = 0; count < echoCount; count++)
         {
 #ifdef _DEBUG0
-          flogEntry(LOG_DEBUG, 0, "DEBUG JAM scan count: %d", count);
+          logEntryf(LOG_DEBUG, 0, "DEBUG JAM scan count: %d", count);
 #endif // _DEBUG
           if (  (   echoAreaList[count].JAMdirPtr != NULL
                 &&  echoAreaList[count].options.active
@@ -1604,7 +1604,7 @@ void Scan(int argc, char *argv[])
                 puts("Rescanning selected JAM areas\n");
               infoBad = -1;
             }
-            flogEntry(LOG_ALWAYS, 0, "Scanning JAM area %d: %s", count, echoAreaList[count].areaName);
+            logEntryf(LOG_ALWAYS, 0, "Scanning JAM area %d: %s", count, echoAreaList[count].areaName);
             msgNum = 0;
             while (!diskError && (msgNum = jam_scan(count, ++msgNum, 0, message)) != 0)
             {
@@ -1618,7 +1618,7 @@ void Scan(int argc, char *argv[])
                 diskError = DERR_PRSCN;
             }
 #ifdef _DEBUG0
-            flogEntry(LOG_DEBUG, 0, "DEBUG Done scanning JAM area, scan count: %d", scanCount);
+            logEntryf(LOG_DEBUG, 0, "DEBUG Done scanning JAM area, scan count: %d", scanCount);
 #endif // _DEBUG
           }
         }
@@ -1627,29 +1627,29 @@ void Scan(int argc, char *argv[])
       {
         strcpy(stpcpy(tempStr, config.bbsPath), dECHOMAIL_JAM);
 #ifdef _DEBUG
-        flogEntry(LOG_DEBUG, 0, "DEBUG access: %s", tempStr);
+        logEntryf(LOG_DEBUG, 0, "DEBUG access: %s", tempStr);
 #endif // _DEBUG
         if (0 == access(tempStr, 02))
         {
 #ifdef _DEBUG
-          flogEntry(LOG_DEBUG, 0, "DEBUG unlink: %s", tempStr);
+          logEntryf(LOG_DEBUG, 0, "DEBUG unlink: %s", tempStr);
 #endif // _DEBUG
           if (0 == unlink(tempStr))
           {
 #ifdef _DEBUG
-            flogEntry(LOG_DEBUG, 0, "DEBUG unlinked: %s", tempStr);
+            logEntryf(LOG_DEBUG, 0, "DEBUG unlinked: %s", tempStr);
 #endif // _DEBUG
           }
           else
           {
 #ifdef _DEBUG
-            flogEntry(LOG_DEBUG, 0, "DEBUG unlink failed on: %s [%s]", tempStr, strError(errno));
+            logEntryf(LOG_DEBUG, 0, "DEBUG unlink failed on: %s [%s]", tempStr, strError(errno));
 #endif // _DEBUG
           }
         }
 #ifdef _DEBUG
         else
-          flogEntry(LOG_DEBUG, 0, "DEBUG no write access on: %s [%s]", tempStr, strError(errno));
+          logEntryf(LOG_DEBUG, 0, "DEBUG no write access on: %s [%s]", tempStr, strError(errno));
 #endif // _DEBUG
       }
       globVars.jamCountV = scanCount;
@@ -1852,7 +1852,7 @@ void Import(int argc, char *argv[])
                 else
                 {
                   validate2BBS(0);
-                  flogEntry( LOG_NETIMP, 0, "Importing msg #%u from %s to %s (board #%u)"
+                  logEntryf( LOG_NETIMP, 0, "Importing msg #%u from %s to %s (board #%u)"
                            , msgNum, nodeStr(&message->srcNode), nodeStr(&message->destNode), boardNum);
                   count++;
                   globVars.nmbCountV++;
@@ -2061,13 +2061,13 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  flogEntry( LOG_STATS, 0, "Netmail: %u,  Personal: %u,  "MBNAME": %u,  JAMbase: %u"
+  logEntryf( LOG_STATS, 0, "Netmail: %u,  Personal: %u,  "MBNAME": %u,  JAMbase: %u"
            , globVars.netCountV, globVars.perCountV, globVars.mbCountV,  globVars.jamCountV);
-  flogEntry( LOG_STATS, 0, "Msgbase net: %u, echo: %u, dup: %u, bad: %u"
+  logEntryf( LOG_STATS, 0, "Msgbase net: %u, echo: %u, dup: %u, bad: %u"
            , globVars.nmbCountV, globVars.echoCountV, globVars.dupCountV, globVars.badCountV);
 
 #ifdef _DEBUG0
-  flogEntry(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG sizeof(pingOptionsType): %u", sizeof(pingOptionsType));
+  logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG sizeof(pingOptionsType): %u", sizeof(pingOptionsType));
 #endif
 
   // Semaphore files

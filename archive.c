@@ -72,7 +72,7 @@ static s16 checkExist(char *entry, char *prog, char *par)
      || strnicmp(helpPtr, config.inPath, strlen(config.inPath)) == 0
      )
   {
-    flogEntry(LOG_ALWAYS, 0, "%s not found", entry);
+    logEntryf(LOG_ALWAYS, 0, "%s not found", entry);
     return -1;
   }
   strcpy(prog, helpPtr);
@@ -153,7 +153,7 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
     len = 1;
     if (strlen(parameters) + strlen(archiveName) >= MAX_PARSIZE)
     {
-      flogEntry(LOG_ALWAYS, 0, "Argument list of %s utility is too big", arcType);
+      logEntryf(LOG_ALWAYS, 0, "Argument list of %s utility is too big", arcType);
       return 1;
     }
     strcpy(tempStr,                      helpPtr + 2);
@@ -168,7 +168,7 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
     {
       if (strlen(parameters) + strlen(pktName) >= MAX_PARSIZE)
       {
-        flogEntry(LOG_ALWAYS, 0, "Argument list of %s utility is too big", arcType);
+        logEntryf(LOG_ALWAYS, 0, "Argument list of %s utility is too big", arcType);
         return 1;
       }
       strcpy(tempStr,                  helpPtr + 2);
@@ -187,7 +187,7 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
     {
       if (strlen(parameters) + strlen(tempPath) >= MAX_PARSIZE)
       {
-        flogEntry(LOG_ALWAYS, 0, "Argument list of %s utility is too big", arcType);
+        logEntryf(LOG_ALWAYS, 0, "Argument list of %s utility is too big", arcType);
         return 1;
       }
       strcpy(tempStr, helpPtr + 2);
@@ -199,7 +199,7 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
   if (len == 0)
     sprintf(strchr(parameters, 0),  " %s %s", archiveName, pktName);
 
-  flogEntry(LOG_EXEC | LOG_NOSCRN, 0, "Executing %s %s", program, parameters);
+  logEntryf(LOG_EXEC | LOG_NOSCRN, 0, "Executing %s %s", program, parameters);
 
   printf("<-- %s Start -->\n", arcType);
 
@@ -265,9 +265,9 @@ static void outboundBackup(const char *path)
 
   strcpy(stpcpy(bakPath, config.outBakPath), helpPtr);
   if (copyFile(path, bakPath, 0))
-    flogEntry(LOG_OUTBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup %s -> %s", path, bakPath);
+    logEntryf(LOG_OUTBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup %s -> %s", path, bakPath);
   else
-    flogEntry(LOG_OUTBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup Failed! %s -> %s", path, bakPath);
+    logEntryf(LOG_OUTBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup Failed! %s -> %s", path, bakPath);
 }
 // ----------------------------------------------------------------------------
 void unpackArc(const struct bt *bp)
@@ -352,9 +352,9 @@ void unpackArc(const struct bt *bp)
     if (!*config.GUS.programName)
     {
       if (arcType == 0xFF)
-        flogEntry(LOG_ALWAYS, 0, "Unknown archiving utility used for %s"                  , fullFileName);
+        logEntryf(LOG_ALWAYS, 0, "Unknown archiving utility used for %s"                  , fullFileName);
       else
-        flogEntry(LOG_ALWAYS, 0, "Archive decompression program for %s method not defined", extPtr);
+        logEntryf(LOG_ALWAYS, 0, "Archive decompression program for %s method not defined", extPtr);
 
       return;
     }
@@ -363,10 +363,10 @@ void unpackArc(const struct bt *bp)
   }
   if (checkExist(arcPath, pathStr, parStr))
   {
-    flogEntry(LOG_ALWAYS, 0, "Archive decompression program for %s method not found", extPtr);
+    logEntryf(LOG_ALWAYS, 0, "Archive decompression program for %s method not found", extPtr);
     return;
   }
-  flogEntry(LOG_INBOUND, 0, "Decompressing %s (%s)", fullFileName, extPtr);
+  logEntryf(LOG_INBOUND, 0, "Decompressing %s (%s)", fullFileName, extPtr);
   {
     struct tm *tm = localtime(&bp->mtime);  // TODO (Wilfred#1#10/21/16): Check if correct value is logged
     if (tm != NULL)
@@ -408,7 +408,7 @@ void unpackArc(const struct bt *bp)
       ChDir(dirStr);
 
     Delete(config.inPath, "*.pkt");
-    flogEntry(LOG_ALWAYS, 0, "Cannot unpack bundle %s", fullFileName);
+    logEntryf(LOG_ALWAYS, 0, "Cannot unpack bundle %s", fullFileName);
     newLine();
     return;
   }
@@ -432,7 +432,7 @@ void unpackArc(const struct bt *bp)
 
   if (!existPattern(config.inPath, "*.pkt") && !existPattern(config.inPath, "*.bcl"))
   {
-    flogEntry(LOG_ALWAYS, 0, "No PKT or BCL file(s) found after un%sing file %s", extPtr, fullFileName);
+    logEntryf(LOG_ALWAYS, 0, "No PKT or BCL file(s) found after un%sing file %s", extPtr, fullFileName);
     newLine();
     return;
   }
@@ -441,7 +441,7 @@ void unpackArc(const struct bt *bp)
 // ----------------------------------------------------------------------------
 s16 handleNoCompress(const char *pktName, const char *qqqName, nodeNumType *destNode)
 {
-  flogEntry(LOG_ALWAYS, 0, "Node %s is on line: cannot compress mail", nodeStr(destNode));
+  logEntryf(LOG_ALWAYS, 0, "Node %s is on line: cannot compress mail", nodeStr(destNode));
   rename(pktName, qqqName);
   newLine();
 
@@ -480,7 +480,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
              , *cPtr = "";
 
 #ifdef _DEBUG
-  flogEntry(LOG_DEBUG, 0, "DEBUG packArc: file %s  %s -> %s  outStatus:%d", qqqName, nodeStr(srcNode), nodeStr(destNode), nodeInfo->outStatus);
+  logEntryf(LOG_DEBUG, 0, "DEBUG packArc: file %s  %s -> %s  outStatus:%d", qqqName, nodeStr(srcNode), nodeStr(destNode), nodeInfo->outStatus);
 #endif
 
   if (!stricmp(qqqName + strlen(qqqName) - 3, dEXTTMP))
@@ -795,7 +795,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
         break;
 
       default:
-        flogEntry(LOG_ALWAYS, 0, "Unknown archiving utility listed for node %s", nodeStr(destNode));
+        logEntryf(LOG_ALWAYS, 0, "Unknown archiving utility listed for node %s", nodeStr(destNode));
         if (semaHandle >= 0)
         {
           close(semaHandle);
@@ -809,9 +809,9 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     if (!*arcPath || checkExist(arcPath, pathStr, parStr))
     {
       if (!*arcPath)
-        flogEntry(LOG_ALWAYS, 0, "Archive compression program for %s method not defined", cPtr);
+        logEntryf(LOG_ALWAYS, 0, "Archive compression program for %s method not defined", cPtr);
       else
-        flogEntry(LOG_ALWAYS, 0, "Archive compression program for %s method not found"  , cPtr);
+        logEntryf(LOG_ALWAYS, 0, "Archive compression program for %s method not found"  , cPtr);
 
       if (semaHandle >= 0)
       {
@@ -887,7 +887,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     if (config.maxBundleSize != 0 && (arcSize >> 10) >= config.maxBundleSize)
       memcpy(&fAttInfo[oldArc], &fAttInfo[oldArc + 1], sizeof(fAttInfoType) * (--fAttCount - oldArc));
 
-    flogEntry(LOG_OUTBOUND, 0, "Mail bundle already going from %s to %s", nodeStr(srcNode), nodeStr(destNode));
+    logEntryf(LOG_OUTBOUND, 0, "Mail bundle already going from %s to %s", nodeStr(srcNode), nodeStr(destNode));
   }
   else
   {

@@ -171,14 +171,13 @@ void addNew(s32 switches)
         else // pass-through
           *tempInfo.msgBasePath = 0;
       }
-      index = 0;
 	    while (index < areaInfoCount && strcmp(tempInfo.areaName, (*areaNames)[index]) > 0)
         index++;
       if (index < areaInfoCount && !strcmp(tempInfo.areaName, (*areaNames)[index]))
+      index = 0;
       {
         ++areasExist;
-        sprintf(tempStr, "Area %s is already present", tempInfo.areaName);
-        logEntry(tempStr, LOG_ALWAYS, 0);
+        logEntryf(LOG_ALWAYS, 0, "Area %s is already present", tempInfo.areaName);
         continue;
       }
       if (index < areaInfoCount++)
@@ -201,8 +200,7 @@ void addNew(s32 switches)
       insRec(CFG_ECHOAREAS, index);
       usedArea[areaBuf->board - 1] = 1;
       ++areasAdded;
-      sprintf(tempStr, "Adding area %s", tempInfo.areaName);
-      logEntry(tempStr, LOG_ALWAYS, 0);
+      logEntryf(LOG_ALWAYS, 0, "Adding area %s", tempInfo.areaName);
     }
     unlink(tempStr);
   }
@@ -216,8 +214,7 @@ freemem:
   }
   if (areasAdded || areasExist)
     newLine();
-  sprintf(tempStr, "Areas added: %u, areas already present: %u", areasAdded, areasExist);
-  logEntry(tempStr, LOG_ALWAYS, 0);
+  logEntryf(LOG_ALWAYS, 0, "Areas added: %u, areas already present: %u", areasAdded, areasExist);
   strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
   unlink(tempStr);
 freemem2:

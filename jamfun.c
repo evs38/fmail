@@ -247,7 +247,7 @@ u16 jam_initmsghdrrec(JAMHDR *jam_msghdrrec, internalMsgType *message, u16 local
 
   ti = time(NULL);
 #ifdef _DEBUG0
-  flogEntry(LOG_DEBUG, 0, "DEBUG DateProcessed time: %ld %s", ti, time_t2str(ti));
+  logEntryf(LOG_DEBUG, 0, "DEBUG DateProcessed time: %ld %s", ti, time_t2str(ti));
 #endif
   jam_msghdrrec->DateProcessed = ti + gmtOffset;
   jam_msghdrrec->Attribute = (local ? (MSG_LOCAL|MSG_TYPEECHO) : MSG_TYPEECHO)
@@ -570,7 +570,7 @@ u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_su
     if (tm == NULL)
     {
 #ifdef _DEBUG0
-      flogEntry(LOG_DEBUG, 0, "DEBUG jam_gethdr, illegal DateWritten: %d on MsgNum: %d", jam_hdrrec->DateWritten, jam_hdrrec->MsgNum);
+      logEntryf(LOG_DEBUG, 0, "DEBUG jam_gethdr, illegal DateWritten: %d on MsgNum: %d", jam_hdrrec->DateWritten, jam_hdrrec->MsgNum);
 #endif // _DEBUG
       message->year    = 1970;
       message->month   = 1;

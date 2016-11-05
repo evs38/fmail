@@ -409,8 +409,7 @@ s16 notify(int argc, char *argv[])
 	    }
 	    writeNetMsg (message, nodeBuf->useAka-1, &nodeBuf->node, nodeBuf->capability,
 				  nodeBuf->outStatus);
-	    sprintf (tempStr, "Sending node status message to node %s", nodeStr(&nodeBuf->node));
-	    logEntry (tempStr, LOG_ALWAYS, 0);
+	    logEntryf(LOG_ALWAYS, 0, "Sending node status message to node %s", nodeStr(&nodeBuf->node));
 	 }
       }
    }
@@ -489,10 +488,8 @@ s16 notify(int argc, char *argv[])
                   }
                }
             }
-            writeNetMsg (message, nodeBuf->useAka-1, &nodeBuf->node, nodeBuf->capability,
-                                  nodeBuf->outStatus);
-            sprintf (tempStr, "Sending area status message to node %s", nodeStr(&nodeBuf->node));
-            logEntry (tempStr, LOG_ALWAYS, 0);
+            writeNetMsg(message, nodeBuf->useAka-1, &nodeBuf->node, nodeBuf->capability, nodeBuf->outStatus);
+            logEntryf(LOG_ALWAYS, 0, "Sending area status message to node %s", nodeStr(&nodeBuf->node));
          }
       }
    }

@@ -1,3 +1,6 @@
+2016-11-05  1.73.2.28-Beta
+  * Renamed function flogEntry to logEntryf.
+
 2016-11-05  1.73.2.27-Beta
   * FToolsW32 MingW32 compiled version is working.
   * Sort hudson function doesn't print progress anymore.

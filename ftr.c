@@ -377,8 +377,7 @@ s16 export(int argc, char *argv[])
   if ((outHandle = open(argv[3], O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, S_IREAD | S_IWRITE)) == -1)
     logEntry ("Can't open output file", LOG_ALWAYS, 1);
 
-  sprintf(tempStr, "Exporting messages in board %u to file %s", board, strupr(argv[3]));
-  logEntry(tempStr, LOG_ALWAYS, 0);
+  logEntryf(LOG_ALWAYS, 0, "Exporting messages in board %u to file %s", board, strupr(argv[3]));
 
   totalHdrBuf = 0;
   hdrBufCount = 0;

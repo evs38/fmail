@@ -124,7 +124,7 @@ s16 openPktRd(char *pktName, s16 secure)
 
    if ((pktHandle = _sopen(pktName, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
    {
-      flogEntry(LOG_ALWAYS, 0, "Error opening packet file: %s", pktName);
+      logEntryf(LOG_ALWAYS, 0, "Error opening packet file: %s", pktName);
 
       return 1;
    }
@@ -137,7 +137,7 @@ s16 openPktRd(char *pktName, s16 secure)
       strcpy(stpcpy(newPktName, pktName) - 3, "ERR");
       rename(pktName, newPktName);
 
-      flogEntry(LOG_ALWAYS, 0, "Error reading packet header in file: %s, renamed to: %s", pktName, newPktName);
+      logEntryf(LOG_ALWAYS, 0, "Error reading packet header in file: %s, renamed to: %s", pktName, newPktName);
 
       return 1;
    }
@@ -180,7 +180,7 @@ s16 openPktRd(char *pktName, s16 secure)
          globVars.packetDestAka++;
 
 #ifdef _DEBUG0
-      flogEntry(LOG_DEBUG, 0, "DEBUG Type 2+ dest zone: %d", msgPktHdr.destZone);
+      logEntryf(LOG_DEBUG, 0, "DEBUG Type 2+ dest zone: %d", msgPktHdr.destZone);
 #endif
       // FSC-0048 rev. 2
 
@@ -221,7 +221,7 @@ s16 openPktRd(char *pktName, s16 secure)
             globVars.packetDestAka++;
 
 #ifdef _DEBUG0
-         flogEntry(LOG_DEBUG, 0, "DEBUG FSC-0045 dest AKA: %d", globVars.packetDestAka);
+         logEntryf(LOG_DEBUG, 0, "DEBUG FSC-0045 dest AKA: %d", globVars.packetDestAka);
 #endif
          globVars.packetSrcNode .net   = ((FSC45pktHdrType*)&msgPktHdr)->origNet;
          globVars.packetSrcNode .zone  = ((FSC45pktHdrType*)&msgPktHdr)->origZone;
@@ -250,7 +250,7 @@ s16 openPktRd(char *pktName, s16 secure)
             globVars.packetDestAka++;
 
 #ifdef _DEBUG0
-         flogEntry(LOG_DEBUG, 0, "DEBUG Type 2 dest AKA: %d", globVars.packetDestAka);
+         logEntryf(LOG_DEBUG, 0, "DEBUG Type 2 dest AKA: %d", globVars.packetDestAka);
 #endif
          globVars.packetSrcNode .zone  = 0;
          globVars.packetSrcNode .net   = msgPktHdr.origNet;
@@ -273,11 +273,11 @@ s16 openPktRd(char *pktName, s16 secure)
          close(pktHandle);
          strcpy(stpcpy(tempStr, pktName) - 3, "DST");
          rename(pktName, tempStr);
-         flogEntry(LOG_ALWAYS, 0, "Packet is addressed to another node (%s) --> packet is renamed to .DST", nodeStr(&globVars.packetDestNode));
+         logEntryf(LOG_ALWAYS, 0, "Packet is addressed to another node (%s) --> packet is renamed to .DST", nodeStr(&globVars.packetDestNode));
 
          return 2;  // Destination address not found
       }
-      flogEntry(LOG_ALWAYS, 0, "Packet is addressed to another node (%s)!", nodeStr(&globVars.packetDestNode));
+      logEntryf(LOG_ALWAYS, 0, "Packet is addressed to another node (%s)!", nodeStr(&globVars.packetDestNode));
       globVars.packetDestAka = 0;
    }
 
@@ -297,7 +297,7 @@ s16 openPktRd(char *pktName, s16 secure)
          if (strcmp(nodeInfoPtr->packetPwd, password) != 0)
          {
             close(pktHandle);
-            flogEntry(LOG_ALWAYS, 0, "Received password \"%s\" from node %s, expected \"%s\"", password, nodeStr(&globVars.packetSrcNode), nodeInfoPtr->packetPwd);
+            logEntryf(LOG_ALWAYS, 0, "Received password \"%s\" from node %s, expected \"%s\"", password, nodeStr(&globVars.packetSrcNode), nodeInfoPtr->packetPwd);
             strcpy(tempStr, pktName);
             strcpy(tempStr+strlen(tempStr)-3, "SEC");
             rename(pktName, tempStr);
@@ -311,7 +311,7 @@ s16 openPktRd(char *pktName, s16 secure)
       else
       {
          if (*password)
-            flogEntry(LOG_UNEXPPWD, 0, "Unexpected packet password \"%s\" from node %s", password, nodeStr(&globVars.packetSrcNode));
+            logEntryf(LOG_UNEXPPWD, 0, "Unexpected packet password \"%s\" from node %s", password, nodeStr(&globVars.packetSrcNode));
       }
    }
 
@@ -665,7 +665,7 @@ char *setSeenByPath( internalMsgType *msg, char *txtEnd
                    , areaOptionsType areaOptions, nodeOptionsType nodeOptions)
 {
 #ifdef _DEBUG0
-  flogEntry(LOG_DEBUG, 0, "DEBUG setSeenByPath areaOptions.tinySeenBy:%u nodeOptions.tinySeenBy:%u areaOptions.tinyPath:%u", areaOptions.tinySeenBy, nodeOptions.tinySeenBy, areaOptions.tinyPath);
+  logEntryf(LOG_DEBUG, 0, "DEBUG setSeenByPath areaOptions.tinySeenBy:%u nodeOptions.tinySeenBy:%u areaOptions.tinyPath:%u", areaOptions.tinySeenBy, nodeOptions.tinySeenBy, areaOptions.tinyPath);
 #endif
 
   if (NULL == txtEnd)

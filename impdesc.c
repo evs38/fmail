@@ -42,22 +42,24 @@ char *findCLiStr (char *s1, char *s2);
 
 s16 importNAInfo(char *fileName)
 {
-   fhandle        NAHandle;
-   u16            count = 0, updated = 0, xu;
-   tempStrType    tempStr;
-   headerType	  *areaHeader;
-   rawEchoType    *areaBuf;
-   char           *buf;
-   u16            bufsize;
-   char           *helpPtr, *helpPtr2;
+   fhandle      NAHandle;
+   u16          count   = 0
+              , updated = 0
+              , xu;
+   headerType	 *areaHeader;
+   rawEchoType *areaBuf;
+   char        *buf;
+   u16          bufsize;
+   char        *helpPtr
+             , *helpPtr2;
 
    if ((NAHandle = open(fileName, O_RDONLY | O_BINARY)) == -1)
       logEntry("Can't find file", LOG_ALWAYS, 4);
 
-   if ( (buf = malloc(bufsize = min((u16)filelength(NAHandle)+1, 0xFFF0))) == NULL )
+   if ((buf = malloc(bufsize = min((u16)filelength(NAHandle)+1, 0xFFF0))) == NULL)
       logEntry("Not enough memory", LOG_ALWAYS, 2);
 
-   if ( read(NAHandle, buf, bufsize-1) != bufsize-1 )
+   if (read(NAHandle, buf, bufsize-1) != bufsize-1)
    {
       free(buf);
       logEntry("Can't read file", LOG_ALWAYS, 2);
@@ -65,7 +67,7 @@ s16 importNAInfo(char *fileName)
    close(NAHandle);
    buf[bufsize] = 0;
 
-   if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
+   if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
    {
       close(NAHandle);
       free(buf);
@@ -74,21 +76,24 @@ s16 importNAInfo(char *fileName)
 
    puts("Importing descriptions...\n");
 
-   while ( getRec(CFG_ECHOAREAS, count++) )
+   while (getRec(CFG_ECHOAREAS, count++))
    {
-      if ( (helpPtr = findCLiStr(buf, areaBuf->areaName)) == NULL )
+      if ((helpPtr = findCLiStr(buf, areaBuf->areaName)) == NULL)
          continue;
-      while ( *helpPtr != ' ')
+      while (*helpPtr != ' ')
          ++helpPtr;
-      while ( *helpPtr == ' ')
+      while (*helpPtr == ' ')
          ++helpPtr;
       helpPtr2 = areaBuf->comment;
       xu = 0;
-      while ( ++xu < ECHONAME_LEN && *helpPtr && *helpPtr != '\r' && *helpPtr != '\n' )
+      while (++xu < ECHONAME_LEN && *helpPtr && *helpPtr != '\r' && *helpPtr != '\n')
          *helpPtr2++ = *helpPtr++;
+
       do
-         *helpPtr2-- = 0;
-      while ( helpPtr2 >= areaBuf->comment && *helpPtr2 == ' ' );
+      {
+        *helpPtr2-- = 0;
+      } while (helpPtr2 >= areaBuf->comment && *helpPtr2 == ' ');
+
       putRec(CFG_ECHOAREAS, count-1);
       updated++;
    }
@@ -96,8 +101,7 @@ s16 importNAInfo(char *fileName)
    closeConfig(CFG_ECHOAREAS);
    free(buf);
 
-   sprintf(tempStr, "%u descriptions imported", updated);
-   logEntry(tempStr, LOG_ALWAYS, 0);
+   logEntryf(LOG_ALWAYS, 0, "%u descriptions imported", updated);
 
    return 0;
 }

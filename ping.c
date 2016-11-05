@@ -105,7 +105,7 @@ int Ping(internalMsgType *message, int localAkaNum)
   char            *funcText = localAkaNum >= 0 ? "PING" : "TRACE";
 
 #ifdef _DEBUG
-  flogEntry(LOG_DEBUG, 0, "DEBUG Processing PING message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
+  logEntryf(LOG_DEBUG, 0, "DEBUG Processing PING message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
 #endif
 
   // Maak de replyMsg aan de hand van de lengte van het ontvangen bericht.
@@ -212,7 +212,7 @@ int Ping(internalMsgType *message, int localAkaNum)
 
   free(replyMsg);
 
-  flogEntry(LOG_ALWAYS, 0, "Processed PING request message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
+  logEntryf(LOG_ALWAYS, 0, "Processed PING request message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
 
   return msgNum < 0;
 }

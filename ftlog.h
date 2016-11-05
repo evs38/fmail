@@ -29,7 +29,7 @@
 
 char *expandName(char *fileName);
 void  initLog   (char *s, s32 switches);
-void  flogEntry (u16 entryType, u16 errorLevel, const char *fmt, ...);
+void  logEntryf (u16 entryType, u16 errorLevel, const char *fmt, ...);
 void  logEntry  (char *s, u16 entryType, u16 errorLevel);
 void  logActive (void);
 //---------------------------------------------------------------------------

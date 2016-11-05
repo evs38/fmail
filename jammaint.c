@@ -191,7 +191,7 @@ int writefile(fhandle h, char *obuf, int os, char *buf, int s)
      || (s < os && 0 != chsize(h, s))
      )
   {
-    flogEntry(LOG_ALWAYS, 2, "*** Problem writing JAM base file (your fucked!) [%s]", strError(errno));
+    logEntryf(LOG_ALWAYS, 2, "*** Problem writing JAM base file (your fucked!) [%s]", strError(errno));
     return 1;
   }
   return 0;
@@ -229,10 +229,8 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name);
 //---------------------------------------------------------------------------
 void logComb(const char *fs, const char *ds)
 {
-  tempStrType ts;
-  sprintf(ts, fs, ds);
   newLine();
-  logEntry(ts, LOG_DEBUG, 0);
+  logEntryf(LOG_DEBUG, 0, fs, ds);
 }
 //---------------------------------------------------------------------------
 int compareFileToBuf(const char *fname, const char *buf, u32 size)
@@ -384,7 +382,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 #endif
 
 
-  flogEntry(LOG_INBOUND | LOG_NOSCRN, 0, "Processing JAM area: %s", areaPtr->areaName);
+  logEntryf(LOG_INBOUND | LOG_NOSCRN, 0, "Processing JAM area: %s", areaPtr->areaName);
   putStr("Processing JAM area: ");
   putStr(areaPtr->areaName);
   putStr("... ");
@@ -398,7 +396,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   {
     CleanUp(&d);
     newLine();
-    flogEntry(LOG_ALWAYS, 0, "*** JAM area %s was not found or was locked", areaPtr->areaName);
+    logEntryf(LOG_ALWAYS, 0, "*** JAM area %s was not found or was locked", areaPtr->areaName);
     return 1;
   }
 
@@ -426,7 +424,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   maxMsg = sizeJDX / sizeof(JAMIDXREC);
 
 #ifdef _DEBUG
-  flogEntry(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG Size old: no:%u jhr:%u jdt:%u jdx:%u jlr:%u tot:%u", maxMsg, sizeJHR, sizeJDT, sizeJDX, sizeJLR, sizeJHR + sizeJDT + sizeJDX + sizeJLR);
+  logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG Size old: no:%u jhr:%u jdt:%u jdx:%u jlr:%u tot:%u", maxMsg, sizeJHR, sizeJDT, sizeJDX, sizeJLR, sizeJHR + sizeJDT + sizeJDX + sizeJLR);
 #endif
 
   if (  InitBuf(&d.lrBuf   , maxMsg)
@@ -672,17 +670,17 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
            + sizeJDT - highJDT
            + sizeJHR - highJHR;
 #ifdef _DEBUG
-    flogEntry(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG Size new: no:%u jhr:%u jdt:%u jdx:%u jlr:%u tot:%u", msgNumNew, highJHR, highJDT, highJDX, sizeJLR, highJHR + highJDT + highJDX + sizeJLR);
+    logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG Size new: no:%u jhr:%u jdt:%u jdx:%u jlr:%u tot:%u", msgNumNew, highJHR, highJDT, highJDX, sizeJLR, highJHR + highJDT + highJDX + sizeJLR);
 
     if (ss != 0)
-      flogEntry(LOG_DEBUG | LOG_NOSCRN, 0, "Space saved: %u", ss);
+      logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "Space saved: %u", ss);
 #endif
     *spaceSaved += ss;
   }
   if (JAMerror)
   {
     newLine();
-    flogEntry(LOG_ALWAYS, 0, "*** Encountered a problem during JAM base maintenance, area %s", areaPtr->areaName);
+    logEntryf(LOG_ALWAYS, 0, "*** Encountered a problem during JAM base maintenance, area %s", areaPtr->areaName);
   }
   else
   {
@@ -814,7 +812,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
   s32           spaceSaved;
 
 #ifdef _DEBUG
-  flogEntry(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG O Processing JAM area: %s", areaPtr->areaName);
+  logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG O Processing JAM area: %s", areaPtr->areaName);
 #endif
 
   if (  (buf      == NULL && (buf      = malloc(TXTBUFSIZE  )) == NULL)
@@ -878,7 +876,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
       fsclose(JDThandle);
       fsclose(JHRhandle);
 
-jamx: flogEntry(LOG_ALWAYS, 0, "O JAM area %s was not found or was locked", areaPtr->areaName);
+jamx: logEntryf(LOG_ALWAYS, 0, "O JAM area %s was not found or was locked", areaPtr->areaName);
       return 1;
    }
 
@@ -1243,7 +1241,7 @@ jamx: flogEntry(LOG_ALWAYS, 0, "O JAM area %s was not found or was locked", area
              + filelength(JHRhandle) - filelength(JHRhandleNew);
 
   if (spaceSaved != 0)
-    flogEntry(LOG_DEBUG | LOG_NOSCRN, 0, "o Space saved: %d", spaceSaved);
+    logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "o Space saved: %d", spaceSaved);
 
   fsclose(JLRhandleNew);
   fsclose(JDXhandleNew);
@@ -1257,7 +1255,7 @@ jamx: flogEntry(LOG_ALWAYS, 0, "O JAM area %s was not found or was locked", area
   if (JAMerror)
   {
     newLine();
-    flogEntry(LOG_ALWAYS, 0, "O Disk problems during JAM base maintenance, area %s", areaPtr->areaName);
+    logEntryf(LOG_ALWAYS, 0, "O Disk problems during JAM base maintenance, area %s", areaPtr->areaName);
   }
   else
     puts("Ready");

@@ -106,7 +106,7 @@ void moveMsg(char *msgName, char *destDir)
     sprintf(tempStr, "%s%u.msg", destDir, (u32)++highMsgNum);
     if (!moveFile(msgName, tempStr))
     {
-      flogEntry(LOG_SENTRCVD, 0, "Moving %s to %s", msgName, tempStr);
+      logEntryf(LOG_SENTRCVD, 0, "Moving %s to %s", msgName, tempStr);
       messagesMoved = 1;
     }
     if (destDir == config.sentPath)
@@ -128,7 +128,7 @@ static void removeTrunc(char *path)
                , pattern;
 
 #ifdef _DEBUG0
-  flogEntry(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG removeTrunc: %s", path);
+  logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG removeTrunc: %s", path);
 #endif
 
   if ((dir = opendir(path)) != NULL)
@@ -161,7 +161,7 @@ static void removeTrunc(char *path)
           {
             if (fileSize(fileNameStr) == 0 || count2 == fAttCount)
             {
-              flogEntry(LOG_DEBUG, 0, "Removing: %s", fileNameStr);
+              logEntryf(LOG_DEBUG, 0, "Removing: %s", fileNameStr);
               unlink(fileNameStr);
             }
           }
@@ -283,7 +283,7 @@ void initMsg(s16 noAreaFix)
                && !unlink(fileNameStr)
                )
             {
-              flogEntry(LOG_SENTRCVD, 0, "Killing empty netmail message #%u, from: %s to: %s", msgNum, msgMsg.fromUserName, msgMsg.toUserName);
+              logEntryf(LOG_SENTRCVD, 0, "Killing empty netmail message #%u, from: %s to: %s", msgNum, msgMsg.fromUserName, msgMsg.toUserName);
               messagesMoved = 1;
             }
             else
@@ -304,7 +304,7 @@ void initMsg(s16 noAreaFix)
                       emptyText(textStr) &&
                       !unlink(fileNameStr))
                   {
-                    flogEntry(LOG_SENTRCVD, 0, "Attached file not found, killing ARCmail message #%u", msgNum);
+                    logEntryf(LOG_SENTRCVD, 0, "Attached file not found, killing ARCmail message #%u", msgNum);
                     messagesMoved = 1;
                   }
                   else
@@ -468,7 +468,7 @@ void initMsg(s16 noAreaFix)
             {
               sprintf(fPtr, "%u.msg", pingMsgNum[count]);
               unlink(fileNameStr);
-              flogEntry(LOG_ALWAYS, 0, "Delete PING request message: %s", fileNameStr);
+              logEntryf(LOG_ALWAYS, 0, "Delete PING request message: %s", fileNameStr);
             }
             else
               attribMsg(message->attribute | RECEIVED, pingMsgNum[count]);
@@ -506,7 +506,7 @@ void initMsg(s16 noAreaFix)
     bl = strlen(tempStr);
 
 #ifdef _DEBUG0
-    flogEntry(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG initMsg: %s, %s", dirStr, tempStr);
+    logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG initMsg: %s, %s", dirStr, tempStr);
 #endif
 
     subRemTrunc(config.outPath);
@@ -536,7 +536,7 @@ void initMsg(s16 noAreaFix)
       closedir(dir);
     }
     else
-      flogEntry(LOG_ALWAYS, 0, "*** Error opendir on: %s [%s]", dirStr, strError(errno));
+      logEntryf(LOG_ALWAYS, 0, "*** Error opendir on: %s [%s]", dirStr, strError(errno));
   }
   else
     removeTrunc(config.outPath);
@@ -589,7 +589,7 @@ s16 attribMsg(u16 attribute, s32 msgNum)
       (write(msgMsgHandle, &attribute, 2) != 2))
   {
     close(msgMsgHandle);
-    flogEntry(LOG_ALWAYS, 0, "Can't update file %s", tempStr1);
+    logEntryf(LOG_ALWAYS, 0, "Can't update file %s", tempStr1);
     return -1;
   }
   close(msgMsgHandle);
@@ -620,7 +620,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
 
   if ((msgMsgHandle = _sopen(tempStr1, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
   {
-    flogEntry(LOG_ALWAYS, 0, "Can't open file %s", tempStr1);
+    logEntryf(LOG_ALWAYS, 0, "Can't open file %s", tempStr1);
     return -1;
   }
 
@@ -890,7 +890,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     close(msgHandle);
 
 #ifdef _DEBUG
-    flogEntry(LOG_DEBUG, 0, "DEBUG Message file writen: %s", tempStr);
+    logEntryf(LOG_DEBUG, 0, "DEBUG Message file writen: %s", tempStr);
 #endif
 
     if (valid == 2)
@@ -1049,7 +1049,7 @@ s16 fileAttach(char *fileName, nodeNumType *srcNd, nodeNumType *destNd, nodeInfo
   if (writeMsgLocal(message, NETMSG, 1) == -1)
     return 1;
 
-  flogEntry(LOG_OUTBOUND, 0, "Created file attach netmail from %s to %s", nodeStr(srcNd), nodeStr(destNd));
+  logEntryf(LOG_OUTBOUND, 0, "Created file attach netmail from %s to %s", nodeStr(srcNd), nodeStr(destNd));
 
   return 0;
 }

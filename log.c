@@ -212,7 +212,7 @@ void initLog(s32 switches)
   }
 }
 //---------------------------------------------------------------------------
-void flogEntry(u16 entryType, u16 errorLevel, const char *fmt, ...)
+void logEntryf(u16 entryType, u16 errorLevel, const char *fmt, ...)
 {
   char buf[1024];
   va_list argptr;

@@ -263,7 +263,7 @@ static void processPackLine(char *line, s32 switches)
            || (helpPtr[1] != 'I' && helpPtr[1] != 'L' && helpPtr[1] != 'C' && helpPtr[1] != 'H' && helpPtr[1] != 'O')
            || helpPtr[2] != 0
            )
-          flogEntry(LOG_ALWAYS, 0, "Bad switch in Pack Manager: %s", helpPtr);
+          logEntryf(LOG_ALWAYS, 0, "Bad switch in Pack Manager: %s", helpPtr);
         else
           switches |= 1L << (helpPtr[1] - 'A');
 

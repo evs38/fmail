@@ -89,7 +89,7 @@
 
 1474316224 c:\fmail\jammaint.h
 
-1477742175 c:\fmail\log.h
+1478344329 c:\fmail\log.h
 
 1476014032 c:\fmail\msgmsg.h
 	<pshpack1.h>
@@ -109,7 +109,7 @@
 
 1405197817 c:\fmail\pack.h
 
-1478193010 c:\fmail\pp_date.h
+1478344386 c:\fmail\pp_date.h
 
 1476034509 c:\fmail\sorthb.h
 
@@ -296,7 +296,7 @@
 	"fmail.h"
 	"crc.h"
 
-1477129681 source:c:\fmail\dups32.c
+1478213287 source:c:\fmail\dups32.c
 	<ctype.h>
 	<dos.h>
 	<fcntl.h>

@@ -181,7 +181,7 @@ u32 jam_rescan(u16 echoIndex, u32 maxRescan, nodeInfoType *nodeInfo, internalMsg
   if (!(jam_code = jam_open(echoAreaList[echoIndex].JAMdirPtr, &jam_hdrinforec)))
     return 0;
 
-  flogEntry(LOG_ALWAYS, 0, "Scanning for messages in JAM area: %s", echoAreaList[echoIndex].areaName);
+  logEntryf(LOG_ALWAYS, 0, "Scanning for messages in JAM area: %s", echoAreaList[echoIndex].areaName);
 
   sprintf(tempStr2, "AREA:%s\r\1RESCANNED", echoAreaList[echoIndex].areaName);
   setViaStr(tempStr, tempStr2, echoAreaList[echoIndex].address);

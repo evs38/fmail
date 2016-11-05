@@ -141,7 +141,7 @@ s16 existDir(const char *dir, const char *descr)
   if (dirExist(dir))
     return 1;
 
-  flogEntry(LOG_ALWAYS, 0, "The %s [%s] directory does not exist", descr, dir);
+  logEntryf(LOG_ALWAYS, 0, "The %s [%s] directory does not exist", descr, dir);
 
   return 0;
 }
@@ -327,7 +327,7 @@ u32 diskFree(const char *path)
   dfs = (u64)dtable.df_avail * (u64)dtable.df_bsec * (u64)dtable.df_sclus;
 
 #ifdef _DEBUG
-  flogEntry(LOG_DEBUG, 0, "DEBUG Disk %s free: %s", path, fmtU64(dfs));
+  logEntryf(LOG_DEBUG, 0, "DEBUG Disk %s free: %s", path, fmtU64(dfs));
 #endif
 
   if (dfs > (uint64_t)UINT32_MAX)
@@ -501,7 +501,7 @@ s32 getSwitch(int *argc, char *argv[], s32 mask)
             result |= tempMask;
          else
          {
-            flogEntry(LOG_ALWAYS, 0, "Illegal switch: %s", argv[count]);
+            logEntryf(LOG_ALWAYS, 0, "Illegal switch: %s", argv[count]);
             error++;
          }
       }
@@ -567,7 +567,7 @@ u32 uniqueID(void)
        )
       lastID = config.lastUniqueID + 1;
 #ifdef _DEBUG
-    flogEntry(LOG_DEBUG, 0, "DEBUG UID Saved:%08X New:%08X", config.lastUniqueID, lastID);
+    logEntryf(LOG_DEBUG, 0, "DEBUG UID Saved:%08X New:%08X", config.lastUniqueID, lastID);
 #endif
   }
   else
@@ -647,7 +647,7 @@ void removeLf(char *msgText)
     strcpy(newEnd, oldStart);
 #ifdef _DEBUG_LOGREMOVELFSR
   if (n > 0)
-    flogEntry(LOG_DEBUG, 0, "DEBUG Removed/replaced %d line feed characters", n);
+    logEntryf(LOG_DEBUG, 0, "DEBUG Removed/replaced %d line feed characters", n);
 #endif
 }
 //---------------------------------------------------------------------------
@@ -681,7 +681,7 @@ void removeSr(char *msgText)
   strcpy(newEnd, oldStart);
 #ifdef _DEBUG_LOGREMOVELFSR
   if (n > 0)
-    flogEntry(LOG_DEBUG, 0, "DEBUG Removed/replaced %d soft carriage return characters", n);
+    logEntryf(LOG_DEBUG, 0, "DEBUG Removed/replaced %d soft carriage return characters", n);
 #endif
 }
 //---------------------------------------------------------------------------
@@ -1331,7 +1331,7 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
                      , &tinySeenCount
                      );
 #ifdef _DEBUG0
-        flogEntry(LOG_DEBUG, 0, "DEBUG Add other node to SEENBY: %s", nodeStr(&nodeFileInfo[count]->destNode));
+        logEntryf(LOG_DEBUG, 0, "DEBUG Add other node to SEENBY: %s", nodeStr(&nodeFileInfo[count]->destNode));
 #endif
       }
     }
@@ -1351,7 +1351,7 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
         addSeenByNode(config.akaList[count].nodeNum.net, config.akaList[count].nodeNum.node, seenByArray  , &seenByCount  );
         addSeenByNode(config.akaList[count].nodeNum.net, config.akaList[count].nodeNum.node, tinySeenArray, &tinySeenCount);
 #ifdef _DEBUG0
-        flogEntry(LOG_DEBUG, 0, "DEBUG Add other AKA to SEENBY: %s", nodeStr(&config.akaList[count].nodeNum));
+        logEntryf(LOG_DEBUG, 0, "DEBUG Add other AKA to SEENBY: %s", nodeStr(&config.akaList[count].nodeNum));
 #endif
       }
       bitshift <<= 1;
@@ -1417,7 +1417,7 @@ void setViaStr(char *buf, const char *preStr, u16 aka)
                , TOOLSTR, funcStr, Version()
            );
 #ifdef _DEBUG
-    flogEntry( LOG_DEBUG, 0, "DEBUG setViaStr: %04u%02u%02u.%02u%02u%02u.%03u.UTC"
+    logEntryf( LOG_DEBUG, 0, "DEBUG setViaStr: %04u%02u%02u.%02u%02u%02u.%03u.UTC"
              , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 #endif
 #elif defined(__linux__)
@@ -1469,7 +1469,7 @@ void addVia(char *msgText, u16 aka, int isNetmail)
   if (NULL != helpPtr)
   {
 #ifdef _DEBUG
-    flogEntry(LOG_DEBUG, 0, "DEBUG addVia: %s", isNetmail ? "netmail" : "echomail");
+    logEntryf(LOG_DEBUG, 0, "DEBUG addVia: %s", isNetmail ? "netmail" : "echomail");
 #endif
     setViaStr(helpPtr, "\x1Via", aka);
 
@@ -1544,7 +1544,7 @@ long fmseek(int handle, long offset, int fromwhere, int code)
 {
   if (fromwhere == SEEK_SET && offset < 0)
   {
-    flogEntry(LOG_ALWAYS, 0, "Illegal Seek operation, code %u", code);
+    logEntryf(LOG_ALWAYS, 0, "Illegal Seek operation, code %u", code);
 
     return -1;
   }
