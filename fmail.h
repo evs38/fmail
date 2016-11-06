@@ -80,6 +80,7 @@
 #define dECHOMAIL_JAM  "echomail.jam"
 #define dFMAIL_LOC     "fmail.loc"
 #define dFMAIL32_DUP   "fmail32.dup"
+#define dLASTREAD      "lastread"
 
 extern long       gmtOffset;
 extern time_t     startTime;

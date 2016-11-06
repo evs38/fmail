@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1478343609 source:c:\fmail\addnew.c
+1478344258 source:c:\fmail\addnew.c
 	<ctype.h>
 	<string.h>
 	<stdio.h>
@@ -16,7 +16,7 @@
 	"update.h"
 	"utils.h"
 
-1478213287 c:\fmail\fmail.h
+1478345389 c:\fmail\fmail.h
 	"fmstruct.h"
 	"stricmp.h"
 	<stdio.h>
@@ -41,7 +41,7 @@
 
 1426945561 c:\fmail\ispathch.h
 
-1478344258 c:\fmail\log.h
+1478344329 c:\fmail\log.h
 
 1477426254 c:\fmail\update.h
 
@@ -77,7 +77,7 @@
 
 1474316224 c:\fmail\crc.h
 
-1477948444 source:c:\fmail\ftlog.c
+1478344258 source:c:\fmail\ftlog.c
 	<dos.h>
 	<fcntl.h>
 	<io.h>
@@ -96,7 +96,7 @@
 	"stpcpy.h"
 	"version.h"
 
-1478344258 c:\fmail\ftlog.h
+1478344331 c:\fmail\ftlog.h
 	"fmstruct.h"
 
 1476013525 c:\fmail\dups.h
@@ -111,7 +111,7 @@
 
 1476034823 c:\fmail\version.h
 
-1478343609 source:c:\fmail\ftnotify.c
+1478344258 source:c:\fmail\ftnotify.c
 	<os2.h>
 	<stdlib.h>
 	<stdio.h>
@@ -199,7 +199,7 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1478343806 c:\fmail\pp_date.h
+1478344386 c:\fmail\pp_date.h
 
 1476034509 c:\fmail\sorthb.h
 
@@ -259,7 +259,7 @@
 
 1426945558 source:c:\fmail\ispathch.c
 
-1478192751 source:c:\fmail\jamfun.c
+1478344258 source:c:\fmail\jamfun.c
 	<dir.h>
 	<errno.h>
 	<fcntl.h>
@@ -283,7 +283,7 @@
 	"stpcpy.h"
 	"utils.h"
 
-1478343609 source:c:\fmail\jammaint.c
+1478344258 source:c:\fmail\jammaint.c
 	<conio.h>
 	<dos.h>
 	<errno.h>
@@ -326,7 +326,7 @@
 	"mtask.h"
 	"config.h"
 
-1477774350 source:c:\fmail\smtp.c
+1478344258 source:c:\fmail\smtp.c
 	<dir.h>
 	<fcntl.h>
 	<io.h>
@@ -342,7 +342,7 @@
 
 1475415727 c:\fmail\smtp.h
 
-1478192751 source:c:\fmail\sorthb.c
+1478344258 source:c:\fmail\sorthb.c
 	<ctype.h>
 	<dos.h>
 	<errno.h>
@@ -374,7 +374,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1478343773 source:c:\fmail\impdesc.c
+1478344258 source:c:\fmail\impdesc.c
 	<dir.h>
 	<fcntl.h>
 	<io.h>
@@ -393,7 +393,7 @@
 
 1477687086 c:\fmail\bits.h
 
-1477774759 source:c:\fmail\utils.c
+1478344258 source:c:\fmail\utils.c
 	<ctype.h>
 	<dir.h>
 	<direct.h>

@@ -151,7 +151,7 @@ s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16
   // Determine highest message
 
   highMsgNum = 0;
-  strcpy(helpPtr, "lastread");
+  strcpy(helpPtr, dLASTREAD);
   if ((msgHandle = open(tempStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) != -1)
   {
     if (read(msgHandle, &highMsgNum, 2) != 2)

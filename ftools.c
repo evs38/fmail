@@ -581,11 +581,13 @@ int main(int argc, char *argv[])
 #ifndef GOLDBASE
   switches = 0;
 
-  if ((argc >= 2)
-      && ((stricmp(argv[1], "D") == 0) || (stricmp(argv[1], "DELETE") == 0)
-          || (stricmp(argv[1], "M") == 0) || (stricmp(argv[1], "MAINT") == 0)
-          || (stricmp(argv[1], "U") == 0) || (stricmp(argv[1], "UNDELETE") == 0)
-          || (stricmp(argv[1], "V") == 0) || (stricmp(argv[1], "MOVE") == 0)))
+  if (argc >= 2
+     && (  (stricmp(argv[1], "D") == 0) || (stricmp(argv[1], "DELETE"  ) == 0)
+        || (stricmp(argv[1], "M") == 0) || (stricmp(argv[1], "MAINT"   ) == 0)
+        || (stricmp(argv[1], "U") == 0) || (stricmp(argv[1], "UNDELETE") == 0)
+        || (stricmp(argv[1], "V") == 0) || (stricmp(argv[1], "MOVE"    ) == 0)
+        )
+     )
   {
     if ((stricmp(argv[1], "D") == 0) || (stricmp(argv[1], "DELETE") == 0))
       switches = SW_K;
@@ -681,22 +683,32 @@ int main(int argc, char *argv[])
     if (switches & SW_J)
       goto JAMonly;
 
+    // Hudson mb maint starts here
+
     memset(&lastReadRec, 0, sizeof(lastReadType));
 
-    if ((lastReadHandle = open(expandName("LASTREAD."MBEXTN), O_RDONLY | O_BINARY)) == -1)
-      logEntry("Can't read file LastRead."MBEXTN, LOG_ALWAYS, 1);
+    if ((lastReadHandle = open(expandName(dLASTREAD"."MBEXTN), O_RDONLY | O_BINARY)) == -1)
+      logEntry("Can't read file "dLASTREAD"."MBEXTN, LOG_ALWAYS, 1);
 
     if (read(lastReadHandle, &(lastReadRec[1]), 400) != 400)
     {
       close(lastReadHandle);
-      logEntry("Can't read file LastRead."MBEXTN, LOG_ALWAYS, 1);
+      logEntry("Can't read file "dLASTREAD"."MBEXTN, LOG_ALWAYS, 1);
     }
     close(lastReadHandle);
+#ifdef _DEBUG
+    logEntry("DEBUG Red file "dLASTREAD"."MBEXTN, LOG_ALWAYS, 0);
+#endif // _DEBUG
 
-    if (((msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
-        || ((fileSize = filelength(msgTxtHandle)) == -1)
-        || (close(msgTxtHandle) == -1))
+    if (  (msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1
+       || (fileSize = filelength(msgTxtHandle)) == -1
+       || close(msgTxtHandle) == -1
+       )
       logEntry("File status request error", LOG_ALWAYS, 1);
+#ifdef _DEBUG
+    logEntryf(LOG_ALWAYS, 0, "DEBUG Red file %s", expandName(dMSGTXT"."MBEXTN));
+#endif // _DEBUG
+
     totalTxtBBS = (u16)(fileSize >> 8);
 
     memset(renumArray, 0, RENUM_BUFSIZE * 2);
@@ -714,6 +726,9 @@ int main(int argc, char *argv[])
         || (read(msgInfoHandle, &oldInfoRec, sizeof(infoRecType)) == -1))
       logEntry("Can't open file MsgInfo."MBEXTN " for input", LOG_ALWAYS, 1);
     close(msgInfoHandle);
+#ifdef _DEBUG
+    logEntryf(LOG_ALWAYS, 0, "DEBUG Red file %s", expandName(dMSGINFO"."MBEXTN));
+#endif // _DEBUG
 
     if ((oldInfoRec.HighMsg >= config.autoRenumber) && !(switches & SW_N))
     {
@@ -721,13 +736,25 @@ int main(int argc, char *argv[])
       logEntry("Message base AutoRenumbering activated", LOG_ALWAYS, 0);
     }
 
+#ifdef _DEBUG
+    logEntry("DEBUG Analyzing the message base", LOG_ALWAYS, 0);
+#else
     puts("Analyzing the message base...");
+#endif // _DEBUG
 
     if ((msgHdrHandle = _sopen(expandName(dMSGHDR"."MBEXTN), O_RDWR | O_BINARY, SH_DENYRW)) == -1)
       logEntry("Can't open MsgHdr."MBEXTN " for update", LOG_ALWAYS, 1);
+#ifdef _DEBUG
+    logEntryf(LOG_ALWAYS, 0, "DEBUG Opened file %s", expandName(dMSGHDR"."MBEXTN));
+#endif // _DEBUG
     if ((switches & SW_T))
+    {
       if ((msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
         logEntry("Can't open MsgTxt."MBEXTN " for read-only",  LOG_ALWAYS, 1);
+#ifdef _DEBUG
+      logEntryf(LOG_ALWAYS, 0, "DEBUG Opened file %s", expandName(dMSGTXT"."MBEXTN));
+#endif // _DEBUG
+    }
 
     oldHdrSize = (u16)(filelength(msgHdrHandle) / sizeof(msgHdrRec));
 
@@ -741,8 +768,10 @@ int main(int argc, char *argv[])
       logEntry("Not enough free memory", LOG_ALWAYS, 2);
     }
 
-    while ((bufCount = read(msgHdrHandle, msgHdrBuf, HDR_BUFSIZE
-                             * sizeof(msgHdrRec)) / sizeof(msgHdrRec)) > 0)
+#ifdef _DEBUG
+    logEntry("DEBUG Reading headers", LOG_ALWAYS, 0);
+#endif // _DEBUG
+    while ((bufCount = read(msgHdrHandle, msgHdrBuf, HDR_BUFSIZE * sizeof(msgHdrRec)) / sizeof(msgHdrRec)) > 0)
     {
       for (count = 0; count < bufCount; count++)
       {
@@ -758,8 +787,10 @@ int main(int argc, char *argv[])
 
         // Undelete
 
-        if ((switches & SW_U) && (msgHdrBuf[count].MsgAttr & RA_DELETED)
-            && ((undeleteBoard == 0) || (undeleteBoard == msgHdrBuf[count].Board)))
+        if (  (switches & SW_U)
+           && (msgHdrBuf[count].MsgAttr & RA_DELETED)
+           && (undeleteBoard == 0 || undeleteBoard == msgHdrBuf[count].Board)
+           )
         {
           msgHdrBuf[count].MsgAttr &= ~RA_DELETED;
           unDeleted++;
@@ -1014,7 +1045,11 @@ int main(int argc, char *argv[])
     if (switches & (SW_D | SW_K))
       logEntryf(LOG_STATS, 0, "Deleted     : %u msgs", nowDeleted);
 
+#ifdef _DEBUG
+    logEntry("DEBUG Updating reply-chains in memory", LOG_ALWAYS, 0);
+#else
     puts("Updating reply-chains in memory...");
+#endif // _DEBUG
 
     for (count = 1; count <= MBBOARDS; count++)
     {
@@ -1073,7 +1108,11 @@ int main(int argc, char *argv[])
     if ((switches & SW_F) && (switches & SW_P))
       logEntry("Overwriting existing message base files. DO NOT INTERRUPT!", LOG_ALWAYS, 0);
 
+#ifdef _DEBUG
+    logEntry("DEBUG Writing MsgHdr."MBEXTN" and index files", LOG_ALWAYS, 0);
+#else
     puts("Writing MsgHdr."MBEXTN" and index files...");
+#endif // _DEBUG
 
     newMsgNum = 0;
 
@@ -1099,8 +1138,7 @@ int main(int argc, char *argv[])
     keepIdx = 0;
     keepBit = 1;
 
-    while ((bufCount = read(oldHdrHandle, msgHdrBuf, HDR_BUFSIZE
-                             * sizeof(msgHdrRec)) / sizeof(msgHdrRec)) > 0)
+    while ((bufCount = read(oldHdrHandle, msgHdrBuf, HDR_BUFSIZE * sizeof(msgHdrRec)) / sizeof(msgHdrRec)) > 0)
     {
       newBufCount = 0;
 
@@ -1212,6 +1250,10 @@ int main(int argc, char *argv[])
     chsize(msgHdrHandle, tell(msgHdrHandle));
     newHdrSize = (u16)(filelength(msgHdrHandle) / sizeof(msgHdrRec));
 
+#ifdef _DEBUG
+    logEntry("DEBUG Closing files", LOG_ALWAYS, 0);
+#endif // _DEBUG
+
     close(oldHdrHandle);
     close(msgHdrHandle);
     close(msgToIdxHandle);
@@ -1235,11 +1277,15 @@ int main(int argc, char *argv[])
         else
           temp = renumArray[count];
       }
-      if ((lastReadHandle = _sopen(expandName("lastread."MBEXTN), O_RDWR | O_CREAT | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
-        logEntry("Can't open file LastRead."MBEXTN " for update", LOG_ALWAYS, 0);
+      if ((lastReadHandle = _sopen(expandName(dLASTREAD"."MBEXTN), O_RDWR | O_CREAT | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+        logEntry("Can't open file "dLASTREAD"."MBEXTN " for update", LOG_ALWAYS, 0);
       else
       {
-        puts("Updating LastRead."MBEXTN"...");
+#ifdef _DEBUG
+        logEntry("DEBUG Updating "dLASTREAD"."MBEXTN, LOG_ALWAYS, 0);
+#else
+        puts("Updating "dLASTREAD"."MBEXTN"...");
+#endif // _DEBUG
 
         while ((bufCount = read(lastReadHandle, lruBuf, LRU_BUFSIZE)) > 0)
         {
@@ -1253,7 +1299,11 @@ int main(int argc, char *argv[])
 
       if ((usersBBSHandle = open(expandName("users.bbs"), O_RDWR | O_BINARY)) != -1)
       {
+#ifdef _DEBUG
+        logEntry("DEBUG Updating Users.BBS", LOG_ALWAYS, 0);
+#else
         puts("Updating Users.BBS...");
+#endif // _DEBUG
         c = 0;
 
         if (  config.bbsProgram == BBS_RA20 || config.bbsProgram == BBS_RA25
@@ -1303,8 +1353,11 @@ int main(int argc, char *argv[])
     if (switches & SW_P)
     {
       msgTxtBuf = (msgTxtRec *)msgHdrBuf;
-
+#ifdef _DEBUG
+      logEntry("DEBUG Writing MsgTxt."MBEXTN, LOG_ALWAYS, 0);
+#else
       puts("Writing MsgTxt."MBEXTN"...");
+#endif // _DEBUG
       if (((msgTxtHandle = _sopen(expandName((switches & SW_F) ? dMSGTXT"."MBEXTN : dMSGTXT"."dEXTTMP)
                                  , O_WRONLY | O_BINARY | O_CREAT, SH_DENYWR, S_IREAD | S_IWRITE)) == -1)
           || ((oldTxtHandle = open(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY)) == -1))
@@ -1348,7 +1401,9 @@ int main(int argc, char *argv[])
       free(keepTxt);
     }
 
-    // Write MSGINFO.BBS
+#ifdef _DEBUG
+    logEntry("DEBUG Write MSGINFO.BBS", LOG_ALWAYS, 0);
+#endif // _DEBUG
 
     if (((msgInfoHandle = _sopen(expandName((switches & SW_F) ? dMSGINFO"."MBEXTN : dMSGINFO"."dEXTTMP)
                                 , O_RDWR | O_CREAT | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
@@ -1399,6 +1454,9 @@ int main(int argc, char *argv[])
     free(linkArrayMsgNum);
     free(linkArrayNextReply);
     free(linkArrayPrevReply);
+#ifdef _DEBUG
+    logEntry("DEBUG End hudson mb maint", LOG_ALWAYS, 0);
+#endif // _DEBUG
 
 JAMonly:
 
@@ -1438,7 +1496,11 @@ JAMonly:
             }
             if (!temp)
             {
+#ifdef _DEBUG
+              logEntry("DEBUG Processing JAM areas", LOG_ALWAYS, 0);
+#else
               puts("Processing JAM areas...");
+#endif // _DEBUG
               temp = 1;
             }
             if (!JAMmaint(areaBuf, switches, config.sysopName, &spaceSavedJAM) && areaBuf->stat.tossedTo)
@@ -1485,8 +1547,8 @@ JAMonly:
       {
         if ((msgIdxBuf = malloc(512 * sizeof(msgIdxRec))) == NULL)
           logEntry("Not enough free memory",     LOG_ALWAYS, 2);
-        if ((lastReadHandle = open(expandName("lastread."MBEXTN), O_RDONLY | O_BINARY)) == -1)
-          logEntry("Can't open LastRead."MBEXTN, LOG_ALWAYS, 1);
+        if ((lastReadHandle = open(expandName(dLASTREAD"."MBEXTN), O_RDONLY | O_BINARY)) == -1)
+          logEntry("Can't open "dLASTREAD"."MBEXTN, LOG_ALWAYS, 1);
         maxRead = 0;
         while (read(lastReadHandle, &lastReadRec, 400) == 400)
           for (count = 0; count < MBBOARDS; count++)
@@ -1523,7 +1585,11 @@ JAMonly:
         }
         initLog("STAT", 0);
 
+#ifdef _DEBUG
+        logEntry("DEBUG Analyzing the message base", LOG_ALWAYS, 0);
+#else
         puts("Analyzing the message base...");
+#endif // _DEBUG
 
         if ((msgHdrHandle = _sopen(expandName(dMSGHDR"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYWR)) == -1)
           logEntry("Can't open MsgHdr."MBEXTN " for reading", LOG_ALWAYS, 1);
