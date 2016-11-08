@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1478107429 source:c:\fmail\fmail.c
+1478344389 source:c:\fmail\fmail.c
 	<conio.h>
 	<ctype.h>
 	<dir.h>
@@ -39,7 +39,7 @@
 	"version.h"
 	"sendsmtp.h"
 
-1478213287 c:\fmail\fmail.h
+1478345389 c:\fmail\fmail.h
 	"fmstruct.h"
 	"stricmp.h"
 	<stdio.h>
@@ -75,7 +75,7 @@
 
 1476013525 c:\fmail\dups.h
 
-1476013708 c:\fmail\ftscprod.h
+1478627433 c:\fmail\ftscprod.h
 
 1404329706 c:\fmail\jamfun.h
 	"jam.h"
@@ -109,13 +109,13 @@
 
 1405197817 c:\fmail\pack.h
 
-1478344386 c:\fmail\pp_date.h
+1478631456 c:\fmail\pp_date.h
 
 1476034509 c:\fmail\sorthb.h
 
 1475259332 c:\fmail\stpcpy.h
 
-1476997629 c:\fmail\utils.h
+1478631352 c:\fmail\utils.h
 	"fmail.h"
 	"areainfo.h"
 	"fmstruct.h"
@@ -124,7 +124,7 @@
 
 1476034437 c:\fmail\sendsmtp.h
 
-1478192751 source:c:\fmail\archive.c
+1478344389 source:c:\fmail\archive.c
 	<dir.h>
 	<dirent.h>
 	<dos.h>
@@ -159,7 +159,7 @@
 1312491216 c:\fmail\spawno.h
 	<stdarg.h>
 
-1478192751 source:c:\fmail\areafix.c
+1478344389 source:c:\fmail\areafix.c
 	<ctype.h>
 	<dos.h>
 	<fcntl.h>
@@ -187,7 +187,7 @@
 	"utils.h"
 	"version.h"
 
-1477756017 source:c:\fmail\log.c
+1478344389 source:c:\fmail\log.c
 	<dos.h>
 	<fcntl.h>
 	<io.h>
@@ -205,7 +205,7 @@
 	"stpcpy.h"
 	"version.h"
 
-1478192751 source:c:\fmail\areainfo.c
+1478344389 source:c:\fmail\areainfo.c
 	<dos.h>
 	<fcntl.h>
 	<io.h>
@@ -224,7 +224,7 @@
 	"utils.h"
 	"version.h"
 
-1477755513 source:c:\fmail\bclfun.c
+1478344389 source:c:\fmail\bclfun.c
 	<dirent.h>
 	<fcntl.h>
 	<io.h>
@@ -266,7 +266,7 @@
 	"cfgfile.h"
 	"stpcpy.h"
 
-1478107247 source:c:\fmail\config.c
+1478344389 source:c:\fmail\config.c
 	<conio.h>
 	<bios.h>
 	<ctype.h>
@@ -333,13 +333,13 @@
 1474316225 c:\fmail\ping.h
 	"fmail.h"
 
-1399578407 source:c:\fmail\ftscprod.c
+1478627408 source:c:\fmail\ftscprod.c
 	"fmstruct.h"
 	"ftscprod.h"
 
 1426945558 source:c:\fmail\ispathch.c
 
-1478192751 source:c:\fmail\jamfun.c
+1478344258 source:c:\fmail\jamfun.c
 	<dir.h>
 	<errno.h>
 	<fcntl.h>
@@ -365,7 +365,7 @@
 
 1477949075 c:\fmail\lock.h
 
-1477828863 source:c:\fmail\jamscan.c
+1478344389 source:c:\fmail\jamscan.c
 	<stdio.h>
 	<string.h>
 	"fmail.h"
@@ -379,7 +379,7 @@
 	"mtask.h"
 	"utils.h"
 
-1478192751 source:c:\fmail\jammaint.c
+1478344258 source:c:\fmail\jammaint.c
 	<conio.h>
 	<dos.h>
 	<errno.h>
@@ -415,7 +415,7 @@
 	<stdio.h>
 	<sys\locking.h>
 
-1478192751 source:c:\fmail\msgmsg.c
+1478344389 source:c:\fmail\msgmsg.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -441,7 +441,7 @@
 	"utils.h"
 	"version.h"
 
-1478192751 source:c:\fmail\msgpkt.c
+1478344389 source:c:\fmail\msgpkt.c
 	<ctype.h>
 	<dir.h>
 	<dos.h>
@@ -468,7 +468,7 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1478108289 source:c:\fmail\msgra.c
+1478546812 source:c:\fmail\msgra.c
 	<dir.h>
 	<dos.h>
 	<errno.h>
@@ -523,7 +523,7 @@
 	"utils.h"
 	"version.h"
 
-1477774066 source:c:\fmail\pack.c
+1478344389 source:c:\fmail\pack.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -546,7 +546,7 @@
 	"stpcpy.h"
 	"utils.h"
 
-1477774066 source:c:\fmail\ping.c
+1478344389 source:c:\fmail\ping.c
 	<ctype.h>
 	<stdio.h>
 	<stdlib.h>
@@ -583,7 +583,7 @@
 
 1475415727 c:\fmail\smtp.h
 
-1477774350 source:c:\fmail\smtp.c
+1478344258 source:c:\fmail\smtp.c
 	<dir.h>
 	<fcntl.h>
 	<io.h>
@@ -597,7 +597,7 @@
 	"smtp.h"
 	"utils.h"
 
-1478192751 source:c:\fmail\sorthb.c
+1478344258 source:c:\fmail\sorthb.c
 	<ctype.h>
 	<dos.h>
 	<errno.h>
@@ -625,9 +625,10 @@
 	<string.h>
 	"spec.h"
 
-1476438323 source:c:\fmail\utils2.c
+1478556014 source:c:\fmail\utils2.c
 	<ctype.h>
 	<direct.h>
+	<dirent.h>
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -643,7 +644,7 @@
 	<stdio.h>
 	<windows.h>
 
-1477774759 source:c:\fmail\utils.c
+1478555986 source:c:\fmail\utils.c
 	<ctype.h>
 	<dir.h>
 	<direct.h>
@@ -676,7 +677,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1478192807 source:c:\fmail\fmailw32.rc
+1478548807 source:c:\fmail\fmailw32.rc
 
 1477413366 c:\fmail\msgradef.h
 

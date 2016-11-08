@@ -49,6 +49,7 @@ extern configType config;
 time_t  startTime;
 clock_t at;
 u16     logUsed = 0;
+char    funcStr[32] = "Undefined?";
 
 const char *months     = "JanFebMarAprMayJunJulAugSepOctNovDec";
 const char *dayName[7] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
@@ -130,7 +131,7 @@ void writeLogLine(fhandle logHandle, const char *s)
   write(logHandle, tempStr, sl);
 }
 //---------------------------------------------------------------------------
-void initLog(char *s, s32 switches)
+void initLog(const char *_funcStr, s32 switches)
 {
   fhandle     logHandle;
   tempStrType tempStr
@@ -138,11 +139,12 @@ void initLog(char *s, s32 switches)
   struct tm   timeBlock;
   u16         count;
   s32         select = 1;
-  char        *helpPtr;
+  char       *helpPtr;
 
   at = clock();
-
   timeBlock = *localtime(&startTime);  // localtime ok!
+
+  strcpy(funcStr, _funcStr);
 
   if (!*config.logName)
     config.logInfo = 0;
@@ -159,10 +161,10 @@ void initLog(char *s, s32 switches)
   {
 #ifdef __WIN32__
     if (config.logStyle == 4)
-      helpPtr = stpcpy(tempStr2, s);
+      helpPtr = stpcpy(tempStr2, _funcStr);
     else
 #endif
-      helpPtr = tempStr2 + sprintf(tempStr2, "%s - %s", VersionStr(), s);
+      helpPtr = tempStr2 + sprintf(tempStr2, "%s - %s", VersionStr(), _funcStr);
 
     for (count = 0; count < 26; count++)
     {
@@ -170,7 +172,7 @@ void initLog(char *s, s32 switches)
        {
           *(helpPtr++) = ' ';
           *(helpPtr++) = '/';
-        *(helpPtr++) = 'A' + count;
+          *(helpPtr++) = 'A' + count;
        }
        select <<= 1;
     }
@@ -286,10 +288,7 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
 //---------------------------------------------------------------------------
 void logActive(void)
 {
-  tempStrType timeStr;
-
   newLine();
-  sprintf(timeStr, "FTools Active: %.3f sec.", ((double)(clock() - at)) / CLK_TCK);
-  logEntry(timeStr, LOG_STATS, 0);
+  logEntryf(LOG_STATS, 0, "%s Active: %.3f sec.", funcStr, ((double)(clock() - at)) / CLK_TCK);
 }
 //---------------------------------------------------------------------------

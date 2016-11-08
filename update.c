@@ -410,7 +410,7 @@ void autoUpdate(void)
 
   u16              maxBoardNumRA;
 #ifndef GOLDBASE
-  fhandle          indexHandle;
+  fhandle          indexHandle = -1;
   messageRaType    messageRaRec;
   messageRa2Type   messageRa2Rec;
   SBBSBoardRecType SBBSBoardRec;
@@ -1457,15 +1457,15 @@ if (*config.autoRAPath != 0)
             messageRaRec.nameLength = strlen(messageRaRec.name);
 
             messageRaRec.typ = 1;
-            messageRaRec.msgKinds  = config.msgKindsRA[count];
-            messageRaRec.daysKill  = config.daysAKA[count];
-            messageRaRec.rcvdKill  = config.daysRcvdAKA[count];
-            messageRaRec.countKill = config.msgsAKA[count];
-            messageRaRec.attribute = config.attrRA[count] & ~BIT7;
-            messageRaRec.readSecurity = config.readSecRA[count];
-            messageRaRec.writeSecurity = config.writeSecRA[count];
-            messageRaRec.sysopSecurity = config.sysopSecRA[count];
-            *((s32*)&messageRaRec.readFlags) = *((s32*)&config.readFlagsRA[count]);
+            messageRaRec.msgKinds      = config.msgKindsRA [count];
+            messageRaRec.daysKill      = config.daysAKA    [count];
+            messageRaRec.rcvdKill      = config.daysRcvdAKA[count];
+            messageRaRec.countKill     = config.msgsAKA    [count];
+            messageRaRec.attribute     = config.attrRA     [count] & ~BIT7;
+            messageRaRec.readSecurity  = config.readSecRA  [count];
+            messageRaRec.writeSecurity = config.writeSecRA [count];
+            messageRaRec.sysopSecurity = config.sysopSecRA [count];
+            *((s32*)&messageRaRec.readFlags ) = *((s32*)&config.readFlagsRA [count]);
             *((s32*)&messageRaRec.writeFlags) = *((s32*)&config.writeFlagsRA[count]);
             *((s32*)&messageRaRec.sysopFlags) = *((s32*)&config.sysopFlagsRA[count]);
 
@@ -1720,12 +1720,12 @@ if (*config.autoRAPath != 0)
                                     messageRa2Rec.areanum = count2;
                                     if (*messageRa2Rec.name)
                                     {
-                                       write (folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
+                                       write(folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
                                        temp = (u16)(tell(folderHandle)/(s32)sizeof(messageRa2Type));
-                                       write (indexHandle, &temp, 2);
+                                       write(indexHandle, &temp, 2);
                                     }
                                     else
-                                       write (indexHandle, &nul, 2);
+                                       write(indexHandle, &nul, 2);
                                  }
                                  else
                                     write (folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
@@ -1740,10 +1740,10 @@ if (*config.autoRAPath != 0)
               if (*messageRa2Rec.name)
               {
                 temp = (u16)(tell(folderHandle)/(s32)sizeof(messageRa2Type));
-                write (indexHandle, &temp, 2);
+                write(indexHandle, &temp, 2);
               }
               else
-                write (indexHandle, &nul, 2);
+                write(indexHandle, &nul, 2);
             }
           }
           for (count = 0; count < areaInfoCount; count++)
@@ -1806,7 +1806,7 @@ if (*config.autoRAPath != 0)
             if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
             {
               temp = (u16)(tell(folderHandle)/(s32)sizeof(messageRa2Type));
-              write (indexHandle, &temp, 2);
+              write(indexHandle, &temp, 2);
             }
           }
         }

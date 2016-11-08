@@ -31,6 +31,21 @@
 					<Add option="-s" />
 				</Linker>
 			</Target>
+			<Target title="Native">
+				<Option platforms="Windows;" />
+				<Option output="bin/Native/FToolsW32" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/FTools/Native/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="toss" />
+				<Compiler>
+					<Add option="-march=native" />
+					<Add option="-Ofast" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />

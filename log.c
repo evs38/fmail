@@ -292,7 +292,7 @@ void mgrLogEntry(const char *s)
     if (config.logStyle == 0 || config.logStyle == 4)
     {
       write( logHandle, tempStr
-           , sprintf( tempStr, "\n----------%s  %s %04u-%02u-%02u, %s - AreaMgr\n"
+           , sprintf(tempStr, "\n----------%s  %s %04u-%02u-%02u, %s - AreaMgr\n"
 #ifdef __WIN32__
                     , config.logStyle ? "--" : ""
 #else
@@ -329,10 +329,7 @@ void mgrLogEntry(const char *s)
 //---------------------------------------------------------------------------
 void logActive(void)
 {
-  tempStrType timeStr;
-
   newLine();
-  sprintf(timeStr, "%s Active: %.3f sec.", funcStr, ((double)(clock() - at)) / CLK_TCK);
-  logEntry(timeStr, LOG_STATS, 0);
+  logEntryf(LOG_STATS, 0, "%s Active: %.3f sec.", funcStr, ((double)(clock() - at)) / CLK_TCK);
 }
 //---------------------------------------------------------------------------

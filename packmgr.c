@@ -32,6 +32,7 @@
 
 #include "fmail.h"
 
+#include "stpcpy.h"
 #include "window.h"
 
 

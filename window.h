@@ -89,7 +89,7 @@
 #define MONO_HIGH_BLINK 0x8f
 
 
-#ifndef __COLORS
+#if !defined(__COLORS) && !defined(_CONIO2_H_)
 #define __COLORS
 
 enum COLORS

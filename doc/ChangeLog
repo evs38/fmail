@@ -1,3 +1,9 @@
+2016-11-08  1.73.3.30-Beta
+  * FConfig conversion to MingW compiler in progress.
+  * Updated to FTSCPROD.017 (preliminary).
+  * FTools always logs Active time, and function.
+  * More debug logging in ftools hudson maint.
+
 2016-11-05  1.73.2.28-Beta
   * Renamed function flogEntry to logEntryf.
 

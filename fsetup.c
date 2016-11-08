@@ -34,7 +34,7 @@
 #endif
 
 #include <conio.h>
-#include <dos.h>
+//#include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <io.h>
@@ -112,9 +112,6 @@ struct  COUNTRY
 };
 #endif
 #endif
-  struct COUNTRY countryInfo;
-#else
-  struct country countryInfo;
 #endif
 
 int main(int argc, char *argv[])
@@ -173,13 +170,6 @@ int main(int argc, char *argv[])
 #endif // __BORLANDC__
 
   allowConversion = 1;
-
-#ifndef __WIN32__
-  country(0, &countryInfo);
-#else
-  countryInfo.co_tmsep[0] = ':';
-  countryInfo.co_time = 1;  // 24 hour format
-#endif
 
   for (count = 0; count < MAX_AKAS; count++)
   {
@@ -588,14 +578,6 @@ int main(int argc, char *argv[])
       windowLook.mono_attr      = MONO_HIGH;
       windowLook.wAttr          = TITLE_RIGHT | SHADOW; // WB_DOUBLE_H |
       break;
-  }
-
-  if (_osmajor < 3)
-  {
-    displayMessage(FSNAME" requires at least DOS 3.0");
-    fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
-    deInit(5);
-    return 0;
   }
 
   strcpy(stpcpy(tempStr, config.bbsPath), dFMAIL_LOC);

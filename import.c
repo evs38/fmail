@@ -37,10 +37,10 @@
 
 #include "cfgfile.h"
 #include "config.h"
-#include "fjlib.h"
-#include "fs_util.h"
+#include "minmax.h"
 #include "msgra.h"
 #include "nodeinfo.h"
+#include "stpcpy.h"
 #include "utils.h"
 #include "window.h"
 
@@ -124,38 +124,41 @@ static void releaseAreas(u16 echoCount)
 
 static int askFMArExist(u16 *echoCount)
 {
-   int          ch;
-   u16          count;
-   struct ffblk testBlk;
-   headerType  *areaHeader;
-   rawEchoType  *areaBuf;
-   tempStrType  tempStr;
+  int          ch = 'O';
+  u16          count;
+  headerType  *areaHeader;
+  rawEchoType *areaBuf;
+  tempStrType  tempStr;
 
-   *echoCount = 0;
-   ch = 'O';
-   strcpy(stpcpy(tempStr, configPath), dARFNAME);
-   if ( findfirst(tempStr, &testBlk, 0) == 0 )
-   {  if ( (ch = askChar(dARFNAME" already exists. [A]dd, [O]verwrite, [C]ancel ?", "ACO")) == 'C' || !ch )
-	 return 0;
-      if ( ch == 'A' )
-      {  if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
-	 {  displayMessage("Can't open file "dARFNAME" for input");
-	    return 0;
-	 }
-	 count = areaHeader->totalRecords;
-	 while ( count-- )
-	 {  if ( (echoAreaList[*echoCount] = malloc(RAWECHO_SIZE)) == NULL )
-	    {  displayMessage("Out of memory");
-	       releaseAreas(*echoCount);
-	       return 0;
-	    }
-	    getRec(CFG_ECHOAREAS, *echoCount);
-	    memcpy(echoAreaList[(*echoCount)++], areaBuf, RAWECHO_SIZE);
-	 }
-	 closeConfig(CFG_ECHOAREAS);
+  *echoCount = 0;
+  strcpy(stpcpy(tempStr, configPath), dARFNAME);
+  if (access(tempStr, 0) == 0)
+  {
+    if ((ch = askChar(dARFNAME" already exists. [A]dd, [O]verwrite, [C]ancel ?", "ACO")) == 'C' || !ch)
+      return 0;
+    if (ch == 'A')
+    {
+      if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
+      {
+        displayMessage("Can't open file "dARFNAME" for input");
+	      return 0;
       }
-   }
-   return ch;
+      count = areaHeader->totalRecords;
+      while (count--)
+      {
+        if ((echoAreaList[*echoCount] = malloc(RAWECHO_SIZE)) == NULL)
+        {
+          displayMessage("Out of memory");
+          releaseAreas(*echoCount);
+          return 0;
+        }
+        getRec(CFG_ECHOAREAS, *echoCount);
+        memcpy(echoAreaList[(*echoCount)++], areaBuf, RAWECHO_SIZE);
+      }
+      closeConfig(CFG_ECHOAREAS);
+    }
+  }
+  return ch;
 }
 
 
@@ -192,38 +195,41 @@ static void releaseNodes(u16 nodeCount)
 
 static int askFMNodExist(u16 *nodeCount)
 {
-   int          ch;
-   u16          count;
-   struct ffblk testBlk;
-   headerType   *nodeHeader;
-   rawEchoType  *nodeBuf;
-   tempStrType  tempStr;
+  int          ch = 'O';
+  u16          count;
+  headerType  *nodeHeader;
+  rawEchoType *nodeBuf;
+  tempStrType  tempStr;
 
-   *nodeCount = 0;
-   ch = 'O';
-   strcpy(stpcpy(tempStr, configPath), dNODFNAME);
-   if ( findfirst(tempStr, &testBlk, 0) == 0 )
-   {  if ( (ch = askChar(dNODFNAME" already exists. [A]dd, [O]verwrite, [C]ancel ?", "ACO")) == 'C' || !ch )
-	 return 0;
-      if ( ch == 'A' )
-      {  if ( !openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf) )
-	 {  displayMessage("Can't open file "dNODFNAME" for input");
-	    return 0;
-	 }
-	 count = nodeHeader->totalRecords;
-	 while ( count-- )
-	 {  if ( (nodeInfo[*nodeCount] = malloc(sizeof(nodeInfoType))) == NULL )
-	    {  displayMessage("Out of memory");
-	       releaseNodes(*nodeCount);
-	       return 0;
-	    }
-	    getRec(CFG_NODES, *nodeCount);
-	    memcpy(nodeInfo[(*nodeCount)++], nodeBuf, sizeof(nodeInfoType));
-	 }
-	 closeConfig(CFG_NODES);
+  *nodeCount = 0;
+  strcpy(stpcpy(tempStr, configPath), dNODFNAME);
+  if (access(tempStr, 0) == 0)
+  {
+    if ((ch = askChar(dNODFNAME" already exists. [A]dd, [O]verwrite, [C]ancel ?", "ACO")) == 'C' || !ch)
+      return 0;
+    if (ch == 'A')
+    {
+      if (!openConfig(CFG_NODES, &nodeHeader, (void*)&nodeBuf))
+      {
+        displayMessage("Can't open file "dNODFNAME" for input");
+        return 0;
       }
-   }
-   return ch;
+      count = nodeHeader->totalRecords;
+      while (count--)
+      {
+        if ((nodeInfo[*nodeCount] = malloc(sizeof(nodeInfoType))) == NULL)
+        {
+          displayMessage("Out of memory");
+	        releaseNodes(*nodeCount);
+	        return 0;
+        }
+        getRec(CFG_NODES, *nodeCount);
+        memcpy(nodeInfo[(*nodeCount)++], nodeBuf, sizeof(nodeInfoType));
+      }
+      closeConfig(CFG_NODES);
+    }
+  }
+  return ch;
 }
 
 

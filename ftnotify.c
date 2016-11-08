@@ -190,7 +190,7 @@ s16 notify(int argc, char *argv[])
    }
    switches = getSwitchFT (&argc, argv, SW_A|SW_N);
 
-   initLog("NOTIFY", switches);
+   initLog("Notify", switches);
 
    if (switches == 0)
    {

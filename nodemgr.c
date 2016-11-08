@@ -35,7 +35,9 @@
 #include "cfgfile.h"
 #include "fs_func.h"
 #include "fs_util.h"
+#include "minmax.h"
 #include "nodeinfo.h"
+#include "stpcpy.h"
 #include "window.h"
 
 //---------------------------------------------------------------------------

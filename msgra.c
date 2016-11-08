@@ -1052,7 +1052,7 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
 
    if (lseek(msgHdrHandle, index * (u32)sizeof(msgHdrRec), SEEK_SET) < 0)
       return 0;
-#ifdef _DEBUG
+#ifdef _DEBUG0
   {
     struct stat statbuf;
     if (fstat(msgHdrHandle, &statbuf) != 0)
@@ -1064,7 +1064,11 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
    if ((temp = read(msgHdrHandle, &msgRa, sizeof(msgHdrRec))) != sizeof(msgHdrRec))
    {
       if (temp != 0)
+#ifdef _DEBUG
         logEntryf(LOG_ALWAYS, 0, "Can't read "dMSGHDR"."MBEXTN", index=%u, filelength=%ld, sizeof-record=%u, read=%d, error=%s", index, filelength(msgHdrHandle), sizeof(msgHdrRec), temp, strError(errno));
+#else
+        logEntryf(LOG_ALWAYS, 0, "Can't read "dMSGHDR"."MBEXTN" [%s]", strError(errno));
+#endif
 
       return 0;
    }

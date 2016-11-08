@@ -21,12 +21,6 @@
 //
 //---------------------------------------------------------------------------
 
-#ifdef __OS2__
-#define INCL_NOMAPI
-#define INCL_VIO
-#include <os2.h>
-#endif
-
 #ifndef __32BIT__
 #if (__BORLANDC__ < 0x0452)
 #define __SegB000  0xb000
@@ -43,10 +37,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#if defined(__OS2__) || defined(__32BIT__)
-#include <conio.h>
+#ifdef __32BIT__
+#ifdef __MINGW32__
+#include "conio2.h"
 #else
-#include <bios.h>
+#include <conio.h>
+#endif // __MINGW32__
 #endif
 
 #include "fmail.h"
@@ -54,7 +50,6 @@
 #include "window.h"
 
 #include "areamgr.h"
-#include "filesys.h"
 #include "fs_func.h"
 #include "fs_util.h"
 #include "help.h"
@@ -74,13 +69,9 @@ extern char boardCodeInfo[512];
 
 #define columns 80
 
-
-#if defined(__OS2__) || defined(__32BIT__)
+#ifdef __32BIT__
 #define keyWaiting() kbhit()
 #define keyRead()    getch()
-#else
-#define keyWaiting() bioskey(1)
-#define keyRead()    bioskey(0)
 #endif
 
 
@@ -95,29 +86,16 @@ extern u16            areaInfoCount;
 
 extern windowLookType windowLook;
 
-#ifndef __32BIT__
-screenCharType far *screen;
-#else
-//screenCharType *screen;
-#endif
-
 const char *months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 static s16 initMagic  = 0;
        s16 color      = 1;
-#ifndef __OS2__
 static s16 cga        = 0;
 static u16 oldCursor;
 
 static s16 videoModeDOS    = 0;
 static s16 videoModeFSetup = 0;
-#endif
-
-#ifdef __OS2__
-static VIOMODEINFO vmiNew, vmiOrg;
-#endif
-
 
 static windowMemType  windowStack[MAX_WINDOWS];
 static u16            windowSP = 0;
@@ -147,9 +125,6 @@ struct  COUNTRY
 };
 #endif
 #endif
-  extern struct COUNTRY countryInfo;
-#else
-  extern struct country countryInfo;
 #endif
 
 //---------------------------------------------------------------------------
@@ -220,32 +195,17 @@ void locateCursor(int x, int y)
   gotoxy(x + 1, y + 1);
   _setcursortype(_NORMALCURSOR);
 }
-//---------------------------------------------------------------------------
-#else  // __32BIT__
-void locateCursor(int x, int y)
-{
-  _DH = y;
-  _DL = x;
-  _AH = 0x02;
-  _BH = 0;
-  geninterrupt(0x10);
-}
 #endif
 //---------------------------------------------------------------------------
 u16 readKbd(void)
 {
-  int         ch;
-  struct time timeStruct;
-  u16         attr;
-  u8          min = 0xff;
+  int        ch;
+  time_t     ti;
+  struct tm *tm;
+  u16        attr;
+  u8         min = 0xff;
 #ifdef __32BIT__
   struct text_info txti;
-#endif
-
-#ifdef __OS2__
-  VIOCURSORINFO vci;
-
-  VioShowBuf(0, 8000, 0);
 #endif
 
   attr = calcAttr(WHITE, RED);
@@ -253,8 +213,10 @@ u16 readKbd(void)
   {
     while (!keyWaiting())
     {
-      gettime(&timeStruct);
-      if (timeStruct.ti_min == min)
+      time(&ti);
+      tm = localtime(&ti);
+
+      if (tm->tm_min == min)
       {
         returnTimeSlice(1);
         continue;
@@ -263,21 +225,12 @@ u16 readKbd(void)
       // Get current cursor postion and attr
       gettextinfo(&txti);
 #endif
-      min = timeStruct.ti_min;
-      if (!countryInfo.co_time)
-      {
-        showChar(77, 1, timeStruct.ti_hour < 12 ? 'a' : 'p', attr, MONO_NORM);
-        if ((timeStruct.ti_hour %= 12) == 0)
-          timeStruct.ti_hour += 12;
-      }
-      showChar(72, 1, (timeStruct.ti_hour / 10) ? '0' + timeStruct.ti_hour / 10 : ' ', attr, MONO_NORM);
-      showChar(73, 1, '0' + timeStruct.ti_hour % 10, attr, MONO_NORM);
-      showChar(74, 1, countryInfo.co_tmsep[0], attr, MONO_NORM);
-      showChar(75, 1, '0' + timeStruct.ti_min / 10, attr, MONO_NORM);
-      showChar(76, 1, '0' + timeStruct.ti_min % 10, attr, MONO_NORM);
-#ifdef __OS2__
-      VioShowBuf(0, 8000, 0);
-#endif
+      min = tm->tm_min;
+      showChar(72, 1, (tm->tm_hour / 10) ? '0' + tm->tm_hour / 10 : ' ', attr, MONO_NORM);
+      showChar(73, 1, '0' + tm->tm_hour % 10, attr, MONO_NORM);
+      showChar(74, 1, ':', attr, MONO_NORM);
+      showChar(75, 1, '0' + tm->tm_min / 10, attr, MONO_NORM);
+      showChar(76, 1, '0' + tm->tm_min % 10, attr, MONO_NORM);
 #ifdef __32BIT__
       // Restore cursor postion and attr
       gotoxy(txti.curx, txti.cury);
@@ -286,7 +239,7 @@ u16 readKbd(void)
     }
 
     ch = keyRead();
-#if defined(__OS2__) || defined(__32BIT__) // || (__BORLANDC__ >= 0x0500)
+#ifdef __32BIT__
     if (ch == -1)  // Error happened in getch()
     {
       ch = 0;
@@ -296,91 +249,6 @@ u16 readKbd(void)
       ch = keyRead() << 8;
     else
       ch &= 0xFF;
-#else
-    if (ch & 0x00ff)
-      ch &= 0x00ff;
-#endif
-#if !defined(__32BIT__) || defined(__OS2__)
-    if (ch == _K_ALTZ_)
-    {
-      char           *comspecPtr;
-      screenCharType *helpPtr;
-
-      if (((comspecPtr = getenv("COMSPEC")) != NULL) &&
-          (windowSP < MAX_WINDOWS) &&
-          ((helpPtr = malloc (4000)) != NULL))
-      {
-        u16  px
-           , py
-           , y
-           , count = 0;
-        char dirStr[128];
-#ifndef __OS2__
-        u16 cursor;
-#endif
-        for (y = 0; y <= 24; y++)
-          memcpy(&helpPtr[80 * count++], &(screen[y * columns]), 160);
-        fillRectangle(' ', 0, 0, 79, 24, LIGHTGRAY, BLACK, LIGHTGRAY);
-
-#ifdef __OS2__
-        VioScrollUp(0, 0, 0xFFFF, 0xFFFF, 0xFFFF, " \x7", 0);
-        VioGetCurPos(&py, &px, 0);
-        VioGetCurType(&vci, 0);
-        VioSetMode(&vmiOrg, 0);
-#else
-        _BH = 0;
-        _AH = 0x03;
-        geninterrupt(0x10);
-        px = _DL;
-        py = _DH;
-
-        _AH = 0x03;
-        _BH = 0x00;
-        geninterrupt(0x10);
-        cursor = _CX;
-#endif
-        locateCursor(0, 0);
-        smallCursor();
-
-        getcwd(dirStr, 128);
-
-#ifndef __OS2__
-        if (videoModeDOS != videoModeFSetup)
-        {
-          _AL = videoModeDOS;
-          _AH = 0x00;
-          geninterrupt(0x10);
-          locateCursor(0, 0);
-        }
-#endif
-        spawnl(P_WAIT, comspecPtr, comspecPtr, NULL);
-
-        ChDir(dirStr);
-
-#ifdef __OS2__
-        VioSetMode(&vmiNew, 0);
-        VioSetCurType(&vci, 0);
-#else
-        _AL = videoModeFSetup;
-        _AH = 0x00;
-        geninterrupt (0x10);
-
-        _CX = cursor;
-        _AH = 0x01;
-        geninterrupt (0x10);
-#endif
-        locateCursor(px, py);
-
-        count = 0;
-        for (y = 0; y <= 24; y++)
-          memcpy(&(screen[y * columns]), &helpPtr[80 * count++], 160);
-        free(helpPtr);
-#ifdef __OS2__
-        VioShowBuf(0, 8000, 0);
-#endif
-      }
-      ch = 0;
-    }
 #endif
   }
   while (ch == 0);
@@ -390,140 +258,23 @@ u16 readKbd(void)
 //---------------------------------------------------------------------------
 void initWindow(u16 mode)
 {
-#ifdef __OS2__
-  ULONG   ulLVB = 0;
-  PVOID16 p16;
-  USHORT  usLen = 0;
-
-  mode = mode;
-  VioGetBuf(&ulLVB, &usLen, 0);
-  p16 = (PVOID16)ulLVB;
-  screen = (screenCharType *)p16;
-
-  vmiOrg.cb = sizeof(vmiOrg);
-  VioGetMode(&vmiOrg, 0);
-  vmiNew = vmiOrg;
-  vmiNew.fbType &= 1;
-  vmiNew.col = 80;
-  vmiNew.row = 25;
-  VioSetMode(&vmiNew, 0);
-#else
   getMultiTasker();
 
-#ifndef __32BIT__
-/* Get cursor format */
-  _AH = 0x03;
-  _BH = 0x00;
-  geninterrupt(0x10);
-  oldCursor = _CX;
-/* Page 0 */
-  _AH = 0x05;
-  _AL = 0x00;
-  geninterrupt(0x10);
-
-/* Get video mode */
-  _AH = 0x0f;
-  geninterrupt(0x10);
-
-  videoModeDOS = videoModeFSetup = _AL & 0x7f;
-
-  screen = MK_FP (__SegB000, 0x0000);
-
-  if (videoModeDOS < 7) /* CGA */
-  {
-    cga--;
-
-    if (videoModeDOS == BW40 || videoModeDOS == C40)
-    {
-      _AL = (videoModeFSetup += 2);
-      _AH = 0;
-      geninterrupt(0x10);
-    }
-
-    screen = MK_FP (__SegB800, 0x0000);
-  }
-  else
-  {
-    if (videoModeDOS > 7) /* High resolution modes */
-    {
-      /* Cursor home */
-
-      _AH = 0x02;
-      _BH = 0x00;
-      _DX = 0x0000;
-      geninterrupt (0x10);
-
-      /* Display 'ò' */
-
-      _AH = 0x09;
-      _AL = 'ò';
-      _BH = 0x00;
-      _BL = 0x00;
-      _CX = 0x01;
-      geninterrupt (0x10);
-
-      if (screen[0].ch == 'ò')
-      {
-        /* Display ' ' */
-
-        _AH = 0x09;
-        _AL = ' ';
-        _BH = 0x00;
-        _BL = 0x00;
-        _CX = 0x01;
-        geninterrupt (0x10);
-
-        if (screen[0].ch != ' ')
-          cga--;
-      }
-      else
-        cga--;
-
-      if (cga)
-      {
-        screen = MK_FP (__SegB800, 0x0000);
-        videoModeFSetup = C80;
-      }
-      else
-        videoModeFSetup = MONO;
-
-      _AL = videoModeFSetup;
-      _AH = 0;
-      geninterrupt(0x10);
-    }
-  }
-
-  if (FP_SEG(screen) == __SegB800)
-  {
-    if (videoModeFSetup == BW80)
-      color = 0;
-  }
-#ifndef __FMAILX__
-  _ES = FP_SEG(screen);
-  _DI = FP_OFF(screen);
-  _AH = 0xfe;
-  geninterrupt(0x10);
-  screen = MK_FP(_ES, _DI);
-#endif
-#endif
   if (mode == 1)
     color = 0;
   if (mode == 2)
     color = 1;
 #ifdef __32BIT__
+#ifdef __BORLANDC__
   textmode(color ? C80 : BW80);  // X28
+#endif // __BORLANDC__
   textcolor(WHITE);
   textbackground(BLACK);
   clrscr();
 #endif
 
    /* install new abort/retry/ignore/fail handler */
-#ifndef __32BIT__
-#ifndef __FMAILX__
-  _os_install_msghandler(); /* macro */
-#endif
-#endif
-#endif
+//#endif
   removeCursor();
 
   initMagic = 0x4657;
@@ -532,47 +283,11 @@ void initWindow(u16 mode)
 void deInit(u16 cursorLine)
 {
 #ifdef __32BIT__
+#ifdef __BORLANDC__
   textmode(LASTMODE);
+#endif // __BORLANDC__
   clrscr();
   locateCursor(0, 0);
-#else  // __32BIT__
-  u16 pos = 6;
-
-  while (pos--)
-    showChar(72 + pos, 1, ' ', calcAttr(YELLOW, RED), MONO_NORM);
-#ifdef __OS2__
-  locateCursor(0, cursorLine);
-#else  // __OS2__
-  if (videoModeDOS != videoModeFSetup)
-  {
-    _AL = videoModeDOS;
-    _AH = 0x00;
-    geninterrupt(0x10);
-    locateCursor(0, 0);
-  }
-  else
-    locateCursor(0, cursorLine);
-  _CX = oldCursor;
-  _AH = 0x01;
-  geninterrupt(0x10);
-#endif  // __OS2__
-#ifndef __FMAILX__
-  /* restore original abort/retry/ignore/fail handler */
-  _os_uninstall_msghandler(); /* macro */
-#endif  // __FMAILX__
-#ifdef __OS2__
-  if ( vmiOrg.col == 80 && vmiOrg.row == 25 )
-  {
-    fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
-    VioShowBuf(0, 8000, 0);
-  }
-  else
-  {
-    VioSetMode(&vmiOrg, 0);
-    VioScrollUp(0, 0, 0xFFFF, 0xFFFF, 0xFFFF, " \x7", 0);
-  }
-#endif  // __OS2__
-  fillRectangle(' ', 0, 4, 79, 24, LIGHTGRAY, BLACK, MONO_NORM);
 #endif  // __32BIT__
 }
 //---------------------------------------------------------------------------
@@ -706,7 +421,6 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
    tempStrType  tempStr;
    tempStrType  testStr;
    char         *helpPtr;
-   struct ffblk ffblkTest;
    nodeNumType  nodeNum;
 
    es__8c = 0;
@@ -725,8 +439,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
       {
          if (update)
          {
-            printStringFill (tempStr, '°', width-1, x, y,
-                             windowLook.editfg, windowLook.editbg, MONO_NORM);
+            printStringFill(tempStr, '°', width-1, x, y, windowLook.editfg, windowLook.editbg, MONO_NORM);
             update = 0;
          }
          locateCursor(x + sPos, y);
@@ -1024,19 +737,8 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                   }
                   else
                   {
-#ifndef __32BIT__
-                     if ( (!config.genOptions.lfn || !(fieldType & LFN)) &&
-                          ((helpPtr != NULL && strlen(helpPtr+1) > 8) ||
-                           (helpPtr == NULL && strlen(testStr) > 8)) )
-                     {
-                        error = 1;
-                        redo = (askBoolean ("File name longer than 8 characters. Edit filename ?", 'Y') == 'Y');
-                        es__8c = 1;
-                     }
-                     else
-#endif
-                        if (helpPtr != NULL)
-                           *(helpPtr+1) = 0;
+                     if (helpPtr != NULL)
+                       *(helpPtr+1) = 0;
                   }
                }
                else
@@ -1055,12 +757,13 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                   *helpPtr = 0;
                }
             }
-            if ((!error) && (*testStr) &&
-                ((strlen(testStr) > 2) || (testStr[1] != ':')) &&
-                ((findfirst(testStr, &ffblkTest, FA_DIREC) != 0) ||
-                 ((ffblkTest.ff_attrib & FA_DIREC) == 0)))
+            if (  !error
+               && *testStr
+               && (strlen(testStr) > 2 || testStr[1] != ':')
+               && !dirExist(testStr)
+               )
             {
-               if (askBoolean ("Path not found. Create ?", 'N') == 'Y')
+               if (askBoolean("Path not found. Create ?", 'N') == 'Y')
                {
                   helpPtr = tempStr;
                   while ((helpPtr = strchr(helpPtr, '\\')) != NULL)
@@ -1069,8 +772,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                      mkdir(tempStr);
                      *helpPtr++ = '\\';
                   }
-                  if ((findfirst(testStr, &ffblkTest, FA_DIREC) != 0) ||
-                      ((ffblkTest.ff_attrib & FA_DIREC) == 0))
+                  if (!dirExist(testStr))
                   {
                      error = 1;
                      redo = askBoolean("Can't create subdirectory. Edit path ?", 'Y') == 'Y';
@@ -1085,13 +787,13 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                      redo = askBoolean("Edit path ?", 'Y') == 'Y';
                }
             }
-            if ((!redo) && ((fieldType & MASK) == FILE_NAME) &&
-                ((findfirst(tempStr, &ffblkTest, FA_DIREC) == 0) &&
-                  (ffblkTest.ff_attrib & FA_DIREC))
+            if (  !redo
+               && (fieldType & MASK) == FILE_NAME
+               && dirExist(tempStr)
                )
             {
                 error = 1;
-                redo = (askBoolean ("Missing filename. Edit filename ?", 'Y') == 'Y');
+                redo = (askBoolean("Missing filename. Edit filename ?", 'Y') == 'Y');
             }
          }
          else
@@ -1401,11 +1103,7 @@ void fillRectangle(char ch, u16 sx, u16 sy, u16 ex, u16 ey, u16 fgc, u16 bgc, u1
       line[count] = mAttr;
 
   for (count = sy; count <= ey; count++)
-#ifndef __32BIT__
-    memcpy(&(screen[count * columns + sx]), line, width);
-#else
     puttext(sx + 1, count + 1, ex + 1, count + 1, line);
-#endif
 }
 //---------------------------------------------------------------------------
 s16 displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey)
@@ -1452,14 +1150,7 @@ s16 displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey)
   borderIndex = windowLook.wAttr & 0x03;
   if (!(windowLook.wAttr & NO_SAVE))
   {
-#ifndef __32BIT__
-    nx = ex - sx + 3;
-    count = 0;
-    for (y = sy; y <= ey + 1; y++)
-      memcpy(&helpPtr[nx * count++], &(screen[y * columns + sx]), nx << 1);
-#else
     gettext(sx + 1, sy + 1, ex + 3, ey + 2, helpPtr);
-#endif
     windowStack[windowSP].sx = sx;
     windowStack[windowSP].ex = ex + 2;
     windowStack[windowSP].sy = sy;
@@ -1895,7 +1586,6 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
    char        *helpPtr;
    u16          aboutIndex;
    u16          maxEntryIndex;
-   struct ffblk ffblk;
 
 #ifdef _DEBUG0
   sprintf(tempStr, " %lu ", coreleft());
@@ -2042,7 +1732,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
 
                                  sprintf(tempStr2, "%s%s", configPath, menu->menuEntry[count].data);
 
-                                 if (!findfirst(tempStr2, &ffblk, 0))
+                                 if (!access(tempStr2, 0))
                                     break;
                                  displayMessage("File not found");
                                  strcpy(menu->menuEntry[count].data, tempStr);
@@ -2466,19 +2156,18 @@ char *getSourceFileName (char *title)
 
 
 
-char *getDestFileName (char *title)
+char *getDestFileName(char *title)
 {
-   struct ffblk testBlk;
-   char         drive[MAXDRIVE];
-   char         dir[MAXDIR];
-   char         file[MAXFILE];
-   char         ext[MAXEXT];
+   char drive[_MAX_DRIVE];
+   char dir  [_MAX_DIR  ];
+   char file [_MAX_FNAME];
+   char ext  [_MAX_EXT  ];
 
-   getSourceFileName (title);
+   getSourceFileName(title);
 
    if (*fileNameStr)
    {
-      fnsplit(fileNameStr, drive, dir, file, ext);
+      _splitpath(fileNameStr, drive, dir, file, ext);
       if ((strcmp (file, "FMAIL") == 0) &&
           ((strcmp (ext, ".AR") == 0)  || (strcmp (ext, ".NOD") == 0) ||
            (strcmp (ext, ".PCK") == 0) || (strcmp (ext, ".CFG") == 0) ||
@@ -2488,9 +2177,10 @@ char *getDestFileName (char *title)
          *fileNameStr = 0;
       }
    }
-   if ((*fileNameStr) &&
-       (findfirst(fileNameStr, &testBlk, FA_RDONLY|FA_HIDDEN|FA_SYSTEM|FA_DIREC) == 0) &&
-       (askBoolean ("File already exists. Overwrite ?", 'N') != 'Y'))
+   if (  *fileNameStr
+      && access(fileNameStr, 0) == 0
+      && askBoolean("File already exists. Overwrite ?", 'N') != 'Y'
+      )
    {
       *fileNameStr = 0;
    }
@@ -2743,31 +2433,32 @@ void restoreWindowLook(void)
 
 void askRemoveDir(char *path)
 {
-   struct ffblk ffblk;
-   tempStrType  mask;
-   char         *helpPtr;
-   u16          again = 0;
+  struct ffblk ffblk;
+  tempStrType  mask;
+  char        *helpPtr;
+  u16          again = 0;
 
-   do
-        {
-      strcpy(stpcpy(mask, path), "\\*.*");
-      if ((!findfirst(path, &ffblk, FA_DIREC)) && (ffblk.ff_attrib & FA_DIREC) &&
-          (findfirst(mask, &ffblk, 0)) &&
-          (again || askBoolean("Delete empty path ?", 'Y') == 'Y'))
+  do
+  {
+    strcpy(stpcpy(mask, path), "\\*.*");
+    if (  dirExist(path)
+       && findfirst(mask, &ffblk, 0))
+       && (again || askBoolean("Delete empty path ?", 'Y') == 'Y')
+       )
+    {
+      rmdir(path);
+      if ((helpPtr = strrchr(path, '\\')) != NULL)
       {
-         rmdir(path);
-         if ((helpPtr = strrchr(path, '\\')) != NULL)
-         {
-            *helpPtr = 0;
-            again = 1;
-         }
-         else
-            again = 0;
+        *helpPtr = 0;
+        again = 1;
       }
-                else
+      else
         again = 0;
-   }
-        while (again);
+    }
+    else
+      again = 0;
+  }
+  while (again);
 }
 
 
@@ -2799,8 +2490,3 @@ void askRemoveJAM(char *msgBasePath)
    }
 }
 //---------------------------------------------------------------------------
-
-
-
-
-

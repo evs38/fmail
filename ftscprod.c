@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2013 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -19,14 +19,14 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
 
 
 #include "fmstruct.h"
 #include "ftscprod.h"
 
 //---------------------------------------------------------------------------
-// Updated upto ftscprod.016
+// Updated upto ftscprod.017
 //---------------------------------------------------------------------------
 struct ftscps ftscprod[] =
 {
@@ -332,6 +332,7 @@ struct ftscps ftscprod[] =
 , { 0x1AFF, "mfreq" }
 , { 0x1BFF, "AfterShock" }
 , { 0x1CFF, "FTN::Packet" }
+, { 0x1DFF, "WWIV_BBS" }
 , { 0xFFFF, "" }
 };
 //---------------------------------------------------------------------------

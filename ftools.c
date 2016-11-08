@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
     , newBufCount;
   fhandle configHandle
         , lastReadHandle
-        , semaHandle;
+        , semaHandle = -1;
   s16 postBoard;
   s32 switches;
   rawEchoType *areaPtr;
@@ -317,11 +317,11 @@ int main(int argc, char *argv[])
   msgIdxRec      *msgIdxBuf;
   msgTxtRec      *msgTxtBuf;
   u16            *lruBuf;
-  u16            *linkArraySubjectCrcHigh;
-  u16            *linkArraySubjectCrcLow;
-  u16            *linkArrayPrevReply;
-  u16            *linkArrayNextReply;
-  u16            *linkArrayMsgNum;
+  u16            *linkArraySubjectCrcHigh = NULL;
+  u16            *linkArraySubjectCrcLow = NULL;
+  u16            *linkArrayPrevReply = NULL;
+  u16            *linkArrayNextReply = NULL;
+  u16            *linkArrayMsgNum = NULL;
   u16 linkArrIndex;
   fhandle usersBBSHandle
         , oldTxtHandle
@@ -332,8 +332,8 @@ int main(int argc, char *argv[])
         , msgTxtHandle;
   infoRecType infoRec
     , oldInfoRec;
-  s16 oldBoard
-    , newBoard
+  s16 oldBoard      = 0
+    , newBoard      = 0
     , undeleteBoard = 0; // FTools Maint Undelete
   uchar *keepHdr;
   u16 keepIdx;
@@ -352,10 +352,10 @@ int main(int argc, char *argv[])
   u16 crossLinked = 0;
   s32 code;
   u16 codeHigh, codeLow;
-  s32 fileSize;
+  s32 fileSize = 0;
   u16 oldHdrSize
     , newHdrSize = 0
-    , oldTxtSize
+    , oldTxtSize = 0
     , newTxtSize = 0;
 
   u16 lowMsgNum
@@ -589,13 +589,13 @@ int main(int argc, char *argv[])
         )
      )
   {
-    if ((stricmp(argv[1], "D") == 0) || (stricmp(argv[1], "DELETE") == 0))
+    if (stricmp(argv[1], "D") == 0 || stricmp(argv[1], "DELETE") == 0)
       switches = SW_K;
-    if ((stricmp(argv[1], "U") == 0) || (stricmp(argv[1], "UNDELETE") == 0))
+    if (stricmp(argv[1], "U") == 0 || stricmp(argv[1], "UNDELETE") == 0)
       switches = SW_U;
-    if ((stricmp(argv[1], "V") == 0) || (stricmp(argv[1], "MOVE") == 0))
+    if (stricmp(argv[1], "V") == 0 || stricmp(argv[1], "MOVE") == 0)
       switches = SW_M;
-    if ((argc >= 3) && ((argv[2][0] == '?') || (argv[2][1] == '?')))
+    if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
     {
       if (switches & SW_K)
         puts("Usage:\n\n"
@@ -632,7 +632,7 @@ int main(int argc, char *argv[])
 
     if (switches & SW_K)
     {
-      initLog("DELETE", 0);
+      initLog("Delete", 0);
       if ((((oldBoard = atoi(argv[2])) == 0)
            || (oldBoard > MBBOARDS))
           && ((oldBoard = getBoardNum(argv[2], argc - 2, &temp, &areaPtr)) == -1))
@@ -648,7 +648,7 @@ int main(int argc, char *argv[])
     else
       if (switches & SW_M)
       {
-        initLog("MOVE", 0);
+        initLog("Move", 0);
         if ((((oldBoard = atoi(argv[2])) == 0)
              || (oldBoard > MBBOARDS))
             && ((oldBoard = getBoardNum(argv[2], argc - 2, &temp, &areaPtr)) == -1))
@@ -664,7 +664,7 @@ int main(int argc, char *argv[])
       else
         if (switches & SW_U)
         {
-          initLog("UNDELETE", 0);
+          initLog("Undelete", 0);
           if ((((undeleteBoard = atoi(argv[2])) == 0)
                || (undeleteBoard > MBBOARDS))
               && ((undeleteBoard = getBoardNum(argv[2], argc - 2, &temp, &areaPtr)) == -1))
@@ -675,7 +675,7 @@ int main(int argc, char *argv[])
         else
         {
           switches = getSwitchFT(&argc, argv, SW_H | SW_J | SW_C | SW_D | SW_N | SW_P | SW_Q | SW_R | SW_T | SW_U | SW_X | SW_B | SW_F | SW_O);
-          initLog("MAINT", switches);
+          initLog("Maint", switches);
         }
 
     if (argv[2] && *argv[2] != '/')
@@ -684,6 +684,7 @@ int main(int argc, char *argv[])
       goto JAMonly;
 
     // Hudson mb maint starts here
+    logEntry("Hudson message base maintenance", LOG_ALWAYS, 0);
 
     memset(&lastReadRec, 0, sizeof(lastReadType));
 
@@ -1520,8 +1521,6 @@ JAMonly:
           logEntryf(LOG_STATS, 0, "Space saved (JAM) : %d bytes", spaceSavedJAM);
       }
     }
-
-    logActive();
   }
   else
     if ((argc >= 2)
@@ -1539,7 +1538,7 @@ JAMonly:
       }
       switches = getSwitchFT(&argc, argv, SW_A);
 
-      initLog("SORT", switches);
+      initLog("Sort", switches);
 
       index = 0;
 
@@ -1571,7 +1570,6 @@ JAMonly:
       config.mbOptions.sortNew = 1;
       config.mbOptions.updateChains = 1;
       sortBBS(index, 0);
-      logActive();
     }
     else
       if ((argc >= 2)
@@ -1583,7 +1581,7 @@ JAMonly:
                "    FTools Stat\n");
           return 0;
         }
-        initLog("STAT", 0);
+        initLog("Stat", 0);
 
 #ifdef _DEBUG
         logEntry("DEBUG Analyzing the message base", LOG_ALWAYS, 0);
@@ -1622,10 +1620,12 @@ JAMonly:
         }
         close(msgHdrHandle);
 
-        if (((msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
-            || ((fileSize = filelength(msgTxtHandle)) == -1)
-            || (close(msgTxtHandle) == -1))
+        if (  (msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1
+           || (fileSize = filelength(msgTxtHandle)) == -1
+           || close(msgTxtHandle) == -1
+           )
           logEntry("File status request error", LOG_ALWAYS, 1);
+
         totalTxtBBS = (u16)(fileSize >> 8);
 
         newLine();
@@ -1688,7 +1688,7 @@ JAMonly:
       }
       switches = getSwitchFT(&argc, argv, SW_C | SW_H | SW_D | SW_K | SW_P | SW_R | SW_F | SW_E | SW_T);
 
-      initLog("POST", switches);
+      initLog("Post", switches);
 
       if ((message = malloc(INTMSG_SIZE)) == NULL)
         logEntry("Not enough memory available", LOG_ALWAYS, 2);
@@ -1867,7 +1867,7 @@ JAMonly:
             }
             switches = getSwitchFT(&argc, argv, SW_N);
 
-            initLog("MSGM", switches);
+            initLog("MsgM", switches);
 
             if (switches == 0)
             {
@@ -2022,7 +2022,7 @@ JAMonly:
         return 0;
       }
       switches = getSwitchFT(&argc, argv, SW_A);
-      initLog("ADDNEW", switches);
+      initLog("AddNew", switches);
       addNew(switches);
 
       return 0;
@@ -2057,6 +2057,7 @@ void myexit(void)
        )
       puts("\nCan't write "dCFGFNAME);
   }
+  logActive();
 
 #ifdef _DEBUG0
   putStr("\nPress any key to continue... ");

@@ -23,6 +23,7 @@
 
 #include <ctype.h>
 #include <direct.h>  // chdir() _chdrive()
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>  // atoi()
 #include <string.h>
@@ -186,5 +187,17 @@ int ChDir(const char *path)
   }
 #endif
   return chdir(path);
+}
+//---------------------------------------------------------------------------
+int dirExist(const char *dir)
+{
+  DIR *d = opendir(dir);
+  if (d)
+  {
+    closedir(d);
+    return 1;
+  }
+
+  return 0;
 }
 //---------------------------------------------------------------------------

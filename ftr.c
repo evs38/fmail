@@ -353,7 +353,7 @@ s16 export(int argc, char *argv[])
 
   switches = getSwitchFT(&argc, argv, SW_D|SW_F|SW_K|SW_P|SW_S|SW_T|SW_X);
 
-  initLog("EXPORT", switches);
+  initLog("Export", switches);
 
   if ((board = getBoardNum(argv[2], argc-2, &dummy, &areaPtr)) == -1)
     logEntry("This function does not yet support the JAM base", LOG_ALWAYS, 1000);

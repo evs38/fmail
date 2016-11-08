@@ -124,18 +124,6 @@ int moveFile(const char *oldName, const char *newName)
   return 0;
 }
 //---------------------------------------------------------------------------
-int dirExist(const char *dir)
-{
-  DIR *d = opendir(dir);
-  if (d)
-  {
-    closedir(d);
-    return 1;
-  }
-
-  return 0;
-}
-//---------------------------------------------------------------------------
 s16 existDir(const char *dir, const char *descr)
 {
   if (dirExist(dir))
