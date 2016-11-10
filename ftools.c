@@ -684,7 +684,7 @@ int main(int argc, char *argv[])
       goto JAMonly;
 
     // Hudson mb maint starts here
-    logEntry("Hudson message base maintenance", LOG_ALWAYS, 0);
+    logEntry("Processing hudson message base", LOG_ALWAYS, 0);
 
     memset(&lastReadRec, 0, sizeof(lastReadType));
 
@@ -1500,7 +1500,7 @@ JAMonly:
 #ifdef _DEBUG
               logEntry("DEBUG Processing JAM areas", LOG_ALWAYS, 0);
 #else
-              puts("Processing JAM areas...");
+              puts("Processing jam areas...");
 #endif // _DEBUG
               temp = 1;
             }

@@ -76,6 +76,7 @@ u64         diskFree64     (const char *path);
 u32         diskFree       (const char *path);
 int         moveFile       (const char *oldName, const char *newName);
 int         dirExist       (const char *dir);
+int         dirIsEmpty     (const char *dir);
 s16         existDir       (const char *dir, const char *descr);
 int         ChDir          (const char *path);
 const char *_searchpath    (const char *filename);

@@ -106,11 +106,11 @@ typedef nodeFileRecType *nodeFileType[MAX_OUTPKT];
 //---------------------------------------------------------------------------
 typedef struct
 {
-  uchar          *areaName;
-  uchar          *comment;
+  char           *areaName;
+  char           *comment;
   u16             boardNumRA;
-  uchar           msgBaseType;
-  uchar          *msgBasePath;
+  u8              msgBaseType;
+  char           *msgBasePath;
   u16             board;
   areaOptionsType options;
   u16             address;

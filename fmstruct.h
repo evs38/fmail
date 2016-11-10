@@ -310,11 +310,11 @@ typedef struct
   char        program[9];
   char        password[17];
   char        fileName[13];
-  uchar       fileType;
+  u8          fileType;
   u32         groups;
-  uchar       originAka;
+  u8          originAka;
   uplOptType  options;
-  uchar       reserved[9];
+  u8          reserved[9];
 } uplinkReqType;
 
 typedef struct
@@ -435,7 +435,7 @@ typedef struct
   u16             _daysRcvdAKA[MAX_NA_OLD];
   uchar           _replyStatSBBS[MAX_NA_OLD];
   u16             _attrSBBS[MAX_NA_OLD];
-  uchar           groupDescr[26][27];
+  char            groupDescr[26][27];
   u8              reserved5[9];
   uchar           _msgKindsRA[MAX_NA_OLD];
   uchar           _attrRA[MAX_NA_OLD];
@@ -582,16 +582,16 @@ typedef struct
   u16             days;
   u16             daysRcvd;
   u16             readSecRA;
-  uchar           flagsRdRA[4];
-  uchar           flagsRdNotRA[4];
+  u8              flagsRdRA[4];
+  u8              flagsRdNotRA[4];
   u16             writeSecRA;
-  uchar           flagsWrRA[4];
-  uchar           flagsWrNotRA[4];
+  u8              flagsWrRA[4];
+  u8              flagsWrNotRA[4];
   u16             sysopSecRA;
-  uchar           flagsSysRA[4];
-  uchar           flagsSysNotRA[4];
+  u8              flagsSysRA[4];
+  u8              flagsSysNotRA[4];
   u16             templateSecQBBS;
-  uchar           flagsTemplateQBBS[4];
+  u8              flagsTemplateQBBS[4];
   u8              _internalUse;
   u16             netReplyBoardRA;
   u8              boardTypeRA;

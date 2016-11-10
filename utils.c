@@ -209,25 +209,6 @@ const char *_searchpath(const char *filename)
   return (pathbuf[0] == '\0' ? NULL : pathbuf);
 }
 //---------------------------------------------------------------------------
-// Return 0 if pattern doesn't exist in path
-//
-int existPattern(const char *path, const char *pattern)
-{
-  DIR           *dir;
-  struct dirent *ent = NULL;
-
-  if ((dir = opendir(path)) != NULL)
-  {
-    while ((ent = readdir(dir)) != NULL)
-      if (match_spec(pattern, ent->d_name))
-        break;
-
-    closedir(dir);
-  }
-
-  return ent != NULL;
-}
-//---------------------------------------------------------------------------
 #ifdef __WIN32__
 const char *fmtU64(u64 u)
 {
@@ -1126,28 +1107,6 @@ void make2d(internalMsgType *message)
     removeLine(helpPtr);
 }
 //---------------------------------------------------------------------------
-s16 node4d(nodeNumType *node)
-{
-  u16 count = 0;
-
-  while (  count < MAX_AKAS
-        && (  config.akaList[count].nodeNum.zone == 0
-           || node->net != config.akaList[count].fakeNet
-           || node->point != 0
-           )
-        )
-    count++;
-
-  if (count < MAX_AKAS)
-  {
-    node->point = node->node;
-    memcpy(node, &config.akaList[count].nodeNum, 6);
-
-    return count;
-  }
-  return -1;
-}
-//---------------------------------------------------------------------------
 void point4d(internalMsgType *message)
 {
    char       *helpPtr;
@@ -1203,12 +1162,12 @@ void make4d(internalMsgType *message)
       memset(&tempNode, 0, sizeof(nodeNumType));
       if (sscanf(helpPtr += 6, "%hu:%hu/%hu", &tempNode.zone, &tempNode.net, &tempNode.node) == 3)
       {
-         if (tempNode.zone && (*(s32*)&tempNode.net == *(s32*)&message->destNode.net))
+         if (tempNode.zone && tempNode.net == message->destNode.net && tempNode.node == message->destNode.node)
             message->destNode.zone = tempNode.zone;
 
          memset(&tempNode, 0, sizeof(nodeNumType));
          if (sscanf(strchr(helpPtr, ' '), "%hu:%hu/%hu", &tempNode.zone, &tempNode.net, &tempNode.node) == 3)
-            if (tempNode.zone && (*(s32*)&tempNode.net == *(s32*)&message->srcNode.net))
+            if (tempNode.zone && tempNode.net == message->srcNode.net && tempNode.node == message->srcNode.node)
                message->srcNode.zone = tempNode.zone;
       }
    }

@@ -38,6 +38,7 @@
 #include "areainfo.h"
 #include "areamgr.h"
 #include "fs_util.h"
+#include "minmax.h"
 #include "window.h"
 
 //---------------------------------------------------------------------------
@@ -318,12 +319,8 @@ s16 areasList(s16 currentElem, char groupSelectMask)
             while (low < high)
             {
                mid = (low + high) >> 1;
-               if (stricmp ((useComment &&
-			    *areaInfoHelpPtr->comment) ?
-                            areaInfoHelpPtr->comment : areaInfoHelpPtr->areaName,
-			    (useComment &&
-			    *(*areaInfoTwo)[mid]->comment) ?
-                            (*areaInfoTwo)[mid]->comment : (*areaInfoTwo)[mid]->areaName) > 0)
+               if (stricmp((useComment && *areaInfoHelpPtr    ->comment) ? areaInfoHelpPtr    ->comment : areaInfoHelpPtr    ->areaName
+                          ,(useComment && *(*areaInfoTwo)[mid]->comment) ? (*areaInfoTwo)[mid]->comment : (*areaInfoTwo)[mid]->areaName) > 0)
                   low = mid+1;
                else
                   high = mid;
@@ -355,12 +352,9 @@ s16 areasList(s16 currentElem, char groupSelectMask)
             currentElem++;
          }
 
-         windowBase = max(0, currentElem-MAX_AL_WINSIZE/2);
-         if ((elemCount >= MAX_AL_WINSIZE) &&
-             (windowBase+MAX_AL_WINSIZE > elemCount))
-         {
-            windowBase = elemCount-MAX_AL_WINSIZE;
-         }
+         windowBase = max(0, currentElem - MAX_AL_WINSIZE / 2);
+         if (elemCount >= MAX_AL_WINSIZE && windowBase+MAX_AL_WINSIZE > elemCount)
+            windowBase = elemCount - MAX_AL_WINSIZE;
       }
       for (count = 0; count < MAX_AL_WINSIZE; count++)
       {

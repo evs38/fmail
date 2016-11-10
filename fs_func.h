@@ -28,15 +28,15 @@
 #define DISPLAY_ECHO_WINDOW 32
 #define DISPLAY_ECHO_DATA   64
 
-typedef uchar uplinkNodeStrType[MAX_UPLREQ][28];
+typedef char uplinkNodeStrType[MAX_UPLREQ][28];
 
 s16 displayGroups(void);
 s16 askGroups    (void);
-s32 getGroups   (s32 groups);
+s32 getGroups    (s32 groups);
 s16 netmailMenu  (u16 v);
 s16 defaultBBS   (void);
 s16 uplinkMenu   (u16 v);
 
-s16 netDisplayAreas (u16 *v);
-s16 badduprecDisplayAreas (u16 *v);
+s16 netDisplayAreas(u16 *v);
+s16 badduprecDisplayAreas(u16 *v);
 s16 editAM(s16 editType, u16 setdef, rawEchoType *areaBuf);

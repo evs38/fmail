@@ -202,6 +202,7 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
   logEntryf(LOG_EXEC | LOG_NOSCRN, 0, "Executing %s %s", program, parameters);
 
   printf("<-- %s Start -->\n", arcType);
+  fflush(stdout);
 
 #ifndef __NOSPAWNL__
 // for Win16 compile

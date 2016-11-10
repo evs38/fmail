@@ -125,7 +125,7 @@ s16 packValid(nodeNumType *node, char *packedNodes)
          {
             wildCards = 1;
             if (nodeTempStr[count+1] != 0)
-               logEntry ("Asterisk only allowed as last character of node number", LOG_ALWAYS, 4);
+               logEntry("Asterisk only allowed as last character of node number", LOG_ALWAYS, 4);
 
             nodeTempStr[count] = 0;
             stringNode[count] = 0;
@@ -138,16 +138,6 @@ s16 packValid(nodeNumType *node, char *packedNodes)
       if (strcmp(stringNode, nodeTempStr) == 0)
          return 1;
 
-/* geen impliciete wildcard voor points
-      if ((helpPtr = strchr(stringNode, '.')) != NULL)
-      {
-         *helpPtr = 0;
-         if (strcmp (stringNode, nodeTempStr) == 0)
-         {
-            return (1);
-         }
-      }
-*/
       helpPtr = strtok(NULL, " ");
    }
    return 0;
@@ -182,13 +172,15 @@ s16 notify(int argc, char *argv[])
            "              Wildcards are allowed. If omitted, * (all nodes) is assumed.\n"
            "              If wildcards are used, only qualified nodes that are marked\n"
            "              in the Node Manager will receive a notify message.\n"
-           "Switches:\n\n"
+           "\n"
+           "Switches:\n"
+           "\n"
            "    /A   Send Area Status report\n"
            "    /N   Send Node Status report");
 
       return 0;
    }
-   switches = getSwitchFT (&argc, argv, SW_A|SW_N);
+   switches = getSwitchFT(&argc, argv, SW_A|SW_N);
 
    initLog("Notify", switches);
 
@@ -275,15 +267,15 @@ s16 notify(int argc, char *argv[])
                 case 4:  strcpy(tempStr, config.zoo32.programName);
                          break;
                 case 5:  strcpy(tempStr, config.arj32.programName);
-			 break;
+                         break;
                 case 6:  strcpy(tempStr, config.sqz32.programName);
-			 break;
+                         break;
                 case 7:  strcpy(tempStr, config.customArc32.programName);
-			 break;
+                         break;
                 case 8:  strcpy(tempStr, config.uc232.programName);
-			 break;
+                         break;
                 case 9:  strcpy(tempStr, config.rar32.programName);
-			 break;
+                         break;
                 case 10: strcpy(tempStr, config.jar32.programName);
                          break;
 #else
@@ -297,15 +289,15 @@ s16 notify(int argc, char *argv[])
                          break;
                 case 4:  strcpy(tempStr, config.zoo.programName);
                          break;
-		case 5:  strcpy(tempStr, config.arj.programName);
-			 break;
-		case 6:  strcpy(tempStr, config.sqz.programName);
-			 break;
-		case 7:  strcpy(tempStr, config.customArc.programName);
-			 break;
-		case 8:  strcpy(tempStr, config.uc2.programName);
-			 break;
-		case 9:  strcpy(tempStr, config.rar.programName);
+                case 5:  strcpy(tempStr, config.arj.programName);
+                         break;
+                case 6:  strcpy(tempStr, config.sqz.programName);
+                         break;
+                case 7:  strcpy(tempStr, config.customArc.programName);
+                         break;
+                case 8:  strcpy(tempStr, config.uc2.programName);
+                         break;
+                case 9:  strcpy(tempStr, config.rar.programName);
                          break;
                 case 10: strcpy(tempStr, config.jar.programName);
                          break;
@@ -313,8 +305,8 @@ s16 notify(int argc, char *argv[])
                 case 0xFF:strcpy(tempStr, "None");
                          break;
                 default: strcpy(tempStr, "UNKNOWN");
-			 break;
-	    }
+                         break;
+            }
             if ( (helpPtr = strchr(tempStr, ' ')) != NULL )
             {   while ( helpPtr > tempStr && *(helpPtr-1) != '\\' )
                    --helpPtr;
@@ -323,39 +315,39 @@ s16 notify(int argc, char *argv[])
             else if ( (helpPtr = strrchr(tempStr, '\\')) != NULL )
                 strcpy(tempStr, helpPtr);
             helpPtr = message->text;
-	    helpPtr += sprintf (helpPtr, "Following are the options that are set for your system (%s)\r"
-					 "and a list of areas that your system is connected to.\r"
-					 "Please let the SysOp know, if some of these settings are not correct.\r\r"
-					 "Capability           %s\r"
-					 "Node status          %s\r"
-					 "Allow rescan         %s\r"
-					 "Remote maintenance   %s\r"
-					 "Compression program  %s\r"
-					 "Mail archive status  %s\r"
-					 "Tiny SEEN-BYs        %s\r"
-					 "Reformat date        %s\r\r"
+            helpPtr += sprintf (helpPtr, "Following are the options that are set for your system (%s)\r"
+                                         "and a list of areas that your system is connected to.\r"
+                                         "Please let the SysOp know, if some of these settings are not correct.\r\r"
+                                         "Capability           %s\r"
+                                         "Node status          %s\r"
+                                         "Allow rescan         %s\r"
+                                         "Remote maintenance   %s\r"
+                                         "Compression program  %s\r"
+                                         "Mail archive status  %s\r"
+                                         "Tiny SEEN-BYs        %s\r"
+                                         "Reformat date        %s\r\r"
                                          "Area name                                          AKA at this system      Mode\r"
                                          "-------------------------------------------------- ----------------------- ----\r",
-					 nodeStr(&nodeBuf->node),
-					 nodeBuf->capability ? "Type 2+" : "Stone Age",
-					 nodeBuf->options.active ? "Active" : "Passive",
-													  nodeBuf->options.allowRescan ? "Yes":"No",
-					 nodeBuf->options.remMaint ? "Yes":"No",
-					 tempStr,
-					 nodeBuf->outStatus==0 ? "None" :
+                                         nodeStr(&nodeBuf->node),
+                                         nodeBuf->capability ? "Type 2+" : "Stone Age",
+                                         nodeBuf->options.active ? "Active" : "Passive",
+                                                                                                          nodeBuf->options.allowRescan ? "Yes":"No",
+                                         nodeBuf->options.remMaint ? "Yes":"No",
+                                         tempStr,
+                                         nodeBuf->outStatus==0 ? "None" :
                                          nodeBuf->outStatus==1 ? "Hold" :
                                          nodeBuf->outStatus==2 ? "Crash" :
                                          nodeBuf->outStatus==3 ? "Hold/Direct" :
                                          nodeBuf->outStatus==4 ? "Crash/Direct" :
                                          nodeBuf->outStatus==5 ? "Direct":"Unknown",
-					 nodeBuf->options.tinySeenBy ? "Yes" : "No",
-					 nodeBuf->options.fixDate ? "Yes" : "No");
+                                         nodeBuf->options.tinySeenBy ? "Yes" : "No",
+                                         nodeBuf->options.fixDate ? "Yes" : "No");
 
-	    oldGroup = 0;
-	    bufCount = MAX_DISPLAY;
+            oldGroup = 0;
+            bufCount = MAX_DISPLAY;
 
-	    for (areaCount = 0; areaCount < areaHeader->totalRecords; areaCount++)
-	    {
+            for (areaCount = 0; areaCount < areaHeader->totalRecords; areaCount++)
+            {
                getRec(CFG_ECHOAREAS, areaSort[areaCount].index);
                if ( (areaBuf->options.active) &&
                     !areaBuf->options.local &&
@@ -364,53 +356,55 @@ s16 notify(int argc, char *argv[])
                   count = 0;
                   while ((count < MAX_FORWARD) && nodeBuf->node.zone &&
                          memcmp(&nodeBuf->node, &areaBuf->forwards[count].nodeNum, 8))
-		  {
-			  count++;
-		  }
+                  {
+                    count++;
+                  }
                   if ( count < MAX_FORWARD &&
                        nodeBuf->node.zone &&
                        !areaBuf->forwards[count].flags.locked )
                   {
                      if (!(bufCount--))
-		     {
-			sprintf (helpPtr, "\r*** Listing is continued in the next message ***\r");
-			writeNetMsg (message, nodeBuf->useAka-1, &nodeBuf->node, nodeBuf->capability,
-					      nodeBuf->outStatus);
-			strcpy (message->subject, "FMail node status report (continued)");
-			helpPtr = message->text + sprintf (message->text, "*** Following list is a continuation of the previous message ***\r");
-			bufCount = MAX_DISPLAY;
-			oldGroup = 0;
-		     }
-		     if (oldGroup != areaBuf->group)
-		     {
-			oldGroup = areaBuf->group;
-			d = 0;
-			while ((areaBuf->group >>= 1) != 0)
-			{
-			   d++;
-			}
-			if (*config.groupDescr[d])
-			{
-			   helpPtr += sprintf (helpPtr, "\r%s\r\r",
-							config.groupDescr[d]);
-			}
-			else
-			{
-			   helpPtr += sprintf (helpPtr, "\rGroup %c\r\r", 'A'+d);
-			}
-		     }
+                     {
+                        sprintf (helpPtr, "\r*** Listing is continued in the next message ***\r");
+                        writeNetMsg (message, nodeBuf->useAka-1, &nodeBuf->node, nodeBuf->capability,
+                                              nodeBuf->outStatus);
+                        strcpy (message->subject, "FMail node status report (continued)");
+                        helpPtr = message->text + sprintf (message->text, "*** Following list is a continuation of the previous message ***\r");
+                        bufCount = MAX_DISPLAY;
+                        oldGroup = 0;
+                     }
+                     if (oldGroup != areaBuf->group)
+                     {
+                        oldGroup = areaBuf->group;
+                        d = 0;
+                        while ((areaBuf->group >>= 1) != 0)
+                        {
+                           d++;
+                        }
+                        if (*config.groupDescr[d])
+                        {
+                           helpPtr += sprintf (helpPtr, "\r%s\r\r",
+                                                        config.groupDescr[d]);
+                        }
+                        else
+                        {
+                           helpPtr += sprintf (helpPtr, "\rGroup %c\r\r", 'A'+d);
+                        }
+                     }
                      helpPtr += sprintf (helpPtr, "%-50s %-24s%s\r",
-						  areaBuf->areaName,
+                                                  areaBuf->areaName,
                                                   nodeStr(&config.akaList[areaBuf->address].nodeNum),
                                                   areaBuf->forwards[count].flags.readOnly ? "R/O" :
                                                   areaBuf->forwards[count].flags.writeOnly ? "W/O":"R/W");
-		  }
-	       }
-	    }
-	    writeNetMsg (message, nodeBuf->useAka-1, &nodeBuf->node, nodeBuf->capability,
-				  nodeBuf->outStatus);
-	    logEntryf(LOG_ALWAYS, 0, "Sending node status message to node %s", nodeStr(&nodeBuf->node));
-	 }
+                  }
+               }
+            }
+            *helpPtr++ = '\r';
+            *helpPtr++ = 0;
+            writeNetMsg (message, nodeBuf->useAka-1, &nodeBuf->node, nodeBuf->capability,
+                                  nodeBuf->outStatus);
+            logEntryf(LOG_ALWAYS, 0, "Sending node status message to node %s", nodeStr(&nodeBuf->node));
+         }
       }
    }
    if (switches & SW_A)
@@ -418,7 +412,7 @@ s16 notify(int argc, char *argv[])
       for (nodeCount = 0; nodeCount < nodeHeader->totalRecords; nodeCount++)
       {
          returnTimeSlice(0);
-	 getRec(CFG_NODES, nodeCount);
+         getRec(CFG_NODES, nodeCount);
          if (packValid(&nodeBuf->node, nodeString) &&
              (nodeBuf->options.notify || !wildCards))
          {
@@ -432,12 +426,12 @@ s16 notify(int argc, char *argv[])
                                          "W indicates that you are write-only for this area.\r",
                                          nodeStr(&nodeBuf->node));
 
-	    oldGroup = 0;
-	    bufCount = MAX_DISPLAY;
+            oldGroup = 0;
+            bufCount = MAX_DISPLAY;
 
-	    for (areaCount = 0; areaCount < areaHeader->totalRecords; areaCount++)
+            for (areaCount = 0; areaCount < areaHeader->totalRecords; areaCount++)
             {
-	       getRec(CFG_ECHOAREAS, areaSort[areaCount].index);
+               getRec(CFG_ECHOAREAS, areaSort[areaCount].index);
                if ( (areaBuf->options.active) &&
                     !areaBuf->options.local &&
                     (areaBuf->group & nodeBuf->groups) )
@@ -453,8 +447,8 @@ s16 notify(int argc, char *argv[])
                   {
                      if (!(bufCount--))
                      {
-			sprintf (helpPtr, "\r*** Listing is continued in the next message ***\r");
-                        writeNetMsg (message, nodeBuf->useAka-1, &nodeBuf->node, nodeBuf->capability,
+                        sprintf(helpPtr, "\r*** Listing is continued in the next message ***\r");
+                        writeNetMsg(message, nodeBuf->useAka-1, &nodeBuf->node, nodeBuf->capability,
                                               nodeBuf->outStatus);
                         strcpy (message->subject, "FMail area status report (continued)");
                         helpPtr = message->text + sprintf (message->text, "*** Following list is a continuation of the previous message ***\r");
@@ -488,6 +482,8 @@ s16 notify(int argc, char *argv[])
                   }
                }
             }
+            *helpPtr++ = '\r';
+            *helpPtr++ = 0;
             writeNetMsg(message, nodeBuf->useAka-1, &nodeBuf->node, nodeBuf->capability, nodeBuf->outStatus);
             logEntryf(LOG_ALWAYS, 0, "Sending area status message to node %s", nodeStr(&nodeBuf->node));
          }

@@ -115,11 +115,22 @@ enum COLORS
 
 #define BLINK	  128	          /* blink bit */
 
-typedef struct
+//typedef struct
+//{
+//  uchar ch;
+//  uchar attr;
+//} screenCharType;
+
+#ifdef __BORLANDC__
+typedef struct char_info
 {
-  uchar ch;
-  uchar attr;
+  char letter;
+  u8   attr;
 } screenCharType;
+#endif // __BORLANDC__
+#ifdef __MINGW32__
+typedef struct char_info screenCharType;
+#endif // __MINGW32__
 
 typedef struct
 {
@@ -145,25 +156,25 @@ typedef struct
 typedef struct
 {
   u16      entryType;
-  uchar   *prompt;
-  uchar    key;
+  char    *prompt;
+  u8       key;
   u16      offset;
-  void     *data;
+  void    *data;
   u16      selected;
   u16      par1
          , par2;
-  uchar   *comment;
+  char    *comment;
 } menuEntryType;
 
 typedef struct
 {
-  uchar         *title;
+  char          *title;
   u16            xWidth, yWidth, pdEdge, zDataSize;
   u16            entryCount;
   menuEntryType  menuEntry[MAX_ENTRIES];
 } menuType;
 
-typedef uchar *txtPtr;
+typedef char *txtPtr;
 typedef s16(*function)(void);
 typedef s16(*functionPar)(u16 *v);
 typedef s16(*functionVPar)(u16 v);
@@ -176,16 +187,16 @@ typedef struct
 
 typedef struct
 {
-  uchar   *data;
+  u8      *data;
   txtPtr   text[34];
-  uchar    retval[34];
+  u8       retval[34];
 } toggleType;
 
 typedef struct
 {
-  u16            sx, sy;
-  u16            ex, ey;
-  u16            inactvborderfg, background;
+  u16             sx, sy;
+  u16             ex, ey;
+  u16             inactvborderfg, background;
   screenCharType *oldScreen;
 } windowMemType;
 
@@ -195,7 +206,7 @@ typedef struct
 void  showChar   (int x, int y, int chr, int att, int matt);
 void  shadow     (int x, int y);
 void  changeColor(int x, int y, int att, int matt);
-uchar getChar    (int x, int y);
+char  getChar    (int x, int y);
 
 #define calcAttr(fgc, bgc)  (((fgc) & 0x0F) | (((bgc) & 0x0F) << 4))
 

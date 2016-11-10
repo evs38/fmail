@@ -608,7 +608,7 @@ extern u16           nodeCount;
 
 s16 readMsg(internalMsgType *message, s32 msgNum)
 {
-  tempStrType tempStr1;
+  tempStrType tempStr;
   fhandle     msgMsgHandle;
   char       *helpPtr;
   msgMsgType  msgMsg;
@@ -616,11 +616,11 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
 
   memset(message, 0, INTMSG_SIZE);
 
-  sprintf(tempStr1, "%s%u.msg", config.netPath, msgNum);
+  sprintf(tempStr, "%s%u.msg", config.netPath, msgNum);
 
-  if ((msgMsgHandle = _sopen(tempStr1, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
+  if ((msgMsgHandle = _sopen(tempStr, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
   {
-    logEntryf(LOG_ALWAYS, 0, "Can't open file %s", tempStr1);
+    logEntryf(LOG_ALWAYS, 0, "Can't open file %s", tempStr);
     return -1;
   }
 
@@ -643,8 +643,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
   helpPtr = message->dateStr;
   message->seconds = 0;
 
-  if (!((isdigit(*helpPtr)) || (isdigit(*(helpPtr+1))) ||
-        (isdigit(*(helpPtr+2)))))                     /* Skip day-of-week */
+  if (!(isdigit(*helpPtr) || isdigit(*(helpPtr + 1)) || isdigit(*(helpPtr + 2))))  // Skip day-of-week
     helpPtr += 4;
 
   if (sscanf(helpPtr, "%hd-%hd-%hd %hd:%hd:%hd", &message->day,
@@ -655,7 +654,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
               &message->seconds) < 5)
   {
     if (sscanf(helpPtr, "%hd %s %hd %hd:%hd:%hd", &message->day,
-                tempStr1,
+                tempStr,
                 &message->year,
                 &message->hours,
                 &message->minutes,
@@ -671,7 +670,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
     }
     else
     {
-      message->month = ((strstr(upcaseMonths, strupr(tempStr1)) - upcaseMonths) / 3) + 1;
+      message->month = ((strstr(upcaseMonths, strupr(tempStr)) - upcaseMonths) / 3) + 1;
 
       if (message->year >= 80)
         message->year += 1900;
@@ -699,7 +698,6 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
     message->seconds = 0;
 
   message->attribute     = msgMsg.attribute;
-
   message->srcNode.net   = msgMsg.origNet;
   message->srcNode.node  = msgMsg.origNode;
   message->destNode.net  = msgMsg.destNet;
@@ -718,8 +716,8 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
           (memcmp(&(nodeInfo[count]->node), &message->destNode, 6) == 0) &&
           (stricmp(nodeInfo[count]->sysopName, message->toUserName) == 0))
       {
-        sprintf(tempStr1,"\1TOPT %u\r", message->destNode.point = nodeInfo[count]->node.point);
-        insertLine(message->text, tempStr1);
+        sprintf(tempStr,"\1TOPT %u\r", message->destNode.point = nodeInfo[count]->node.point);
+        insertLine(message->text, tempStr);
         if (!(message->attribute & LOCAL))
           message->attribute |= IN_TRANSIT;
         count = nodeCount;

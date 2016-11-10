@@ -208,9 +208,10 @@ s16 nodesList(s16 currentElem)
 //---------------------------------------------------------------------------
 
 typedef struct
-{  u8  *desc;
-   u16 flags;
-   u16 index;
+{
+  char *desc;
+  u16   flags;
+  u16   index;
 } ldType;
 
 

@@ -91,33 +91,10 @@ static s16 greater(nodeNumType *node1, nodeNumType *node2)
 	   node1->node == node2->node && node1->point > node2->point);
 }
 
-
-
-static s16 node4d(nodeNumType *node)
-{
-   u16	count;
-
-   count = 0;
-   while ( (count < MAX_AKAS) &&
-	   ((config.akaList[count].nodeNum.zone == 0) ||
-	    (node->net != config.akaList[count].fakeNet) ||
-	    (node->point != 0)) )
-   {  count++;
-   }
-   if ( count < MAX_AKAS )
-   {  node->point = node->node;
-      memcpy(node, &config.akaList[count].nodeNum, 6);
-      return count;
-   }
-   return -1;
-}
-
-
-
 static void releaseAreas(u16 echoCount)
 {
-   while ( echoCount-- )
-      free(echoAreaList[echoCount]);
+  while (echoCount--)
+    free(echoAreaList[echoCount]);
 }
 
 

@@ -360,20 +360,15 @@ static char *nodeStrP(nodeNumType *nodeNum)
 
 
 #ifndef GOLDBASE
-static u32 bitSwap(u32 v)
+static u32 bitSwap(const u8 *b)
 {
-  u32 temp = 0;
-  u16 count = 32;
-
-  do
-  {
-    temp <<= 1;
-    if (v & 1)
-      temp |= 1;
-    v >>= 1;
-  }
-  while (--count);
-  return temp;
+  u32 x = ((u32)b[3] << 24) | ((u32)b[0] << 16) | ((u32)b[0] << 8) | (u32)b[0];
+  x = ((x >>  1) & 0x55555555u) | ((x & 0x55555555u) <<  1);
+  x = ((x >>  2) & 0x33333333u) | ((x & 0x33333333u) <<  2);
+  x = ((x >>  4) & 0x0f0f0f0fu) | ((x & 0x0f0f0f0fu) <<  4);
+  x = ((x >>  8) & 0x00ff00ffu) | ((x & 0x00ff00ffu) <<  8);
+  x = ((x >> 16) & 0xffffu    ) | ((x & 0xffffu    ) << 16);
+  return x;
 }
 #endif
 
@@ -1465,9 +1460,9 @@ if (*config.autoRAPath != 0)
             messageRaRec.readSecurity  = config.readSecRA  [count];
             messageRaRec.writeSecurity = config.writeSecRA [count];
             messageRaRec.sysopSecurity = config.sysopSecRA [count];
-            *((s32*)&messageRaRec.readFlags ) = *((s32*)&config.readFlagsRA [count]);
-            *((s32*)&messageRaRec.writeFlags) = *((s32*)&config.writeFlagsRA[count]);
-            *((s32*)&messageRaRec.sysopFlags) = *((s32*)&config.sysopFlagsRA[count]);
+            memcpy(&messageRaRec.readFlags , &config.readFlagsRA [count], 4);
+            memcpy(&messageRaRec.writeFlags, &config.writeFlagsRA[count], 4);
+            memcpy(&messageRaRec.sysopFlags, &config.sysopFlagsRA[count], 4);
 
             messageRaRec.akaAddress = count;
           }
@@ -1547,9 +1542,9 @@ if (*config.autoRAPath != 0)
               messageRaRec.readSecurity  = areaBuf->readSecRA;
               messageRaRec.writeSecurity = areaBuf->writeSecRA;
               messageRaRec.sysopSecurity = areaBuf->sysopSecRA;
-              *((s32*)&messageRaRec.readFlags) = *((s32*)&areaBuf->flagsRdRA);
-              *((s32*)&messageRaRec.writeFlags) = *((s32*)&areaBuf->flagsWrRA);
-              *((s32*)&messageRaRec.sysopFlags) = *((s32*)&areaBuf->flagsSysRA);
+              memcpy(&messageRaRec.readFlags , &areaBuf->flagsRdRA , 4);
+              memcpy(&messageRaRec.writeFlags, &areaBuf->flagsWrRA , 4);
+              memcpy(&messageRaRec.sysopFlags, &areaBuf->flagsSysRA, 4);
             }
           }
           write (folderHandle, &messageRaRec, sizeof(messageRaType));
@@ -1604,12 +1599,12 @@ if (*config.autoRAPath != 0)
               messageRa2Rec.readSecurity  = config.readSecRA[count];
               messageRa2Rec.writeSecurity = config.writeSecRA[count];
               messageRa2Rec.sysopSecurity = config.sysopSecRA[count];
-              *((s32*)&messageRa2Rec.readFlags) = *((s32*)&config.readFlagsRA[count]);
-              *((s32*)&messageRa2Rec.readNotFlags) = *((s32*)(&config.readFlagsRA[count])+1);
-              *((s32*)&messageRa2Rec.writeFlags) = *((s32*)&config.writeFlagsRA[count]);
-              *((s32*)&messageRa2Rec.writeNotFlags) = *((s32*)(&config.writeFlagsRA[count])+1);
-              *((s32*)&messageRa2Rec.sysopFlags) = *((s32*)&config.sysopFlagsRA[count]);
-              *((s32*)&messageRa2Rec.sysopNotFlags) = *((s32*)(&config.sysopFlagsRA[count])+1);
+              memcpy(&messageRa2Rec.readFlags    , &config.readFlagsRA [count]    , 4);
+              memcpy(&messageRa2Rec.readNotFlags , &config.readFlagsRA [count] + 4, 4);
+              memcpy(&messageRa2Rec.writeFlags   , &config.writeFlagsRA[count]    , 4);
+              memcpy(&messageRa2Rec.writeNotFlags, &config.writeFlagsRA[count] + 4, 4);
+              memcpy(&messageRa2Rec.sysopFlags   , &config.sysopFlagsRA[count]    , 4);
+              memcpy(&messageRa2Rec.sysopNotFlags, &config.sysopFlagsRA[count] + 4, 4);
 
               messageRa2Rec.akaAddress = count;
             }
@@ -1706,12 +1701,12 @@ if (*config.autoRAPath != 0)
                 messageRa2Rec.readSecurity  = areaBuf->readSecRA;
                 messageRa2Rec.writeSecurity = areaBuf->writeSecRA;
                 messageRa2Rec.sysopSecurity = areaBuf->sysopSecRA;
-                *((s32*)&messageRa2Rec.readFlags) = *((s32*)&areaBuf->flagsRdRA);
-                *((s32*)&messageRa2Rec.readNotFlags) = *((s32*)&areaBuf->flagsRdNotRA);
-                *((s32*)&messageRa2Rec.writeFlags) = *((s32*)&areaBuf->flagsWrRA);
-                *((s32*)&messageRa2Rec.writeNotFlags) = *((s32*)&areaBuf->flagsWrNotRA);
-                *((s32*)&messageRa2Rec.sysopFlags) = *((s32*)&areaBuf->flagsSysRA);
-                *((s32*)&messageRa2Rec.sysopNotFlags) = *((s32*)&areaBuf->flagsSysNotRA);
+                memcpy(&messageRa2Rec.readFlags    , &areaBuf->flagsRdRA    , 4);
+                memcpy(&messageRa2Rec.readNotFlags , &areaBuf->flagsRdNotRA , 4);
+                memcpy(&messageRa2Rec.writeFlags   , &areaBuf->flagsWrRA    , 4);
+                memcpy(&messageRa2Rec.writeNotFlags, &areaBuf->flagsWrNotRA , 4);
+                memcpy(&messageRa2Rec.sysopFlags   , &areaBuf->flagsSysRA   , 4);
+                memcpy(&messageRa2Rec.sysopNotFlags, &areaBuf->flagsSysNotRA, 4);
               }
             }
             /* Original, without 'holes'
@@ -1792,12 +1787,12 @@ if (*config.autoRAPath != 0)
             messageRa2Rec.readSecurity  = areaBuf->readSecRA;
             messageRa2Rec.writeSecurity = areaBuf->writeSecRA;
             messageRa2Rec.sysopSecurity = areaBuf->sysopSecRA;
-            *((s32*)&messageRa2Rec.readFlags) = *((s32*)&areaBuf->flagsRdRA);
-            *((s32*)&messageRa2Rec.readNotFlags) = *((s32*)&areaBuf->flagsRdNotRA);
-            *((s32*)&messageRa2Rec.writeFlags) = *((s32*)&areaBuf->flagsWrRA);
-            *((s32*)&messageRa2Rec.writeNotFlags) = *((s32*)&areaBuf->flagsWrNotRA);
-            *((s32*)&messageRa2Rec.sysopFlags) = *((s32*)&areaBuf->flagsSysRA);
-            *((s32*)&messageRa2Rec.sysopNotFlags) = *((s32*)&areaBuf->flagsSysNotRA);
+            memcpy(&messageRa2Rec.readFlags    , &areaBuf->flagsRdRA    , 4);
+            memcpy(&messageRa2Rec.readNotFlags , &areaBuf->flagsRdNotRA , 4);
+            memcpy(&messageRa2Rec.writeFlags   , &areaBuf->flagsWrRA    , 4);
+            memcpy(&messageRa2Rec.writeNotFlags, &areaBuf->flagsWrNotRA , 4);
+            memcpy(&messageRa2Rec.sysopFlags   , &areaBuf->flagsSysRA   , 4);
+            memcpy(&messageRa2Rec.sysopNotFlags, &areaBuf->flagsSysNotRA, 4);
             if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
             {
               messageRa2Rec.areanum = count2++;
@@ -1865,9 +1860,9 @@ if (*config.autoRAPath != 0)
           SBBSBoardRec.ReadSecLvl  = config.readSecRA[count];
           SBBSBoardRec.WriteSecLvl = config.writeSecRA[count];
           SBBSBoardRec.SysopSecLvl = config.sysopSecRA[count];
-          *((s32*)&SBBSBoardRec.ReadFlags)  = *((s32*)&config.readFlagsRA[count]);
-          *((s32*)&SBBSBoardRec.WriteFlags) = *((s32*)&config.writeFlagsRA[count]);
-          *((s32*)&SBBSBoardRec.SysopFlags) = *((s32*)&config.sysopFlagsRA[count]);
+          memcpy(&SBBSBoardRec.ReadFlags , &config.readFlagsRA [count], 4);
+          memcpy(&SBBSBoardRec.WriteFlags, &config.writeFlagsRA[count], 4);
+          memcpy(&SBBSBoardRec.SysopFlags, &config.sysopFlagsRA[count], 4);
 
           SBBSakaUsed[count2-1] = count;
         }
@@ -1963,9 +1958,9 @@ if (*config.autoRAPath != 0)
             SBBSBoardRec.ReadSecLvl = areaBuf->readSecRA;
             SBBSBoardRec.WriteSecLvl = areaBuf->writeSecRA;
             SBBSBoardRec.SysopSecLvl = areaBuf->sysopSecRA;
-            *((s32*)&SBBSBoardRec.ReadFlags) = *((s32*)&areaBuf->flagsRdRA);
-            *((s32*)&SBBSBoardRec.WriteFlags) = *((s32*)&areaBuf->flagsWrRA);
-            *((s32*)&SBBSBoardRec.SysopFlags) = *((s32*)&areaBuf->flagsSysRA);
+            memcpy(&SBBSBoardRec.ReadFlags , &areaBuf->flagsRdRA , 4);
+            memcpy(&SBBSBoardRec.WriteFlags, &areaBuf->flagsWrRA , 4);
+            memcpy(&SBBSBoardRec.SysopFlags, &areaBuf->flagsSysRA, 4);
 
             SBBSakaUsed[count2-1] = checkMax(areaBuf->address, 9);
           }
@@ -2034,10 +2029,10 @@ if (*config.autoRAPath != 0)
           QBBSBoardRec.WriteSecLvl    = config.writeSecRA[count];
           QBBSBoardRec.TemplateSecLvl = config.templateSecQBBS[count];
           QBBSBoardRec.SysopSecLvl    = config.sysopSecRA[count];
-          *((s32*)&QBBSBoardRec.ReadFlags)     = *((s32*)&config.readFlagsRA[count]);
-          *((s32*)&QBBSBoardRec.WriteFlags)    = *((s32*)&config.writeFlagsRA[count]);
-          *((s32*)&QBBSBoardRec.TemplateFlags) = *((s32*)&config.templateFlagsQBBS[count]);
-          *((s32*)&QBBSBoardRec.SysopFlags)    = *((s32*)&config.sysopFlagsRA[count]);
+          memcpy(&QBBSBoardRec.ReadFlags    , &config.readFlagsRA      [count], 4);
+          memcpy(&QBBSBoardRec.WriteFlags   , &config.writeFlagsRA     [count], 4);
+          memcpy(&QBBSBoardRec.TemplateFlags, &config.templateFlagsQBBS[count], 4);
+          memcpy(&QBBSBoardRec.SysopFlags   , &config.sysopFlagsRA     [count], 4);
         }
         else if (config.dupBoard == count2)
         {
@@ -2126,10 +2121,10 @@ if (*config.autoRAPath != 0)
             QBBSBoardRec.WriteSecLvl    = areaBuf->writeSecRA;
             QBBSBoardRec.TemplateSecLvl = areaBuf->templateSecQBBS;
             QBBSBoardRec.SysopSecLvl    = areaBuf->sysopSecRA;
-            *((s32*)&QBBSBoardRec.ReadFlags)     = *((s32*)&areaBuf->flagsRdRA);
-            *((s32*)&QBBSBoardRec.WriteFlags)    = *((s32*)&areaBuf->flagsWrRA);
-            *((s32*)&QBBSBoardRec.TemplateFlags) = *((s32*)&areaBuf->flagsTemplateQBBS);
-            *((s32*)&QBBSBoardRec.SysopFlags)    = *((s32*)&areaBuf->flagsSysRA);
+            memcpy(&QBBSBoardRec.ReadFlags    , &areaBuf->flagsRdRA        , 4);
+            memcpy(&QBBSBoardRec.WriteFlags   , &areaBuf->flagsWrRA        , 4);
+            memcpy(&QBBSBoardRec.TemplateFlags, &areaBuf->flagsTemplateQBBS, 4);
+            memcpy(&QBBSBoardRec.SysopFlags   , &areaBuf->flagsSysRA       , 4);
           }
         }
         write (folderHandle, &QBBSBoardRec, sizeof(QBBSBoardRecType));
@@ -2171,25 +2166,24 @@ if (*config.autoRAPath != 0)
             else
               strcpy(proBoardRec.name, "Netmail Main");
           }
-          proBoardRec.msgType = (config.msgKindsRA[count] <= 3) ? config.msgKindsRA[count] : 0;
-          proBoardRec.msgKind = MSGKIND_NET;;
-          proBoardRec.msgBaseType = MSGBASE_HUDSON;
-          proBoardRec.groups[0] = config.groupRA[count];
-          proBoardRec.groups[1] = config.altGroupRA[count][0];
-          proBoardRec.groups[2] = config.altGroupRA[count][1];
-          proBoardRec.groups[3] = config.altGroupRA[count][2];
-          proBoardRec.allGroups = config.attr2RA[count] & BIT0;
-          proBoardRec.flags     = (config.attrRA[count] & BIT3) ?
-                                  ((config.attrRA[count] & BIT5) ? 3 : 1) : 0;
-          proBoardRec.readLevel  = config.readSecRA[count];
-          *((s32*)&proBoardRec.readFlags) = bitSwap(*((s32*)&config.readFlagsRA[count]));
-          *((s32*)&proBoardRec.readFlagsNot) = bitSwap(*((s32*)(&config.readFlagsRA[count])+1));
-          proBoardRec.writeLevel = config.writeSecRA[count];
-          *((s32*)&proBoardRec.writeFlags) = bitSwap(*((s32*)&config.writeFlagsRA[count]));
-          *((s32*)&proBoardRec.writeFlagsNot) = bitSwap(*((s32*)(&config.writeFlagsRA[count])+1));
-          proBoardRec.sysopLevel = config.sysopSecRA[count];
-          *((s32*)&proBoardRec.sysopFlags) = bitSwap(*((s32*)&config.sysopFlagsRA[count]));
-          *((s32*)&proBoardRec.sysopFlagsNot) = bitSwap(*((s32*)(&config.sysopFlagsRA[count])+1));
+          proBoardRec.msgType       = (config.msgKindsRA[count] <= 3) ? config.msgKindsRA[count] : 0;
+          proBoardRec.msgKind       = MSGKIND_NET;;
+          proBoardRec.msgBaseType   = MSGBASE_HUDSON;
+          proBoardRec.groups[0]     = config.groupRA[count];
+          proBoardRec.groups[1]     = config.altGroupRA[count][0];
+          proBoardRec.groups[2]     = config.altGroupRA[count][1];
+          proBoardRec.groups[3]     = config.altGroupRA[count][2];
+          proBoardRec.allGroups     = config.attr2RA[count] & BIT0;
+          proBoardRec.flags         = (config.attrRA[count] & BIT3) ? ((config.attrRA[count] & BIT5) ? 3 : 1) : 0;
+          proBoardRec.readLevel     = config.readSecRA[count];
+          proBoardRec.readFlags     = bitSwap(&config.readFlagsRA [count][0]);
+          proBoardRec.readFlagsNot  = bitSwap(&config.readFlagsRA [count][4]);
+          proBoardRec.writeLevel    = config.writeSecRA[count];
+          proBoardRec.writeFlags    = bitSwap(&config.writeFlagsRA[count][0]);
+          proBoardRec.writeFlagsNot = bitSwap(&config.writeFlagsRA[count][4]);
+          proBoardRec.sysopLevel    = config.sysopSecRA[count];
+          proBoardRec.sysopFlags    = bitSwap(&config.sysopFlagsRA[count][0]);
+          proBoardRec.sysopFlagsNot = bitSwap(&config.sysopFlagsRA[count][4]);
 
           proBoardRec.aka = count;
           proBoardRec.rcvKillDays = config.daysRcvdAKA[count];
@@ -2286,16 +2280,16 @@ if (*config.autoRAPath != 0)
               proBoardRec.hudsonBase = 0;
               proBoardRec.msgBaseType = MSGBASE_HUDSON;
             }
-            proBoardRec.minAge     = areaBuf->minAgeSBBS;
-            proBoardRec.readLevel  = areaBuf->readSecRA;
-            proBoardRec.writeLevel = areaBuf->writeSecRA;
-            proBoardRec.sysopLevel = areaBuf->sysopSecRA;
-            *((s32*)&proBoardRec.readFlags) = bitSwap(*((s32*)&areaBuf->flagsRdRA));
-            *((s32*)&proBoardRec.readFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsRdNotRA));
-            *((s32*)&proBoardRec.writeFlags) = bitSwap(*((s32*)&areaBuf->flagsWrRA));
-            *((s32*)&proBoardRec.writeFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsWrNotRA));
-            *((s32*)&proBoardRec.sysopFlags) = bitSwap(*((s32*)&areaBuf->flagsSysRA));
-            *((s32*)&proBoardRec.sysopFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsSysNotRA));
+            proBoardRec.minAge        = areaBuf->minAgeSBBS;
+            proBoardRec.readLevel     = areaBuf->readSecRA;
+            proBoardRec.writeLevel    = areaBuf->writeSecRA;
+            proBoardRec.sysopLevel    = areaBuf->sysopSecRA;
+            proBoardRec.readFlags     = bitSwap(&areaBuf->flagsRdRA    [0]);
+            proBoardRec.readFlagsNot  = bitSwap(&areaBuf->flagsRdNotRA [0]);
+            proBoardRec.writeFlags    = bitSwap(&areaBuf->flagsWrRA    [0]);
+            proBoardRec.writeFlagsNot = bitSwap(&areaBuf->flagsWrNotRA [0]);
+            proBoardRec.sysopFlags    = bitSwap(&areaBuf->flagsSysRA   [0]);
+            proBoardRec.sysopFlagsNot = bitSwap(&areaBuf->flagsSysNotRA[0]);
           }
         }
         write (folderHandle, &proBoardRec, sizeof(proBoardType));
@@ -2303,67 +2297,55 @@ if (*config.autoRAPath != 0)
       for (count = 0; count < areaInfoCount; count++)
       {
         getRec(CFG_ECHOAREAS, count);
-        if (areaBuf->options.active &&
-            (areaBuf->boardNumRA == 0) &&
-            *areaBuf->msgBasePath &&
-            (areaBuf->options.export2BBS) )
+        if (areaBuf->options.active && areaBuf->boardNumRA == 0 && *areaBuf->msgBasePath && areaBuf->options.export2BBS)
         {
-          memset (&proBoardRec, 0, sizeof(proBoardType));
-          proBoardRec.areaNum = count2++;
+          memset(&proBoardRec, 0, sizeof(proBoardType));
 
           if (config.genOptions.commentFRA && *areaBuf->comment)
-          {
-            strcpy (proBoardRec.name, areaBuf->comment);
-          }
+            strcpy(proBoardRec.name, areaBuf->comment);
           else
-          {
-            strcpy (proBoardRec.name, areaBuf->areaName);
-          }
+            strcpy(proBoardRec.name, areaBuf->areaName);
+
           strcpy(proBoardRec.echoTag, areaBuf->areaName);
-          strcpy(proBoardRec.qwkTag, areaBuf->qwkName);
-          strcpy (proBoardRec.path, areaBuf->msgBasePath);
-          proBoardRec.msgBaseType = MSGBASE_JAM;
-
-          proBoardRec.msgType = (areaBuf->msgKindsRA <= 3) ? areaBuf->msgKindsRA : 0;
-          proBoardRec.msgKind = areaBuf->options.local ? MSGKIND_LOCAL:
-                                areaBuf->options.allowPrivate ? MSGKIND_PVTECHO:
-                                MSGKIND_ECHO;
-          proBoardRec.groups[0] = areaBuf->groupRA;
-          proBoardRec.groups[1] = areaBuf->altGroupRA[0];
-          proBoardRec.groups[2] = areaBuf->altGroupRA[1];
-          proBoardRec.groups[3] = areaBuf->altGroupRA[2];
-          proBoardRec.allGroups = areaBuf->attr2RA & BIT0;
-          proBoardRec.flags     = areaBuf->attrRA & BIT3 ?
-                                  ((areaBuf->attrRA & BIT5) ? 3 : 1) : 0;
-          proBoardRec.replyBoard = areaBuf->netReplyBoardRA;
-          strcpy (proBoardRec.origin, areaBuf->originLine);
-
-          proBoardRec.aka         = areaBuf->address; //checkMax(areaBuf->address, 10);
-          proBoardRec.rcvKillDays = areaBuf->daysRcvd;
-          proBoardRec.msgKillDays = areaBuf->days;
-          proBoardRec.maxMsgs     = areaBuf->msgs;
-
-          proBoardRec.minAge           = areaBuf->minAgeSBBS;
-
-          proBoardRec.readLevel  = areaBuf->readSecRA;
-          proBoardRec.writeLevel = areaBuf->writeSecRA;
-          proBoardRec.sysopLevel = areaBuf->sysopSecRA;
-          *((s32*)&proBoardRec.readFlags) = bitSwap(*((s32*)&areaBuf->flagsRdRA));
-          *((s32*)&proBoardRec.readFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsRdNotRA));
-          *((s32*)&proBoardRec.writeFlags) = bitSwap(*((s32*)&areaBuf->flagsWrRA));
-          *((s32*)&proBoardRec.writeFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsWrNotRA));
-          *((s32*)&proBoardRec.sysopFlags) = bitSwap(*((s32*)&areaBuf->flagsSysRA));
-          *((s32*)&proBoardRec.sysopFlagsNot) = bitSwap(*((s32*)&areaBuf->flagsSysNotRA));
-          write (folderHandle, &proBoardRec, sizeof(proBoardType));
+          strcpy(proBoardRec.qwkTag , areaBuf->qwkName);
+          strcpy(proBoardRec.path   , areaBuf->msgBasePath);
+          strcpy(proBoardRec.origin , areaBuf->originLine);
+          proBoardRec.areaNum       = count2++;
+          proBoardRec.msgBaseType   = MSGBASE_JAM;
+          proBoardRec.msgType       = (areaBuf->msgKindsRA <= 3) ? areaBuf->msgKindsRA : 0;
+          proBoardRec.msgKind       = areaBuf->options.local ? MSGKIND_LOCAL
+                                    : areaBuf->options.allowPrivate ? MSGKIND_PVTECHO : MSGKIND_ECHO;
+          proBoardRec.groups[0]     = areaBuf->groupRA;
+          proBoardRec.groups[1]     = areaBuf->altGroupRA[0];
+          proBoardRec.groups[2]     = areaBuf->altGroupRA[1];
+          proBoardRec.groups[3]     = areaBuf->altGroupRA[2];
+          proBoardRec.allGroups     = areaBuf->attr2RA & BIT0;
+          proBoardRec.flags         = areaBuf->attrRA  & BIT3 ? ((areaBuf->attrRA & BIT5) ? 3 : 1) : 0;
+          proBoardRec.replyBoard    = areaBuf->netReplyBoardRA;
+          proBoardRec.aka           = areaBuf->address; //checkMax(areaBuf->address, 10);
+          proBoardRec.rcvKillDays   = areaBuf->daysRcvd;
+          proBoardRec.msgKillDays   = areaBuf->days;
+          proBoardRec.maxMsgs       = areaBuf->msgs;
+          proBoardRec.minAge        = areaBuf->minAgeSBBS;
+          proBoardRec.readLevel     = areaBuf->readSecRA;
+          proBoardRec.writeLevel    = areaBuf->writeSecRA;
+          proBoardRec.sysopLevel    = areaBuf->sysopSecRA;
+          proBoardRec.readFlags     = bitSwap(&areaBuf->flagsRdRA    [0]);
+          proBoardRec.readFlagsNot  = bitSwap(&areaBuf->flagsRdNotRA [0]);
+          proBoardRec.writeFlags    = bitSwap(&areaBuf->flagsWrRA    [0]);
+          proBoardRec.writeFlagsNot = bitSwap(&areaBuf->flagsWrNotRA [0]);
+          proBoardRec.sysopFlags    = bitSwap(&areaBuf->flagsSysRA   [0]);
+          proBoardRec.sysopFlagsNot = bitSwap(&areaBuf->flagsSysNotRA[0]);
+          write(folderHandle, &proBoardRec, sizeof(proBoardType));
         }
       }
       close (folderHandle);
     }
   }
 #endif
-}
+  }
 error:
-closeConfig (CFG_ECHOAREAS);
-free(areaInfoIndex);
+  closeConfig (CFG_ECHOAREAS);
+  free(areaInfoIndex);
 }
 

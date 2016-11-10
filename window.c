@@ -21,16 +21,9 @@
 //
 //---------------------------------------------------------------------------
 
-#ifndef __32BIT__
-#if (__BORLANDC__ < 0x0452)
-#define __SegB000  0xb000
-#define __SegB800  0xb800
-#endif
-#endif
-
 #include <ctype.h>
 #include <dir.h>
-#include <dos.h>
+//#include <dos.h>
 #include <io.h>
 #include <process.h>  // spawnl()
 #include <stdio.h>
@@ -49,21 +42,17 @@
 
 #include "window.h"
 
+#include "areainfo.h"
 #include "areamgr.h"
 #include "fs_func.h"
 #include "fs_util.h"
 #include "help.h"
 #include "jam.h"
+#include "minmax.h"
 #include "mtask.h"
+#include "nodeinfo.h"
 #include "os.h"
 #include "utils.h"
-
-#include "nodeinfo.h"
-#include "areainfo.h"
-
-#ifdef DEBUG
-#include "alloc.h"
-#endif
 
 extern char boardCodeInfo[512];
 
@@ -140,13 +129,13 @@ void showCharNA(int x, int y, int chr)
 //---------------------------------------------------------------------------
 void showChar(int x, int y, int chr, int att, int matt)
 {
-  uchar buf[2];
+  struct char_info buf;
 
   x++;
   y++;
-  buf[0] = chr;
-  buf[1] = color ? att : matt;
-  puttext(x, y, x, y, buf);
+  buf.letter = chr;
+  buf.attr = color ? att : matt;
+  puttext(x, y, x, y, &buf);
 }
 //---------------------------------------------------------------------------
 void shadow(int x, int y)
@@ -157,36 +146,36 @@ void shadow(int x, int y)
 //---------------------------------------------------------------------------
 void changeColor(int x, int y, int att, int matt)
 {
-  uchar buf[2];
+  struct char_info buf;
 
   x++;
   y++;
-  gettext(x, y, x, y, buf);
-  buf[1] = color ? att : matt;
-  puttext(x, y, x, y, buf);
+  gettext(x, y, x, y, &buf);
+  buf.attr = color ? att : matt;
+  puttext(x, y, x, y, &buf);
 }
 //---------------------------------------------------------------------------
-uchar getChar(int x, int y)
+char getChar(int x, int y)
 {
-  uchar buf[2];
+  struct char_info buf;
 
   x++;
   y++;
-  gettext(x, y, x, y, buf);
+  gettext(x, y, x, y, &buf);
 
-  return buf[0];
+  return buf.letter;
 }
 //---------------------------------------------------------------------------
 #if 0
-uchar getColor(int x, int y, int att, int matt)
+u16 getColor(int x, int y, int att, int matt)
 {
-  uchar buf[2];
+  struct char_info buf;
 
   x++;
   y++;
-  gettext(x, y, x, y, buf);
+  gettext(x, y, x, y, &buf);
 
-  return buf[1];
+  return buf.attr;
 }
 #endif
 //---------------------------------------------------------------------------
@@ -273,8 +262,6 @@ void initWindow(u16 mode)
   clrscr();
 #endif
 
-   /* install new abort/retry/ignore/fail handler */
-//#endif
   removeCursor();
 
   initMagic = 0x4657;
@@ -1007,13 +994,11 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
                            *((s16*)menu->menuEntry[count].data) =
                                    menu->menuEntry[count].par2;
                         width = menu->menuEntry[count].par1;
-                        ultoa ((u16)*((s16*)menu->menuEntry[count].data),
-                               tempStr, 10);
+                        _ultoa((u16)*((s16*)menu->menuEntry[count].data), tempStr, 10);
                         tempStr[width] = 0;
                         break;
        case NUM_LONG  : width = 10;
-                        ultoa (*((s32*)menu->menuEntry[count].data),
-                               tempStr, 10);
+                        _ultoa(*((s32*)menu->menuEntry[count].data), tempStr, 10);
                         break;
       case BOOL_INT    :
         width = 3;
@@ -1082,25 +1067,21 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
 //---------------------------------------------------------------------------
 void fillRectangle(char ch, u16 sx, u16 sy, u16 ex, u16 ey, u16 fgc, u16 bgc, u16 mAttr)
 {
-  u16  count;
-  u16  width;
-  char line[160];
+  u16    count;
+  u16    width;
+  struct char_info line[80];
 
   testInit();
 
-  if ((width = (ex - sx + 1) * 2) > 160)
+  if ((width = ex - sx + 1) > 80)
     return;
 
-  memset(line, ch, width);
-  if (color)
+  u16 attr = calcAttr(fgc, bgc);
+  for (count = 0; count < width; count++)
   {
-    u16 attr = calcAttr(fgc, bgc);
-    for (count = 1; count < width; count += 2)
-      line[count] = attr;
+    line[count].letter = ch;
+    line[count].attr   = color ? attr : mAttr;
   }
-  else
-    for (count = 1; count < width; count += 2)
-      line[count] = mAttr;
 
   for (count = sy; count <= ey; count++)
     puttext(sx + 1, count + 1, ex + 1, count + 1, line);
@@ -1751,10 +1732,10 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
                                        tempInfo.board = 0;
                                     }
                                  }
-                                 if ( !editDefault && !am__cp && !es__8c && *tempStr &&
-                                         strcmp(tempInfo.msgBasePath, tempStr))
-                                 {  askRemoveJAM(tempStr);
-                                    if ( !*tempInfo.msgBasePath )
+                                 if (!editDefault && !am__cp && !es__8c && *tempStr && strcmp(tempInfo.msgBasePath, tempStr))
+                                 {
+                                    askRemoveJAM(tempStr);
+                                    if (!*tempInfo.msgBasePath)
                                        tempInfo.boardNumRA = 0;
                                  }
                               }
@@ -1786,7 +1767,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
                               update = 1;
                               break;
             case NUM_P_INT  :
-            case NUM_INT    : ultoa ((u16)*((s16*)menu->menuEntry[count].data), tempStr, 10);
+            case NUM_INT    : _ultoa((u16)*((s16*)menu->menuEntry[count].data), tempStr, 10);
                    /*ch =*/   editString (tempStr,
                                           menu->menuEntry[count].par1+1,
                                           editX, py,
@@ -1799,7 +1780,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
                                  config.maxMsgSize = 45;
                               update = 1;
                               break;
-            case NUM_LONG   : ultoa (*((s32*)menu->menuEntry[count].data), tempStr, 10);
+            case NUM_LONG   : _ultoa(*((s32*)menu->menuEntry[count].data), tempStr, 10);
                               editString(tempStr, 11, editX, py, menu->menuEntry[count].entryType);
                               *(s32*)menu->menuEntry[count].data = atol (tempStr);
                               update = 1;
@@ -2151,44 +2132,42 @@ char *getSourceFileName (char *title)
          *fileNameStr = 0;
       }
    }
-   return (fileNameStr);
-}
-
-
-
-char *getDestFileName(char *title)
-{
-   char drive[_MAX_DRIVE];
-   char dir  [_MAX_DIR  ];
-   char file [_MAX_FNAME];
-   char ext  [_MAX_EXT  ];
-
-   getSourceFileName(title);
-
-   if (*fileNameStr)
-   {
-      _splitpath(fileNameStr, drive, dir, file, ext);
-      if ((strcmp (file, "FMAIL") == 0) &&
-          ((strcmp (ext, ".AR") == 0)  || (strcmp (ext, ".NOD") == 0) ||
-           (strcmp (ext, ".PCK") == 0) || (strcmp (ext, ".CFG") == 0) ||
-           (strcmp (ext, ".DUP") == 0) || (strcmp (ext, ".LOG") == 0)))
-      {
-         displayMessage ("Can't write to FMail system files");
-         *fileNameStr = 0;
-      }
-   }
-   if (  *fileNameStr
-      && access(fileNameStr, 0) == 0
-      && askBoolean("File already exists. Overwrite ?", 'N') != 'Y'
-      )
-   {
-      *fileNameStr = 0;
-   }
    return fileNameStr;
 }
+//---------------------------------------------------------------------------
+char *getDestFileName(char *title)
+{
+  char drive[_MAX_DRIVE];
+  char dir  [_MAX_DIR  ];
+  char file [_MAX_FNAME];
+  char ext  [_MAX_EXT  ];
 
+  getSourceFileName(title);
 
-
+  if (*fileNameStr)
+  {
+    _splitpath(fileNameStr, drive, dir, file, ext);
+    if (  strcmp(file, "FMAIL") == 0
+       && (  strcmp(ext, ".AR" ) == 0 || strcmp(ext, ".NOD") == 0
+          || strcmp(ext, ".PCK") == 0 || strcmp(ext, ".CFG") == 0
+          || strcmp(ext, ".DUP") == 0 || strcmp(ext, ".LOG") == 0
+          )
+       )
+    {
+      displayMessage ("Can't write to FMail system files");
+      *fileNameStr = 0;
+    }
+  }
+  if (  *fileNameStr
+     && access(fileNameStr, 0) == 0
+     && askBoolean("File already exists. Overwrite ?", 'N') != 'Y'
+     )
+  {
+    *fileNameStr = 0;
+  }
+  return fileNameStr;
+}
+//---------------------------------------------------------------------------
 s16 askChar(char *prompt, u8 *keys)
 {
    u8  *helpPtr;
@@ -2236,16 +2215,12 @@ s16 askBoolean(char *prompt, s16 dfault)
    }
    return dfault;
 }
-
-
-
+//---------------------------------------------------------------------------
 void working(void)
 {
   printStringFill("Working...", ' ', 79, 0, 24, LIGHTRED, BLACK | COLOR_BLINK, MONO_NORM_BLINK);
 }
-
-
-
+//---------------------------------------------------------------------------
 char displayAreasArray[MBBOARDS];
 s16  displayAreasSelect;
 extern s16 boardEdit;
@@ -2415,36 +2390,27 @@ s16 displayAreas (void)
    }
    return (0);
 }
-
-
+//---------------------------------------------------------------------------
 static windowLookType orgWindowLook;
 
 void saveWindowLook(void)
 {
-   memcpy(&orgWindowLook, &windowLook, sizeof(windowLookType));
+  memcpy(&orgWindowLook, &windowLook, sizeof(windowLookType));
 }
-
+//---------------------------------------------------------------------------
 void restoreWindowLook(void)
 {
-        memcpy(&windowLook, &orgWindowLook, sizeof(windowLookType));
+  memcpy(&windowLook, &orgWindowLook, sizeof(windowLookType));
 }
-
-
-
+//---------------------------------------------------------------------------
 void askRemoveDir(char *path)
 {
-  struct ffblk ffblk;
-  tempStrType  mask;
-  char        *helpPtr;
-  u16          again = 0;
+  char *helpPtr;
+  u16   again = 0;
 
   do
   {
-    strcpy(stpcpy(mask, path), "\\*.*");
-    if (  dirExist(path)
-       && findfirst(mask, &ffblk, 0))
-       && (again || askBoolean("Delete empty path ?", 'Y') == 'Y')
-       )
+    if (dirIsEmpty(path) && (again || askBoolean("Delete empty path ?", 'Y') == 'Y'))
     {
       rmdir(path);
       if ((helpPtr = strrchr(path, '\\')) != NULL)
@@ -2460,33 +2426,37 @@ void askRemoveDir(char *path)
   }
   while (again);
 }
-
-
-
+//---------------------------------------------------------------------------
 void askRemoveJAM(char *msgBasePath)
 {
-   tempStrType tempStr;
-   char       *helpPtr;
-   struct ffblk ffblkJAM;
+  tempStrType tempStr;
+  char       *hp1
+           , *hp2;
 
-   helpPtr = stpcpy(tempStr, msgBasePath);
-   strcpy(helpPtr, ".J*");
-   if (  *msgBasePath && !findfirst(tempStr, &ffblkJAM, 0)
-      && askBoolean("Delete JAM files of this area ?", 'Y') == 'Y'
-      )
-   {
-      strcpy(helpPtr, EXT_IDXFILE);
-      unlink(tempStr);
-      strcpy(helpPtr, EXT_HDRFILE);
-      unlink(tempStr);
-      strcpy(helpPtr, EXT_TXTFILE);
-      unlink(tempStr);
-      strcpy(helpPtr, EXT_LRDFILE);
-      unlink(tempStr);
-      if ((helpPtr = strrchr(msgBasePath, '\\')) != NULL)
-      {  *helpPtr = 0;
-         askRemoveDir(msgBasePath);
-      }
-   }
+  hp1 = stpcpy(tempStr, msgBasePath);
+  strcpy(hp1, ".j*");
+  if ((hp2 = strrchr(tempStr, '\\')) != NULL)
+    *hp2 = 0;
+
+  if (  *tempStr && (hp2 ? existPattern(tempStr, hp2 + 1) : existPattern(".", tempStr))
+     && askBoolean("Delete JAM files of this area ?", 'Y') == 'Y'
+     )
+  {
+    if (hp2)
+      *hp2 = '\\';
+    strcpy(hp1, EXT_IDXFILE);
+    unlink(tempStr);
+    strcpy(hp1, EXT_HDRFILE);
+    unlink(tempStr);
+    strcpy(hp1, EXT_TXTFILE);
+    unlink(tempStr);
+    strcpy(hp1, EXT_LRDFILE);
+    unlink(tempStr);
+    if (hp2)
+    {
+      *hp2 = 0;
+      askRemoveDir(tempStr);
+    }
+  }
 }
 //---------------------------------------------------------------------------

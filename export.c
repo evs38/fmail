@@ -40,6 +40,7 @@
 #include "fdfolder.h"
 #include "fs_util.h"
 #include "nodeinfo.h"
+#include "stpcpy.h"
 #include "version.h"
 #include "window.h"
 
@@ -779,12 +780,11 @@ s16 listNodeConfig (void)
                         "\nSystem           : %s\n", nodeStr(&(nodeBuf->node)));
       if (nodeBuf->viaNode.zone)
          fprintf (textFile, "Via system       : %s\n", nodeStr(&(nodeBuf->viaNode)));
+
       if (*nodeBuf->sysopName)
-      {
          fprintf (textFile, "SysOp            : %s\n\n", nodeBuf->sysopName);
-      }
-      fprintf (textFile, "Groups           : %s\n",
-                         getGroupString(nodeBuf->groups, groupString));
+
+      fprintf (textFile, "Groups           : %s\n", getGroupString(nodeBuf->groups, groupString));
       fprintf (textFile, "Write level      : %u\n", nodeBuf->writeLevel);
 
       fprintf (textFile, "Capability       : ");

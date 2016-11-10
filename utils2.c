@@ -32,6 +32,7 @@
 #include "utils.h"
 
 #include "ispathch.h"
+#include "spec.h"
 
 extern configType config;
 
@@ -90,6 +91,28 @@ const char *nodeStr(const nodeNumType *nodeNum)
     sprintf(t2, "%u/%u"   , nodeNum->net, nodeNum->node);
 
   return t1;
+}
+//---------------------------------------------------------------------------
+s16 node4d(nodeNumType *node)
+{
+  u16 count = 0;
+
+  while (  count < MAX_AKAS
+        && (  config.akaList[count].nodeNum.zone == 0
+           || node->net != config.akaList[count].fakeNet
+           || node->point != 0
+           )
+        )
+    count++;
+
+  if (count < MAX_AKAS)
+  {
+    node->point = node->node;
+    memcpy(node, &config.akaList[count].nodeNum, 6);
+
+    return count;
+  }
+  return -1;
 }
 //---------------------------------------------------------------------------
 char *stristr(const char *str1, const char *str2)
@@ -199,5 +222,49 @@ int dirExist(const char *dir)
   }
 
   return 0;
+}
+//---------------------------------------------------------------------------
+int dirIsEmpty(const char *dirname)
+{
+  DIR *dir = opendir(dirname);
+  struct dirent *de;
+
+  if (dir == NULL)
+    // Directory doesn't exist, gives the same result as not empty
+    return 0;
+
+  while ((de = readdir(dir)) != NULL)
+  {
+    // Ignore "." and ".." directory members.
+    const char *dn = de->d_name;
+    if (dn[0] == '.' && (dn[1] == 0 || (dn[1] == '.' && dn[2] == 0)))
+      continue;
+
+    // Found a directory entry, so it's not empty
+    closedir(dir);
+    return 0;
+  }
+  // Directory is empty
+  closedir(dir);
+  return 1;
+}
+//---------------------------------------------------------------------------
+// Return 0 if pattern doesn't exist in path
+//
+int existPattern(const char *path, const char *pattern)
+{
+  DIR           *dir;
+  struct dirent *ent = NULL;
+
+  if ((dir = opendir(path)) != NULL)
+  {
+    while ((ent = readdir(dir)) != NULL)
+      if (match_spec(pattern, ent->d_name))
+        break;
+
+    closedir(dir);
+  }
+
+  return ent != NULL;
 }
 //---------------------------------------------------------------------------

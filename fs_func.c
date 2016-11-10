@@ -64,10 +64,10 @@ s16 displayGroups(void)
 
   for (c = 0; c < 13; c++)
   {
-    printChar ('A'+c, 17, c+8, windowLook.promptfg, windowLook.background, MONO_NORM);
-    printString (config.groupDescr[c], 19, c+8, windowLook.datafg, windowLook.background, MONO_NORM);
-    printChar ('N'+c, 47, c+8, windowLook.promptfg, windowLook.background, MONO_NORM);
-    printString (config.groupDescr[c+13], 49, c+8, windowLook.datafg, windowLook.background, MONO_NORM);
+    printChar('A' + c, 17, c + 8, windowLook.promptfg, windowLook.background, MONO_NORM);
+    printString(config.groupDescr[c], 19, c + 8, windowLook.datafg, windowLook.background, MONO_NORM);
+    printChar('N' + c, 47, c + 8, windowLook.promptfg, windowLook.background, MONO_NORM);
+    printString(config.groupDescr[c + 13], 49, c + 8, windowLook.datafg, windowLook.background, MONO_NORM);
   }
   return 1;
 }
@@ -112,23 +112,23 @@ s32 getGroups (s32 groups)
       {
          if (groups & mask)
          {
-            printChar ('A'+c, 17, c+8, WHITE, windowLook.background, MONO_HIGH);
-            printString (config.groupDescr[c], 19, c+8, WHITE, windowLook.background, MONO_HIGH);
+            printChar('A'+c, 17, c+8, WHITE, windowLook.background, MONO_HIGH);
+            printString(config.groupDescr[c], 19, c+8, WHITE, windowLook.background, MONO_HIGH);
          }
          else
          {
-            printChar ('A'+c, 17, c+8, windowLook.inactvborderfg, windowLook.background, MONO_NORM);
-            printString (config.groupDescr[c], 19, c+8, DARKGRAY, windowLook.background, MONO_NORM);
+            printChar('A'+c, 17, c+8, windowLook.inactvborderfg, windowLook.background, MONO_NORM);
+            printString(config.groupDescr[c], 19, c+8, DARKGRAY, windowLook.background, MONO_NORM);
          }
          if (groups & (mask<<13))
          {
-            printChar ('N'+c, 47, c+8, WHITE, windowLook.background, MONO_HIGH);
-            printString (config.groupDescr[c+13], 49, c+8, WHITE, windowLook.background, MONO_HIGH);
+            printChar('N'+c, 47, c+8, WHITE, windowLook.background, MONO_HIGH);
+            printString(config.groupDescr[c+13], 49, c+8, WHITE, windowLook.background, MONO_HIGH);
          }
          else
          {
-            printChar ('N'+c, 47, c+8, windowLook.inactvborderfg, windowLook.background, MONO_NORM);
-            printString (config.groupDescr[c+13], 49, c+8, DARKGRAY, windowLook.background, MONO_NORM);
+            printChar('N'+c, 47, c+8, windowLook.inactvborderfg, windowLook.background, MONO_NORM);
+            printString(config.groupDescr[c+13], 49, c+8, DARKGRAY, windowLook.background, MONO_NORM);
          }
          mask <<= 1;
       }
@@ -280,15 +280,15 @@ s16 uplinkMenu (u16 v)
    toggleType fileTypeToggle;
    toggleType addressToggle;
 
-   fileTypeToggle.data    = &config.uplinkReq[v].fileType;
-   fileTypeToggle.text[0] = "Random";
+   fileTypeToggle.data      = &config.uplinkReq[v].fileType;
+   fileTypeToggle.text  [0] = "Random";
    fileTypeToggle.retval[0] = 0;
-   fileTypeToggle.text[1] = "<AREANAME> <DESCRIPTION>";
+   fileTypeToggle.text  [1] = "<AREANAME> <DESCRIPTION>";
    fileTypeToggle.retval[1] = 1;
-   fileTypeToggle.text[2] = "BCL";
+   fileTypeToggle.text  [2] = "BCL";
    fileTypeToggle.retval[2] = 2;
 
-   addressToggle.data = (char*)&config.uplinkReq[v].originAka;
+   addressToggle.data = &config.uplinkReq[v].originAka;
    for (count = 0; count < MAX_AKAS; count++)
    {
       if (config.akaList[count].nodeNum.zone != 0)
@@ -333,8 +333,7 @@ s16 uplinkMenu (u16 v)
 
    free (uplMenu);
 
-   count = sprintf (uplinkNodeStr[v], "%2u  %s", v+1,
-                    config.uplinkReq[v].node.zone?nodeStr(&config.uplinkReq[v].node):"                       ");
+   count = sprintf(uplinkNodeStr[v], "%2u  %s", v + 1, config.uplinkReq[v].node.zone ? nodeStr(&config.uplinkReq[v].node) : "                       ");
    memset (uplinkNodeStr[v]+count, ' ', 27-count);
 
    uplinkNodeStr[v][27] = 0;
@@ -1022,19 +1021,19 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    boardCodeSelectGold.f      = (function)selectBoardCodeGold;
 #endif
 
-   boardTypeToggle.data    = (char*)&tempInfo.board;
-   boardTypeToggle.text[0] = "Pass through";
+   boardTypeToggle.data      = (u8*)&tempInfo.board;
+   boardTypeToggle.text  [0] = "Pass through";
    boardTypeToggle.retval[0] = 0;
-   boardTypeToggle.text[1] = MBNAME;
+   boardTypeToggle.text  [1] = MBNAME;
    boardTypeToggle.retval[1] = 1;
-   boardTypeToggle.text[2] = "JAM";
+   boardTypeToggle.text  [2] = "JAM";
    boardTypeToggle.retval[2] = 2;
 
    if ( editType == EDIT_ECHO_DEFAULT )
-      RAToggle.data = (char*)&defaultEnumRA;
+      RAToggle.data = (u8*)&defaultEnumRA;
    else
    {
-      RAToggle.data = (char*)&tempToggleRA;
+      RAToggle.data = (u8*)&tempToggleRA;
       tempToggleRA = (tempInfo.attrRA & BIT3) ?
                      (tempInfo.attrRA & BIT5) ? 1 : 2 : 0;
    }
@@ -1091,7 +1090,7 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    QBBSToggle.text[2] = "Yes";
    QBBSToggle.retval[2] = 2;
 
-   addressToggle.data = (char*)&tempInfo.address;
+   addressToggle.data = (u8*)&tempInfo.address;
    for (count = 0; count < MAX_AKAS; count++)
    {
       if (config.akaList[count].nodeNum.zone != 0)

@@ -25,7 +25,7 @@
 #include <ctype.h>
 #include "fmail.h"
 
-s32 getGroupCode (char *groupString)
+s32 getGroupCode(char *groupString)
 {
    s32      code;
 
@@ -50,7 +50,7 @@ s32 getGroupCode (char *groupString)
 
 
 
-char getGroupChar (s32 groupCode)
+char getGroupChar(s32 groupCode)
 {
    char count = 0;
 
@@ -65,7 +65,7 @@ char getGroupChar (s32 groupCode)
 
 
 
-char *getGroupString (s32 groupCode, char *groupString)
+char *getGroupString(s32 groupCode, char *groupString)
 {
    u16 count;
    u16 pos = 0;
@@ -74,5 +74,5 @@ char *getGroupString (s32 groupCode, char *groupString)
       if (groupCode & (1L << count))
          groupString[pos++] = 'A' + count;
    groupString[pos] = 0;
-   return (groupString);
+   return groupString;
 }

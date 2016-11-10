@@ -42,6 +42,8 @@
 #include "cfgfile.h"
 #include "fs_func.h"
 #include "fs_util.h"
+#include "minmax.h"
+#include "stpcpy.h"
 #include "utils.h"
 #include "window.h"
 
@@ -51,7 +53,7 @@ typedef struct      /* OLD !!! */
   uchar           msgBasePath[MB_PATH_LEN_OLD];
   uchar           groupsQBBS;
   uchar           flagsTemplateQBBS[4];
-  uchar           comment[COMMENT_LEN];
+  char            comment[COMMENT_LEN];
   u32             group;
   u16             board;
   u16             address;
@@ -75,11 +77,11 @@ typedef struct      /* OLD !!! */
   u16             attrSBBS;
   uchar           replyStatSBBS;
   areaNameType    areaName;
-  uchar           qwkName[13];
+  char            qwkName[13];
   u16             minAgeSBBS;
   uchar           attr2RA;
   uchar           aliasesQBBS;
-  uchar           originLine[ORGLINE_LEN];
+  char            originLine[ORGLINE_LEN];
   nodeNumType     export[MAX_FORWARDOLD];
 
 } rawEchoTypeOld;
@@ -91,13 +93,13 @@ typedef struct
                             /* "AD" for default settings in FMAIL.ARD       */
   u16             writeLevel;
   areaNameType    areaName;
-  uchar           comment[COMMENT_LEN];
+  char            comment[COMMENT_LEN];
   areaOptionsType options;
   u16             boardNumRA;
-  uchar           msgBaseType;
-  uchar           msgBasePath[MB_PATH_LEN];
+  u8              msgBaseType;
+  char            msgBasePath[MB_PATH_LEN];
   u16             board;
-  uchar           originLine[ORGLINE_LEN];
+  char            originLine[ORGLINE_LEN];
   u16             address;
   u32             group;
   u16             alsoSeenBy;
@@ -126,7 +128,7 @@ typedef struct
   u16             groupRA;
   u16             altGroupRA[3];
   uchar           msgKindsRA;
-  uchar           qwkName[13];
+  char            qwkName[13];
   u16             minAgeSBBS;
   u16             attrSBBS;
   uchar           replyStatSBBS;
@@ -140,11 +142,11 @@ typedef struct
                             /* "AD" for default settings in FMAIL.ARD       */
   u16             writeLevel;
   areaNameType    areaName;
-  uchar           comment[COMMENT_LEN];
+  char            comment[COMMENT_LEN];
   areaOptionsType options;
   u16             boardNumRA;
-  uchar           msgBaseType;
-  uchar           msgBasePath[MB_PATH_LEN];
+  u8              msgBaseType;
+  char            msgBasePath[MB_PATH_LEN];
   u16             board;
   uchar           originLine[ORGLINE_LEN];
   u16             address;
@@ -175,7 +177,7 @@ typedef struct
   u16             groupRA;
   u16             altGroupRA[3];
   uchar           msgKindsRA;
-  uchar           qwkName[13];
+  char            qwkName[13];
   u16             minAgeSBBS;
   u16             attrSBBS;
   uchar           replyStatSBBS;
@@ -185,7 +187,7 @@ typedef struct
   u32             lastMsgScanDat;
   u32             alsoSeenBy;
   areaStatType    stat;
-  uchar           reserved[180];
+  u8              reserved[180];
 
 } rawEchoType120;
 
@@ -350,9 +352,9 @@ const char *AMGetAreaPath(u16 i)
 //---------------------------------------------------------------------------
 s16 areaMgr(void)
 {
-   u8          *tempPtr;
+// u8          *tempPtr;
    u16          index = 0;
-   u16          pos, idx;
+   u16          pos; //, idx;
    areaInfoPtr  areaHelpPtr;
    u16          ch;
    s16          count, count2;
@@ -430,7 +432,7 @@ s16 areaMgr(void)
 	    tempInfo.daysRcvd   = areaInfoOld.daysRcvd;
 	    tempInfo.msgKindsRA = areaInfoOld.msgKindsRA;
 	    tempInfo.groupRA    = areaInfoOld.groupRA;
-	    memcpy (tempInfo.altGroupRA, areaInfoOld.altGroupRA, 3);
+	    memcpy(tempInfo.altGroupRA, areaInfoOld.altGroupRA, 3);
 	    tempInfo.attrRA     = areaInfoOld.attrRA;
 	    tempInfo.attr2RA    = areaInfoOld.attr2RA;
 	    tempInfo.readSecRA  = areaInfoOld.readSecRA;
@@ -441,7 +443,7 @@ s16 areaMgr(void)
 	    *(s32*)&tempInfo.flagsSysRA = *(s32*)&areaInfoOld.flagsSysRA;
 	    tempInfo.templateSecQBBS     = areaInfoOld.templateSecQBBS;
 	    *(s32*)&tempInfo.flagsTemplateQBBS = *(s32*)&areaInfoOld.flagsTemplateQBBS;
-	    strncpy (tempInfo.qwkName, areaInfoOld.qwkName, 12);
+	    strncpy(tempInfo.qwkName, areaInfoOld.qwkName, 12);
 	    tempInfo.minAgeSBBS      = areaInfoOld.minAgeSBBS;
 	    tempInfo.attrSBBS        = areaInfoOld.attrSBBS;
 	    tempInfo.replyStatSBBS   = areaInfoOld.replyStatSBBS;

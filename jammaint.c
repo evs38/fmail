@@ -382,8 +382,8 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 #endif
 
 
-  logEntryf(LOG_INBOUND | LOG_NOSCRN, 0, "Processing JAM area: %s", areaPtr->areaName);
-  putStr("Processing JAM area: ");
+  logEntryf(LOG_INBOUND | LOG_NOSCRN, 0, "Processing jam area: %s", areaPtr->areaName);
+  putStr("Processing jam area: ");
   putStr(areaPtr->areaName);
   putStr("... ");
   fflush(stdout);
@@ -812,7 +812,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
   s32           spaceSaved;
 
 #ifdef _DEBUG
-  logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG O Processing JAM area: %s", areaPtr->areaName);
+  logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG O Processing jam area: %s", areaPtr->areaName);
 #endif
 
   if (  (buf      == NULL && (buf      = malloc(TXTBUFSIZE  )) == NULL)
@@ -896,7 +896,7 @@ jamx: logEntryf(LOG_ALWAYS, 0, "O JAM area %s was not found or was locked", area
     return 1;
   }
 
-  putStr("Processing JAM area: ");
+  putStr("Processing jam area: ");
   putStr(areaPtr->areaName);
   putStr("... ");
 #ifdef _DEBUG

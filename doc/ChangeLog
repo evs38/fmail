@@ -1,3 +1,10 @@
+2016-11-10  1.73.3.33-Beta
+  * Still working on FConfig mingw conversion.
+  * Fixed all mingw compiler warnings in FMail and FTools.
+  * update.c: Faster bitswap algorithm.
+  * Flush stdout before starting external archiver.
+  * Added empty line at the end of notify report messages.
+
 2016-11-08  1.73.3.30-Beta
   * FConfig conversion to MingW compiler in progress.
   * Updated to FTSCPROD.017 (preliminary).

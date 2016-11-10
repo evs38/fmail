@@ -454,13 +454,10 @@ s16 pack(s16 argc, char *argv[], s32 switches)
           newLine();
         }
 
-        sprintf( tempStr, "Message #%u : %s "dARROW" %s", msgNum
-               , nodeStr(&message->srcNode), nodeStr(&message->destNode));
+        helpPtr = tempStr + sprintf( tempStr, "Message #%u : %s "dARROW" %s", msgNum
+                                   , nodeStr(&message->srcNode), nodeStr(&message->destNode));
         if (memcmp(&(*netList)[count].viaNode, &message->destNode, sizeof(nodeNumType)) != 0)
-        {
-          strcat(tempStr, " via ");
-          strcat(tempStr, nodeStr(&(*netList)[count].viaNode));
-        }
+          strcpy(stpcpy(helpPtr, " via "), nodeStr(&(*netList)[count].viaNode));
 
         logEntry(tempStr, LOG_PACK, 0);
 
