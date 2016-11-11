@@ -23,7 +23,6 @@
 
 #include <ctype.h>
 #include <dir.h>
-#include <dos.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stddef.h>
@@ -436,23 +435,23 @@ s16 areaMgr(void)
 	    tempInfo.attrRA     = areaInfoOld.attrRA;
 	    tempInfo.attr2RA    = areaInfoOld.attr2RA;
 	    tempInfo.readSecRA  = areaInfoOld.readSecRA;
-	    *(s32*)&tempInfo.flagsRdRA  = *(s32*)&areaInfoOld.flagsRdRA;
+	    memcpy(&tempInfo.flagsRdRA, &areaInfoOld.flagsRdRA, sizeof(u32));
 	    tempInfo.writeSecRA          = areaInfoOld.writeSecRA;
-	    *(s32*)&tempInfo.flagsWrRA  = *(s32*)&areaInfoOld.flagsWrRA;
+	    memcpy(&tempInfo.flagsWrRA, &areaInfoOld.flagsWrRA, sizeof(u32));
 	    tempInfo.sysopSecRA          = areaInfoOld.sysopSecRA;
-	    *(s32*)&tempInfo.flagsSysRA = *(s32*)&areaInfoOld.flagsSysRA;
+	    memcpy(&tempInfo.flagsSysRA, &areaInfoOld.flagsSysRA, sizeof(u32));
 	    tempInfo.templateSecQBBS     = areaInfoOld.templateSecQBBS;
-	    *(s32*)&tempInfo.flagsTemplateQBBS = *(s32*)&areaInfoOld.flagsTemplateQBBS;
+	    memcpy(&tempInfo.flagsTemplateQBBS, &areaInfoOld.flagsTemplateQBBS, sizeof(u32));
 	    strncpy(tempInfo.qwkName, areaInfoOld.qwkName, 12);
 	    tempInfo.minAgeSBBS      = areaInfoOld.minAgeSBBS;
 	    tempInfo.attrSBBS        = areaInfoOld.attrSBBS;
 	    tempInfo.replyStatSBBS   = areaInfoOld.replyStatSBBS;
 	    tempInfo.aliasesQBBS     = areaInfoOld.aliasesQBBS;
 	    tempInfo.groupsQBBS    = areaInfoOld.groupsQBBS;
-            memcpy(areaBuf, &tempInfo, RAWECHO_SIZE);
-            putRec(CFG_ECHOAREAS, areaInfoCount++);
-         }
-	 close (areaInfoHandle);
+      memcpy(areaBuf, &tempInfo, RAWECHO_SIZE);
+      putRec(CFG_ECHOAREAS, areaInfoCount++);
+    }
+	 close(areaInfoHandle);
 	 update++;
       }
    }
@@ -530,18 +529,19 @@ s16 areaMgr(void)
         ++count2;
       }
 
-      if ( areaBuf->_internalUse != 'Y' )
-      {  u32 temp;
-	 temp = *(u32*)&areaBuf->flagsRdRA;
-	 *(u32*)&areaBuf->flagsRdRA = *(u32*)&areaBuf->flagsRdNotRA;
-	 *(u32*)&areaBuf->flagsRdNotRA = temp;
-	 temp = *(u32*)&areaBuf->flagsWrRA;
-	 *(u32*)&areaBuf->flagsWrRA = *(u32*)&areaBuf->flagsWrNotRA;
-	 *(u32*)&areaBuf->flagsWrNotRA = temp;
-	 temp = *(u32*)&areaBuf->flagsSysRA;
-	 *(u32*)&areaBuf->flagsSysRA = *(u32*)&areaBuf->flagsSysNotRA;
-	 *(u32*)&areaBuf->flagsSysNotRA = temp;
-	 areaBuf->_internalUse = 'Y';
+      if (areaBuf->_internalUse != 'Y')
+      {
+        u8 temp[4];
+        memcpy(temp                   , &areaBuf->flagsRdRA    , 4);
+        memcpy(&areaBuf->flagsRdRA    , &areaBuf->flagsRdNotRA , 4);
+        memcpy(&areaBuf->flagsRdNotRA , temp                   , 4);
+        memcpy(temp                   , &areaBuf->flagsWrRA    , 4);
+        memcpy(&areaBuf->flagsWrRA    , &areaBuf->flagsWrNotRA , 4);
+        memcpy(&areaBuf->flagsWrNotRA , temp                   , 4);
+        memcpy(temp                   , &areaBuf->flagsSysRA   , 4);
+        memcpy(&areaBuf->flagsSysRA   , &areaBuf->flagsSysNotRA, 4);
+        memcpy(&areaBuf->flagsSysNotRA, temp                   , 4);
+        areaBuf->_internalUse = 'Y';
       }
 
       if ((tempBufPtr = malloc (sizeof(rawEchoTypeX))) == NULL)
@@ -1123,16 +1123,14 @@ s16 areaMgr(void)
 		  if ( areaBuf->address > 15 )
 		     areaBuf->address = 0;
 		  areaBuf->_internalUse = 0;
-		  {  u32 temp;
-		     temp = *(u32*)&areaBuf->flagsRdRA;
-		     *(u32*)&areaBuf->flagsRdRA = *(u32*)&areaBuf->flagsRdNotRA;
-		     *(u32*)&areaBuf->flagsRdNotRA = temp;
-		     temp = *(u32*)&areaBuf->flagsWrRA;
-		     *(u32*)&areaBuf->flagsWrRA = *(u32*)&areaBuf->flagsWrNotRA;
-		     *(u32*)&areaBuf->flagsWrNotRA = temp;
-//		     temp = *(u32*)&areaBuf->flagsSysRA;
-//		     *(u32*)&areaBuf->flagsSysRA = *(u32*)&areaBuf->flagsSysNotRA;
-//		     *(u32*)&areaBuf->flagsSysNotRA = temp;
+		  {
+		    u8 temp[4];
+		    memcpy(temp                  , &areaBuf->flagsRdRA   , 4);
+		    memcpy(&areaBuf->flagsRdRA   , &areaBuf->flagsRdNotRA, 4);
+		    memcpy(&areaBuf->flagsRdNotRA, temp                  , 4);
+		    memcpy(temp                  , &areaBuf->flagsWrRA   , 4);
+		    memcpy(&areaBuf->flagsWrRA   , &areaBuf->flagsWrNotRA, 4);
+		    memcpy(&areaBuf->flagsWrNotRA, temp                  , 4);
 		  }
 		  areaBuf->_alsoSeenBy = (u16)areaBuf->alsoSeenBy;
 		  for ( count2 = 0; count2 < MAX_FORWARDOLD; count2++ )

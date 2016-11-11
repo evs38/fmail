@@ -1986,7 +1986,7 @@ if (*config.autoRAPath != 0)
     strcat(tempStr, "msgcfg.dat");
 
     if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
-      displayMessage ("Can't open MSGCFG.DAT for output");
+      displayMessage("Can't open MSGCFG.DAT for output");
     else
     {
       for (count2 = 1; count2 <= MBBOARDS; count2++)
@@ -1994,23 +1994,19 @@ if (*config.autoRAPath != 0)
         memset(&QBBSBoardRec, 0, sizeof(QBBSBoardRecType));
 
         count = 0;
-        while ((count < MAX_NETAKAS) &&
-               (config.netmailBoard[count] != count2))
-        {
+        while (count < MAX_NETAKAS && config.netmailBoard[count] != count2)
           count++;
-        }
+
         if (count < MAX_NETAKAS)
         {
           if (*config.descrAKA[count])
-          {
-            strncpy (QBBSBoardRec.Name, config.descrAKA[count], 40);
-          }
+            strncpy(QBBSBoardRec.Name, config.descrAKA[count], 40);
           else
           {
             if (count)
-              sprintf (QBBSBoardRec.Name, "Netmail AKA %2u", count);
+              sprintf(QBBSBoardRec.Name, "Netmail AKA %2u", count);
             else
-              strcpy (QBBSBoardRec.Name, "Netmail Main");
+              strcpy(QBBSBoardRec.Name, "Netmail Main");
           }
           QBBSBoardRec.NameLength = strlen(QBBSBoardRec.Name);
 
@@ -2038,7 +2034,7 @@ if (*config.autoRAPath != 0)
         {
           if (config.genOptions.incBDRRA)
           {
-            strcpy (QBBSBoardRec.Name, "Duplicate msgs");
+            strcpy(QBBSBoardRec.Name, "Duplicate msgs");
             QBBSBoardRec.NameLength = strlen (QBBSBoardRec.Name);
             QBBSBoardRec.Kinds = 3;
             QBBSBoardRec.ReadSecLvl     = 32000;
@@ -2051,7 +2047,7 @@ if (*config.autoRAPath != 0)
         {
           if (config.genOptions.incBDRRA)
           {
-            strcpy (QBBSBoardRec.Name, "Bad messages");
+            strcpy(QBBSBoardRec.Name, "Bad messages");
             QBBSBoardRec.NameLength = strlen (QBBSBoardRec.Name);
             QBBSBoardRec.Kinds = 3;
             QBBSBoardRec.ReadSecLvl     = 32000;
@@ -2064,7 +2060,7 @@ if (*config.autoRAPath != 0)
         {
           if (config.genOptions.incBDRRA)
           {
-            strcpy (QBBSBoardRec.Name, "Recovery board");
+            strcpy(QBBSBoardRec.Name, "Recovery board");
             QBBSBoardRec.NameLength = strlen (QBBSBoardRec.Name);
             QBBSBoardRec.Kinds = 3;
             QBBSBoardRec.ReadSecLvl     = 32000;
@@ -2081,7 +2077,7 @@ if (*config.autoRAPath != 0)
             if ( (*areaInfoIndex)[count] == count2 )
             {
               getRec(CFG_ECHOAREAS, count);
-              if ( !*areaBuf->msgBasePath )
+              if (!*areaBuf->msgBasePath)
                 break;
             }
             count++;
@@ -2092,13 +2088,10 @@ if (*config.autoRAPath != 0)
               (areaBuf->options.export2BBS) )
           {
             if (config.genOptions.commentFRA && *areaBuf->comment)
-            {
               strncpy (QBBSBoardRec.Name, areaBuf->comment, 40);
-            }
             else
-            {
               strncpy (QBBSBoardRec.Name, areaBuf->areaName, 40);
-            }
+
             QBBSBoardRec.NameLength = strlen(QBBSBoardRec.Name);
 
             QBBSBoardRec.Typ      = areaBuf->options.local?0:3;
@@ -2127,9 +2120,9 @@ if (*config.autoRAPath != 0)
             memcpy(&QBBSBoardRec.SysopFlags   , &areaBuf->flagsSysRA       , 4);
           }
         }
-        write (folderHandle, &QBBSBoardRec, sizeof(QBBSBoardRecType));
+        write(folderHandle, &QBBSBoardRec, sizeof(QBBSBoardRecType));
       }
-      close (folderHandle);
+      close(folderHandle);
     }
   }
 #ifndef GOLDBASE
@@ -2137,8 +2130,8 @@ if (*config.autoRAPath != 0)
   {
     proBoardType   proBoardRec;
 
-    strcpy (tempStr, config.autoRAPath);
-    strcat (tempStr, "messages.pb");
+    strcpy(tempStr, config.autoRAPath);
+    strcat(tempStr, "messages.pb");
 
     if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       displayMessage ("Can't open MESSAGES.PB for output");
@@ -2197,7 +2190,7 @@ if (*config.autoRAPath != 0)
         {
           if (config.genOptions.incBDRRA)
           {
-            strcpy (proBoardRec.name, "Duplicate messages");
+            strcpy(proBoardRec.name, "Duplicate messages");
             proBoardRec.msgKind = MSGKIND_LOCAL;
             proBoardRec.readLevel  = 32000;
             proBoardRec.writeLevel = 32000;
@@ -2208,7 +2201,7 @@ if (*config.autoRAPath != 0)
         {
           if (config.genOptions.incBDRRA)
           {
-            strcpy (proBoardRec.name, "Bad messages");
+            strcpy(proBoardRec.name, "Bad messages");
             proBoardRec.msgKind = MSGKIND_LOCAL;
             proBoardRec.readLevel  = 32000;
             proBoardRec.writeLevel = 32000;
@@ -2219,7 +2212,7 @@ if (*config.autoRAPath != 0)
         {
           if (config.genOptions.incBDRRA)
           {
-            strcpy (proBoardRec.name, "Recovery board");
+            strcpy(proBoardRec.name, "Recovery board");
             proBoardRec.msgKind = MSGKIND_LOCAL;
             proBoardRec.readLevel  = 32000;
             proBoardRec.writeLevel = 32000;
@@ -2229,9 +2222,9 @@ if (*config.autoRAPath != 0)
         else
         {
           count = 0;
-          while ( count < areaInfoCount )
+          while (count < areaInfoCount)
           {
-            if ( (*areaInfoIndex)[count] == count2 )
+            if ((*areaInfoIndex)[count] == count2)
             {
               getRec(CFG_ECHOAREAS, count);
               break;
@@ -2243,13 +2236,10 @@ if (*config.autoRAPath != 0)
               (areaBuf->options.export2BBS) )
           {
             if (config.genOptions.commentFRA && *areaBuf->comment)
-            {
-              strcpy (proBoardRec.name, areaBuf->comment);
-            }
+              strcpy(proBoardRec.name, areaBuf->comment);
             else
-            {
-              strcpy (proBoardRec.name, areaBuf->areaName);
-            }
+              strcpy(proBoardRec.name, areaBuf->areaName);
+
             strcpy(proBoardRec.echoTag, areaBuf->areaName);
             strcpy(proBoardRec.qwkTag, areaBuf->qwkName);
             proBoardRec.msgType = (areaBuf->msgKindsRA <= 3) ? areaBuf->msgKindsRA : 0;
@@ -2272,7 +2262,7 @@ if (*config.autoRAPath != 0)
             proBoardRec.maxMsgs     = areaBuf->msgs;
             if (*areaBuf->msgBasePath)
             {
-              strcpy (proBoardRec.path, areaBuf->msgBasePath);
+              strcpy(proBoardRec.path, areaBuf->msgBasePath);
               proBoardRec.msgBaseType = MSGBASE_JAM;
             }
             else
@@ -2292,7 +2282,7 @@ if (*config.autoRAPath != 0)
             proBoardRec.sysopFlagsNot = bitSwap(&areaBuf->flagsSysNotRA[0]);
           }
         }
-        write (folderHandle, &proBoardRec, sizeof(proBoardType));
+        write(folderHandle, &proBoardRec, sizeof(proBoardType));
       }
       for (count = 0; count < areaInfoCount; count++)
       {
@@ -2339,13 +2329,12 @@ if (*config.autoRAPath != 0)
           write(folderHandle, &proBoardRec, sizeof(proBoardType));
         }
       }
-      close (folderHandle);
+      close(folderHandle);
     }
   }
 #endif
   }
 error:
-  closeConfig (CFG_ECHOAREAS);
+  closeConfig(CFG_ECHOAREAS);
   free(areaInfoIndex);
 }
-

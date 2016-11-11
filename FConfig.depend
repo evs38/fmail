@@ -1,0 +1,387 @@
+# depslib dependency file v1.0
+1478893312 source:c:\fmail\amgr_utl.c
+	<ctype.h>
+	<fcntl.h>
+	<io.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	"fmail.h"
+	"amgr_utl.h"
+	"areainfo.h"
+	"areamgr.h"
+	"fs_util.h"
+	"minmax.h"
+	"window.h"
+
+1478345389 c:\fmail\fmail.h
+	"fmstruct.h"
+	"stricmp.h"
+	<stdio.h>
+	<sys/types.h>
+
+1478725111 c:\fmail\fmstruct.h
+	<stdint.h>
+	<time.h>
+	<pshpack1.h>
+	<poppack.h>
+
+1478862964 c:\fmail\stricmp.h
+
+1478861308 c:\fmail\amgr_utl.h
+
+1478643189 c:\fmail\areainfo.h
+	"fmail.h"
+
+1426971907 c:\fmail\areamgr.h
+
+1478861963 c:\fmail\fs_util.h
+
+1478868602 c:\fmail\window.h
+	"bits.h"
+
+1477687086 c:\fmail\bits.h
+
+1478893312 source:c:\fmail\areamgr.c
+	<ctype.h>
+	<dir.h>
+	<fcntl.h>
+	<io.h>
+	<stddef.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	"fmail.h"
+	"areamgr.h"
+	"amgr_utl.h"
+	"areainfo.h"
+	"cfgfile.h"
+	"fs_func.h"
+	"fs_util.h"
+	"minmax.h"
+	"stpcpy.h"
+	"utils.h"
+	"window.h"
+
+1399578407 c:\fmail\cfgfile.h
+	"fmstruct.h"
+
+1478644024 c:\fmail\fs_func.h
+
+1478636343 c:\fmail\utils.h
+	"fmail.h"
+	"areainfo.h"
+	"fmstruct.h"
+
+1477129681 source:c:\fmail\cfgfile.c
+	<fcntl.h>
+	<io.h>
+	<share.h>
+	<stddef.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	"fmail.h"
+	"cfgfile.h"
+	"stpcpy.h"
+
+1478862964 c:\fmail\stpcpy.h
+
+1475412533 source:c:\fmail\crc.c
+	<ctype.h>
+	<string.h>
+	"fmail.h"
+	"crc.h"
+
+1474316224 c:\fmail\crc.h
+
+1478820091 source:c:\fmail\export.c
+	<dir.h>
+	<fcntl.h>
+	<io.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	"fmail.h"
+	"export.h"
+	"areainfo.h"
+	"cfgfile.h"
+	"fdfolder.h"
+	"fs_util.h"
+	"nodeinfo.h"
+	"stpcpy.h"
+	"version.h"
+	"window.h"
+
+1478861954 c:\fmail\export.h
+
+1477949075 c:\fmail\fdfolder.h
+	<pshpack1.h>
+	<poppack.h>
+
+1426955102 c:\fmail\nodeinfo.h
+
+1476034823 c:\fmail\version.h
+
+1478884897 source:c:\fmail\fs_func.c
+	<ctype.h>
+	<fcntl.h>
+	<io.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"fmail.h"
+	"fs_func.h"
+	"amgr_utl.h"
+	"areainfo.h"
+	"cfgfile.h"
+	"window.h"
+
+1478810917 source:c:\fmail\fs_util.c
+	<stdlib.h>
+	<string.h>
+	<ctype.h>
+	"fmail.h"
+
+1478893257 source:c:\fmail\fsetup.c
+	<conio.h>
+	<errno.h>
+	<fcntl.h>
+	<io.h>
+	<share.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	"fmail.h"
+	"areamgr.h"
+	"cfgfile.h"
+	"export.h"
+	"fs_func.h"
+	"import.h"
+	"mtask.h"
+	"nodeinfo.h"
+	"nodemgr.h"
+	"packmgr.h"
+	"stpcpy.h"
+	"update.h"
+	"version.h"
+	"window.h"
+
+1478811495 c:\fmail\import.h
+	<pshpack1.h>
+	<poppack.h>
+
+1478862342 c:\fmail\mtask.h
+
+1404329706 c:\fmail\nodemgr.h
+	"fmail.h"
+
+1478862579 c:\fmail\packmgr.h
+
+1478862964 c:\fmail\update.h
+
+1426945558 source:c:\fmail\ispathch.c
+
+1476790772 source:c:\fmail\mtask.c
+	<windows.h>
+	<sched.h>
+	<unistd.h>
+	"mtask.h"
+	"config.h"
+
+1477949075 c:\fmail\config.h
+	"fmail.h"
+	"bits.h"
+
+1478861131 source:c:\fmail\update.c
+	<fcntl.h>
+	<io.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	"fmail.h"
+	"areainfo.h"
+	"bits.h"
+	"cfgfile.h"
+	"fdfolder.h"
+	"fs_util.h"
+	"imfolder.h"
+	"minmax.h"
+	"msgra.h"
+	"utils.h"
+	"version.h"
+	"log.h"
+	"window.h"
+	<pshpack1.h>
+	<poppack.h>
+
+1477949075 c:\fmail\imfolder.h
+	<pshpack1.h>
+	<poppack.h>
+
+1478185506 c:\fmail\minmax.h
+
+1477686228 c:\fmail\msgra.h
+	<pshpack1.h>
+	<poppack.h>
+
+1478344329 c:\fmail\log.h
+
+1478710848 source:c:\fmail\utils2.c
+	<ctype.h>
+	<direct.h>
+	<dirent.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+	"utils.h"
+	"ispathch.h"
+	"spec.h"
+
+1478862342 c:\fmail\ispathch.h
+
+1477579346 source:c:\fmail\version.c
+	"Version.h"
+	"pp_date.h"
+	<stdio.h>
+	<windows.h>
+
+1478893788 c:\fmail\pp_date.h
+
+1478893076 source:c:\fmail\import.c
+	<dir.h>
+	<fcntl.h>
+	<io.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	"fmail.h"
+	"import.h"
+	"cfgfile.h"
+	"config.h"
+	"fs_util.h"
+	"minmax.h"
+	"msgra.h"
+	"nodeinfo.h"
+	"stpcpy.h"
+	"utils.h"
+	"window.h"
+	"fdfolder.h"
+	"fecfg146.h"
+
+1478861959 c:\fmail\fecfg146.h
+	"gestruct.h"
+	<pshpack1.h>
+	<poppack.h>
+
+1478862088 c:\fmail\gestruct.h
+	<stdint.h>
+	<pshpack1.h>
+	<poppack.h>
+
+1478893312 source:c:\fmail\nodemgr.c
+	<ctype.h>
+	<fcntl.h>
+	<io.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	"nodemgr.h"
+	"cfgfile.h"
+	"fs_func.h"
+	"fs_util.h"
+	"minmax.h"
+	"nodeinfo.h"
+	"stpcpy.h"
+	"window.h"
+
+1478893312 source:c:\fmail\packmgr.c
+	<conio.h>
+	<ctype.h>
+	<fcntl.h>
+	<io.h>
+	<share.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	"fmail.h"
+	"stpcpy.h"
+	"window.h"
+
+1478873821 source:c:\fmail\conio.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<windows.h>
+	"conio2.h"
+
+1478864771 c:\fmail\conio2.h
+	<conio.h>
+	<windows.h>
+
+1478893257 source:c:\fmail\window.c
+	<ctype.h>
+	<dir.h>
+	<io.h>
+	<process.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+	"conio2.h"
+	<conio.h>
+	"fmail.h"
+	"window.h"
+	"areainfo.h"
+	"areamgr.h"
+	"fs_func.h"
+	"fs_util.h"
+	"jam.h"
+	"minmax.h"
+	"mtask.h"
+	"nodeinfo.h"
+	"stpcpy.h"
+	"utils.h"
+
+1312487184 c:\fmail\help.h
+
+1476013897 c:\fmail\jam.h
+	"jamsys.h"
+	<pshpack1.h>
+	<poppack.h>
+
+1476043685 c:\fmail\jamsys.h
+
+1312487460 c:\fmail\os.h
+
+1478860284 source:c:\fmail\fconfigw32.rc
+
+1476478327 source:c:\fmail\stricmp.c
+	"stricmp.h"
+	<ctype.h>
+
+1477774738 source:c:\fmail\spec.c
+	<ctype.h>
+	<string.h>
+	"spec.h"
+
+1478862964 c:\fmail\spec.h
+
+1478639913 source:c:\fmail\stpcpy.c
+

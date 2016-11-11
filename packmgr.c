@@ -22,7 +22,6 @@
 
 #include <conio.h>
 #include <ctype.h>
-#include <dos.h>
 #include <fcntl.h>
 #include <io.h>
 #include <share.h>     // SH_DENY* flags
@@ -275,6 +274,6 @@ s16 packMgr(void)
    }
    removeWindow();
    free(pack);
-   return (0);
+   return 0;
 }
 //---------------------------------------------------------------------------

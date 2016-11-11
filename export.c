@@ -243,7 +243,7 @@ s16 listNodeEcho (void)
          freeAreaInfo ();
          return (0);
       }
-      fprintf (textFile, "\n%s  -  Active areas for %s  -  %s%s\n\n", VersionStr(), nodeStr(&nodeNum), ctime(&timer), bar);
+      fprintf(textFile, "\n%s  -  Active areas for %s  -  %s%s\n\n", VersionStr(), nodeStr(&nodeNum), ctime(&timer), bar);
 
       for (count1 = 0; count1 < areaInfoCount; count1++)
       {

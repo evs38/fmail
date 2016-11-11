@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include <ctype.h>
-#include <dos.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
@@ -284,7 +283,7 @@ s16 areasList(s16 currentElem, char groupSelectMask)
    areaInfoPtrArr *areaInfoTwo;
    areaInfoPtr     areaInfoHelpPtr;
    u16             low, mid, high;
-   void           *testPtr;
+   void           *testPtr = NULL;
 
    if ((areaInfoTwo = malloc(sizeof(areaInfoPtrArr))) == NULL)
       return 0;
@@ -335,22 +334,15 @@ s16 areasList(s16 currentElem, char groupSelectMask)
          {
             elemCount = 0;
             for (count = 0; count < areaInfoCount; count++)
-            {
                if ((*areaInfoTwo)[count]->group & (1L << (groupSelectMask-1)))
-               {
                   (*areaInfoTwo)[elemCount++] = (*areaInfoTwo)[count];
-               }
-            }
          }
          else
             elemCount = areaInfoCount;
 
          currentElem = 0;
-         while ((currentElem < elemCount) &&
-                (testPtr != (*areaInfoTwo)[currentElem]))
-         {
+         while (currentElem < elemCount && testPtr != (*areaInfoTwo)[currentElem])
             currentElem++;
-         }
 
          windowBase = max(0, currentElem - MAX_AL_WINSIZE / 2);
          if (elemCount >= MAX_AL_WINSIZE && windowBase+MAX_AL_WINSIZE > elemCount)

@@ -22,7 +22,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------
-
+#include <pshpack1.h>
 //---------------------------------------------------------------------------
 typedef struct
 {
@@ -39,11 +39,11 @@ typedef struct
 //---------------------------------------------------------------------------
 typedef struct
 {
-  uchar           areaName[51];
-  uchar           unused1 [51];
+  char            areaName[51];
+  u8              unused1[51];
   tsAreaFlagsType tsAreaFlags;
   nodeNumType     export[60];
-  uchar           unused2 [4];
+  u8              unused2[4];
   uchar           group;
   uchar           boardNum;
   uchar           mainAddress;
@@ -51,8 +51,8 @@ typedef struct
   u16             numMsgs;
   u16             numDays;
   u32             deleted;
-  uchar           comment [40];
-  uchar           unused4 [10];
+  char            comment[40];
+  u8              unused4[10];
 } fdAreaFileType;
 //---------------------------------------------------------------------------
 typedef struct
@@ -68,11 +68,11 @@ typedef struct
 {
   nodeNumType     nodeNum;
   tsNodeFlagsType tsNodeFlags;
-  uchar           password[17];
-  uchar           archiver;
+  char            password[17];
+  u8              archiver;
   u32             groups;
   u32             deleted;
-  uchar           unused[23];
+  u8              unused[23];
 } fdNodeFileType;
 //---------------------------------------------------------------------------
 typedef struct
@@ -121,15 +121,15 @@ typedef struct
 //---------------------------------------------------------------------------
 typedef struct
 {
-  uchar         areaName[51];
-  uchar         comment[61];
-  uchar         origin[64];
+  char          areaName[51];
+  char          comment[61];
+  char          origin[64];
   uchar         group;
   uchar         originAka;
-  uchar         useAkas[16];
+  u8            useAkas[16];
   uchar         msgBaseType;
   uchar         boardNum;
-  uchar         path[80];
+  char          path[80];
   imArFlagsType imArFlags;
   uchar         IUtilBits;
   uchar         userBits;
@@ -141,7 +141,7 @@ typedef struct
   time_t        creation;
   time_t        update;
   time_t        marked;
-  uchar         filler[10];
+  u8            filler[10];
   eaddressType  export[60];
 } imailArType;
 //---------------------------------------------------------------------------
@@ -166,22 +166,23 @@ typedef struct
 typedef struct
 {
   nodeNumType   nodeNum;
-  uchar         sysopName[37];
-  uchar         domain;
-  uchar         password[21];
-  uchar         attachStatus;
-  uchar         archiver;
-  uchar         groups[27];
+  char          sysopName[37];
+  u8            domain;
+  char          password[21];
+  u8            attachStatus;
+  u8            archiver;
+  char          groups[27];
   u16           capability;
   imNdFlagsType imNdFlags;
   u16           userBits;
-  uchar         newAreasDefGroup;
-  uchar         packetPwd[9];
+  u8            newAreasDefGroup;
+  char          packetPwd[9];
   s32           lastPwdChange;
-  uchar         toProgram[11];
-  uchar         msgStatus;
-  uchar         filler[8];
+  char          toProgram[11];
+  u8            msgStatus;
+  u8            filler[8];
 } imailNdType;
+#include <poppack.h>
 //---------------------------------------------------------------------------
 s16 importAreasBBS  (void);
 s16 importFolderFD  (void);

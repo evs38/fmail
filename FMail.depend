@@ -109,11 +109,11 @@
 
 1405197817 c:\fmail\pack.h
 
-1478803700 c:\fmail\pp_date.h
+1478893788 c:\fmail\pp_date.h
 
 1476034509 c:\fmail\sorthb.h
 
-1475259332 c:\fmail\stpcpy.h
+1478862964 c:\fmail\stpcpy.h
 
 1478636343 c:\fmail\utils.h
 	"fmail.h"
@@ -248,9 +248,9 @@
 	"utils.h"
 	"version.h"
 
-1476789584 c:\fmail\mtask.h
+1478862342 c:\fmail\mtask.h
 
-1476034745 c:\fmail\spec.h
+1478862964 c:\fmail\spec.h
 
 1477129681 source:c:\fmail\cfgfile.c
 	<fcntl.h>
@@ -637,7 +637,7 @@
 	"ispathch.h"
 	"spec.h"
 
-1426945561 c:\fmail\ispathch.h
+1478862342 c:\fmail\ispathch.h
 
 1477579346 source:c:\fmail\version.c
 	"Version.h"
@@ -672,7 +672,7 @@
 	"stpcpy.h"
 	"version.h"
 
-1476478327 c:\fmail\stricmp.h
+1478862964 c:\fmail\stricmp.h
 
 1476478327 source:c:\fmail\stricmp.c
 	"stricmp.h"

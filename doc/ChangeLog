@@ -1,3 +1,8 @@
+2016-11-11  1.73.3.34-Beta
+  * FConfig MingW compilation is working fine now.
+  * Fixed all compiler warnings in FConfig source.
+  * Fixed cursor type bug in FConfig.
+
 2016-11-10  1.73.3.33-Beta
   * Still working on FConfig mingw conversion.
   * Fixed all mingw compiler warnings in FMail and FTools.

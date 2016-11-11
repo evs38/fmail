@@ -74,10 +74,7 @@
 #define FAKE             1
 
 #define MAX_WINDOWS    100
-#define MAX_ENTRIES     40 /* was 36 */
-
-
-
+#define MAX_ENTRIES     40   // was 36
 
 #define COLOR_BLINK     0x08
 
@@ -87,7 +84,6 @@
 #define MONO_HIGH_BG    0x7f
 #define MONO_NORM_BLINK 0x87
 #define MONO_HIGH_BLINK 0x8f
-
 
 #if !defined(__COLORS) && !defined(_CONIO2_H_)
 #define __COLORS
@@ -114,12 +110,6 @@ enum COLORS
 #endif  // __COLORS
 
 #define BLINK	  128	          /* blink bit */
-
-//typedef struct
-//{
-//  uchar ch;
-//  uchar attr;
-//} screenCharType;
 
 #ifdef __BORLANDC__
 typedef struct char_info
@@ -187,7 +177,7 @@ typedef struct
 
 typedef struct
 {
-  u8      *data;
+  void    *data;
   txtPtr   text[34];
   u8       retval[34];
 } toggleType;
@@ -217,55 +207,40 @@ void locateCursor(int x, int y);
 #define largeCursor()  _setcursortype(_SOLIDCURSOR)
 
 //---------------------------------------------------------------------------
-u16  readKbd(void);
-void initWindow(u16 mode);
-menuType *createMenu(char *title);
-s16  displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey);
-void removeWindow(void);
-s16  addItem(menuType *menu, u16 entryType, char *prompt, u16 offset,
-             void *data, u16 par1, u16 par2, char *comment);
-
-s16  displayMenu(menuType *menu, u16 sx, u16 sy);
-s16  groupToChar(s32 group);
-u16  editString(char *string, u16 width, u16 x, u16 y, u16 fieldType);
-void processed(u16 updated, u16 total);
-s16  changeGlobal(menuType *menu, void *org, void *upd);
-s16  runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc);
+u16       readKbd      (void);
+void      initWindow   (u16 mode);
+menuType *createMenu   (char *title);
+s16       displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey);
+void      removeWindow (void);
+s16       addItem      (menuType *menu, u16 entryType, char *prompt, u16 offset, void *data, u16 par1, u16 par2, char *comment);
+s16       displayMenu  (menuType *menu, u16 sx, u16 sy);
+s16       groupToChar  (s32 group);
+u16       editString   (char *string, u16 width, u16 x, u16 y, u16 fieldType);
+void      processed    (u16 updated, u16 total);
+s16       changeGlobal (menuType *menu, void *org, void *upd);
+s16       runMenuDE    (menuType *menu, u16 sx, u16 sy, u16 *dataPtr, u16 setdef, u16 esc);
 #define runMenuD(a,b,c,d,e) runMenuDE(a,b,c,d,e,0)
 #define runMenu(a,b,c) runMenuDE(a,b,c,NULL,0,0)
 
-void printChar(char ch, u16 sx,  u16 sy,
-                         u16 fgc, u16 bgc,
-                         u16 mAttr);
-
-void printString(const char *string, u16 sx, u16 sy, u16 fgc, u16 bgc, u16 mAttr);
-
-void printStringFill(char *string, char ch, s16 num,
-                            u16 x, u16 y,
-                            u16 fgc, u16 bgc,
-                            u16 mAttr);
-
-void displayData(menuType *menu, u16 sx, u16 sy, s16 mark);
-
-void fillRectangle(char ch, u16 sx, u16 sy,
-                             u16 ex, u16 ey,
-                             u16 fgc, u16 bgc,
-                             u16 mAttr);
-
-nodeNumType getNodeNum(char *title, u16 sx, u16 sy, u16 aka);
-const char *nodeStr(const nodeNumType *nodeNum);
+void  printChar        (char ch, u16 sx, u16 sy, u16 fgc, u16 bgc, u16 mAttr);
+void  printString      (const char *str, u16 sx, u16 sy, u16 fgc, u16 bgc, u16 mAttr);
+void  printStringFill  (const char *str, char ch, s16 num, u16 x, u16 y, u16 fgc, u16 bgc, u16 mAttr);
+void  displayData      (menuType *menu, u16 sx, u16 sy, s16 mark);
+void  fillRectangle    (char ch, u16 sx, u16 sy, u16 ex, u16 ey, u16 fgc, u16 bgc, u16 mAttr);
+nodeNumType getNodeNum (char *title, u16 sx, u16 sy, u16 aka);
+const char *nodeStr    (const nodeNumType *nodeNum);
 char *getSourceFileName(char *title);
-char *getDestFileName(char *title);
-void displayMessage(char *msg);
-s16  askChar(char *prompt, u8 *keys);
-s16  askBoolean(char *prompt, s16 dfault);
-void working(void);
-s16  displayAreas(void);
-void deInit(u16 cursorLine);
-void saveWindowLook(void);
-void restoreWindowLook(void);
-void askRemoveDir(char *path);
-void askRemoveJAM(char *msgBasePath);
+char *getDestFileName  (char *title);
+void  displayMessage   (char *msg);
+int   askChar          (char *prompt, char *keys);
+int   askBoolean       (char *prompt, int dfault);
+void  working          (void);
+s16   displayAreas     (void);
+void  deInit           (u16 cursorLine);
+void  saveWindowLook   (void);
+void  restoreWindowLook(void);
+void  askRemoveDir     (char *path);
+void  askRemoveJAM     (char *msgBasePath);
 
 //---------------------------------------------------------------------------
 #endif // __fmail_windows_h

@@ -1,6 +1,5 @@
 #ifndef specH
 #define specH
-
 //---------------------------------------------------------------------------
 //
 // Copyright (C) 2011 Mathieu Turcotte (mathieuturcotte.ca)
@@ -24,8 +23,9 @@
 // precisely, * matches zero or more characters and ? matches any
 // characters, but only one. Every other characters match themself.
 // To respect the Windows behavior, *.* matches everything.
+//---------------------------------------------------------------------------
 
 int match_spec(const char* spec, const char* text);
 
-#endif  // specH
 //---------------------------------------------------------------------------
+#endif  // specH

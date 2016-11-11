@@ -84,9 +84,9 @@ typedef enum
  * @name Cursor types
  * Predefined cursor types. */
 /*@{*/
-#define _NOCURSOR 0         /**< no cursor */
-#define _SOLIDCURSOR 100    /**< cursor filling whole cell */
-#define _NORMALCURSOR 20    /**< cursor filling 20 percent of cell height */
+#define _NOCURSOR       0  /**< no cursor */
+#define _SOLIDCURSOR  100  /**< cursor filling whole cell */
+#define _NORMALCURSOR  20  /**< cursor filling 20 percent of cell height */
 /*@}*/
 
 /**

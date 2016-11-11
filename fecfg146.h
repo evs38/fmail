@@ -243,6 +243,8 @@ enum AreaFixSendTo
 /* Structures                                           */
 /********************************************************/
 
+#include <pshpack1.h>
+
 typedef struct
 {
   word zone
@@ -660,6 +662,8 @@ typedef struct
  struct date lastimport,lastexport;
  dword dupes;
 } StatArea;
+
+#include <poppack.h>
 
 //---------------------------------------------------------------------------
 #endif  // fecfcg146H

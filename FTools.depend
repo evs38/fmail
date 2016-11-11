@@ -28,7 +28,7 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1476478327 c:\fmail\stricmp.h
+1478862964 c:\fmail\stricmp.h
 
 1399578407 c:\fmail\cfgfile.h
 	"fmstruct.h"
@@ -39,11 +39,11 @@
 
 1477340291 c:\fmail\ftools.h
 
-1426945561 c:\fmail\ispathch.h
+1478862342 c:\fmail\ispathch.h
 
 1478344329 c:\fmail\log.h
 
-1477426254 c:\fmail\update.h
+1478862964 c:\fmail\update.h
 
 1478636343 c:\fmail\utils.h
 	"fmail.h"
@@ -67,7 +67,7 @@
 	"cfgfile.h"
 	"stpcpy.h"
 
-1475259332 c:\fmail\stpcpy.h
+1478862964 c:\fmail\stpcpy.h
 
 1475412533 source:c:\fmail\crc.c
 	<ctype.h>
@@ -130,7 +130,7 @@
 
 1477949075 c:\fmail\ftr.h
 
-1476789584 c:\fmail\mtask.h
+1478862342 c:\fmail\mtask.h
 
 1477413366 c:\fmail\msgradef.h
 
@@ -199,11 +199,11 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1478803700 c:\fmail\pp_date.h
+1478893788 c:\fmail\pp_date.h
 
 1476034509 c:\fmail\sorthb.h
 
-1476034745 c:\fmail\spec.h
+1478862964 c:\fmail\spec.h
 
 1478345385 source:c:\fmail\ftr.c
 	<ctype.h>

@@ -23,7 +23,6 @@
 
 #include <ctype.h>
 #include <dir.h>
-//#include <dos.h>
 #include <io.h>
 #include <process.h>  // spawnl()
 #include <stdio.h>
@@ -46,12 +45,11 @@
 #include "areamgr.h"
 #include "fs_func.h"
 #include "fs_util.h"
-#include "help.h"
 #include "jam.h"
 #include "minmax.h"
 #include "mtask.h"
 #include "nodeinfo.h"
-#include "os.h"
+#include "stpcpy.h"
 #include "utils.h"
 
 extern char boardCodeInfo[512];
@@ -80,11 +78,6 @@ const char *months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 
 static s16 initMagic  = 0;
        s16 color      = 1;
-static s16 cga        = 0;
-static u16 oldCursor;
-
-static s16 videoModeDOS    = 0;
-static s16 videoModeFSetup = 0;
 
 static windowMemType  windowStack[MAX_WINDOWS];
 static u16            windowSP = 0;
@@ -182,7 +175,7 @@ u16 getColor(int x, int y, int att, int matt)
 void locateCursor(int x, int y)
 {
   gotoxy(x + 1, y + 1);
-  _setcursortype(_NORMALCURSOR);
+//  _setcursortype(_NORMALCURSOR);
 }
 #endif
 //---------------------------------------------------------------------------
@@ -234,7 +227,11 @@ u16 readKbd(void)
       ch = 0;
       continue;
     }
-    if (ch == 0)
+    if (ch == 0
+#ifdef __MINGW32__
+       || ch == 0xE0
+#endif // __MINGW32__
+       )
       ch = keyRead() << 8;
     else
       ch &= 0xFF;
@@ -247,64 +244,83 @@ u16 readKbd(void)
 //---------------------------------------------------------------------------
 void initWindow(u16 mode)
 {
+  struct text_info info;
   getMultiTasker();
 
   if (mode == 1)
     color = 0;
   if (mode == 2)
     color = 1;
-#ifdef __32BIT__
+
+  gettextinfo(&info);
+  if (info.screenheight < 25 || info.screenwidth < 80)
+  {
+    puts("\nYour console window isn't big enough!\n"
+         "It should be at least 80x25.\n"
+         "Please fix that before starting FConfig again...\n");
+    exit(1);
+  }
 #ifdef __BORLANDC__
   textmode(color ? C80 : BW80);  // X28
 #endif // __BORLANDC__
-  textcolor(WHITE);
-  textbackground(BLACK);
+  textattr(calcAttr(WHITE, BLACK));
   clrscr();
-#endif
-
   removeCursor();
 
+  // Draw a border around the space used by FConfig, if the console is bigger than 80x25
+  if (info.screenheight > 25)
+  {
+    int x
+      , maxx = min(info.screenwidth, 81);
+
+    for (x = 0; x < maxx; x++)
+      showChar(x, 25, ' ', calcAttr(LIGHTGRAY, LIGHTGRAY), calcAttr(WHITE, WHITE));
+  }
+  if (info.screenwidth > 80)
+  {
+    int y
+      , maxy = min(info.screenheight, 26);
+
+    for (y = 0; y < maxy; y++)
+      showChar(80, y, ' ', calcAttr(LIGHTGRAY, LIGHTGRAY), calcAttr(WHITE, WHITE));
+  }
   initMagic = 0x4657;
 }
 //---------------------------------------------------------------------------
 void deInit(u16 cursorLine)
 {
-#ifdef __32BIT__
 #ifdef __BORLANDC__
   textmode(LASTMODE);
 #endif // __BORLANDC__
+  normvideo();
   clrscr();
+  largeCursor();
   locateCursor(0, 0);
-#endif  // __32BIT__
 }
 //---------------------------------------------------------------------------
-void printStringFill( char *string, char ch, s16 num, u16 x, u16 y
-                    , u16 fgc, u16 bgc, u16 mAttr)
+void printStringFill(const char *str, char ch, s16 num, u16 x, u16 y, u16 fgc, u16 bgc, u16 mAttr)
 {
   int attr = calcAttr(fgc, bgc);
   gotoxy(x + 1, y + 1);
   textattr(color ? attr : mAttr);
 
-  if (string != NULL)
+  if (str != NULL)
   {
-#if 1
-    int l = strlen(string);
+    int l = strlen(str);
     if (l > num)
     {
+      char *strt;
       l = num;
-      string[l] = 0;
+      strt = malloc(l + 1);
+      strncpy(strt, str, l);
+      strt[l] = 0;
+      cputs(strt);
+      free(strt);
     }
-    cputs(string);
+    else
+      cputs(str);
     x += l;
     num -= l;
-#else
-    while (*string)
-    {
-      showChar(x, y, *(string++), attr, mAttr);
-      x++;
-      num--;
-    }
-#endif
   }
   while (num-- > 0)
   {
@@ -396,7 +412,7 @@ u16 es__8c = 0;
 u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
 {
    s16      redo;
-   s16      error;
+   s16      error = 0;
    size_t   sPos;
    u16      defaultValid;
    u16      numSign;
@@ -816,7 +832,7 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
 {
    u16      count,
             exportCount;
-   u16      width;
+   u16      width = 0;
    u16      px, py;
    u16      lastZone,
             lastNet,
@@ -825,7 +841,7 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
    char     *helpPtr;
    char     tempStr[80],
             tempStr2[80];
-   u16      attr, attr2;
+   u16      attr, attr2 = 0;
    const char *NoYes[2] = { "No", "Yes" };
 
    if (sx + menu->xWidth >= 80 || menu->yWidth >= 25)
@@ -1010,19 +1026,17 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
         break;
       case ENUM_INT  : {  u16 teller = 0;
                          while ((teller < menu->menuEntry[count].par2) &&
-                                ((*(toggleType*)menu->menuEntry[count].data).retval[teller] !=
-                                 *((*(toggleType*)menu->menuEntry[count].data).data)))
+                                (((toggleType*)menu->menuEntry[count].data)->retval[teller] !=
+                                 *(u8*)(((toggleType*)menu->menuEntry[count].data)->data)))
                          {
                             teller++;
                          }
                          if (teller == menu->menuEntry[count].par2)
                          {
                             teller = 0;
-                            *((*(toggleType*)menu->menuEntry[count].data).data) =
-                              (*(toggleType*)menu->menuEntry[count].data).retval[0];
+                            *(u8*)(((toggleType*)menu->menuEntry[count].data)->data) = ((toggleType*)menu->menuEntry[count].data)->retval[0];
                          }
-                         strcpy (tempStr,
-                                 (*(toggleType*)menu->menuEntry[count].data).text[teller]);
+                         strcpy(tempStr, ((toggleType*)menu->menuEntry[count].data)->text[teller]);
                       }
                       width = menu->menuEntry[count].par1;
                       break;
@@ -1091,10 +1105,9 @@ s16 displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey)
 {
   u16       x, y;
   u16       nx;
-  u16       count;
   u16       borderIndex;
   int       attr;
-  screenCharType *helpPtr;
+  screenCharType *helpPtr = NULL;
 
   testInit();
 
@@ -1102,7 +1115,7 @@ s16 displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey)
     return 1;
 
   if (  !(windowLook.wAttr & NO_SAVE)
-     && (helpPtr = malloc(2 * (ex - sx + 3) * (ey - sy + 2))) == NULL
+     && (helpPtr = malloc(sizeof(screenCharType) * (ex - sx + 3) * (ey - sy + 2))) == NULL
      )
   {
     displayMessage("Not enough memory available");
@@ -1123,8 +1136,8 @@ s16 displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey)
     }
     for (y = windowStack[windowSP - 1].sy; y < windowStack[windowSP - 1].ey; y++)
     {
-      changeColor(windowStack[windowSP-1].sx, y, attr, MONO_NORM);
-      changeColor(windowStack[windowSP-1].ex-2, y, attr, MONO_NORM);
+      changeColor(windowStack[windowSP - 1].sx    , y, attr, MONO_NORM);
+      changeColor(windowStack[windowSP - 1].ex - 2, y, attr, MONO_NORM);
     }
   }
 
@@ -1138,10 +1151,9 @@ s16 displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey)
     windowStack[windowSP].ey = ey + 1;
     windowStack[windowSP].inactvborderfg = windowLook.inactvborderfg;
     windowStack[windowSP].background     = windowLook.background;
-    windowStack[windowSP++].oldScreen = helpPtr;
+    windowStack[windowSP++].oldScreen    = helpPtr;
   }
-  fillRectangle(' ', sx + 1, sy + 1, ex - 1, ey - 1
-               , windowLook.editfg, windowLook.background, windowLook.mono_attr);
+  fillRectangle(' ', sx + 1, sy + 1, ex - 1, ey - 1, windowLook.editfg, windowLook.background, windowLook.mono_attr);
   attr = calcAttr(windowLook.actvborderfg, windowLook.background);
   for (x = sx + 1; x < ex; x++)
   {
@@ -1188,18 +1200,20 @@ s16 displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey)
 //---------------------------------------------------------------------------
 void removeWindow(void)
 {
-  u16             x, y, nx;
-  u16             count;
+  u16             x, y;
   screenCharType *helpPtr;
 
   if (windowSP == 0 || (helpPtr = windowStack[--windowSP].oldScreen) == NULL)
     return;
 
 #ifndef __32BIT__
-  nx = windowStack[windowSP].ex - windowStack[windowSP].sx + 1;
-  count = 0;
-  for (y =  windowStack[windowSP].sy; y <= windowStack[windowSP].ey; y++)
-    memcpy(&(screen[y * columns + windowStack[windowSP].sx]), &helpPtr[nx * count++], nx << 1);
+  {
+    u16 count, nx;
+    nx = windowStack[windowSP].ex - windowStack[windowSP].sx + 1;
+    count = 0;
+    for (y =  windowStack[windowSP].sy; y <= windowStack[windowSP].ey; y++)
+      memcpy(&(screen[y * columns + windowStack[windowSP].sx]), &helpPtr[nx * count++], nx << 1);
+  }
 #else
   puttext( windowStack[windowSP].sx + 1, windowStack[windowSP].sy + 1
          , windowStack[windowSP].ex + 1, windowStack[windowSP].ey + 1, helpPtr);
@@ -1441,39 +1455,38 @@ s16 changeGlobal(menuType *menu, void *org, void *upd)
             case PATH:
             case FILE_NAME:
             case MB_NAME:
-            case SFILE_NAME:  if ( strncmp(menu->menuEntry[count].data,
-                                   (u8*)upd+(int)((u8*)menu->menuEntry[count].data-(u8*)org),
-                                   menu->menuEntry[count].par1+1) )
-                              {  update = 1;
-                                 strncpy(menu->menuEntry[count].data,
-                                         (u8*)upd+(int)((u8*)menu->menuEntry[count].data-(u8*)org),
-                                         menu->menuEntry[count].par1);
+            case SFILE_NAME:  if (strncmp( menu->menuEntry[count].data, (char*)upd + (menu->menuEntry[count].data - org)
+                                         , menu->menuEntry[count].par1 + 1))
+                              {
+                                update = 1;
+                                strncpy( menu->menuEntry[count].data, (char*)upd + (menu->menuEntry[count].data - org)
+                                       , menu->menuEntry[count].par1);
                               }
                               break;
             case NUM_INT:
-            case NUM_P_INT:   if ( *(u16*)(menu->menuEntry[count].data) !=
-                                   *((u16*)((u8*)upd+(int)((u8*)menu->menuEntry[count].data-(u8*)org))) )
-                              {  update = 1;
-                                 *(u16*)menu->menuEntry[count].data =
-                                 *((u16*)((u8*)upd+(int)((u8*)menu->menuEntry[count].data-(u8*)org)));
+            case NUM_P_INT:   if (*(u16*)(menu->menuEntry[count].data) != *((u16*)((u8*)upd + (int)(menu->menuEntry[count].data - org))))
+                              {
+                                update = 1;
+                                *(u16*)menu->menuEntry[count].data = *((u16*)((u8*)upd + (int)(menu->menuEntry[count].data - org)));
                               }
                               break;
             case DATE:
-            case NUM_LONG:    if ( *(u32*)menu->menuEntry[count].data !=
-                                   *((u32*)((u8*)upd+(int)((u8*)menu->menuEntry[count].data-(u8*)org))) )
-                              {  update = 1;
-                                 *(u32*)menu->menuEntry[count].data =
-                                 *((u32*)((u8*)upd+(int)((u8*)menu->menuEntry[count].data-(u8*)org)));
+            case NUM_LONG:    if (*(u32*)menu->menuEntry[count].data != *((u32*)((u8*)upd + (int)(menu->menuEntry[count].data - org))))
+                              {
+                                update = 1;
+                                *(u32*)menu->menuEntry[count].data = *((u32*)((u8*)upd + (int)(menu->menuEntry[count].data - org)));
                               }
                               break;
             case ENUM_INT:
-                              if ( (char*)(*(toggleType*)menu->menuEntry[count].data).data == &tempToggleRA )
+                              if ((char*)((toggleType*)menu->menuEntry[count].data)->data == &tempToggleRA)
                               {
                                  if (tempToggleRA)
-                                 {  if ( !(tempInfo.attrRA & BIT3) )
-                                    {  update = 1;
-                                       tempInfo.attrRA |= BIT3;
-                                    }
+                                 {
+                                   if (!(tempInfo.attrRA & BIT3))
+                                   {
+                                     update = 1;
+                                     tempInfo.attrRA |= BIT3;
+                                   }
                                  }
                                  else
                                  {  if ( tempInfo.attrRA & BIT3 )
@@ -1495,11 +1508,12 @@ s16 changeGlobal(menuType *menu, void *org, void *upd)
                                  }
                                  break;
                               }
-                              if ( *((*(toggleType*)menu->menuEntry[count].data).data) !=
-                                   *((u8*)((u8*)upd+(int)((u8*)((*(toggleType*)menu->menuEntry[count].data).data)-(u8*)org))) )
-                              {  update = 1;
-                                 *((*(toggleType*)menu->menuEntry[count].data).data) =
-                                 *((u8*)((u8*)upd+(int)((u8*)((*(toggleType*)menu->menuEntry[count].data).data)-(u8*)org)));
+                              if ( *(u8*)(((toggleType*)menu->menuEntry[count].data)->data) !=
+                                   *(u8*)(upd + ((((toggleType*)menu->menuEntry[count].data)->data) - org)) )
+                              {
+                                update = 1;
+                                *(u8*)(((toggleType*)menu->menuEntry[count].data)->data) =
+                                  *(u8*)(upd + ((((toggleType*)menu->menuEntry[count].data)->data) - org));
                               }
                               break;
             case NODE:
@@ -1548,7 +1562,7 @@ static u16 aboutTable[5] = {_K_ALTA_, _K_ALTB_, _K_ALTO_, _K_ALTU_, _K_ALTT_};
 extern u16 am__cp;
        u16 editDefault;
 
-s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc)
+s16 runMenuDE(menuType *menu, u16 sx, u16 sy, u16 *dataPtr, u16 setdef, u16 esc)
 {
    u16          count
               , count2
@@ -1646,8 +1660,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
          for (px = sx + 1; px < editX - 1; px++)
             changeColor(px, py, attr, MONO_INV);
     }
-      printStringFill( menu->menuEntry[count].comment, ' ', 79, 0, 24
-                     , windowLook.commentfg, windowLook.commentbg, MONO_NORM);
+      printStringFill(menu->menuEntry[count].comment, ' ', 79, 0, 24, windowLook.commentfg, windowLook.commentbg, MONO_NORM);
       aboutIndex = 0;
       do
       {
@@ -1711,7 +1724,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
                                       !*(u8*)menu->menuEntry[count].data )
                                     break;
 
-                                 sprintf(tempStr2, "%s%s", configPath, menu->menuEntry[count].data);
+                                 sprintf(tempStr2, "%s%s", configPath, (char*)menu->menuEntry[count].data);
 
                                  if (!access(tempStr2, 0))
                                     break;
@@ -1801,7 +1814,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
             {
                u16       teller;
                menuType *tempMenu;
-               char      tempvar;
+               u16       tempvar;
 
                if ((tempMenu = createMenu ("")) == NULL)
                   break;
@@ -1814,30 +1827,28 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, char *dataPtr, u16 setdef, u16 esc
                           (*(toggleType*)menu->menuEntry[count].data).text[teller],
                           0, NULL, 0, 0, menu->menuEntry[count].comment);
                   if ( teller + tempvar < par2 )
-                     addItem(tempMenu, WSELECT,(*(toggleType*)menu->menuEntry[count].data).text[teller+tempvar]
+                     addItem(tempMenu, WSELECT,(*(toggleType*)menu->menuEntry[count].data).text[teller + tempvar]
                             , 24, NULL, 0, 0, menu->menuEntry[count].comment);
                }
                tempvar = 0;
-               while ( (tempvar < par2) &&
-                       ((*(toggleType*)menu->menuEntry[count].data).retval[tempvar] !=
-                         *((*(toggleType*)menu->menuEntry[count].data).data)))
+               while ( tempvar < par2 &&
+                       (((toggleType*)menu->menuEntry[count].data)->retval[tempvar] !=
+                         *(u8*)(((toggleType*)menu->menuEntry[count].data)->data)))
                {
                   tempvar++;
                }
                if (tempvar == par2)
                {
                   tempvar = 0;
-                  *((*(toggleType*)menu->menuEntry[count].data).data) =
-                     (*(toggleType*)menu->menuEntry[count].data).retval[0];
+                  *(u8*)(((toggleType*)menu->menuEntry[count].data)->data) = ((toggleType*)menu->menuEntry[count].data)->retval[0];
                }
-               if ( par2 > 16 )
+               if (par2 > 16)
                   tempvar = (tempvar*2)-((tempvar>=(par2+1)/2)?par2-1+(par2&1):0);
-               if (runMenuD(tempMenu, px, py-1, &tempvar, 0))
+               if (runMenuD(tempMenu, px, py - 1, &tempvar, 0))
                {
-                  if ( par2 > 16 )
+                  if (par2 > 16)
                      tempvar = ((tempvar&1)?(par2+1)/2:0)+tempvar/2;
-                  *((*(toggleType*)menu->menuEntry[count].data).data) =
-                     (*(toggleType*)menu->menuEntry[count].data).retval[tempvar];
+                  *(u8*)(((toggleType*)menu->menuEntry[count].data)->data) = ((toggleType*)menu->menuEntry[count].data)->retval[tempvar];
                   update = 1;
                }
                free(tempMenu);
@@ -2168,15 +2179,16 @@ char *getDestFileName(char *title)
   return fileNameStr;
 }
 //---------------------------------------------------------------------------
-s16 askChar(char *prompt, u8 *keys)
+int askChar(char *prompt, char *keys)
 {
-   u8  *helpPtr;
-   u16 ch;
-   u16 sx = (76 - strlen(prompt)) / 2;
+   char *helpPtr;
+   int   ch;
+   u16   sx = (76 - strlen(prompt)) / 2;
 
-   if (displayWindow (NULL, sx, 9, sx+strlen(prompt)+3, 13) != 0)
+   if (displayWindow(NULL, sx, 9, sx + strlen(prompt) + 3, 13) != 0)
      return 0;
-   printString (prompt, sx+2, 11, windowLook.atttextfg, windowLook.background, MONO_HIGH);
+
+   printString(prompt, sx + 2, 11, windowLook.atttextfg, windowLook.background, MONO_HIGH);
    do
    {
      ch = toupper(readKbd());
@@ -2191,14 +2203,14 @@ s16 askChar(char *prompt, u8 *keys)
 
 
 
-s16 askBoolean(char *prompt, s16 dfault)
+int askBoolean(char *prompt, int dfault)
 {
-   u16 ch;
+   int ch;
    u16 sx = (76 - strlen(prompt)) / 2;
 
-   if (displayWindow (NULL, sx, 9, sx+strlen(prompt)+3, 14) == 0)
+   if (displayWindow(NULL, sx, 9, sx + strlen(prompt) + 3, 14) == 0)
    {
-      printString(prompt, sx+2, 11, windowLook.atttextfg, windowLook.background, MONO_HIGH);
+      printString(prompt, sx + 2, 11, windowLook.atttextfg, windowLook.background, MONO_HIGH);
       if (dfault == 'Y')
          printString("[Y/n]", 37, 12, windowLook.atttextfg, windowLook.background, MONO_HIGH);
       else
@@ -2281,9 +2293,9 @@ s16 displayAreas (void)
    do
    {
       if (count == MBBOARDS)
-        sprintf(boardStr, "None", count+1);
+        strcpy(boardStr, "None");
       else
-        sprintf(boardStr, "%3u", count+1);
+        sprintf(boardStr, "%3u", count + 1);
 
       printString(boardStr, 7 + (4 * (count % 17)), 9 + (count / 17),
                    windowLook.scrollfg, windowLook.scrollbg, MONO_HIGH_BLINK);
@@ -2352,10 +2364,12 @@ s16 displayAreas (void)
                        {
                           count += 17;
                           if (count > MBBOARDS)
+                          {
                              if (count >= MBBOARDS + 3)
                                 count -= MBBOARDS + 3;
                              else
                                 count -= MBBOARDS - 14;
+                          }
                        }
                        while ((count != MBBOARDS) && displayAreasArray[count]);
                        break;
@@ -2363,9 +2377,8 @@ s16 displayAreas (void)
          case _K_HOME_ :
                        count = 0;
                        while ((count < MBBOARDS ) && displayAreasArray[count])
-                       {
                          count++;
-                       }
+
                        break;
          case _K_CPGDN_ :
          case _K_END_ :

@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include <ctype.h>
-#include <dos.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>

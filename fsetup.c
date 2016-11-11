@@ -21,20 +21,7 @@
 //
 //---------------------------------------------------------------------------
 
-#ifdef __WIN32__
-#pragma message "Compiling in 32 bit mode"
-#endif
-
-#ifdef _Windows
-#pragma message "Compiling for Windows"
-#endif
-
-#ifdef __MSDOS__
-#pragma message "__MSDOS__ is defined"
-#endif
-
 #include <conio.h>
-//#include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <io.h>
@@ -56,6 +43,7 @@
 #include "nodeinfo.h"
 #include "nodemgr.h"
 #include "packmgr.h"
+#include "stpcpy.h"
 #include "update.h"
 #include "version.h"
 #include "window.h"
@@ -400,7 +388,7 @@ int main(int argc, char *argv[])
     if (stricmp(argv[1], "/C") == 0)
       mode = 2;
   }
-  arcToggle.data = (char*)&config.defaultArc;
+  arcToggle.data = &config.defaultArc;
   arcToggle.text  [ 0] = "None";
   arcToggle.retval[ 0] = 0xFF;
   arcToggle.text  [ 1] = "ARC";
@@ -424,7 +412,7 @@ int main(int argc, char *argv[])
   arcToggle.text  [10] = "JAR";
   arcToggle.retval[10] = 10;
 
-  mailerToggle.data    = (char*)&config.mailer;
+  mailerToggle.data    = &config.mailer;
   mailerToggle.text[0] = "FrontDoor";
   mailerToggle.retval[0] = dMT_FrontDoor;
   mailerToggle.text[1] = "InterMail";
@@ -438,7 +426,7 @@ int main(int argc, char *argv[])
   mailerToggle.text[5] = "Xenia";
   mailerToggle.retval[5] = dMT_Xenia;
 
-  logStyleToggle.data    = (char*)&config.logStyle;
+  logStyleToggle.data    = &config.logStyle;
   logStyleToggle.text[0] = "FrontDoor";
   logStyleToggle.retval[0] = 0;
   logStyleToggle.text[1] = "QuickBBS";
@@ -450,7 +438,7 @@ int main(int argc, char *argv[])
   logStyleToggle.text[4] = "FMail (W32)";
   logStyleToggle.retval[4] = 4;
 
-  colorToggle.data    = (char*)&config.colorSet;
+  colorToggle.data    = &config.colorSet;
   colorToggle.text[0] = "Summer";
   colorToggle.retval[0] = 0;
   colorToggle.text[1] = "Winter";
@@ -458,7 +446,7 @@ int main(int argc, char *argv[])
   colorToggle.text[2] = "Marine";
   colorToggle.retval[2] = 2;
 
-  bbsToggle.data    = (char*)&config.bbsProgram;
+  bbsToggle.data    = &config.bbsProgram;
   bbsToggle.text[0] = "RemoteAccess < 2.00";
   bbsToggle.retval[0] = BBS_RA1X;
   bbsToggle.text[1] = "RemoteAccess 2.00/2.02";
@@ -488,7 +476,7 @@ int main(int argc, char *argv[])
   tearToggle.text[4] = "Default + TID";
   tearToggle.retval[4] = 6;
 
-  initWindow (mode);
+  initWindow(mode);
   color = 1;
   windowLook.background   = RED;
   windowLook.actvborderfg = YELLOW;
@@ -1496,4 +1484,3 @@ nomem:
   return 0;
 }
 //---------------------------------------------------------------------------
-

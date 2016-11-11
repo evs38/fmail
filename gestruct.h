@@ -16,6 +16,10 @@
 **  Path names are back slash ('\') terminated.
 */
 
+#include <stdint.h>
+
+#include <pshpack1.h>
+
 #define GE_THISREV 0x0002  /* System file revision level */
 #define GE_MAJOR   1       /* GEcho major revision version */
 #define GE_MINOR   10      /* GEcho minor revision version */
@@ -33,9 +37,9 @@
 /*
 **  Datatypes:
 */
-typedef unsigned char   byte;   //( 8-bit)
-typedef unsigned short  word;   //(16-bit)
-typedef unsigned long   dword;  //(32-bit)
+typedef uint8_t   byte;   //( 8-bit)
+typedef uint16_t  word;   //(16-bit)
+typedef uint32_t  dword;  //(32-bit)
 
 
 /* --- Address type */
@@ -573,6 +577,8 @@ typedef struct
   word new_msgnum;
 }
 MBUTIL_RNX;
+
+#include <poppack.h>
 
 /* end of file "gestruct.h" */
 #endif

@@ -27,25 +27,20 @@
 
 s32 getGroupCode(char *groupString)
 {
-   s32      code;
+  s32 code;
 
-   if (strchr(groupString, '*') != NULL)
-   {
-      return (0x03ffffffL);
-   }
-   code = 0;
-   while (*groupString)
-   {
-      if (isalpha(*groupString))
-      {
-         code |= (1L << (toupper(*(groupString++)) - 'A'));
-      }
-      else
-      {
-         groupString++;
-      }
-   }
-   return (code);
+  if (strchr(groupString, '*') != NULL)
+    return 0x03ffffffL;
+
+  code = 0;
+  while (*groupString)
+  {
+    if (isalpha(*groupString))
+      code |= (1L << (toupper(*(groupString++)) - 'A'));
+    else
+      groupString++;
+  }
+  return code;
 }
 
 
