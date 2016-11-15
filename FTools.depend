@@ -45,7 +45,7 @@
 
 1478862964 c:\fmail\update.h
 
-1478636343 c:\fmail\utils.h
+1478906034 c:\fmail\utils.h
 	"fmail.h"
 	"areainfo.h"
 	"fmstruct.h"
@@ -77,7 +77,7 @@
 
 1474316224 c:\fmail\crc.h
 
-1478627981 source:c:\fmail\ftlog.c
+1479144315 source:c:\fmail\ftlog.c
 	<dos.h>
 	<fcntl.h>
 	<io.h>
@@ -94,6 +94,7 @@
 	"msgra.h"
 	"msgradef.h"
 	"stpcpy.h"
+	"utils.h"
 	"version.h"
 
 1478615756 c:\fmail\ftlog.h
@@ -199,13 +200,13 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1478893788 c:\fmail\pp_date.h
+1479162886 c:\fmail\pp_date.h
 
 1476034509 c:\fmail\sorthb.h
 
 1478862964 c:\fmail\spec.h
 
-1478345385 source:c:\fmail\ftr.c
+1479144205 source:c:\fmail\ftr.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -233,7 +234,7 @@
 	"utils.h"
 	"version.h"
 
-1477689054 source:c:\fmail\hudson.c
+1479144205 source:c:\fmail\hudson.c
 	<stdio.h>
 	<string.h>
 	<dir.h>
@@ -259,7 +260,7 @@
 
 1426945558 source:c:\fmail\ispathch.c
 
-1478344258 source:c:\fmail\jamfun.c
+1479144315 source:c:\fmail\jamfun.c
 	<dir.h>
 	<errno.h>
 	<fcntl.h>
@@ -393,7 +394,7 @@
 
 1477687086 c:\fmail\bits.h
 
-1478798817 source:c:\fmail\utils.c
+1478906033 source:c:\fmail\utils.c
 	<ctype.h>
 	<dir.h>
 	<direct.h>
@@ -420,16 +421,18 @@
 	"stpcpy.h"
 	"version.h"
 
-1478710848 source:c:\fmail\utils2.c
+1479142705 source:c:\fmail\utils2.c
 	<ctype.h>
 	<direct.h>
 	<dirent.h>
 	<stdio.h>
+	<stdarg.h>
 	<stdlib.h>
 	<string.h>
 	<time.h>
 	"utils.h"
 	"ispathch.h"
+	"minmax.h"
 	"spec.h"
 
 1477579346 source:c:\fmail\version.c
@@ -438,9 +441,9 @@
 	<stdio.h>
 	<windows.h>
 
-1478710575 source:c:\fmail\ftoolsw32.rc
+1479162887 source:c:\fmail\ftoolsw32.rc
 
-1478803567 source:c:\fmail\update.c
+1479163400 source:c:\fmail\update.c
 	<fcntl.h>
 	<io.h>
 	<stdio.h>
@@ -457,6 +460,7 @@
 	"imfolder.h"
 	"minmax.h"
 	"msgra.h"
+	"stpcpy.h"
 	"utils.h"
 	"version.h"
 	"log.h"
@@ -468,13 +472,13 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1478643912 c:\fmail\fs_util.h
+1478861963 c:\fmail\fs_util.h
 
 1477949075 c:\fmail\imfolder.h
 	<pshpack1.h>
 	<poppack.h>
 
-1478644530 c:\fmail\window.h
+1478868602 c:\fmail\window.h
 	"bits.h"
 
 1478185506 c:\fmail\minmax.h

@@ -41,6 +41,7 @@
 #include "msgra.h"
 #include "msgradef.h"
 #include "stpcpy.h"
+#include "utils.h"
 #include "version.h"
 
 //---------------------------------------------------------------------------
@@ -68,9 +69,7 @@ char *expandName(char *fileName)
 //---------------------------------------------------------------------------
 void writeLogLine(fhandle logHandle, const char *s)
 {
-  struct tm   tm;
-  tempStrType tempStr;
-  int         sl;
+  struct tm tm;
 
 #ifdef __WIN32__
   SYSTEMTIME st;
@@ -92,50 +91,48 @@ void writeLogLine(fhandle logHandle, const char *s)
   switch (config.logStyle)
   {
     case 1:  // QuickBBS
-      sl = sprintf( tempStr ,"%02u-%.3s-%02u %02u:%02u  %s\n"
-                  , tm.tm_mday
-                  , months + (tm.tm_mon * 3)
-                  , tm.tm_year % 100
-                  , tm.tm_hour
-                  , tm.tm_min, s
-                  );
+      dprintf(logHandle, "%02u-%.3s-%02u %02u:%02u  %s\n"
+              , tm.tm_mday
+              , months + (tm.tm_mon * 3)
+              , tm.tm_year % 100
+              , tm.tm_hour
+              , tm.tm_min, s
+              );
       break;
     case 2:  // D'Bridge
-      sl = sprintf( tempStr ,"%02u/%02u/%02u %02u:%02u  %s\n"
-                  , tm.tm_mon + 1
-                  , tm.tm_mday
-                  , tm.tm_year % 100
-                  , tm.tm_hour
-                  , tm.tm_min, s
-                  );
+      dprintf(logHandle, "%02u/%02u/%02u %02u:%02u  %s\n"
+              , tm.tm_mon + 1
+              , tm.tm_mday
+              , tm.tm_year % 100
+              , tm.tm_hour
+              , tm.tm_min, s
+              );
       break;
     case 3:  // Binkley
-      sl = sprintf( tempStr ,"> %02u %.3s %02u %02u:%02u:%02u FMAIL  %s\n"
-                  , tm.tm_mday
-                  , months + (tm.tm_mon * 3)
-                  , tm.tm_year % 100
-                  , tm.tm_hour
-                  , tm.tm_min
-                  , tm.tm_sec, s
-                  );
+      dprintf(logHandle, "> %02u %.3s %02u %02u:%02u:%02u FMAIL  %s\n"
+              , tm.tm_mday
+              , months + (tm.tm_mon * 3)
+              , tm.tm_year % 100
+              , tm.tm_hour
+              , tm.tm_min
+              , tm.tm_sec, s
+              );
       break;
 #ifdef __WIN32__
     case 4:  // FMail
-      sl = sprintf(tempStr, "%02u:%02u:%02u.%03u  %s\n", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
+      dprintf(logHandle, "%02u:%02u:%02u.%03u  %s\n", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
       break;
 #endif
     default:  // FrontDoor
-      sl = sprintf(tempStr, "  %2u:%02u:%02u  %s\n", tm.tm_hour, tm.tm_min , tm.tm_sec , s);
+      dprintf(logHandle, "  %2u:%02u:%02u  %s\n", tm.tm_hour, tm.tm_min , tm.tm_sec , s);
       break;
   }
-  write(logHandle, tempStr, sl);
 }
 //---------------------------------------------------------------------------
 void initLog(const char *_funcStr, s32 switches)
 {
   fhandle     logHandle;
-  tempStrType tempStr
-            , tempStr2;
+  tempStrType tempStr2;
   struct tm   timeBlock;
   u16         count;
   s32         select = 1;
@@ -198,28 +195,26 @@ void initLog(const char *_funcStr, s32 switches)
       }
 #ifdef __WIN32__
       case 4:
-        write( logHandle, tempStr
-             , sprintf( tempStr, "\n------------  %s %04u-%02u-%02u, %s\n"
-                      , dayName[timeBlock.tm_wday]
-                      , timeBlock.tm_year + 1900
-                      , timeBlock.tm_mon + 1
-                      , timeBlock.tm_mday
-                      , VersionStr()
-                      )
-             );
+        dprintf(logHandle
+               , "\n------------  %s %04u-%02u-%02u, %s\n"
+               , dayName[timeBlock.tm_wday]
+               , timeBlock.tm_year + 1900
+               , timeBlock.tm_mon + 1
+               , timeBlock.tm_mday
+               , VersionStr()
+               );
         writeLogLine(logHandle, tempStr2);
         break;
 #endif
       default:
-        write( logHandle, tempStr
-             , sprintf( tempStr, "\n----------  %s %04u-%02u-%02u, %s\n"
-                      , dayName[timeBlock.tm_wday]
-                      , timeBlock.tm_year + 1900
-                      , timeBlock.tm_mon + 1
-                      , timeBlock.tm_mday
-                      , tempStr2
-                      )
-             );
+        dprintf(logHandle
+               , "\n----------  %s %04u-%02u-%02u, %s\n"
+               , dayName[timeBlock.tm_wday]
+               , timeBlock.tm_year + 1900
+               , timeBlock.tm_mon + 1
+               , timeBlock.tm_mday
+               , tempStr2
+               );
         break;
     }
     close(logHandle);

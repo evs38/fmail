@@ -71,6 +71,7 @@ extern const char *dayName[7];
 extern char *version;
 
 //---------------------------------------------------------------------------
+#if !(defined(__WIN32__) || defined(__linux__))
 int moveFile(const char *oldName, const char *newName)
 {
   fhandle h1
@@ -122,6 +123,16 @@ int moveFile(const char *oldName, const char *newName)
     unlink(oldName);
   }
   return 0;
+}
+#endif
+//---------------------------------------------------------------------------
+int addExtension(const char *path, const char *ext)
+{
+  tempStrType newName;
+
+  strcpy(stpcpy(newName, path), ext);
+
+  return rename(path, newName);
 }
 //---------------------------------------------------------------------------
 s16 existDir(const char *dir, const char *descr)

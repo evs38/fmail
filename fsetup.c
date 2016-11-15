@@ -1392,7 +1392,7 @@ nomem:
     if (((configHandle = open(configFileName, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1) ||
         (write(configHandle, &config, sizeof (configType)) != sizeof (configType)) ||
         (close(configHandle) == -1))
-      displayMessage ("Can't write to "dCFGFNAME);
+      displayMessage("Can't write to "dCFGFNAME);
 
     if (*config.autoFMail102Path)
     {
@@ -1438,11 +1438,11 @@ nomem:
     }
     if (!openConfig(CFG_AREADEF, &adefHeader, (void*)&adefBuf))
     {
-      displayMessage ("Can't write to "dARDFNAME);
+      displayMessage("Can't write to "dARDFNAME);
     }
     else
     {
-      memcpy (adefBuf, &echoDefaultsRec, RAWECHO_SIZE);
+      memcpy(adefBuf, &echoDefaultsRec, RAWECHO_SIZE);
       putRec(CFG_AREADEF, 0);
       chgNumRec(CFG_AREADEF, 1);
       closeConfig(CFG_AREADEF);

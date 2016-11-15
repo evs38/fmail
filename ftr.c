@@ -386,8 +386,7 @@ s16 export(int argc, char *argv[])
   {
     if (hdrBufCount == totalHdrBuf)
     {
-      totalHdrBuf = read (msgHdrHandle, msgHdrBuf,
-                          HDR_BUFSIZE*sizeof(msgHdrRec))/sizeof(msgHdrRec);
+      totalHdrBuf = read(msgHdrHandle, msgHdrBuf, HDR_BUFSIZE * sizeof(msgHdrRec)) / sizeof(msgHdrRec);
       hdrBufCount = 0;
     }
     if (hdrBufCount < totalHdrBuf)
@@ -396,65 +395,58 @@ s16 export(int argc, char *argv[])
           ((!(switches & SW_P)) || ((msgHdrBuf[hdrBufCount].MsgAttr & RA_PRIVATE) == 0)) &&
           (msgHdrBuf[hdrBufCount].Board == board))
       {
-        write (outHandle, "===============================================================================\n",80);
+        write(outHandle, "===============================================================================\n",80);
         if (!(switches & SW_D))
         {
-          write (outHandle, "Date : ", 7);
-          write (outHandle, msgHdrBuf[hdrBufCount].PostDate,
-                 msgHdrBuf[hdrBufCount].pdLength);
-          write (outHandle, " ", 1);
-          write (outHandle, msgHdrBuf[hdrBufCount].PostTime,
-                 msgHdrBuf[hdrBufCount].ptLength);
-          write (outHandle, "\n", 1);
+          write(outHandle, "Date : ", 7);
+          write(outHandle, msgHdrBuf[hdrBufCount].PostDate, msgHdrBuf[hdrBufCount].pdLength);
+          write(outHandle, " ", 1);
+          write(outHandle, msgHdrBuf[hdrBufCount].PostTime, msgHdrBuf[hdrBufCount].ptLength);
+          write(outHandle, "\n", 1);
         }
         if (!(switches & SW_F))
         {
-          write (outHandle, "From : ", 7);
-          write (outHandle, msgHdrBuf[hdrBufCount].WhoFrom,
-                 msgHdrBuf[hdrBufCount].wfLength);
-          write (outHandle, "\n", 1);
+          write(outHandle, "From : ", 7);
+          write(outHandle, msgHdrBuf[hdrBufCount].WhoFrom, msgHdrBuf[hdrBufCount].wfLength);
+          write(outHandle, "\n", 1);
         }
         if (!(switches & SW_T))
         {
-          write (outHandle, "To   : ", 7);
-          write (outHandle, msgHdrBuf[hdrBufCount].WhoTo,
-                 msgHdrBuf[hdrBufCount].wtLength);
-          write (outHandle, "\n", 1);
+          write(outHandle, "To   : ", 7);
+          write(outHandle, msgHdrBuf[hdrBufCount].WhoTo, msgHdrBuf[hdrBufCount].wtLength);
+          write(outHandle, "\n", 1);
         }
         if (!(switches & SW_S))
         {
-          write (outHandle, "Subj : ", 7);
-          write (outHandle, msgHdrBuf[hdrBufCount].Subj,
-                 msgHdrBuf[hdrBufCount].sjLength);
-          write (outHandle, "\n", 1);
+          write(outHandle, "Subj : ", 7);
+          write(outHandle, msgHdrBuf[hdrBufCount].Subj, msgHdrBuf[hdrBufCount].sjLength);
+          write(outHandle, "\n", 1);
         }
 
         if (!(switches & SW_X))
         {
-          write (outHandle, "-------------------------------------------------------------------------------\n",80);
+          write(outHandle, "-------------------------------------------------------------------------------\n",80);
 
-          memset (text, 0, 32767);
+          memset(text, 0, 32767);
           textCount = 0;
-          lseek (msgTxtHandle, msgHdrBuf[hdrBufCount].StartRec*(s32)sizeof(msgTxtRec), SEEK_SET);
+          lseek(msgTxtHandle, msgHdrBuf[hdrBufCount].StartRec*(s32)sizeof(msgTxtRec), SEEK_SET);
 
           while ((msgHdrBuf[hdrBufCount].NumRecs--) && (textCount < 32000))
           {
-            read (msgTxtHandle, &msgTxtBuf, sizeof(msgTxtRec));
-            memcpy (text+textCount, &msgTxtBuf.txtStr, msgTxtBuf.txtLength);
+            read(msgTxtHandle, &msgTxtBuf, sizeof(msgTxtRec));
+            memcpy(text+textCount, &msgTxtBuf.txtStr, msgTxtBuf.txtLength);
             textCount += msgTxtBuf.txtLength;
           }
 
           helpPtr = text;
           while ((helpPtr = strchr(helpPtr,0x8d)) != NULL)
-          {
             *helpPtr = '\r';
-          }
 
           helpPtr = text;
           while ((helpPtr = strchr(helpPtr,'\r')) != NULL)
           {
             if (*(helpPtr+1) == '\n')
-              strcpy (helpPtr, helpPtr+1);
+              strcpy(helpPtr, helpPtr+1);
             else
               *helpPtr = '\n';
           }
@@ -462,15 +454,13 @@ s16 export(int argc, char *argv[])
           helpPtr = text;
           while ((helpPtr = strchr(helpPtr,1)) != NULL)
           {
-            if ((helpPtr == text) || (*(helpPtr-1) == '\n'))
+            if (helpPtr == text || *(helpPtr-1) == '\n')
             {
               if (switches & SW_K)
-              {
                 *helpPtr = '@';
-              }
               else
               {
-                if ((helpPtr2 = strchr (helpPtr, '\n')) == NULL)
+                if ((helpPtr2 = strchr(helpPtr, '\n')) == NULL)
                   *helpPtr = 0;
                 else
                   strcpy(helpPtr, helpPtr2+1);

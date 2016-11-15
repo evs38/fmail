@@ -1119,31 +1119,29 @@ void Toss(int argc, char *argv[])
          (tempHandle = open(config.tossedAreasList, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
       for (count = 0; count < echoCount; count++)
         if (echoAreaList[count].msgCountV)
-          write(tempHandle, tempStr, sprintf(tempStr, "%s\n", echoAreaList[count].areaName));
+          dprintf(tempHandle, "%s\n", echoAreaList[count].areaName);
 
     if ( *config.summaryLogName
        && (tempHandle = open( config.summaryLogName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1
        )
     {
       logEntry("Writing toss summary", LOG_DEBUG, 0);
-      write( tempHandle, tempStr
-           , sprintf( tempStr, "\n----------  %s %4u-%02u-%02u %02u:%02u:%02u, %s - Toss Summary\n\n"
-                    , dayName[timeBlock.tm_wday]
-                    , timeBlock.tm_year + 1900
-                    , timeBlock.tm_mon + 1
-                    , timeBlock.tm_mday
-                    , timeBlock.tm_hour
-                    , timeBlock.tm_min
-                    , timeBlock.tm_sec
-                    , VersionStr()
-                    )
-           );
-      write(tempHandle, tempStr, sprintf(tempStr, "Board  Area name                                           #Msgs  Dupes\n"));
-      write(tempHandle, tempStr, sprintf(tempStr, "-----  --------------------------------------------------  -----  -----\n"));
+      dprintf(tempHandle, "\n----------  %s %4u-%02u-%02u %02u:%02u:%02u, %s - Toss Summary\n\n"
+                        , dayName[timeBlock.tm_wday]
+                        , timeBlock.tm_year + 1900
+                        , timeBlock.tm_mon + 1
+                        , timeBlock.tm_mday
+                        , timeBlock.tm_hour
+                        , timeBlock.tm_min
+                        , timeBlock.tm_sec
+                        , VersionStr()
+             );
+      dprintf(tempHandle, "Board  Area name                                           #Msgs  Dupes\n");
+      dprintf(tempHandle, "-----  --------------------------------------------------  -----  -----\n");
       temp = 0;
       if (globVars.badCountV)
       {
-        write(tempHandle, tempStr, sprintf(tempStr, "%5u  Bad messages                                        %5u\n", config.badBoard, globVars.badCountV));
+        dprintf(tempHandle, "%5u  Bad messages                                        %5u\n", config.badBoard, globVars.badCountV);
         temp++;
       }
       for (count = 0; count < echoCount; count++)
@@ -1151,15 +1149,14 @@ void Toss(int argc, char *argv[])
         if (echoAreaList[count].msgCountV || echoAreaList[count].dupCountV)
         {
           if (echoAreaList[count].board)
-            write(tempHandle, tempStr, sprintf(tempStr, "%5u  %-50s  %5u  %5u\n", echoAreaList[count].board, echoAreaList[count].areaName, echoAreaList[count].msgCountV, echoAreaList[count].dupCountV));
+            dprintf(tempHandle, "%5u  %-50s  %5u  %5u\n", echoAreaList[count].board, echoAreaList[count].areaName, echoAreaList[count].msgCountV, echoAreaList[count].dupCountV);
           else
-            write(tempHandle, tempStr, sprintf(tempStr, "%5s  %-50s  %5u  %5u\n", (echoAreaList[count].JAMdirPtr == NULL) ? "None" : "JAM", echoAreaList[count].areaName, echoAreaList[count].msgCountV, echoAreaList[count].dupCountV));
+            dprintf(tempHandle, "%5s  %-50s  %5u  %5u\n", (echoAreaList[count].JAMdirPtr == NULL) ? "None" : "JAM", echoAreaList[count].areaName, echoAreaList[count].msgCountV, echoAreaList[count].dupCountV);
           temp++;
         }
       }
-      write(tempHandle, tempStr, sprintf(tempStr, "-----  --------------------------------------------------  -----  -----\n"));
-      write(tempHandle, tempStr, sprintf(tempStr, "%5u                                                      %5u  %5u\n"
-                                        , temp, globVars.echoCountV+globVars.badCountV, globVars.dupCountV));
+      dprintf(tempHandle, "-----  --------------------------------------------------  -----  -----\n");
+      dprintf(tempHandle, "%5u                                                      %5u  %5u\n", temp, globVars.echoCountV+globVars.badCountV, globVars.dupCountV);
       temp = 0;
       for (count = 0; count < forwNodeCount; count++)
       {
@@ -1169,27 +1166,27 @@ void Toss(int argc, char *argv[])
         {
           if (!temp)
           {
-            write(tempHandle, tempStr, sprintf(tempStr, "\nReceived from node        #Msgs  Dupes  Sec V\n"
-                                                        "------------------------  -----  -----  -----\n"));
+            dprintf(tempHandle, "\nReceived from node        #Msgs  Dupes  Sec V\n"
+                                  "------------------------  -----  -----  -----\n");
             temp++;
           }
-          write(tempHandle, tempStr, sprintf( tempStr, "%-24s  %5u  %5u  %5u\n"
-                                            , nodeStr(&nodeFileInfo[count]->destNode4d)
-                                            , nodeFileInfo[count]->fromNodeMsg
-                                            , nodeFileInfo[count]->fromNodeDup
-                                            , nodeFileInfo[count]->fromNodeSec));
+          dprintf(tempHandle, "%-24s  %5u  %5u  %5u\n"
+                            , nodeStr(&nodeFileInfo[count]->destNode4d)
+                            , nodeFileInfo[count]->fromNodeMsg
+                            , nodeFileInfo[count]->fromNodeDup
+                            , nodeFileInfo[count]->fromNodeSec);
         }
       }
       if (globVars.fromNoExpMsg || globVars.fromNoExpDup || globVars.fromNoExpSec)
       {
         if (!temp)
-          write(tempHandle, tempStr, sprintf(tempStr, "\nReceived from node        #Msgs  Dupes  Sec V\n"
-                                                      "------------------------  -----  -----  -----\n"));
+          dprintf(tempHandle, "\nReceived from node        #Msgs  Dupes  Sec V\n"
+                                "------------------------  -----  -----  -----\n");
 
-        write(tempHandle, tempStr, sprintf( tempStr, "Not in export list        %5u  %5u  %5u\n"
-                                          , globVars.fromNoExpMsg
-                                          , globVars.fromNoExpDup
-                                          , globVars.fromNoExpSec));
+        dprintf(tempHandle, "Not in export list        %5u  %5u  %5u\n"
+                          , globVars.fromNoExpMsg
+                          , globVars.fromNoExpDup
+                          , globVars.fromNoExpSec);
       }
       temp = 0;
       for (count = 0; count < forwNodeCount; count++)
@@ -1198,13 +1195,11 @@ void Toss(int argc, char *argv[])
         {
           if (!temp)
           {
-            write(tempHandle, tempStr, sprintf(tempStr, "\nSent to node              #Msgs\n"
-                                                        "------------------------  -----\n"));
+            dprintf(tempHandle, "\nSent to node              #Msgs\n"
+                                  "------------------------  -----\n");
             temp++;
           }
-          write(tempHandle, tempStr , sprintf( tempStr, "%-24s  %5u\n"
-                                             , nodeStr(&nodeFileInfo[count]->destNode4d)
-                                             , nodeFileInfo[count]->totalMsgs));
+          dprintf(tempHandle, "%-24s  %5u\n", nodeStr(&nodeFileInfo[count]->destNode4d), nodeFileInfo[count]->totalMsgs);
         }
       }
       write(tempHandle, "\n", 1);

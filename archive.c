@@ -350,16 +350,21 @@ void unpackArc(const struct bt *bp)
 
   if (*arcPath == 0)
   {
-    if (!*config.GUS.programName)
+    if (!*config.GUS32.programName)
     {
       if (arcType == 0xFF)
+      {
         logEntryf(LOG_ALWAYS, 0, "Unknown archiving utility used for %s"                  , fullFileName);
+        addExtension(fullFileName, ".unknown_archiver");
+      }
       else
+      {
         logEntryf(LOG_ALWAYS, 0, "Archive decompression program for %s method not defined", extPtr);
-
+        addExtension(fullFileName, ".undefined_archiver");
+      }
       return;
     }
-    strcpy(arcPath, config.GUS.programName);
+    strcpy(arcPath, config.GUS32.programName);
     extPtr = (char*)"gus";
   }
   if (checkExist(arcPath, pathStr, parStr))
@@ -408,8 +413,9 @@ void unpackArc(const struct bt *bp)
     if (arcType == 4)  // ZOO
       ChDir(dirStr);
 
-    Delete(config.inPath, "*.pkt");
+    //Delete(config.inPath, "*.pkt");
     logEntryf(LOG_ALWAYS, 0, "Cannot unpack bundle %s", fullFileName);
+    addExtension(fullFileName, ".unpack_error");
     newLine();
     return;
   }
@@ -960,8 +966,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
       if (helpPtr == NULL)
       {
         lseek(tempHandle, 0, SEEK_END);
-        sprintf(tempStr, "%c%s\r\n", nodeInfo->archiver != 0xFF ? '#' : '^', archiveStr);  // Truncate or Delete the file after transmission depends on archived or not
-        write(tempHandle, tempStr, strlen(tempStr));
+        dprintf(tempHandle, "%c%s\r\n", nodeInfo->archiver != 0xFF ? '#' : '^', archiveStr);  // Truncate or Delete the file after transmission depends on archived or not
         sprintf(tempStr, "Sending new mail from %s to %s", nodeStr(srcNode), nodeStr(destNode));
       }
       else

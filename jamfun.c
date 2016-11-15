@@ -756,16 +756,14 @@ u32 jam_writemsg(char *msgbasename, internalMsgType *message, u16 local)
   // create/update ECHOMAIL.JAM
   if (local)
   {
+    fhandle fd;
     tempStrType tempStr;
-    fhandle     handle;
-    int         len;
 
     strcpy(stpcpy(tempStr, config.bbsPath), dECHOMAIL_JAM);
-    if ((handle = open(tempStr, O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+    if ((fd = open(tempStr, O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
     {
-      len = sprintf(tempStr, "%s %u\r\n", msgbasename, msgNum);
-      write(handle, tempStr, len);
-      close(handle);
+      dprintf(fd, "%s %u\r\n", msgbasename, msgNum);
+      close(fd);
     }
   }
 

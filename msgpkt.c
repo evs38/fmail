@@ -1107,16 +1107,16 @@ s16 closeNetPktWr(nodeFileRecType *nfInfo)
    {
       if (nfInfo->bytesValid == 0)
       {
-         unlink (nfInfo->pktFileName);
+         unlink(nfInfo->pktFileName);
          *nfInfo->pktFileName = 0;
          return (0);
       }
 
       if (((pktHandle = _sopen(nfInfo->pktFileName, O_WRONLY | O_BINARY, SH_DENYRW)) == -1) ||
-            (lseek (pktHandle, 0, SEEK_SET) == -1) ||
-            (chsize (pktHandle, nfInfo->bytesValid) == -1) ||
-            (lseek (pktHandle, 0, SEEK_END) == -1) ||
-            (write (pktHandle, &zero, 2) != 2) ||
+            (lseek(pktHandle, 0, SEEK_SET) == -1) ||
+            (chsize(pktHandle, nfInfo->bytesValid) == -1) ||
+            (lseek(pktHandle, 0, SEEK_END) == -1) ||
+            (write(pktHandle, &zero, 2) != 2) ||
             (close(pktHandle) == -1))
       {
          logEntry("ERROR: Cannot adjust length of file", LOG_ALWAYS, 0);

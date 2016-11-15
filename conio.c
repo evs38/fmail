@@ -215,7 +215,7 @@ void puttext(int left, int top, int right, int bottom, struct char_info * buf)
       buffer[i].Attributes = buf[i].attr;
   }
 
-  WriteConsoleOutput(GetStdHandle (STD_OUTPUT_HANDLE), buffer, size, (COORD) {0, 0}, &r);
+  WriteConsoleOutput(GetStdHandle(STD_OUTPUT_HANDLE), buffer, size, (COORD) {0, 0}, &r);
   free(buffer);
 }
 
@@ -238,6 +238,20 @@ void putchxy(int x, int y, char ch)
 {
   gotoxy(x, y);
   putch(ch);
+}
+
+int _getcursortype(void)
+{
+  CONSOLE_CURSOR_INFO Info;
+
+  if (GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info))
+  {
+    if (!Info.bVisible)
+      return 0;
+
+    return Info.dwSize;
+  }
+  return -1;
 }
 
 void _setcursortype(int type)

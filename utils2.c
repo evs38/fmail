@@ -25,6 +25,7 @@
 #include <direct.h>  // chdir() _chdrive()
 #include <dirent.h>
 #include <stdio.h>
+#include <stdarg.h>  // va_start()
 #include <stdlib.h>  // atoi()
 #include <string.h>
 #include <time.h>
@@ -32,6 +33,7 @@
 #include "utils.h"
 
 #include "ispathch.h"
+#include "minmax.h"
 #include "spec.h"
 
 extern configType config;
@@ -267,4 +269,22 @@ int existPattern(const char *path, const char *pattern)
 
   return ent != NULL;
 }
+//---------------------------------------------------------------------------
+#ifndef __linux__
+int dprintf(int fd, const char *format, ...)
+{
+  char buf[2048];
+  va_list argptr;
+  int bw;
+
+  va_start(argptr, format);
+  bw = vsnprintf(buf, sizeof(buf), format, argptr);
+  va_end(argptr);
+
+  if (bw >= 0)
+    write(fd, buf, min(bw, sizeof(buf)));
+
+  return bw;
+}
+#endif  // __linux__
 //---------------------------------------------------------------------------

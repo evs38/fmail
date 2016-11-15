@@ -242,6 +242,8 @@ u16 readKbd(void)
   return ch;
 }
 //---------------------------------------------------------------------------
+int orgCursorType;
+//---------------------------------------------------------------------------
 void initWindow(u16 mode)
 {
   struct text_info info;
@@ -260,6 +262,7 @@ void initWindow(u16 mode)
          "Please fix that before starting FConfig again...\n");
     exit(1);
   }
+  orgCursorType = _getcursortype();
 #ifdef __BORLANDC__
   textmode(color ? C80 : BW80);  // X28
 #endif // __BORLANDC__
@@ -294,7 +297,7 @@ void deInit(u16 cursorLine)
 #endif // __BORLANDC__
   normvideo();
   clrscr();
-  largeCursor();
+  _setcursortype(orgCursorType >= 0 ? orgCursorType : _NORMALCURSOR);
   locateCursor(0, 0);
 }
 //---------------------------------------------------------------------------
@@ -2128,18 +2131,18 @@ char fileNameStr[65];
 char *getSourceFileName (char *title)
 {
    *fileNameStr = 0;
-   if (displayWindow (title, 6, 12, 72, 14) == 0)
+   if (displayWindow(title, 6, 12, 72, 14) == 0)
    {
-      editString (fileNameStr, 64, 8, 13, FILE_NAME|UPCASE);
+      editString(fileNameStr, 64, 8, 13, FILE_NAME|UPCASE);
       removeWindow ();
-      if (strcmp (fileNameStr, "CON") == 0)
+      if (strcmp(fileNameStr, "CON") == 0)
       {
-         displayMessage ("Can't read from or write to the console");
+         displayMessage("Can't read from or write to the console");
          *fileNameStr = 0;
       }
-      if (strcmp (fileNameStr, "CLOCK$") == 0)
-                {
-         displayMessage ("Can't read from ot write to the clock device");
+      if (strcmp(fileNameStr, "CLOCK$") == 0)
+      {
+         displayMessage("Can't read from ot write to the clock device");
          *fileNameStr = 0;
       }
    }
@@ -2165,7 +2168,7 @@ char *getDestFileName(char *title)
           )
        )
     {
-      displayMessage ("Can't write to FMail system files");
+      displayMessage("Can't write to FMail system files");
       *fileNameStr = 0;
     }
   }

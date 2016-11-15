@@ -74,7 +74,12 @@ const char *fmtU64         (u64 u);
 u64         diskFree64     (const char *path);
 #endif
 u32         diskFree       (const char *path);
+#if defined(__WIN32__) || defined(__linux__)
+#define     moveFile(a,b) rename(a,b)
+#else
 int         moveFile       (const char *oldName, const char *newName);
+#endif
+int         addExtension   (const char *path, const char *ext);
 int         dirExist       (const char *dir);
 int         dirIsEmpty     (const char *dir);
 s16         existDir       (const char *dir, const char *descr);
@@ -85,11 +90,14 @@ u32         fileLength     (int handle);
 long        fileSize       (const char *filename);
 void        Delete         (const char *path, const char *wildCard);
 void        touch          (const char *path, const char *filename, const char *t);
+#ifndef __linux__
+int         dprintf        (int fd, const char *format, ...);
+#endif  // __linux__
 #ifdef __BORLANDC__
 const char *strError       (int errn);
 #else
 #define     strError(errn) strerror(errn)
-#endif
+#endif  // __BORLANDC__
 
 const nodeNumType *getAkaNodeNum(int aka, int retMain);
 const char *getAkaStr      (int aka, int retMain);

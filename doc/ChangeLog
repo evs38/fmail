@@ -1,3 +1,12 @@
+2016-11-15  1.73.4.37-Beta
+  * When a bundle can't be unpacked, it's renamed with an extension that
+    describes the problem: ".unknown_archiver", ".undefined_archiver",
+    ".unpack_error". So it won't be tossed again untill the sysop manually
+    intervenes.
+  * Replaced sprintf + write pairs by dprintf function.
+  * Save and restore console cursor type on start and end of FConfigW32.
+  * moveFile() is now a macro to rename().
+
 2016-11-11  1.73.3.34-Beta
   * FConfig MingW compilation is working fine now.
   * Fixed all compiler warnings in FConfig source.

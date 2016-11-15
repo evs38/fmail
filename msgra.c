@@ -293,10 +293,10 @@ s16 multiUpdate(void)
       lseek(srcTxtHandle, 0, SEEK_SET);
       lseek(destTxtHandle, ((u32)msgTxtOffset) << 8, SEEK_SET);
 
-      while ((recsRead = (read(srcTxtHandle, txtBuf, TXT_BUFSIZE*256)+1)>>8) != 0)
+      while ((recsRead = (read(srcTxtHandle, txtBuf, TXT_BUFSIZE * 256) + 1) >> 8) != 0)
       {
          if ((testMBUnlockNow()) ||
-             (write (destTxtHandle, txtBuf, recsRead << 8) != (recsRead << 8)))
+             (write(destTxtHandle, txtBuf, recsRead << 8) != (recsRead << 8)))
          {
             free(txtBuf);
             chsize(destTxtHandle, ((u32)msgTxtOffset) << 8);
@@ -452,13 +452,14 @@ static void readMsgInfo(u16 orgName)
 //---------------------------------------------------------------------------
 static void writeMsgInfo(u16 orgName)
 {
-   fhandle msgInfoHandle;
+  fhandle msgInfoHandle;
 
-   if ( ((msgInfoHandle = open(expandNameHudson(dMSGINFO, orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
-        write (msgInfoHandle, &infoRecValid, sizeof(infoRecType)) == -1 )
-      logEntry("Can't open file "dMSGINFO"."MBEXTN" for output", LOG_ALWAYS, 1);
+  if (  (msgInfoHandle = open(expandNameHudson(dMSGINFO, orgName), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1
+     || write(msgInfoHandle, &infoRecValid, sizeof(infoRecType)) == -1
+     )
+    logEntry("Can't open file "dMSGINFO"."MBEXTN" for output", LOG_ALWAYS, 1);
 
-   close(msgInfoHandle);
+  close(msgInfoHandle);
 }
 //---------------------------------------------------------------------------
 void openBBSWr(u16 orgName)
@@ -1291,11 +1292,10 @@ s16 updateCurrHdrBBS(internalMsgType *message)
 
    if (config.mbOptions.scanUpdate)
    {
-      lseek (msgTxtHandle, 0, SEEK_END);
-      if ( (writeText (message->text, message->normSeen, message->normPath, 1,
-                      &msgRa.StartRec, &msgRa.NumRecs)) ||
-           validate1BBS() )
-//          (write (msgTxtHandle, msgTxtBuf, txtBufCount << 8) != (txtBufCount << 8)))
+      lseek(msgTxtHandle, 0, SEEK_END);
+      if (  writeText(message->text, message->normSeen, message->normPath, 1, &msgRa.StartRec, &msgRa.NumRecs)
+         || validate1BBS()
+         )
       {
          unlockMB();
          return 1;

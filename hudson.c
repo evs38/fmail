@@ -128,14 +128,14 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
      if (!++msgTxtRecNum)
      {
         logEntry("Maximum message base size has been reached", LOG_ALWAYS, 0);
-        newLine ();
+        newLine();
         unlockMB();
-        return (1);
+        return 1;
      }
      if (write(msgTxtHandle, &msgTxt, 256) != 256)
      {
         unlockMB();
-        return (1);
+        return 1;
      }
      msgRa.NumRecs++;
   }
