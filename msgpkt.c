@@ -48,7 +48,7 @@
 #include "version.h"
 
 //---------------------------------------------------------------------------
-u16 PKT_BUFSIZE = 32000;
+const u16 PKT_BUFSIZE = 32000;
 
 #include <pshpack1.h>
 
@@ -91,15 +91,7 @@ void initPkt(void)
 
   pmHdr.two = 2;
 
-  PKT_BUFSIZE = (32000 >> 3) *
-#if defined(__FMAILX__) || defined(__32BIT__)
-                              8;
-#else
-                              (8-((config.bufSize==0) ? 0 :
-                                 ((config.bufSize==1) ? 3 :
-                                 ((config.bufSize==2) ? 5 :
-                                 ((config.bufSize==3) ? 6 : 7)))));
-#endif
+
 }
 //---------------------------------------------------------------------------
 void deInitPkt(void)
@@ -112,12 +104,11 @@ s16 openPktRd(char *pktName, s16 secure)
    u16           srcCapability;
    nodeInfoType *nodeInfoPtr;
    char          password[9];
-   tempStrType   tempStr;
    pktHdrType    msgPktHdr;
 
    startBuf = PKT_BUFSIZE;
    endBuf   = PKT_BUFSIZE;
-   pktRdBuf [PKT_BUFSIZE-1] = 0;
+   pktRdBuf[PKT_BUFSIZE - 1] = 0;
    globVars.remoteCapability = 0;
    globVars.packetDestAka = 0;
    globVars.remoteProdCode = 0x0104;
@@ -131,13 +122,9 @@ s16 openPktRd(char *pktName, s16 secure)
 
    if (read(pktHandle, &msgPktHdr, 58) < 58)
    {
-      tempStrType newPktName;
-
       close(pktHandle);
-      strcpy(stpcpy(newPktName, pktName) - 3, "ERR");
-      rename(pktName, newPktName);
-
-      logEntryf(LOG_ALWAYS, 0, "Error reading packet header in file: %s, renamed to: %s", pktName, newPktName);
+      addExtension(pktName, ".error");
+      logEntryf(LOG_ALWAYS, 0, "Error reading packet header in file: %s, renamed with extension: '.error'", pktName);
 
       return 1;
    }
@@ -271,9 +258,8 @@ s16 openPktRd(char *pktName, s16 secure)
       if (config.mailOptions.checkPktDest && !secure)
       {
          close(pktHandle);
-         strcpy(stpcpy(tempStr, pktName) - 3, "DST");
-         rename(pktName, tempStr);
-         logEntryf(LOG_ALWAYS, 0, "Packet is addressed to another node (%s) --> packet is renamed to .DST", nodeStr(&globVars.packetDestNode));
+         addExtension(pktName, ".wrong_destination");
+         logEntryf(LOG_ALWAYS, 0, "Packet is addressed to another node (%s) --> packet file: %s is renamed with extension: '.wrong_destination'", nodeStr(&globVars.packetDestNode), pktName);
 
          return 2;  // Destination address not found
       }
@@ -298,10 +284,8 @@ s16 openPktRd(char *pktName, s16 secure)
          {
             close(pktHandle);
             logEntryf(LOG_ALWAYS, 0, "Received password \"%s\" from node %s, expected \"%s\"", password, nodeStr(&globVars.packetSrcNode), nodeInfoPtr->packetPwd);
-            strcpy(tempStr, pktName);
-            strcpy(tempStr+strlen(tempStr)-3, "SEC");
-            rename(pktName, tempStr);
-            logEntry("Packet password security violation --> packet is renamed to .SEC", LOG_ALWAYS, 0);
+            addExtension(pktName, ".wrong_password");
+            logEntryf(LOG_ALWAYS, 0, "Packet password security violation --> packet file: %s is renamed with extension: '.wrong_password'", pktName);
 
             return 3;  // Password security violation
          }
@@ -310,8 +294,8 @@ s16 openPktRd(char *pktName, s16 secure)
       }
       else
       {
-         if (*password)
-            logEntryf(LOG_UNEXPPWD, 0, "Unexpected packet password \"%s\" from node %s", password, nodeStr(&globVars.packetSrcNode));
+        if (*password)
+          logEntryf(LOG_UNEXPPWD, 0, "Unexpected packet password \"%s\" from node %s", password, nodeStr(&globVars.packetSrcNode));
       }
    }
 

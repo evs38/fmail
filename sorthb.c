@@ -92,16 +92,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
                ,*sli_bsTimeStampHi = NULL
                ,*sli_bsTimeStampLo = NULL;
 
-  u16           HDR_BUFSIZE;
-
-  HDR_BUFSIZE = (248>>3) *
-#if defined(__FMAILX__) || defined(__32BIT__)
-                          8;
-#else
-                            (8-((config.ftBufSize==0) ? 0 :
-                               ((config.ftBufSize==1) ? 3 :
-                               ((config.ftBufSize==2) ? 5 : 7))));
-#endif
+  const u16      HDR_BUFSIZE = 248;
 
    if ((msgHdrHandle = open(expandNameHudson(dMSGHDR, 0), O_RDONLY | O_BINARY)) == -1)
    {

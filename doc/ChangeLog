@@ -1,3 +1,7 @@
+2016-11-17  1.73.4.38-Beta
+  * Renamed some unused configuration structure members to "reserved*".
+  * Pkt file rename extensions changed: ".ERR" -> ".error", ".DST" -> ".wrong_destination", ".SEC" -> ".wrong_password"
+
 2016-11-15  1.73.4.37-Beta
   * When a bundle can't be unpacked, it's renamed with an extension that
     describes the problem: ".unknown_archiver", ".undefined_archiver",

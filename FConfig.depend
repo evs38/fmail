@@ -22,7 +22,7 @@
 	<stdio.h>
 	<sys/types.h>
 
-1478725111 c:\fmail\fmstruct.h
+1479488401 c:\fmail\fmstruct.h
 	<stdint.h>
 	<time.h>
 	<pshpack1.h>
@@ -72,7 +72,7 @@
 
 1478644024 c:\fmail\fs_func.h
 
-1478906034 c:\fmail\utils.h
+1479241971 c:\fmail\utils.h
 	"fmail.h"
 	"areainfo.h"
 	"fmstruct.h"
@@ -101,7 +101,7 @@
 
 1474316224 c:\fmail\crc.h
 
-1478820091 source:c:\fmail\export.c
+1479488904 source:c:\fmail\export.c
 	<dir.h>
 	<fcntl.h>
 	<io.h>
@@ -151,7 +151,7 @@
 	<ctype.h>
 	"fmail.h"
 
-1478893257 source:c:\fmail\fsetup.c
+1479143211 source:c:\fmail\fsetup.c
 	<conio.h>
 	<errno.h>
 	<fcntl.h>
@@ -203,7 +203,7 @@
 	"fmail.h"
 	"bits.h"
 
-1478861131 source:c:\fmail\update.c
+1479163400 source:c:\fmail\update.c
 	<fcntl.h>
 	<io.h>
 	<stdio.h>
@@ -220,6 +220,7 @@
 	"imfolder.h"
 	"minmax.h"
 	"msgra.h"
+	"stpcpy.h"
 	"utils.h"
 	"version.h"
 	"log.h"
@@ -261,7 +262,7 @@
 	<stdio.h>
 	<windows.h>
 
-1478969454 c:\fmail\pp_date.h
+1479488482 c:\fmail\pp_date.h
 
 1478893076 source:c:\fmail\import.c
 	<dir.h>
@@ -337,7 +338,7 @@
 	<conio.h>
 	<windows.h>
 
-1478969383 source:c:\fmail\window.c
+1479143211 source:c:\fmail\window.c
 	<ctype.h>
 	<dir.h>
 	<io.h>

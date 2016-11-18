@@ -37,7 +37,7 @@
 				<Option object_output="obj/FTools/Native/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="toss" />
+				<Option parameters="maint" />
 				<Compiler>
 					<Add option="-march=native" />
 					<Add option="-Ofast" />

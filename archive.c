@@ -651,22 +651,27 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
       archiver = nodeInfo->archiver;
 
       // Create archive name
-      if ((!config.mailOptions.neverARC060)
-          && (((destNode->zone == config.akaList[0].nodeNum.zone)
-               || config.mailOptions.ARCmail060
-               || !(nodeInfo->capability & PKT_TYPE_2PLUS))
-              && (srcNode->point == 0)
-              && (destNode->point == 0)))
-        extPtr = archivePtr + sprintf( archivePtr, "%04hX%04hX"                // Keep archive name uppercase, because an external archiver might change it to uppercase
+      if (  !config.mailOptions.neverARC060
+         && (  (  destNode->zone == config.akaList[0].nodeNum.zone
+               || config.mailOptions.ARCmail060                               // "╚═> Out-of-zone"
+               || !(nodeInfo->capability & PKT_TYPE_2PLUS)
+               )
+            && srcNode ->point == 0
+            && destNode->point == 0
+            )
+         )
+        // ArcMail 0.60 format
+        extPtr = archivePtr + sprintf( archivePtr, "%04hX%04hX"               // Keep archive name uppercase, because an external archiver might change it to uppercase
                                      , (*srcNode).net  - (*destNode).net
                                      , (*srcNode).node - (*destNode).node);
       else
       {
+        // Crc32 format
         sprintf( nodeName, "%hu:%hu/%hu.%hu", destNode->zone
                , config.akaList[0].nodeNum.point + destNode->net
                , destNode->node - config.akaList[0].nodeNum.net
                , config.akaList[0].nodeNum.node  + destNode->point);
-        extPtr = archivePtr + sprintf(archivePtr, "%08X", crc32(nodeName));  // idem
+        extPtr = archivePtr + sprintf(archivePtr, "%08X", crc32(nodeName));   // idem
       }
 
       sprintf(extPtr, ".%.2s?", "SUMOTUWETHFRSA" + (timeBlock.tm_wday << 1)); // idem

@@ -45,7 +45,7 @@
 	<stdio.h>
 	<sys/types.h>
 
-1478725111 c:\fmail\fmstruct.h
+1479488401 c:\fmail\fmstruct.h
 	<stdint.h>
 	<time.h>
 	<pshpack1.h>
@@ -109,7 +109,7 @@
 
 1405197817 c:\fmail\pack.h
 
-1479241280 c:\fmail\pp_date.h
+1479488482 c:\fmail\pp_date.h
 
 1476034509 c:\fmail\sorthb.h
 
@@ -124,7 +124,7 @@
 
 1476034437 c:\fmail\sendsmtp.h
 
-1479162230 source:c:\fmail\archive.c
+1479318082 source:c:\fmail\archive.c
 	<dir.h>
 	<dirent.h>
 	<dos.h>
@@ -442,7 +442,7 @@
 	"utils.h"
 	"version.h"
 
-1479145273 source:c:\fmail\msgpkt.c
+1479330629 source:c:\fmail\msgpkt.c
 	<ctype.h>
 	<dir.h>
 	<dos.h>
@@ -469,7 +469,7 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1479145273 source:c:\fmail\msgra.c
+1479488264 source:c:\fmail\msgra.c
 	<dir.h>
 	<dos.h>
 	<errno.h>
@@ -598,7 +598,7 @@
 	"smtp.h"
 	"utils.h"
 
-1478344258 source:c:\fmail\sorthb.c
+1479488264 source:c:\fmail\sorthb.c
 	<ctype.h>
 	<dos.h>
 	<errno.h>
@@ -648,7 +648,7 @@
 	<stdio.h>
 	<windows.h>
 
-1478906033 source:c:\fmail\utils.c
+1479241971 source:c:\fmail\utils.c
 	<ctype.h>
 	<dir.h>
 	<direct.h>
@@ -681,7 +681,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1479162147 source:c:\fmail\fmailw32.rc
+1479329460 source:c:\fmail\fmailw32.rc
 
 1477413366 c:\fmail\msgradef.h
 

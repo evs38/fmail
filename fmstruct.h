@@ -65,7 +65,7 @@
 typedef struct
 {
   char programName[46];
-  u16  memRequired;
+  u16  reserved;        // Was: memRequired;
 } archiverInfo;
 
 typedef char pathType[48];
@@ -359,10 +359,10 @@ typedef struct
   u16             mailer;
   u16             bbsProgram;
   u16             maxBundleSize;
-  u16             RESERVE9;        // Was: extraHandles;  // 0-235
+  u16             reserved8;         // Was: extraHandles;  // 0-235
   u16             autoRenumber;
-  u16             bufSize;
-  u16             ftBufSize;
+  u16             reserved9;         // Was: bufSize;
+  u16             reserved10;        // Was: ftBufSize;
   u16             allowedNumNetmail;
   u16             logInfo;
   u16             logStyle;
@@ -404,22 +404,22 @@ typedef struct
   pathType        autoFolderFdPath;
   pathType        autoAreasBBSPath;
   pathType        autoGoldEdAreasPath;
-  archiverInfo    unArc;
-  archiverInfo    unZip;
-  archiverInfo    unLzh;
-  archiverInfo    unPak;
-  archiverInfo    unZoo;
-  archiverInfo    unArj;
-  archiverInfo    unSqz;
-  archiverInfo    GUS;
-  archiverInfo    arc;
-  archiverInfo    zip;
-  archiverInfo    lzh;
-  archiverInfo    pak;
-  archiverInfo    zoo;
-  archiverInfo    arj;
-  archiverInfo    sqz;
-  archiverInfo    customArc;
+  u8              reserved_ai_100[sizeof(archiverInfo)];  // Was: archiverInfo    unArc;
+  u8              reserved_ai_101[sizeof(archiverInfo)];  // Was: archiverInfo    unZip;
+  u8              reserved_ai_102[sizeof(archiverInfo)];  // Was: archiverInfo    unLzh;
+  u8              reserved_ai_103[sizeof(archiverInfo)];  // Was: archiverInfo    unPak;
+  u8              reserved_ai_104[sizeof(archiverInfo)];  // Was: archiverInfo    unZoo;
+  u8              reserved_ai_105[sizeof(archiverInfo)];  // Was: archiverInfo    unArj;
+  u8              reserved_ai_106[sizeof(archiverInfo)];  // Was: archiverInfo    unSqz;
+  u8              reserved_ai_107[sizeof(archiverInfo)];  // Was: archiverInfo    GUS;
+  u8              reserved_ai_108[sizeof(archiverInfo)];  // Was: archiverInfo    arc;
+  u8              reserved_ai_109[sizeof(archiverInfo)];  // Was: archiverInfo    zip;
+  u8              reserved_ai_110[sizeof(archiverInfo)];  // Was: archiverInfo    lzh;
+  u8              reserved_ai_111[sizeof(archiverInfo)];  // Was: archiverInfo    pak;
+  u8              reserved_ai_112[sizeof(archiverInfo)];  // Was: archiverInfo    zoo;
+  u8              reserved_ai_113[sizeof(archiverInfo)];  // Was: archiverInfo    arj;
+  u8              reserved_ai_114[sizeof(archiverInfo)];  // Was: archiverInfo    sqz;
+  u8              reserved_ai_115[sizeof(archiverInfo)];  // Was: archiverInfo    customArc;
   pathType        autoFMail102Path;
   u8              reserved4[35];
   areaOptionsType _optionsAKA[MAX_NA_OLD];
@@ -457,19 +457,19 @@ typedef struct
   char            smtpServer[80];          // max 56 chars used
   pathType        tossedAreasList;
   pathType        sentEchoPath;
-  archiverInfo    preUnarc;
-  archiverInfo    postUnarc;
-  archiverInfo    preArc;
-  archiverInfo    postArc;
-  archiverInfo    unUc2;
-  archiverInfo    unRar;
-  archiverInfo    unJar;
-  archiverInfo    resUnpack[5];
-  archiverInfo    uc2;
-  archiverInfo    rar;
-  archiverInfo    jar;
-  archiverInfo    resPack[5];
-  uplinkReqType   uplinkReq[MAX_UPLREQ+32];
+  u8              reserved_ai_200[sizeof(archiverInfo) * 1];  // Was: archiverInfo    preUnarc;
+  u8              reserved_ai_201[sizeof(archiverInfo) * 1];  // Was: archiverInfo    postUnarc;
+  u8              reserved_ai_202[sizeof(archiverInfo) * 1];  // Was: archiverInfo    preArc;
+  u8              reserved_ai_203[sizeof(archiverInfo) * 1];  // Was: archiverInfo    postArc;
+  u8              reserved_ai_204[sizeof(archiverInfo) * 1];  // Was: archiverInfo    unUc2;
+  u8              reserved_ai_205[sizeof(archiverInfo) * 1];  // Was: archiverInfo    unRar;
+  u8              reserved_ai_206[sizeof(archiverInfo) * 1];  // Was: archiverInfo    unJar;
+  u8              reserved_ai_207[sizeof(archiverInfo) * 5];  // Was: archiverInfo    resUnpack[5];
+  u8              reserved_ai_208[sizeof(archiverInfo) * 1];  // Was: archiverInfo    uc2;
+  u8              reserved_ai_209[sizeof(archiverInfo) * 1];  // Was: archiverInfo    rar;
+  u8              reserved_ai_210[sizeof(archiverInfo) * 1];  // Was: archiverInfo    jar;
+  u8              reserved_ai_211[sizeof(archiverInfo) * 5];  // Was: archiverInfo    resPack[5];
+  uplinkReqType   uplinkReq[MAX_UPLREQ + 32];
   archiverInfo    unArc32;
   archiverInfo    unZip32;
   archiverInfo    unLzh32;

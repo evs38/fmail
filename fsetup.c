@@ -189,93 +189,48 @@ int main(int argc, char *argv[])
   memset(&config, 0, sizeof(configType));
   strcpy(stpcpy(configFileName, configPath), dCFGFNAME);
 
-  if (((configHandle = open(configFileName, O_BINARY | O_RDONLY)) == -1) ||
-      ((count = read(configHandle, &config, sizeof (configType))) == 0) ||
-      (close(configHandle) == -1))
+  if (  (configHandle = open(configFileName, O_BINARY | O_RDONLY)) == -1
+     || (count = read(configHandle, &config, sizeof (configType))) == 0
+     || close(configHandle) == -1
+     )
   {
     memset(&config, 0, sizeof(configType));
-
     time(&config.creationDate);
     config.creationDate ^= 0xe534a17bL;
-
     config.versionMajor = CONFIG_MAJOR;
     config.versionMinor = CONFIG_MINOR;
-
     config.colorSet = 1;
-
     config.mailOptions.dupDetection = 1;
     config.mailOptions.checkPktDest = 1;
     config.mbOptions.mbSharing      = 1;
-
-    config.logInfo = LOG_INBOUND |LOG_OUTBOUND|LOG_PKTINFO|LOG_XPKTINFO|
-                     LOG_UNEXPPWD|LOG_SENTRCVD|LOG_STATS;
+    config.logInfo = LOG_INBOUND | LOG_OUTBOUND | LOG_PKTINFO | LOG_XPKTINFO | LOG_UNEXPPWD | LOG_SENTRCVD | LOG_STATS;
   }
   if (count == 0)
   {
-    strcpy (config.arc32.programName, "PKArc.Com -a");
-    strcpy (config.zip32.programName, "PKZip.Exe -ex");
-    strcpy (config.lzh32.programName, "LHA.Exe a /m /o");
-    strcpy (config.pak32.programName, "Pak.Exe a /ST /P /WN");
-    strcpy (config.zoo32.programName, "Zoo.Exe aP:");
-    strcpy (config.arj32.programName, "ARJ.Exe a -e -u -y");
-    strcpy (config.sqz32.programName, "SQZ.Exe a /p3");
-    strcpy (config.uc232.programName, "UC.Exe a");
-    strcpy (config.rar32.programName, "RAR.Exe a -y -s -m5 -ep -std -cfg-");
-    strcpy (config.jar32.programName, "JAR.Exe a -y");
-    config.arc32.memRequired = 0;
-    config.lzh32.memRequired = 0;
-    config.pak32.memRequired = 0;
-    config.zoo32.memRequired = 0;
-    config.arj32.memRequired = 0;
-    config.sqz32.memRequired = 0;
-    config.uc232.memRequired = 0;
-    config.rar32.memRequired = 0;
-    config.jar32.memRequired = 0;
+    strcpy(config.arc32.programName  , "PKArc.Com -a");
+    strcpy(config.zip32.programName  , "PKZip.Exe -ex");
+    strcpy(config.lzh32.programName  , "LHA.Exe a /m /o");
+    strcpy(config.pak32.programName  , "Pak.Exe a /ST /P /WN");
+    strcpy(config.zoo32.programName  , "Zoo.Exe aP:");
+    strcpy(config.arj32.programName  , "ARJ.Exe a -e -u -y");
+    strcpy(config.sqz32.programName  , "SQZ.Exe a /p3");
+    strcpy(config.uc232.programName  , "UC.Exe a");
+    strcpy(config.rar32.programName  , "RAR.Exe a -y -s -m5 -ep -std -cfg-");
+    strcpy(config.jar32.programName  , "JAR.Exe a -y");
 
-    strcpy (config.unArc32.programName, "PKXArc.Com -r");
-    strcpy (config.unZip32.programName, "PKUnzip.Exe -o");
-    strcpy (config.unLzh32.programName, "LHA.Exe e /cm");
-    strcpy (config.unPak32.programName, "PAK.Exe E /WA");
-    strcpy (config.unZoo32.programName, "Zoo.Exe eO");
-    strcpy (config.unArj32.programName, "ARJ.Exe e -c -y");
-    strcpy (config.unSqz32.programName, "SQZ.Exe e /o1");
-    strcpy (config.unUc232.programName, "UC.Exe e");
-    strcpy (config.unRar32.programName, "RAR.Exe e -y -std -cfg-");
-    strcpy (config.unJar32.programName, "JAR.Exe e -y");
-    config.unArc32.memRequired = 0;
-    config.unLzh32.memRequired = 0;
-    config.unPak32.memRequired = 0;
-    config.unZoo32.memRequired = 0;
-    config.unArj32.memRequired = 0;
-    config.unSqz32.memRequired = 0;
-    config.unUc232.memRequired = 0;
-    config.unRar32.memRequired = 0;
-    config.unJar32.memRequired = 0;
+    strcpy(config.unArc32.programName, "PKXArc.Com -r");
+    strcpy(config.unZip32.programName, "PKUnzip.Exe -o");
+    strcpy(config.unLzh32.programName, "LHA.Exe e /cm");
+    strcpy(config.unPak32.programName, "PAK.Exe E /WA");
+    strcpy(config.unZoo32.programName, "Zoo.Exe eO");
+    strcpy(config.unArj32.programName, "ARJ.Exe e -c -y");
+    strcpy(config.unSqz32.programName, "SQZ.Exe e /o1");
+    strcpy(config.unUc232.programName, "UC.Exe e");
+    strcpy(config.unRar32.programName, "RAR.Exe e -y -std -cfg-");
+    strcpy(config.unJar32.programName, "JAR.Exe e -y");
   }
   else if (count <= 8192)
   {
-    strcpy (config.arc32.programName, config.arc.programName);
-    strcpy (config.zip32.programName, config.zip.programName);
-    strcpy (config.lzh32.programName, config.lzh.programName);
-    strcpy (config.pak32.programName, config.pak.programName);
-    strcpy (config.zoo32.programName, config.zoo.programName);
-    strcpy (config.arj32.programName, config.arj.programName);
-    strcpy (config.sqz32.programName, config.sqz.programName);
-    strcpy (config.uc232.programName, config.uc2.programName);
-    strcpy (config.rar32.programName, config.rar.programName);
-    strcpy (config.jar32.programName, config.jar.programName);
-
-    strcpy (config.unArc32.programName, config.unArc.programName);
-    strcpy (config.unZip32.programName, config.unZip.programName);
-    strcpy (config.unLzh32.programName, config.unLzh.programName);
-    strcpy (config.unPak32.programName, config.unPak.programName);
-    strcpy (config.unZoo32.programName, config.unZoo.programName);
-    strcpy (config.unArj32.programName, config.unArj.programName);
-    strcpy (config.unSqz32.programName, config.unSqz.programName);
-    strcpy (config.unUc232.programName, config.unUc2.programName);
-    strcpy (config.unRar32.programName, config.unRar.programName);
-    strcpy (config.unJar32.programName, config.unJar.programName);
-
     memcpy(config.optionsAKA,        config._optionsAKA,        2*MAX_NA_OLD);
     memcpy(config.groupsQBBS,        config._groupsQBBS,          MAX_NA_OLD);
     memcpy(config.templateSecQBBS,   config._templateSecQBBS,   2*MAX_NA_OLD);

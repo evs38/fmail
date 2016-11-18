@@ -48,8 +48,8 @@
 #include "mtask.h"
 #include "utils.h"
 
-u16 HDR_BUFSIZE = 104;
-u16 TXT_BUFSIZE = 200;
+const u16 HDR_BUFSIZE = 104;
+const u16 TXT_BUFSIZE = 200;
 
 extern cookedEchoType   *echoAreaList;
 extern echoToNodePtrType echoToNode[MAX_AREAS];
@@ -97,7 +97,6 @@ static void readMsgInfo (u16);
 static void writeMsgInfo(u16);
 
 
-
 #include "hudson_shared.c"
 //---------------------------------------------------------------------------
 void initBBS(void)
@@ -124,24 +123,8 @@ void initBBS(void)
   else
     globVars.baseTotalTxtRecs = 0;
 
-  HDR_BUFSIZE = (104>>3) *
-#if defined(__FMAILX__) || defined(__32BIT__)
-	 		    8;
-#else
-			    (8-((config.bufSize==0) ? 0 :
-			       ((config.bufSize==1) ? 3 :
-			       ((config.bufSize==2) ? 5 :
-			       ((config.bufSize==3) ? 6 : 7)))));
-#endif
-  TXT_BUFSIZE = (200>>3) *
-#if defined(__FMAILX__) || defined(__32BIT__)
-			     8;
-#else
-			    (8-((config.bufSize==0) ? 0 :
-			       ((config.bufSize==1) ? 3 :
-			       ((config.bufSize==2) ? 5 :
-			       ((config.bufSize==3) ? 6 : 7)))));
-#endif
+//  HDR_BUFSIZE = 104;
+//  TXT_BUFSIZE = 200;
 }
 //---------------------------------------------------------------------------
 s16 multiUpdate(void)

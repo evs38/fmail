@@ -1000,7 +1000,9 @@ s16 listGeneralConfig (void)
    else
      archiver++;
 
-   fprintf(textFile, "\nCompression programs\n\n"
+   fprintf(textFile, "\n"
+          "Compression programs\n"
+          "\n"
 		      "           Default : %s\n"
 		      "           ARC     : %s\n"
 		      "           ZIP     : %s\n"
@@ -1012,21 +1014,24 @@ s16 listGeneralConfig (void)
           "           UC2     : %s\n"
           "           RAR     : %s\n"
           "           JAR     : %s\n"
-          "           -?-     : %s\n",
-		      arcName[archiver],
-          *config.arc.programName ? config.arc32.programName : "Not defined",
-          *config.zip.programName ? config.zip32.programName : "Not defined",
-          *config.lzh.programName ? config.lzh32.programName : "Not defined",
-          *config.pak.programName ? config.pak32.programName : "Not defined",
-          *config.zoo.programName ? config.zoo32.programName : "Not defined",
-          *config.arj.programName ? config.arj32.programName : "Not defined",
-          *config.sqz.programName ? config.sqz32.programName : "Not defined",
-          *config.uc2.programName ? config.uc232.programName : "Not defined",
-          *config.rar.programName ? config.rar32.programName : "Not defined",
-          *config.jar.programName ? config.jar32.programName : "Not defined",
-          *config.customArc.programName ? config.customArc32.programName : "Not defined");
+          "           -?-     : %s\n"
+          , arcName[archiver]
+          , config.arc32.programName
+          , config.zip32.programName
+          , config.lzh32.programName
+          , config.pak32.programName
+          , config.zoo32.programName
+          , config.arj32.programName
+          , config.sqz32.programName
+          , config.uc232.programName
+          , config.rar32.programName
+          , config.jar32.programName
+          , config.customArc32.programName
+          );
 
-   fprintf(textFile, "\nDecompression programs\n\n"
+   fprintf(textFile, "\n"
+          "Decompression programs\n"
+          "\n"
 		      "           ARC     : %s\n"
 		      "           ZIP     : %s\n"
 		      "           LZH     : %s\n"
@@ -1037,18 +1042,19 @@ s16 listGeneralConfig (void)
           "           UC2     : %s\n"
           "           RAR     : %s\n"
           "           JAR     : %s\n"
-          "           GUS     : %s\n",
-          *config.unArc.programName ? config.unArc32.programName:"Not defined",
-          *config.unZip.programName ? config.unZip32.programName:"Not defined",
-          *config.unLzh.programName ? config.unLzh32.programName:"Not defined",
-          *config.unPak.programName ? config.unPak32.programName:"Not defined",
-          *config.unZoo.programName ? config.unZoo32.programName:"Not defined",
-          *config.unArj.programName ? config.unArj32.programName:"Not defined",
-          *config.unSqz.programName ? config.unSqz32.programName:"Not defined",
-          *config.unUc2.programName ? config.unUc232.programName:"Not defined",
-          *config.unRar.programName ? config.unRar32.programName:"Not defined",
-          *config.unJar.programName ? config.unJar32.programName:"Not defined",
-          *config.GUS.programName ? config.GUS32.programName:"Not defined");
+          "           GUS     : %s\n"
+          , config.unArc32.programName
+          , config.unZip32.programName
+          , config.unLzh32.programName
+          , config.unPak32.programName
+          , config.unZoo32.programName
+          , config.unArj32.programName
+          , config.unSqz32.programName
+          , config.unUc232.programName
+          , config.unRar32.programName
+          , config.unJar32.programName
+          , config.GUS32  .programName
+          );
 
    fclose(textFile);
    return 0;
