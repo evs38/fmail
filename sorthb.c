@@ -35,6 +35,7 @@
 
 #include "areainfo.h"
 #include "crc.h"
+#include "config.h"
 #include "log.h"
 #include "minmax.h"
 #include "msgpkt.h"
@@ -454,7 +455,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       }
 
       if (mbSharing)
-         config.mbOptions.mbSharing = 1;
+        mbSharingInternal = 1;
 
 #ifndef FTOOLS
       if (lockMB())

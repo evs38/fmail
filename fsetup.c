@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
     config.colorSet = 1;
     config.mailOptions.dupDetection = 1;
     config.mailOptions.checkPktDest = 1;
-    config.mbOptions.mbSharing      = 1;
+//  config.mbOptions.mbSharing      = 1;
     config.logInfo = LOG_INBOUND | LOG_OUTBOUND | LOG_PKTINFO | LOG_XPKTINFO | LOG_UNEXPPWD | LOG_SENTRCVD | LOG_STATS;
   }
   if (count == 0)
@@ -1028,7 +1028,7 @@ int main(int argc, char *argv[])
   addItem(mbMenu, BOOL_INT  , "Update text after Scan", 32, &config.mbOptions       , BIT9 ,     0, "Update the text of a scanned message in the message base with PATH and SEEN-BY");
   addItem(mbMenu, DISPLAY   , NULL                    ,  0, NULL                    ,     0,     0, NULL);
   addItem(mbMenu, BOOL_INT  , "Update reply chains"   ,  0, &config.mbOptions       , BIT2 ,     0, "Update reply chains after messages have been tossed into the message base");
-  addItem(mbMenu, BOOL_INT  , "Message base sharing  ", 32, &config.mbOptions       , BIT10,     0, "Enable the message base locking system");
+//addItem(mbMenu, BOOL_INT  , "Message base sharing  ", 32, &config.mbOptions       , BIT10,     0, "Enable the message base locking system");
   addItem(mbMenu, BOOL_INT  , "Sort new messages"     ,  0, &config.mbOptions       , BIT0 ,     0, "Sort the messages that have been tossed into the message base");
   addItem(mbMenu, BOOL_INT  , "Scan always           ", 32, &config.mbOptions       , BIT8 ,     0, "Do not use ECHOMAIL.BBS or NETMAIL.BBS");
   addItem(mbMenu, BOOL_INT  , "ÈÍ> Use subject"       ,  0, &config.mbOptions       , BIT1 ,     0, "Apart from time/date also use the subject to sort");

@@ -1256,7 +1256,7 @@ void Toss(int argc, char *argv[])
   if (  (config.mbOptions.sortNew || config.mbOptions.updateChains)
      && globVars.mbCountV != 0 && !mailBomb)
   {
-    if (config.mbOptions.mbSharing)
+    if (mbSharingInternal)
     {
       temp = config.mbOptions.updateChains;
       config.mbOptions.updateChains = 0;
@@ -1269,7 +1269,7 @@ void Toss(int argc, char *argv[])
 
   if (!(_mb_upderr = multiUpdate()) && temp)
   {
-    config.mbOptions.mbSharing = 0;
+    mbSharingInternal = 0;
     config.mbOptions.updateChains = 1;
     config.mbOptions.sortNew = 0;
     sortBBS(globVars.origTotalMsgBBS, 1);
@@ -1758,7 +1758,7 @@ void Import(int argc, char *argv[])
   s32            switches;
   s16            count;
   s16            boardNum;
-  s16            temp;
+  unsigned int   temp;
   tempStrType    tempStr;
   char          *helpPtr;
   s32            msgNum;
@@ -1876,8 +1876,8 @@ void Import(int argc, char *argv[])
 
   if (config.mbOptions.updateChains && globVars.mbCountV != 0)
   {
-    temp = config.mbOptions.mbSharing;
-    config.mbOptions.mbSharing = 0;
+    temp = mbSharingInternal;
+    mbSharingInternal = 0;
     config.mbOptions.sortNew = 0;
     sortBBS(globVars.origTotalMsgBBS, temp);
     newLine();

@@ -949,7 +949,8 @@ s16 listGeneralConfig (void)
    fprintf (textFile, "Update reply chains: %s\n", config.mbOptions.updateChains? "Yes":"No");
    fprintf (textFile, "Quick toss         : %s\n", config.mbOptions.quickToss ? "Yes":"No");
    fprintf (textFile, "Scan Always        : %s\n", config.mbOptions.scanAlways ? "Yes":"No");
-   fprintf (textFile, "Msg base sharing   : %s\n\n", config.mbOptions.mbSharing ? "Yes":"No");
+// fprintf (textFile, "Msg base sharing   : %s\n", config.mbOptions.mbSharing ? "Yes":"No");
+   fputc('\n', textFile);
 
    fprintf (textFile, "Import netmail\nto SysOp           : %s\n", config.mbOptions.sysopImport ? "Yes":"No");
    fprintf (textFile, "Remove Re:         : %s\n"  , config.mbOptions.removeRe ? "Yes":"No");

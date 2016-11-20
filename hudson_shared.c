@@ -20,6 +20,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------
+#include "config.h"
 #include "lock.h"
 #include "stpcpy.h"
 
@@ -28,8 +29,7 @@ char *expandNameHudson(const char *fileName, int orgName)
 {
   static tempStrType expandStr;
 
-  strcpy( stpcpy(stpcpy(expandStr, config.bbsPath), fileName)
-        , config.mbOptions.mbSharing && !orgName ? "."MBEXTB : "."MBEXTN);
+  strcpy(stpcpy(stpcpy(expandStr, config.bbsPath), fileName), mbSharingInternal && !orgName ? "."MBEXTB : "."MBEXTN);
 
   return expandStr;
 }
@@ -54,7 +54,7 @@ int testMBUnlockNow(void)
   struct stat st;
   int unlock = 0;
 
-  if (config.mbOptions.mbSharing)
+  if (mbSharingInternal)
   {
     strcpy(stpcpy(tempStr, config.bbsPath), "MBUNLOCK.NOW");
 
@@ -73,7 +73,7 @@ void setMBUnlockNow(void)
 {
   tempStrType tempStr;
 
-  if (config.mbOptions.mbSharing)
+  if (mbSharingInternal)
   {
     strcpy(stpcpy(tempStr, config.bbsPath), "MBUNLOCK.NOW");
     close(open(tempStr, O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE));
@@ -97,7 +97,7 @@ int lockMB(void)
   }
 
 #ifdef FMAIL
-  if (config.mbOptions.mbSharing)
+  if (mbSharingInternal)
 #endif
   {
     testMBUnlockNow();
@@ -134,7 +134,7 @@ int lockMB(void)
 void unlockMB(void)
 {
 #ifdef FMAIL
-  if (config.mbOptions.mbSharing)
+  if (mbSharingInternal)
 #endif
     unlock(lockHandle, sizeof(infoRecType) + 1, 1);
 

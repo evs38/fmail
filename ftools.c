@@ -117,6 +117,7 @@ fhandle msgInfoHandle;
 
 char configPath[FILENAME_MAX];
 configType config;
+unsigned int mbSharingInternal = 1;
 
 u32 lastSavedUniqID = 0;
 
@@ -125,10 +126,8 @@ u16 alrDeleted = 0;
 u16 unDeleted  = 0;
 u16 nowDeleted = 0;
 
-const uchar setBitTab[8] = { 1, 2, 4, 8, 16, 32, 64, 128 };
-
+const uchar setBitTab [8] = { 1, 2, 4, 8, 16, 32, 64, 128 };
 const uchar bitMaskTab[8] = { 0, 1, 3, 7, 15, 31, 63, 127 };
-
 const uchar bitCountTab[256] =
 { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
 , 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5

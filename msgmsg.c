@@ -61,7 +61,6 @@ extern configType  config;
 extern char       *version;
 extern char       *months;
 extern const char *dayName[7];
-extern s16         zero;
 
 //extern const char *upcaseMonths;
 

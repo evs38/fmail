@@ -577,11 +577,6 @@ Use subject
           Apart from date/time, also use the subject to sort new
           messages.
 
-Message base sharing
-
-          Allows concurrent access of FMail and the BBS software
-          to the message base.
-
 Scan always
 
           If set to "Yes", the messages base will always be
@@ -1026,14 +1021,13 @@ Message base
           files are MSGHDR.BBS, MSGIDX.BBS, MSGTOIDX.BBS and
           MSGTXT.BBS.
 
-          When FMail is running in message base sharing mode, it
-          is possible that also files with the same names as the
-          normal message base but with extensions .FML are present
-          in the message base directory. Apart from the file name
+          It is possible that files with the same names as the normal
+          message base but with extensions .FML are also present in
+          the message base directory. Apart from the file name
           extension, this is a normal Hudson message base. When
-          tossing and the optional sorting has finished, FMail
-          tries to append the FML files to the normal message base
-          files. This can go wrong for a number of reasons:
+          tossing and the optional sorting has finished, FMail tries
+          to append the FML files to the normal message base files.
+          This can go wrong for a number of reasons:
 
           -    The message base is locked.
           -    The resulting message base would be bigger than is
@@ -1072,14 +1066,20 @@ Incoming mail
                FMail aborts and the PKT file remains in the
                'Incoming mail' directory.
 
-          SEC  The password in this packet did not correspond with
+          .pkt.wrong_password
+
+               The password in this packet did not correspond with
                the password for the source node in the node
                manager.
 
-          DST  The mail packet is not directed to your main node
+          .pkt.wrong_destination
+
+               The mail packet is not directed to your main node
                number or one of your AKAs.
 
-          ERR  For some reason, the PKT header could not be read.
+          .pkt.error
+
+               For some reason, the PKT header could not be read.
 
 Outgoing mail
 
@@ -2482,10 +2482,10 @@ Can't send mail to more than 256 nodes in one run
 
 Can't update the message base files
 
-               When running in Message base sharing mode, FMail
-               could not append the shadow message base (MSG*.FML
-               files) to the actual message base files. Probable
-               causes are:
+               FMail could not append the shadow message base
+               (MSG*.FML files) to the actual message base files.
+               Probable causes are:
+
                -    The message base is locked. Try resetting your
                     computer.
                -    The message base has reached its maximum size.
@@ -2631,4 +2631,4 @@ APPENDIX B     -    Technical notes
 
 
 
-###  End of file  FMAIL.TXT  version: 2016-10-27  ###
+###  End of file  FMAIL.TXT  version: 2016-11-20  ###

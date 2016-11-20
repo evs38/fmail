@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1479145273 source:c:\fmail\fmail.c
+1479571240 source:c:\fmail\fmail.c
 	<conio.h>
 	<ctype.h>
 	<dir.h>
@@ -45,7 +45,7 @@
 	<stdio.h>
 	<sys/types.h>
 
-1479488401 c:\fmail\fmstruct.h
+1479495580 c:\fmail\fmstruct.h
 	<stdint.h>
 	<time.h>
 	<pshpack1.h>
@@ -69,7 +69,7 @@
 1399578407 c:\fmail\cfgfile.h
 	"fmstruct.h"
 
-1477949075 c:\fmail\config.h
+1479571240 c:\fmail\config.h
 	"fmail.h"
 	"bits.h"
 
@@ -109,9 +109,9 @@
 
 1405197817 c:\fmail\pack.h
 
-1479488482 c:\fmail\pp_date.h
+1479571742 c:\fmail\pp_date.h
 
-1476034509 c:\fmail\sorthb.h
+1479569737 c:\fmail\sorthb.h
 
 1478862964 c:\fmail\stpcpy.h
 
@@ -267,7 +267,7 @@
 	"cfgfile.h"
 	"stpcpy.h"
 
-1478344389 source:c:\fmail\config.c
+1479571240 source:c:\fmail\config.c
 	<conio.h>
 	<bios.h>
 	<ctype.h>
@@ -340,7 +340,7 @@
 
 1426945558 source:c:\fmail\ispathch.c
 
-1479144315 source:c:\fmail\jamfun.c
+1479571240 source:c:\fmail\jamfun.c
 	<dir.h>
 	<errno.h>
 	<fcntl.h>
@@ -380,7 +380,7 @@
 	"mtask.h"
 	"utils.h"
 
-1478710721 source:c:\fmail\jammaint.c
+1479571240 source:c:\fmail\jammaint.c
 	<conio.h>
 	<dos.h>
 	<errno.h>
@@ -416,7 +416,7 @@
 	<stdio.h>
 	<sys\locking.h>
 
-1478803670 source:c:\fmail\msgmsg.c
+1479571240 source:c:\fmail\msgmsg.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -442,7 +442,7 @@
 	"utils.h"
 	"version.h"
 
-1479330629 source:c:\fmail\msgpkt.c
+1479571240 source:c:\fmail\msgpkt.c
 	<ctype.h>
 	<dir.h>
 	<dos.h>
@@ -469,7 +469,7 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1479488264 source:c:\fmail\msgra.c
+1479571240 source:c:\fmail\msgra.c
 	<dir.h>
 	<dos.h>
 	<errno.h>
@@ -495,7 +495,8 @@
 	"utils.h"
 	"hudson_shared.c"
 
-1477423924 c:\fmail\hudson_shared.c
+1479571529 c:\fmail\hudson_shared.c
+	"config.h"
 	"lock.h"
 	"stpcpy.h"
 
@@ -598,7 +599,7 @@
 	"smtp.h"
 	"utils.h"
 
-1479488264 source:c:\fmail\sorthb.c
+1479571382 source:c:\fmail\sorthb.c
 	<ctype.h>
 	<dos.h>
 	<errno.h>
@@ -611,6 +612,7 @@
 	"fmail.h"
 	"areainfo.h"
 	"crc.h"
+	"config.h"
 	"log.h"
 	"minmax.h"
 	"msgpkt.h"
@@ -681,7 +683,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1479329460 source:c:\fmail\fmailw32.rc
+1479570397 source:c:\fmail\fmailw32.rc
 
 1477413366 c:\fmail\msgradef.h
 

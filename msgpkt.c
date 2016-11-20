@@ -73,8 +73,8 @@ u16 inBuf
 char      *pktRdBuf;
 fhandle    pktHandle;
 pmHdrType  pmHdr;
+s16        zero = 0;
 
-extern s16   zero;
 extern char *months,
             *upcaseMonths;
 extern u16   forwNodeCount;

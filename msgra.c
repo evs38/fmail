@@ -112,9 +112,7 @@ void initBBS(void)
   else
     globVars.origTotalMsgBBS = 0;
 
-  if (  config.mbOptions.mbSharing
-     && (fsize = fileSize(expandNameHudson(dMSGTXT, 1))) >= 0
-     )
+  if (mbSharingInternal && (fsize = fileSize(expandNameHudson(dMSGTXT, 1))) >= 0)
 #ifdef GOLDBASE
     globVars.baseTotalTxtRecs = fsize / 256;
 #else
@@ -154,7 +152,7 @@ s16 multiUpdate(void)
    msgToIdxRec *toIdxBuf;
    infoRecType newInfoRec;
 
-   if (config.mbOptions.mbSharing && access(expandNameHudson(dMSGHDR, 0), 0) == 0)
+   if (mbSharingInternal && access(expandNameHudson(dMSGHDR, 0), 0) == 0)
    {
       logEntry("Updating actual message base files...", LOG_MSGBASE, 0);
       newLine();

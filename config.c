@@ -70,9 +70,9 @@ extern fhandle fmailLockHandle;
 extern unsigned int _nfile;
 
 // Global available datastructures
-configType config;
-s16        zero = 0;
-char funcStr[32] = "undefined?";
+configType   config;
+unsigned int mbSharingInternal = 1;
+char         funcStr[32] = "undefined?";
 
 extern s16 diskError;
 

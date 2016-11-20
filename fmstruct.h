@@ -240,7 +240,7 @@ typedef struct
   u16 removeSr     : 1;  // bit  7
   u16 scanAlways   : 1;  // bit  8
   u16 scanUpdate   : 1;  // bit  9
-  u16 mbSharing    : 1;  // bit 10
+  u16              : 1;  // bit 10  // Was: mbSharing
   u16              : 1;  // bit 11
   u16 quickToss    : 1;  // bit 12
   u16 checkNetBoard: 1;  // bit 13

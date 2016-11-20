@@ -146,9 +146,6 @@ static udef    jam_baseopen = 0;
 static char    jam_basename[MB_PATH_LEN];
 #define        JAMCODE     1
 
-
-static u32 dummy;
-
 static JAMHDRINFO jam_hdrinfo;
 
 u32 jam_open(char *msgBaseName, JAMHDRINFO **jam_hdrinfo)
@@ -203,7 +200,7 @@ u32 jam_open(char *msgBaseName, JAMHDRINFO **jam_hdrinfo)
 //---------------------------------------------------------------------------
 void jam_close(u32 jam_code)
 {
-  dummy = jam_code;
+  (void)jam_code;
 
   if (jam_baseopen)
   {
@@ -261,7 +258,7 @@ u16 jam_initmsghdrrec(JAMHDR *jam_msghdrrec, internalMsgType *message, u16 local
 u16 jam_newidx(u32 jam_code, JAMIDXREC *jam_idxrec, u32 *jam_msgnum)
 {
   u32 temp;
-  dummy = jam_code;
+  (void)jam_code;
 
   if ( ((temp = lseek(jam_idxhandle, 0, SEEK_END)) % sizeof(JAMIDXREC)) != 0 )
     return 0;
@@ -276,7 +273,7 @@ u16 jam_newidx(u32 jam_code, JAMIDXREC *jam_idxrec, u32 *jam_msgnum)
 //---------------------------------------------------------------------------
 u16 jam_getidx(u32 jam_code, JAMIDXREC *jam_idxrec, u32 jam_msgnum)
 {
-  dummy = jam_code;
+  (void)jam_code;
 
   if (!jam_msgnum)
     jam_msgnum++;
@@ -292,7 +289,7 @@ u16 jam_getidx(u32 jam_code, JAMIDXREC *jam_idxrec, u32 jam_msgnum)
 //---------------------------------------------------------------------------
 u16 jam_updidx(u32 jam_code, JAMIDXREC *jam_idxrec)
 {
-  dummy = jam_code;
+  (void)jam_code;
 
   if (lseek(jam_idxhandle, -(s32)sizeof(JAMIDXREC), SEEK_CUR) < 0)
     return 0;
@@ -305,7 +302,7 @@ u16 jam_updidx(u32 jam_code, JAMIDXREC *jam_idxrec)
 //---------------------------------------------------------------------------
 u16 jam_getnextidx(u32 jam_code, JAMIDXREC *jam_idxrec)
 {
-  dummy = jam_code;
+  (void)jam_code;
 
   if (read(jam_idxhandle, jam_idxrec, sizeof(JAMIDXREC)) != sizeof(JAMIDXREC))
     return 0;
@@ -321,7 +318,7 @@ u16 jam_getsubfields(u32 jam_code, char *jam_subfields, u32 jam_subfieldlen, int
   u32  datlen;
   tempStrType tempStr;
 
-  dummy = jam_code;
+  (void)jam_code;
 
   index = 0;
   while (index + 8 < jam_subfieldlen)
@@ -457,7 +454,7 @@ u16 jam_makesubfields(u32 jam_code, char *jam_subfields, u32 *jam_subfieldLen,
         udef  stlen;
         char  tempStr[_JAM_MAXSUBLEN];
 
-        dummy = jam_code;
+        (void)jam_code;
 
         helpPtr2 = jam_subfields;
         *jam_subfieldLen = 0;
@@ -551,7 +548,7 @@ u16 jam_makesubfields(u32 jam_code, char *jam_subfields, u32 *jam_subfieldLen,
 
 u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_subfields, internalMsgType *message)
 {
-  dummy = jam_code;
+  (void)jam_code;
 
   if ((u32)fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 2) != jam_hdroffset)
     return 0;
@@ -595,7 +592,7 @@ u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_su
 //---------------------------------------------------------------------------
 u16 jam_puthdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec)
 {
-  dummy = jam_code;
+  (void)jam_code;
 
   if ((u32)fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 3) != jam_hdroffset)
     return 0;
@@ -608,7 +605,7 @@ u16 jam_puthdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec)
 //---------------------------------------------------------------------------
 u16 jam_newhdr(u32 jam_code, u32 *jam_hdrOffset, JAMHDR *jam_hdrrec, char *jam_subfields)
 {
-  dummy = jam_code;
+  (void)jam_code;
 
   if ((signed long)(*jam_hdrOffset = lseek(jam_hdrhandle, 0, SEEK_END)) < 0)
     return 0;
@@ -629,7 +626,7 @@ u16 jam_newhdr(u32 jam_code, u32 *jam_hdrOffset, JAMHDR *jam_hdrrec, char *jam_s
 //---------------------------------------------------------------------------
 u16 jam_gettxt(u32 jam_code, u32 jam_txtoffset, u32 jam_txtlen, char *txt)
 {
-  dummy = jam_code;
+  (void)jam_code;
 
   if ((int)jam_txtlen >= TEXT_SIZE)
     return 0;
@@ -660,18 +657,17 @@ static s16 useLocks = -1;
 
 u16 jam_getlock(u32 jam_code)
 {
-  int stat;
+  (void)jam_code;  // Not used?
 
-  dummy = jam_code;
   if (useLocks)
   {
-    stat = lock(jam_hdrhandle, 0L, 1L);
+    int stat = lock(jam_hdrhandle, 0L, 1L);
     if (useLocks == -1)
     {
       useLocks = 1;
       if (stat == -1 && errno == EINVAL)
       {
-        if (!config.mbOptions.mbSharing)
+        if (!mbSharingInternal)
           useLocks = 0;
         else
         {
@@ -688,7 +684,7 @@ u16 jam_getlock(u32 jam_code)
 //---------------------------------------------------------------------------
 u16 jam_freelock(u32 jam_code)
 {
-  dummy = jam_code;
+  (void)jam_code;
 
 //      Update MOD counter
   if (lseek(jam_hdrhandle, 0, SEEK_SET) != 0)
@@ -708,18 +704,20 @@ u16 jam_freelock(u32 jam_code)
 }
 //---------------------------------------------------------------------------
 u32 jam_incmsgcount(u32 jam_code)
-{  dummy = jam_code;
+{
+  (void)jam_code;
 
-        if ( lseek(jam_hdrhandle, 0, SEEK_SET) != 0 )
-                return 0;
-        if ( read(jam_hdrhandle, &jam_hdrinfo, sizeof(JAMHDRINFO)) != sizeof(JAMHDRINFO) )
-                return 0;
-        ++jam_hdrinfo.ActiveMsgs;
-        if ( lseek(jam_hdrhandle, 0, SEEK_SET) != 0 )
-                return 0;
-        if ( write(jam_hdrhandle, &jam_hdrinfo, sizeof(JAMHDRINFO)) != sizeof(JAMHDRINFO) )
-                return 0;
-        return 1;
+  if (lseek(jam_hdrhandle, 0, SEEK_SET) != 0)
+    return 0;
+  if (read(jam_hdrhandle, &jam_hdrinfo, sizeof(JAMHDRINFO)) != sizeof(JAMHDRINFO))
+    return 0;
+  ++jam_hdrinfo.ActiveMsgs;
+  if (lseek(jam_hdrhandle, 0, SEEK_SET) != 0)
+    return 0;
+  if (write(jam_hdrhandle, &jam_hdrinfo, sizeof(JAMHDRINFO)) != sizeof(JAMHDRINFO))
+    return 0;
+
+  return 1;
 }
 //---------------------------------------------------------------------------
 // !!! jam_writemsg moet gevolgd worden door jam_close() of jam_closeall() !!!

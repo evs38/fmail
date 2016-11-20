@@ -30,6 +30,7 @@
 //---------------------------------------------------------------------------
 
 extern configType config;
+extern unsigned int mbSharingInternal;
 
 //---------------------------------------------------------------------------
 s16  getNetmailBoard(nodeNumType *akaNode);

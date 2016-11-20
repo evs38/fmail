@@ -400,7 +400,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
     return 1;
   }
 
-  if (lock(d.hJHR, 0L, 1L) == -1 && config.mbOptions.mbSharing)
+  if (lock(d.hJHR, 0L, 1L) == -1 && mbSharingInternal)
   {
     CleanUp(&d);
     newLine();
@@ -881,7 +881,7 @@ jamx: logEntryf(LOG_ALWAYS, 0, "O JAM area %s was not found or was locked", area
    }
 
   stat = lock(JHRhandle, 0L, 1L);
-  if (stat == -1 && config.mbOptions.mbSharing)
+  if (stat == -1 && mbSharingInternal)
   {
     newLine();
     logEntry("O SHARE is required when Message Base Sharing is enabled", LOG_ALWAYS, 0);

@@ -136,6 +136,7 @@
 		<Unit filename="sorthb.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="sorthb.h" />
 		<Unit filename="spec.c">
 			<Option compilerVar="CC" />
 		</Unit>
