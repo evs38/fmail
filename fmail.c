@@ -450,6 +450,35 @@ void tossBad(internalMsgType *message, const char *badStr)
   globVars.badCount++;
 }
 //---------------------------------------------------------------------------
+void unlinkOrBackup(const char *path)
+{
+  if (path == NULL || *path == 0)
+    return;
+
+  if (*config.inBakPath)
+  {
+    tempStrType bakPath;
+    const char *helpPtr;
+
+    if ((helpPtr = strrchr(path, '\\')) == NULL)
+      helpPtr = path;
+    else
+      helpPtr++;
+
+    strcpy(stpcpy(bakPath, config.inBakPath), helpPtr);
+
+    if (moveFile(path, bakPath) == 0)
+      logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Moved to backup: %s -> %s", path, bakPath);
+    else
+      logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup Failed! %s -> %s", path, bakPath);
+  }
+  else
+    if (unlink(path) == 0)
+      logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Deleted: %s", path);
+    else
+      logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Delete Failed! %s", path);
+}
+//---------------------------------------------------------------------------
 time_t oldMsgTime = 0;
 
 static s16 processPkt(u16 secure, s16 noAreaFix)
@@ -898,12 +927,11 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
           newLine();
           if (mailBomb)
           {
-            strcpy(tempStr, pktStr);
-            strcpy(strchr(tempStr, '.'), ".mlb");
+            strcpy(stpcpy(tempStr, pktStr), ".mailbomb");
             rename(pktStr, tempStr);
-            unlink(pktStr);
+            unlinkOrBackup(pktStr);
             logEntryf(LOG_ALWAYS, 0, "Max # net msgs per packet exceeded in packet from %s", nodeStr(&globVars.packetSrcNode));
-            logEntryf(LOG_ALWAYS, 0, "Packet %s has been renamed to .mlb", pktStr);
+            logEntryf(LOG_ALWAYS, 0, "Packet %s has been renamed to %s", pktStr, tempStr);
           }
           else
           {
@@ -912,7 +940,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
               validate2BBS(0);
               validateMsg();
               validateDups();
-              unlink(pktStr);
+              unlinkOrBackup(pktStr);
               for (i = 0; i < echoCount; i++)
               {
                 echoAreaList[i].msgCountV = echoAreaList[i].msgCount;
@@ -936,7 +964,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
   jam_closeall();
 
   return diskError;
-}
+}  // processPkt()
 //---------------------------------------------------------------------------
 void Toss(int argc, char *argv[])
 {

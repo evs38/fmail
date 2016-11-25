@@ -1,4 +1,8 @@
-2016-11-25  1.73.5.34-Beta
+2016-11-25  1.73.6.44-Beta
+  * Inbound pkt backup function.
+  * Incase of mailbomb detection, rename with ".mailbomb" extenstion instead of ".mlb"
+
+2016-11-25  1.73.5.43-Beta
   * ftools.c: Split up the very long main() function in separate funcions,
     and lots of other code improvements.
   * Fixed a bug in the hudson code for the FTools maint /p (pack) function.

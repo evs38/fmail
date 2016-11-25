@@ -450,7 +450,8 @@ typedef struct
   uchar           _descrAKA[MAX_NA_OLD][51];
   userType        users[MAX_USERS];
   akaMatchType    akaMatch[MAX_MATCH];     // not used yet
-  u8              reserved6[704 - MAX_MATCH * sizeof(akaMatchType)];  // == 704 - 16 * 10 = 544
+  u8              reserved6[496];
+  pathType        inBakPath;
   pathType        outBakPath;
   char            emailAddress[80];        // max 56 chars used
   char            pop3Server[80];          // max 56 chars used

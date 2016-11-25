@@ -1101,12 +1101,20 @@ Outgoing mail
                again, it will first try to compress any packets
                with the QQQ extension if found.
 
+Incoming backup
+
+          The ingoing backup directory is where FMail will move
+          received pkt files, after processing them. Note: Packed mail
+          bundles will not be backed up, but their content, the
+          uncompressed .pkt files will be! If not configured, received
+          .pkt files will be deleted after successful processing.
+
 Outgoing backup
 
           The outgoing backup directory is where FMail will copy
           created pkt files to as backups. It will do this before
           the "Pre" compression program is called.
-          Note: Packed mail bundles will not be backuped,
+          Note: Packed mail bundles will not be backed up,
           only plain pkt files before they are compressed into bundles.
 
 Local PKTs (optional)

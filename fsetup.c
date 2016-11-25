@@ -784,6 +784,7 @@ int main(int argc, char *argv[])
   addItem(pathMenu, PATH, "Netmail"         , 0, config.netPath      , sizeof(pathType) - 1, 0, "Where the netmail messages are stored");
   addItem(pathMenu, PATH, "Incoming mail"   , 0, config.inPath       , sizeof(pathType) - 1, 0, "Where the incoming mailbundles are stored");
   addItem(pathMenu, PATH, "Outgoing mail"   , 0, config.outPath      , sizeof(pathType) - 1, 0, "Where the outgoing mailbundles are stored");
+  addItem(pathMenu, PATH, "Incoming backup" , 0, config.inBakPath    , sizeof(pathType) - 1, 0, "Where backups of the incoming pkt files are stored");
   addItem(pathMenu, PATH, "Outgoing backup" , 0, config.outBakPath   , sizeof(pathType) - 1, 0, "Where backups of the outgoing mail files are stored");
   addItem(pathMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(pathMenu, PATH, "Local PKTs"      , 0, config.securePath   , sizeof(pathType) - 1, 0, "Used for local programs that generate PKT files with bad address info (optional)");
