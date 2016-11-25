@@ -176,10 +176,10 @@ typedef struct
 
 typedef struct
 {
-  u16  LowMsg,
-       HighMsg,
-       TotalActive,
-       ActiveMsgs[200];
+  u16 LowMsg
+    , HighMsg
+    , TotalActive
+    , ActiveMsgs[200];
 } infoRecType;
 
 #endif

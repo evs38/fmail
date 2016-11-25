@@ -77,6 +77,7 @@
 #define NORM_PATH_SIZE 1024
 
 #define dEXTTMP        "$$$"
+#define dEXTBAK        "bak"
 #define dECHOMAIL_JAM  "echomail.jam"
 #define dFMAIL_LOC     "fmail.loc"
 #define dFMAIL32_DUP   "fmail32.dup"

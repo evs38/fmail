@@ -315,7 +315,7 @@ extern char configPath[FILENAME_MAX];
 
 #define HDR_BUFSIZE 32
 
-s16 export(int argc, char *argv[])
+void Export(int argc, char *argv[])
 {
   s32             switches;
   tempStrType     tempStr;
@@ -348,7 +348,7 @@ s16 export(int argc, char *argv[])
          "    /X           Omit message text\n"
          "    /P           Exclude private messages\n"
          "    /K           Show kludges");
-    return 0;
+    return;
   }
 
   switches = getSwitchFT(&argc, argv, SW_D|SW_F|SW_K|SW_P|SW_S|SW_T|SW_X);
@@ -431,7 +431,7 @@ s16 export(int argc, char *argv[])
           textCount = 0;
           lseek(msgTxtHandle, msgHdrBuf[hdrBufCount].StartRec*(s32)sizeof(msgTxtRec), SEEK_SET);
 
-          while ((msgHdrBuf[hdrBufCount].NumRecs--) && (textCount < 32000))
+          while (msgHdrBuf[hdrBufCount].NumRecs-- && textCount < 32000)
           {
             read(msgTxtHandle, &msgTxtBuf, sizeof(msgTxtRec));
             memcpy(text+textCount, &msgTxtBuf.txtStr, msgTxtBuf.txtLength);
@@ -480,8 +480,6 @@ s16 export(int argc, char *argv[])
   close(msgHdrHandle);
   close(msgTxtHandle);
   close(outHandle);
-
-  return 0;
 }
 //---------------------------------------------------------------------------
 static s16 getNetAka(char *areaTag)

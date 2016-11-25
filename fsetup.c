@@ -45,6 +45,7 @@
 #include "packmgr.h"
 #include "stpcpy.h"
 #include "update.h"
+#include "utils.h"
 #include "version.h"
 #include "window.h"
 
@@ -171,7 +172,7 @@ int main(int argc, char *argv[])
   boardSelect[MAX_AKAS+2].numPtr = &config.recBoard;
   boardSelect[MAX_AKAS+2].f      = (function)badduprecDisplayAreas;
 
-  if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0)
+  if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0 || !dirExist(helpPtr))
   {
     strcpy(configPath, argv[0]);
     if ((helpPtr = strrchr(configPath, '\\')) == NULL)

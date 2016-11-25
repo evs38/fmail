@@ -12,7 +12,7 @@
 				<Option object_output="obj/FTools/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters='post _FTools_POST_test.bat #netdir -to Test -dest 2:280/464.112 -subj &quot;Test POST&quot; /C /P ' />
+				<Option parameters="maint /H /D /N /O /P " />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-D_DEBUG" />
@@ -68,6 +68,7 @@
 		<Unit filename="addnew.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="addnew.h" />
 		<Unit filename="areainfo.h" />
 		<Unit filename="bits.h" />
 		<Unit filename="cfgfile.c">
@@ -91,6 +92,7 @@
 		<Unit filename="ftnotify.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="ftnotify.h" />
 		<Unit filename="ftools.c">
 			<Option compilerVar="CC" />
 		</Unit>

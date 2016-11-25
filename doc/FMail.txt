@@ -612,19 +612,27 @@ of the way FMail handles mail.
 
 Never use ARCmail
 
-          Never use the ARCmail 0.60 naming convention. Sometimes
-          enabling this option may be necessary, because under
-          some circumstances mail bundles you send to two
-          different system may get the same ARCmail name, which
-          causes problems.
+          Normally set to "yes" and in that case Fmail will always
+          use the CRC32 method for naming compressed mail bundles.
+          Both for in zone and out of zone mail.
+
+          When set to "no", Fmail will use the ARCmail 0.60 method for
+          naming compressed mail bundles within one's own zone or if
+          the destination node does not support pkt type 2+, and both
+          the destination and the origin are not a point system.
+
+          Note that using the ARCmail method may cause problems
+          because under some circumstances mail bundles you send
+          to two different systems may get the same ARCmail file
+          name which causes problems. OTOH, some systems using
+          older software may require the use of the ARCmail
+          naming convention. Check with the sysops of your links
+          in case of problems.
 
 Out-of-zone (only if the Never use ARCmail switch is set to No)
 
-          Use ARCmail 0.60 naming convention for out-of-zone mail.
-          Some other programs require the use of the ARCmail 0.60
-          naming convention. Normally this is not necessary. Ask
-          the sysops of your uplinks and downlinks if you are not
-          sure.
+          When set to "yes" Fmail will also use the ARCmail 0.60
+          method for out of zone mail.
 
 Extended bundle names
 

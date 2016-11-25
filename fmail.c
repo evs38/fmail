@@ -2001,7 +2001,7 @@ int main(int argc, char *argv[])
   }
 #endif
 
-  if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0)
+  if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0 || !dirExist(helpPtr))
   {
     strcpy(configPath, argv[0]);
     if ((helpPtr = strrchr(configPath, '\\')) == NULL)

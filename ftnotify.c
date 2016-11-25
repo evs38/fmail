@@ -21,11 +21,6 @@
 //
 //---------------------------------------------------------------------------
 
-#ifdef __OS2__
-#define INCL_DOSPROCESS
-#include <os2.h>
-#endif
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -145,7 +140,7 @@ s16 packValid(nodeNumType *node, char *packedNodes)
 
 
 
-s16 notify(int argc, char *argv[])
+void Notify(int argc, char *argv[])
 {
    char            *helpPtr;
    s32              switches;
@@ -178,7 +173,7 @@ s16 notify(int argc, char *argv[])
            "    /A   Send Area Status report\n"
            "    /N   Send Node Status report");
 
-      return 0;
+      return;
    }
    switches = getSwitchFT(&argc, argv, SW_A|SW_N);
 
@@ -188,7 +183,7 @@ s16 notify(int argc, char *argv[])
    {
       logEntry("Nothing to do!", LOG_ALWAYS, 0);
 
-      return 0;
+      return;
    }
 
    if (argc < 3)
@@ -491,6 +486,4 @@ s16 notify(int argc, char *argv[])
    }
    closeConfig (CFG_ECHOAREAS);
    closeConfig (CFG_NODES);
-
-   return 0;
 }

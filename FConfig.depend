@@ -16,7 +16,7 @@
 	"minmax.h"
 	"window.h"
 
-1478345389 c:\fmail\fmail.h
+1479853717 c:\fmail\fmail.h
 	"fmstruct.h"
 	"stricmp.h"
 	<stdio.h>
@@ -131,7 +131,7 @@
 
 1476034823 c:\fmail\version.h
 
-1478884897 source:c:\fmail\fs_func.c
+1479765945 source:c:\fmail\fs_func.c
 	<ctype.h>
 	<fcntl.h>
 	<io.h>
@@ -151,7 +151,7 @@
 	<ctype.h>
 	"fmail.h"
 
-1479495580 source:c:\fmail\fsetup.c
+1479843565 source:c:\fmail\fsetup.c
 	<conio.h>
 	<errno.h>
 	<fcntl.h>
@@ -174,6 +174,7 @@
 	"packmgr.h"
 	"stpcpy.h"
 	"update.h"
+	"utils.h"
 	"version.h"
 	"window.h"
 
@@ -262,7 +263,7 @@
 	<stdio.h>
 	<windows.h>
 
-1479571742 c:\fmail\pp_date.h
+1480088998 c:\fmail\pp_date.h
 
 1478893076 source:c:\fmail\import.c
 	<dir.h>
@@ -373,7 +374,7 @@
 
 1312487460 c:\fmail\os.h
 
-1478969454 source:c:\fmail\fconfigw32.rc
+1479765049 source:c:\fmail\fconfigw32.rc
 
 1476478327 source:c:\fmail\stricmp.c
 	"stricmp.h"

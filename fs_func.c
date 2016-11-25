@@ -1270,16 +1270,14 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
      return 0;
    }
 
-   addItem (areaMenu, (editType&(EDIT_NETMAIL|EDIT_ECHO_DEFAULT|EDIT_ECHO_GLOBAL))?(DISPLAY|WORD):(WORD|UPCASE), "Area name  ", 0, tempInfo.areaName, ECHONAME_LEN-1, 0,
+   addItem (areaMenu, (editType&(EDIT_NETMAIL|EDIT_ECHO_DEFAULT|EDIT_ECHO_GLOBAL))?(DISPLAY|WORD):(WORD|UPCASE), "Area name  ", 0, tempInfo.areaName, ECHONAME_LEN - 1, 0,
                       "Name of the area (echo tag)");
-   addItem (areaMenu, (editType&(EDIT_ECHO_DEFAULT))?(DISPLAY|TEXT):TEXT|CTRLCODES, "Comment", 0, tempInfo.comment, COMMENT_LEN-1, 0,
+   addItem (areaMenu, (editType&(EDIT_ECHO_DEFAULT))?(DISPLAY|TEXT):TEXT|CTRLCODES, "Comment", 0, tempInfo.comment, COMMENT_LEN - 1, 0,
                       "Comment describing the area");
    addItem (areaMenu, (editType&(EDIT_NETMAIL|EDIT_ECHO_GLOBAL))?(DISPLAY|TEXT):((editType&EDIT_ECHO_DEFAULT)?(PATH|UPCASE|LFN):(MB_NAME|UPCASE|LFN)), "JAM MB name", 0, tempInfo.msgBasePath, (editType&EDIT_ECHO_DEFAULT)?MB_PATH_LEN-11:MB_PATH_LEN-3, 0,
                       "Path and file name of the JAM message base");
    if (editType == EDIT_ECHO_DEFAULT)
-   {  addItem (areaMenu, ENUM_INT, "Board type", 0, &boardTypeToggle, 0, 3,
-                         "Message base type to be used for a new area");
-   }
+     addItem (areaMenu, ENUM_INT, "Board type", 0, &boardTypeToggle, 0, 3, "Message base type to be used for a new area");
    else
    {
 #ifndef GOLDBASE

@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1479571240 source:c:\fmail\fmail.c
+1479843750 source:c:\fmail\fmail.c
 	<conio.h>
 	<ctype.h>
 	<dir.h>
@@ -39,7 +39,7 @@
 	"version.h"
 	"sendsmtp.h"
 
-1478345389 c:\fmail\fmail.h
+1479853717 c:\fmail\fmail.h
 	"fmstruct.h"
 	"stricmp.h"
 	<stdio.h>
@@ -109,7 +109,7 @@
 
 1405197817 c:\fmail\pack.h
 
-1479571742 c:\fmail\pp_date.h
+1480088998 c:\fmail\pp_date.h
 
 1479569737 c:\fmail\sorthb.h
 
@@ -507,7 +507,7 @@
 	"mtask.h"
 	"config.h"
 
-1478192751 source:c:\fmail\nodeinfo.c
+1479763829 source:c:\fmail\nodeinfo.c
 	<fcntl.h>
 	<io.h>
 	<stdio.h>
@@ -683,7 +683,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1479570397 source:c:\fmail\fmailw32.rc
+1479847066 source:c:\fmail\fmailw32.rc
 
 1477413366 c:\fmail\msgradef.h
 

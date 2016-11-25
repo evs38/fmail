@@ -1,3 +1,15 @@
+2016-11-25  1.73.5.34-Beta
+  * ftools.c: Split up the very long main() function in separate funcions,
+    and lots of other code improvements.
+  * Fixed a bug in the hudson code for the FTools maint /p (pack) function.
+    Where big messages (>= 65536 bytes), caused the msginfo.bbs file to contain
+    invalid information.
+  * Check if the directory exists where the environment variable FMAIL
+    points to before using it.
+  * Made the auto passive mail text more clear.
+  * Made the documentation for 'Never use ARCmail' and 'Out-of-zone'
+    more clear.
+
 2016-11-17  1.73.4.41-Beta
   * Removed the configuration for "Message base sharing". It's always on.
 

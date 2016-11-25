@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2016 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -23,6 +23,7 @@
 //
 //---------------------------------------------------------------------------
 
-s16 notify(int argc, char *argv[]);
+void Notify(int argc, char *argv[]);
 
+//---------------------------------------------------------------------------
 #endif  // fnotifyH
