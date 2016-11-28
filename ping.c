@@ -98,7 +98,8 @@ int Ping(internalMsgType *message, int localAkaNum)
 {
   u32              msgLen;
   s32              msgNum;
-  tempStrType      replyStr;
+  tempStrType      replyStr
+                 , chrsStr;
   char            *helpPtr
                 , *helpPtr2;
   internalMsgType *replyMsg;
@@ -116,7 +117,7 @@ int Ping(internalMsgType *message, int localAkaNum)
   memset(replyMsg, 0, msgLen);
 
   // Get the string for the REPLY: kludge
-  if ((helpPtr = findCLStr(message->text, "\x1MSGID: ")) != NULL)
+  if ((helpPtr = findCLStr(message->text, "\1MSGID: ")) != NULL)
   {
     helpPtr += 8;
     if ((helpPtr2 = strchr(helpPtr, 0x0d)) != NULL)
@@ -133,6 +134,25 @@ int Ping(internalMsgType *message, int localAkaNum)
   }
   else
     *replyStr = 0;
+
+  // Get the string for the CHRS: kludge
+  if ((helpPtr = findCLStr(message->text, "\1CHRS:")) != NULL)
+  {
+    if ((helpPtr2 = strchr(helpPtr + 6, 0x0d)) != NULL)
+    {
+      int l = helpPtr2 - helpPtr;
+      if (l > 78)            // Set arbitrary max len
+        l = 78;
+
+      memcpy(chrsStr, helpPtr, l);
+      chrsStr[l++] = 0x0d;
+      chrsStr[l  ] = 0;
+    }
+    else
+      *chrsStr = 0;
+  }
+  else
+    *chrsStr = 0;
 
   strncpy(replyMsg->fromUserName, "FMail PING bot"     , 35);
   strncpy(replyMsg->toUserName  , message->fromUserName, 35);
@@ -161,6 +181,8 @@ int Ping(internalMsgType *message, int localAkaNum)
   if (*replyStr != 0)
     helpPtr = addKludge(helpPtr, "REPLY:", replyStr);
   helpPtr = addTZUTCKludge (helpPtr);
+  if (*chrsStr != 0)
+    helpPtr = stpcpy(helpPtr, chrsStr);
   helpPtr = addPIDKludge   (helpPtr);
 
   // Add some text

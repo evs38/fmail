@@ -1,3 +1,9 @@
+2016-11-28  1.73.7.48-Beta
+  * Ping reply message uses CHRS: kludge from message replied to.
+
+2016-11-28  1.73.7.47-Beta
+  * Improved inbound pkt backup function.
+
 2016-11-25  1.73.6.44-Beta
   * Inbound pkt backup function.
   * Incase of mailbomb detection, rename with ".mailbomb" extenstion instead of ".mlb"
