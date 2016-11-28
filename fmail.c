@@ -452,6 +452,8 @@ void tossBad(internalMsgType *message, const char *badStr)
 //---------------------------------------------------------------------------
 void unlinkOrBackup(const char *path)
 {
+  int doUnlink = 0;
+
   if (path == NULL || *path == 0)
     return;
 
@@ -459,24 +461,45 @@ void unlinkOrBackup(const char *path)
   {
     tempStrType bakPath;
     const char *helpPtr;
+    char *p;
+    int count = 0;
 
     if ((helpPtr = strrchr(path, '\\')) == NULL)
       helpPtr = path;
     else
       helpPtr++;
 
-    strcpy(stpcpy(bakPath, config.inBakPath), helpPtr);
+    p = stpcpy(stpcpy(bakPath, config.inBakPath), helpPtr);
 
-    if (moveFile(path, bakPath) == 0)
+    while (access(bakPath, 0) == 0 && count < 100)
+      sprintf(p, "~%02d", count++);
+
+    if (count < 100 && moveFile(path, bakPath) == 0)
       logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Moved to backup: %s -> %s", path, bakPath);
     else
+    {
       logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup Failed! %s -> %s", path, bakPath);
+      // try renaming in the same dir
+      strcpy(stpcpy(bakPath, path), ".backup_failed");
+      if (rename(path, bakPath) == 0)
+        logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Renamed: %s -> %s", path, bakPath);
+      else
+      {
+        logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Rename Failed! %s -> %s", path, bakPath);
+        doUnlink = 1;
+      }
+    }
   }
   else
+    doUnlink = 1;
+
+  if (doUnlink)
+  {
     if (unlink(path) == 0)
       logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Deleted: %s", path);
     else
       logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Delete Failed! %s", path);
+  }
 }
 //---------------------------------------------------------------------------
 time_t oldMsgTime = 0;
@@ -1649,17 +1672,17 @@ void Scan(int argc, char *argv[])
       if (!diskError)
       {
         strcpy(stpcpy(tempStr, config.bbsPath), dECHOMAIL_JAM);
-#ifdef _DEBUG
+#ifdef _DEBUG0
         logEntryf(LOG_DEBUG, 0, "DEBUG access: %s", tempStr);
 #endif // _DEBUG
         if (0 == access(tempStr, 02))
         {
-#ifdef _DEBUG
+#ifdef _DEBUG0
           logEntryf(LOG_DEBUG, 0, "DEBUG unlink: %s", tempStr);
 #endif // _DEBUG
           if (0 == unlink(tempStr))
           {
-#ifdef _DEBUG
+#ifdef _DEBUG0
             logEntryf(LOG_DEBUG, 0, "DEBUG unlinked: %s", tempStr);
 #endif // _DEBUG
           }

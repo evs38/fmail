@@ -645,8 +645,7 @@ void RemoveNetKludge(char *text, const char *kludge)
   }
 }
 //---------------------------------------------------------------------------
-char *setSeenByPath( internalMsgType *msg, char *txtEnd
-                   , areaOptionsType areaOptions, nodeOptionsType nodeOptions)
+char *setSeenByPath(internalMsgType *msg, char *txtEnd, areaOptionsType areaOptions, nodeOptionsType nodeOptions)
 {
 #ifdef _DEBUG0
   logEntryf(LOG_DEBUG, 0, "DEBUG setSeenByPath areaOptions.tinySeenBy:%u nodeOptions.tinySeenBy:%u areaOptions.tinyPath:%u", areaOptions.tinySeenBy, nodeOptions.tinySeenBy, areaOptions.tinyPath);
@@ -733,10 +732,16 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
       if (  config.akaList[nodeFileInfo[count]->srcAka].nodeNum.zone
          && nodeFileInfo[count]->srcAka != nodeFileInfo[count]->requestedAka
          )
+      {
         sprintf( helpPtr2 , "\1PATH: %u/%u\r"
                , config.akaList[nodeFileInfo[count]->srcAka].nodeNum.net
                , config.akaList[nodeFileInfo[count]->srcAka].nodeNum.node
                );
+#ifdef _DEBUG
+        logEntryf(LOG_DEBUG, 0, "DEBUG added extra PATH: %u/%u", config.akaList[nodeFileInfo[count]->srcAka].nodeNum.net
+                                                               , config.akaList[nodeFileInfo[count]->srcAka].nodeNum.node);
+#endif // _DEBUG
+      }
 
       pktBufStart = helpPtr - sizeof(pmHdrType);
       pktBufLen   = (udef)strchr(message->text, 0) - (udef)pktBufStart + 1;
