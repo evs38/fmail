@@ -41,14 +41,24 @@
 #include "utils.h"
 #include "version.h"
 
+#ifdef _DEBUG0
+#define _DEBUG_GNI
+#endif
 //---------------------------------------------------------------------------
 nodeInfoType *nodeInfo[MAX_NODES];
 nodeInfoType defaultNodeInfo;
 
 u16 nodeCount;
 
+nodeInfoType **nodeInfoNoZone;
+
 extern configType config;
 
+//---------------------------------------------------------------------------
+int niCmp(const void *a, const void *b)
+{
+  return cmpNodeNumsNoZone(&(*(nodeInfoType **)a)->node, &(*(nodeInfoType **)b)->node);
+}
 //---------------------------------------------------------------------------
 void initNodeInfo(void)
 {
@@ -61,6 +71,9 @@ void initNodeInfo(void)
 
   nodeCount = min(MAX_NODES, (u16)(nodeHeader->totalRecords));
 
+  if ((nodeInfoNoZone = (nodeInfoType**)malloc(sizeof(nodeInfoType*) * nodeCount)) == NULL)
+    logEntry("Not enough memory available", LOG_ALWAYS, 2);
+
   for (count = 0; count < nodeCount; count++)
   {
     if ((nodeInfo[count] = (nodeInfoType*)malloc(sizeof(nodeInfoType))) == NULL)
@@ -68,14 +81,23 @@ void initNodeInfo(void)
 
     getRec(CFG_NODES, count);
     memcpy(nodeInfo[count], nodeBuf, sizeof(nodeInfoType));
-    nodeInfo[count]->password[16] = 0;
-    nodeInfo[count]->packetPwd[8] = 0;
+    nodeInfo[count]->password [16] = 0;
+    nodeInfo[count]->packetPwd[ 8] = 0;
     nodeInfo[count]->sysopName[35] = 0;
+
+    nodeInfoNoZone[count] = nodeInfo[count];
   }
   for (; count < MAX_NODES; count++)
     nodeInfo[count] = NULL;
 
   closeConfig(CFG_NODES);
+
+  qsort(nodeInfoNoZone, nodeCount, sizeof(nodeInfoType*), niCmp);
+
+#ifdef _DEBUG_GNI0
+  for (count = 0; count < nodeCount; count++)
+    logEntryf(LOG_DEBUG, 0, "DEBUG node %02d: %s", count, nodeStr(&nodeInfoNoZone[count]->node));
+#endif
 
   memset(&defaultNodeInfo, 0, sizeof(nodeInfoType));
   defaultNodeInfo.options.active = 1;
@@ -85,19 +107,74 @@ void initNodeInfo(void)
 //---------------------------------------------------------------------------
 nodeInfoType *getNodeInfo(nodeNumType *nodeNum)
 {
-  u16 count = 0;
+  int L = 0
+    , R = nodeCount - 1
+    , m
+    , r;
+#ifdef _DEBUG_GNI
+  int iter = 0;
+  logEntryf(LOG_DEBUG, 0, "DEBUG getNodeInfo find: %s", nodeStr(nodeNum));
+#endif
+  if (nodeNum->zone != 0)
+  {
+    for (;;)
+    {
+#ifdef _DEBUG_GNI
+      iter++;
+#endif
+      if (L > R)
+      {
+#ifdef _DEBUG_GNI
+        logEntryf(LOG_DEBUG, 0, "DEBUG getNodeInfo not found iters: %d", iter);
+#endif
+        return &defaultNodeInfo;  // Not found
+      }
 
-  if (nodeNum->zone == 0)
-    while (count < nodeCount && memcmp(&nodeNum->net, &(nodeInfo[count]->node.net), sizeof(nodeNumType) - 2) != 0)
-      count++;
+      m = (L + R) / 2;
+      if ((r = cmpNodeNums(nodeNum, &nodeInfo[m]->node)) == 0)
+      {
+#ifdef _DEBUG_GNI
+        logEntryf(LOG_DEBUG, 0, "DEBUG getNodeInfo found: %s iters: %d", nodeStr(&(nodeInfo[m]->node)), iter);
+#endif
+        return nodeInfo[m];  // Found it!
+      }
+
+      if (r > 0)
+        L = m + 1;
+      else
+        R = m - 1;
+    }
+  }
   else
-    while (count < nodeCount && memcmp(nodeNum, &(nodeInfo[count]->node), sizeof(nodeNumType)) != 0)
-      count++;
+  {
+    for (;;)
+    {
+#ifdef _DEBUG_GNI
+      iter++;
+#endif
+      if (L > R)
+      {
+#ifdef _DEBUG_GNI
+        logEntryf(LOG_DEBUG, 0, "DEBUG getNodeInfo not found iters: %d", iter);
+#endif
+        return &defaultNodeInfo;  // Not found
+      }
 
-  if (count < nodeCount)
-    return nodeInfo[count];
+      m = (L + R) / 2;
+      if ((r = cmpNodeNumsNoZone(nodeNum, &nodeInfoNoZone[m]->node)) == 0)
+      {
+#ifdef _DEBUG_GNI
+        logEntryf(LOG_DEBUG, 0, "DEBUG getNodeInfo found: %s iters: %d", nodeStr(&(nodeInfoNoZone[m]->node)), iter);
+#endif
+        return nodeInfoNoZone[m];  // Found it!
+      }
 
-  return &defaultNodeInfo;
+      if (r > 0)
+        L = m + 1;
+      else
+        R = m - 1;
+    }
+  }
 }
 //---------------------------------------------------------------------------
 extern u32 totalBundleSize[MAX_NODES];
@@ -132,7 +209,8 @@ void closeNodeInfo(void)
         continue;
 
       memcpy(nodeBuf, nodeInfo[count], sizeof(nodeInfoType));
-      if (nodeBuf->options.active && nodeBuf->lastNewBundleDat == nodeBuf->referenceLNBDat)
+      if (//!nodeBuf->options.disabled &&
+          nodeBuf->options.active && nodeBuf->lastNewBundleDat == nodeBuf->referenceLNBDat)
       {
         if (nodeBuf->passiveSize && totalBundleSize[count] / 1024ul > nodeBuf->passiveSize * 100ul)
         {
@@ -182,5 +260,7 @@ void closeNodeInfo(void)
   // Free used memory
   for (count = 0; count < nodeCount; count++)
     freeNull(nodeInfo[count]);
+
+  freeNull(nodeInfoNoZone);
 }
 //---------------------------------------------------------------------------

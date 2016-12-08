@@ -72,7 +72,7 @@ extern s32  pow2[32];
 
 funcParType groupsSelect;
 
-extern configType config;
+//extern configType config;
 
 //---------------------------------------------------------------------------
 s16 nodesList(s16 currentElem)
@@ -106,14 +106,14 @@ s16 nodesList(s16 currentElem)
          if (windowBase+count < elemCount)
          {
             if (nodeInfo[windowBase+count]->node.point)
-               sprintf (tempStr, " %35s  %u:%u/%u.%u",
+               sprintf(tempStr, " %35s  %u:%u/%u.%u",
                                  nodeInfo[windowBase+count]->sysopName,
                                  nodeInfo[windowBase+count]->node.zone,
                                  nodeInfo[windowBase+count]->node.net,
                                  nodeInfo[windowBase+count]->node.node,
                                  nodeInfo[windowBase+count]->node.point);
             else
-               sprintf (tempStr, " %35s  %u:%u/%u",
+               sprintf(tempStr, " %35s  %u:%u/%u",
                                  nodeInfo[windowBase+count]->sysopName,
                                  nodeInfo[windowBase+count]->node.zone,
                                  nodeInfo[windowBase+count]->node.net,
@@ -123,20 +123,12 @@ s16 nodesList(s16 currentElem)
             *tempStr = 0;
 
          if ((elemCount != 0) && (windowBase+count == currentElem))
-         {
-            printStringFill (tempStr, ' ', 62, 11, 8+count,
-                             YELLOW, BLACK, MONO_INV);
-         }
+            printStringFill(tempStr, ' ', 62, 11, 8 + count, YELLOW, BLACK, MONO_INV);
          else
-         {
-            printStringFill (tempStr, ' ', 62, 11, 8+count,
-                             BLUE, CYAN, MONO_NORM);
-         }
+            printStringFill(tempStr, ' ', 62, 11, 8 + count, BLUE, CYAN, MONO_NORM);
       }
       if (elemCount == 0)
-      {
-         printString ("Empty", 38, 10, CYAN, BLUE, MONO_NORM);
-      }
+         printString("Empty", 38, 10, CYAN, BLUE, MONO_NORM);
 
       ch = readKbd();
       switch (ch)
@@ -385,7 +377,7 @@ u16 editNM(s16 editType, u16 setdef)
    toggleType   statusToggle;
    s16          update = 0;
    s16          total;
-   char         addressText[MAX_AKAS+1][34];
+   char         addressText[MAX_AKAS + 1][34];
    char         tempStr[24];
    char         ch;
    char        *helpPtr1;
@@ -452,14 +444,16 @@ u16 editNM(s16 editType, u16 setdef)
             strcpy(addressText[0], "Main (not defined)");
          else
             sprintf(addressText[count], "AKA %2u (not defined)", count);
-      addressToggle.text[count+1] = addressText[count];
-      addressToggle.retval[count+1] = count+1;
+      addressToggle.text  [count + 1] = addressText[count];
+      addressToggle.retval[count + 1] = count+1;
    }
 
-   if ((nodeMenu = createMenu (" Node Manager ")) == NULL)
+   if ((nodeMenu = createMenu(" Node Manager ")) == NULL)
       return 0;
 
-   addItem(nodeMenu, TEXT, "SysOp Name", 0, tempInfoN.sysopName, sizeof(tempInfoN.sysopName)-1, 0,
+//   addItem(nodeMenu, BOOL_INT, "Disabled", 0, &tempInfoN.options, BIT5, 0,
+//                     "Set to fully disable a node");
+   addItem(nodeMenu, TEXT, "SysOp Name", 0, tempInfoN.sysopName, sizeof(tempInfoN.sysopName) - 1, 0,
                      "Name of the SysOp");
    addItem(nodeMenu, DATE|DISPLAY, "Ref", 52, &tempInfoN.referenceLNBDat, 0, 0,
                      "");
@@ -513,7 +507,7 @@ u16 editNM(s16 editType, u16 setdef)
    addItem(nodeMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
    addItem(nodeMenu, NUM_INT, "Auto BCL days   ", 45, &tempInfoN.autoBCL, 3, 999,
                      "Interval in days between automatic BCL files");
-   addItem(nodeMenu, WORD, "AreaMgr pwd", 0, &tempInfoN.password, sizeof(tempInfoN.password)-2, 0,
+   addItem(nodeMenu, WORD, "AreaMgr pwd", 0, &tempInfoN.password, sizeof(tempInfoN.password) - 2, 0,
                      "Password for AreaMgr requests");
    addItem(nodeMenu, NUM_INT, "AutoPassive days", 45, &tempInfoN.passiveDays, 4, 9999,
                      "Max number of days between polls before auto-passive (1-9999, 0 = no max)");
@@ -548,20 +542,19 @@ u16 editNM(s16 editType, u16 setdef)
       {
         total += (nodeMenu->menuEntry[count].selected != 0);
       }
-      if ( total )
+      if (total)
       {
         *tempStr = 0;
          do
          {
             update = 0;
-            printStringFill ("Allowed wildcards are * (at the end only) and ?", ' ', 80, 0, 24,
-                             windowLook.commentfg, windowLook.commentbg,
-                             MONO_NORM);
-            if (displayWindow (" Node number mask ", 10, 12, 12+23, 14) != 0)
+            printStringFill( "Allowed wildcards are * (at the end only) and ?", ' ', 80, 0, 24
+                           , windowLook.commentfg, windowLook.commentbg, MONO_NORM);
+            if (displayWindow(" Node number mask ", 10, 12, 12 + 23, 14) != 0)
                return 0;
             ch = editString(tempStr, 23, 12, 13, TEXT);
             removeWindow();
-            if ( ch == _K_ESC_ )
+            if (ch == _K_ESC_)
                break;
             helpPtr1 = tempStr;
             while ( *helpPtr1 )
@@ -613,6 +606,7 @@ void noMem(u16 selAreas, u16 selAreas2)
 {
   while (selAreas)
     free(listDataArray[--selAreas].desc);
+
   while (selAreas2)
     free(listDataArray2[--selAreas2].desc);
 }
@@ -714,11 +708,12 @@ s16 nodeMgr(void)
       {
          if (nodeInfoCount == 0)
          {
-            memset (&tempInfoN, 0, sizeof (nodeInfoType));
+            memset(&tempInfoN, 0, sizeof (nodeInfoType));
 
             removeWindow();
             if (editNM(DISPLAY_NODE_WINDOW, 0))
                return 1;
+
             printString ("**** Empty ****", 17, 6, windowLook.datafg, windowLook.background, MONO_HIGH);
 
             printString ("F1 ", 0, 24, BROWN, BLACK, MONO_NORM);
@@ -739,12 +734,8 @@ s16 nodeMgr(void)
          }
          else
          {
-            sprintf (tempStr, " %*u/%u ", nodeInfoCount < 10 ? 1 :
-                                          nodeInfoCount < 100 ? 2 : 3,
-                                          index+1, nodeInfoCount);
-            printString (tempStr, 73-strlen(tempStr), // 66,
-                                  21,
-                                  YELLOW, LIGHTGRAY, MONO_HIGH);
+            sprintf(tempStr, " %*u/%u ", nodeInfoCount < 10 ? 1 : nodeInfoCount < 100 ? 2 : 3, index + 1, nodeInfoCount);
+            printString(tempStr, 73 - strlen(tempStr), 21, YELLOW, LIGHTGRAY, MONO_HIGH);  // Maak 21 -> 22 indien de Disabled optie wordt toegevoegd als extra regel in het menu
 
             tempInfoN = *nodeInfo[index];
             if (editNM(DISPLAY_NODE_DATA, 0))

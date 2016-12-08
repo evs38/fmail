@@ -49,10 +49,10 @@
 #include "fecfg146.h"
 
 //---------------------------------------------------------------------------
-static rawEchoType     *echoAreaList[MAX_AREAS];
+static rawEchoType *echoAreaLst[MAX_AREAS];
 
 
-/* IMAIL status mapping */
+// IMAIL status mapping
 char IMSTAT[8] = {0,1,2,0,5,3,4,5};
 
 
@@ -95,7 +95,7 @@ static s16 greater(nodeNumType *node1, nodeNumType *node2)
 static void releaseAreas(u16 echoCount)
 {
   while (echoCount--)
-    free(echoAreaList[echoCount]);
+    free(echoAreaLst[echoCount]);
 }
 
 
@@ -124,14 +124,14 @@ static int askFMArExist(u16 *echoCount)
       count = areaHeader->totalRecords;
       while (count--)
       {
-        if ((echoAreaList[*echoCount] = malloc(RAWECHO_SIZE)) == NULL)
+        if ((echoAreaLst[*echoCount] = malloc(RAWECHO_SIZE)) == NULL)
         {
           displayMessage("Out of memory");
           releaseAreas(*echoCount);
           return 0;
         }
         getRec(CFG_ECHOAREAS, *echoCount);
-        memcpy(echoAreaList[(*echoCount)++], areaBuf, RAWECHO_SIZE);
+        memcpy(echoAreaLst[(*echoCount)++], areaBuf, RAWECHO_SIZE);
       }
       closeConfig(CFG_ECHOAREAS);
     }
@@ -153,9 +153,9 @@ static void updateAreas(u16 echoCount)
       return;
    }
    for ( count = 0; count < echoCount; count++ )
-   {  memcpy(areaBuf, echoAreaList[count], RAWECHO_SIZE);
+   {  memcpy(areaBuf, echoAreaLst[count], RAWECHO_SIZE);
       putRec(CFG_ECHOAREAS, count);
-      free(echoAreaList[count]);
+      free(echoAreaLst[count]);
    }
    chgNumRec(CFG_ECHOAREAS, echoCount);
    closeConfig(CFG_ECHOAREAS);
@@ -243,13 +243,13 @@ static u16 checkDupArea(rawEchoType *echoAreaRec, u16 *echoCount, u16 *skiparnam
    high = *echoCount;
    while ( low < high )
    {  mid = (low + high) >> 1;
-      if ( stricmp(echoAreaRec->areaName, echoAreaList[mid]->areaName) > 0 )
+      if ( stricmp(echoAreaRec->areaName, echoAreaLst[mid]->areaName) > 0 )
          low = mid+1;
       else
          high = mid;
    }
    if ( *echoCount > low &&
-        stricmp(echoAreaRec->areaName, echoAreaList[low]->areaName) == 0 )
+        stricmp(echoAreaRec->areaName, echoAreaLst[low]->areaName) == 0 )
    {  sprintf(tempStr, "%.32s is listed more than once. [S]kip, [A]bort ?",echoAreaRec->areaName);
       free(echoAreaRec);
       if ( !*skiparname && askChar(tempStr, "AS") != 'S' )
@@ -259,9 +259,9 @@ static u16 checkDupArea(rawEchoType *echoAreaRec, u16 *echoCount, u16 *skiparnam
       *skiparname = 1;
    }
    else
-   {  memmove(&echoAreaList[low+1], &echoAreaList[low],
+   {  memmove(&echoAreaLst[low+1], &echoAreaLst[low],
               ((*echoCount)++-low) * 4); /* 4 = sizeof(ptr) */
-      echoAreaList[low] = echoAreaRec;
+      echoAreaLst[low] = echoAreaRec;
    }
    return 1;
 }
@@ -874,8 +874,8 @@ s16 importFEAr(void)
       return 0;
    memset(echoNumCheck, 0, MBBOARDS);
    for ( count = 0; count < echoCount; ++count )
-     if ( echoAreaList[count]->board > 0 && echoAreaList[count]->board <= MBBOARDS )
-       echoNumCheck[echoAreaList[count]->board-1] = 1;
+     if ( echoAreaLst[count]->board > 0 && echoAreaLst[count]->board <= MBBOARDS )
+       echoNumCheck[echoAreaLst[count]->board-1] = 1;
    if ((fileHandle = open(getSourceFileName(" Source file "), O_BINARY | O_RDWR)) == -1)
    {  displayMessage("Can't find the requested file.");
       releaseAreas(echoCount);
@@ -958,14 +958,14 @@ ret0msg:
       }
       for (count = 0; count < echoCount; count++)
       {
-        if (nodeBits[echoAreaList[count]->_alsoSeenBy/8] & (1 << (7 - (echoAreaList[count]->_alsoSeenBy % 8))))
+        if (nodeBits[echoAreaLst[count]->_alsoSeenBy/8] & (1 << (7 - (echoAreaLst[count]->_alsoSeenBy % 8))))
         {
           xu2 = 0;
-          while (xu2 < config.maxForward && echoAreaList[count]->forwards[xu2].nodeNum.zone)
+          while (xu2 < config.maxForward && echoAreaLst[count]->forwards[xu2].nodeNum.zone)
             ++xu2;
           if (xu2 < config.maxForward)
           {
-            nodeNumType *nn = &echoAreaList[count]->forwards[xu2].nodeNum;
+            nodeNumType *nn = &echoAreaLst[count]->forwards[xu2].nodeNum;
             nn->zone  = nodeFE.addr.zone;
             nn->net   = nodeFE.addr.net;
             nn->node  = nodeFE.addr.node;

@@ -741,8 +741,8 @@ void validate2BBS(u16 orgName)
       globVars.dupCountV = globVars.dupCount;
 }
 //---------------------------------------------------------------------------
-extern  u16             forwNodeCount;
-extern  nodeFileType    nodeFileInfo;
+//extern  u16             forwNodeCount;
+//extern  nodeFileType    nodeFileInfo;
 
 static s16 processMsg(u16 areaIndex)
 {
@@ -800,8 +800,7 @@ static s16 processMsg(u16 areaIndex)
 
    for (count = 0; count < forwNodeCount; count++)
    {
-      if (memcmp(&nodeFileInfo[count]->destNode4d.net,
-      	          &globVars.packetSrcNode.net, 6) == 0)
+      if (memcmp(&nodeFileInfo[count]->destNode4d.net, &globVars.packetSrcNode.net, 6) == 0)
       {
          if ( ETN_ANYACCESS(tempEchoToNode[ETN_INDEX(count)], count) )
          {

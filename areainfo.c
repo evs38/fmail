@@ -69,12 +69,13 @@ s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
 
    memset(nfInfo, 0, sizeof(nodeFileRecType));
 
-   nfInfo->destNode = nfInfo->destNode4d = *destNode;
-   nfInfo->nodePtr  = getNodeInfo(destNode);
+   nfInfo->destNode     = nfInfo->destNode4d = *destNode;
+   nfInfo->nodePtr      = getNodeInfo(destNode);
    nfInfo->requestedAka = srcAka;
 
-   if (nfInfo->nodePtr->useAka && nfInfo->nodePtr->useAka <= MAX_AKAS &&
-       config.akaList[nfInfo->nodePtr->useAka-1].nodeNum.zone)
+   if (  nfInfo->nodePtr->useAka && nfInfo->nodePtr->useAka <= MAX_AKAS
+      && config.akaList[nfInfo->nodePtr->useAka-1].nodeNum.zone
+      )
       nfInfo->srcAka = nfInfo->nodePtr->useAka-1;
    else
      if ((nfInfo->srcAka = srcAka) == -1)
@@ -112,7 +113,7 @@ s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
 void initAreaInfo(void)
 {
   tempStrType   tempStr;
-  char		     *helpPtr;
+  char               *helpPtr;
   s16           c
               , count
               , count2;
@@ -125,7 +126,7 @@ void initAreaInfo(void)
 
   memset(nodeFileInfo, 0, sizeof(nodeFileType));
 
-  echoCount = 0;
+  echoCount     = 0;
   forwNodeCount = 0;
 
   if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
@@ -150,7 +151,7 @@ void initAreaInfo(void)
     areaBuf->group  &= 0x03FFFFFFL;
     areaBuf->board   = min(areaBuf->board, MBBOARDS);
 
-    if (echoCount == MAX_AREAS)
+    if (echoCount >= MAX_AREAS)
        logEntryf(LOG_ALWAYS, 4, "More than %u areas listed in "dARFNAME, MAX_AREAS);
 
     if (config.akaList[areaBuf->address].nodeNum.zone == 0)
@@ -171,8 +172,9 @@ void initAreaInfo(void)
     else
       echoAreaList[echoCount].oldAreaName = (char*)"";
 
-    if (((echoAreaList[echoCount].areaName = (char*)malloc(strlen(areaBuf->areaName)+1)) == NULL) ||
-        ((echoToNode[echoCount] = (echoToNodePtrType)malloc(sizeof(echoToNodeType))) == NULL))
+    if (  (echoAreaList[echoCount].areaName = (char*)malloc(strlen(areaBuf->areaName)+1)) == NULL
+       || (echoToNode[echoCount] = (echoToNodePtrType)malloc(sizeof(echoToNodeType))    ) == NULL
+       )
       logEntry("Not enough memory available", LOG_ALWAYS, 2);
 
     memset(echoToNode[echoCount], 0, sizeof(echoToNodeType));
@@ -248,8 +250,7 @@ void initAreaInfo(void)
           if ((nodeFileInfo[forwNodeCount] = (nodeFileRecType*)malloc(sizeof(nodeFileRecType))) == NULL)
             logEntry("Not enough memory available", LOG_ALWAYS, 2);
 
-          errorDisplay |= makeNFInfo( nodeFileInfo[forwNodeCount++]
-                                    , areaBuf->address, &(areaBuf->forwards[count].nodeNum));
+          errorDisplay |= makeNFInfo(nodeFileInfo[forwNodeCount++], areaBuf->address, &(areaBuf->forwards[count].nodeNum));
         }
         if ( !(  areaBuf->forwards[count].flags.readOnly
               && areaBuf->forwards[count].flags.writeOnly
@@ -285,26 +286,26 @@ void initAreaInfo(void)
        )
     {
       count = 0;
-	    while (count < MAX_UPLREQ && memcmp(&areaBuf->forwards[0].nodeNum, &config.uplinkReq[count].node, sizeof(nodeNumType)) != 0)
+      while (count < MAX_UPLREQ && memcmp(&areaBuf->forwards[0].nodeNum, &config.uplinkReq[count].node, sizeof(nodeNumType)) != 0)
         count++;
 
       if (count < MAX_UPLREQ)
       {
-	      areaBuf->options.disconnected = 1;
-	      strcpy(areaBuf->comment, "AutoDisconnected");
+        areaBuf->options.disconnected = 1;
+        strcpy(areaBuf->comment, "AutoDisconnected");
         memset(&areaBuf->forwards[0], 0, sizeof(nodeNumXType));
-	      putRec(CFG_ECHOAREAS, echoCount);
+        putRec(CFG_ECHOAREAS, echoCount);
 
         echoAreaList[echoCount].options._reserved = 1;
-	      echoAreaList[echoCount].msgCount = count;
-	      autoDisconnectCount++;
-	    }
+        echoAreaList[echoCount].msgCount = count;
+        autoDisconnectCount++;
+      }
     }
   }
 
   // delete auto-disconnected areas, TEMPORARILY ALWAYS DONE !
   for (count = echoCount - 1; count >= 0; count--)
-	  if (echoAreaList[count].options._reserved)
+    if (echoAreaList[count].options._reserved)
       delRec(CFG_ECHOAREAS, count);
 
   closeConfig (CFG_ECHOAREAS);
@@ -315,49 +316,49 @@ void initAreaInfo(void)
   if (error != 0)
     logEntry("One or more origin addresses are not defined", LOG_ALWAYS, 4);
 
-  memset (message, 0, INTMSG_SIZE);
+  memset(message, 0, INTMSG_SIZE);
 
   if (autoDisconnectCount)
   {
     for (count = 0; count < MAX_UPLREQ; count++)
     {
-	    helpPtr = message->text;
-	    for (count2 = 0; count2 < echoCount; count2++)
+      helpPtr = message->text;
+      for (count2 = 0; count2 < echoCount; count2++)
         if (echoAreaList[count2].options._reserved && echoAreaList[count2].msgCount == count)
-	        helpPtr += sprintf (helpPtr, "-%s\r", echoAreaList[count2].areaName);
+          helpPtr += sprintf (helpPtr, "-%s\r", echoAreaList[count2].areaName);
 
-	    if (helpPtr != message->text)
-	    {
-	      strcpy(message->fromUserName, config.sysopName);
-	      strcpy(message->toUserName,   config.uplinkReq[count].program);
-	      strcpy(message->subject,      config.uplinkReq[count].password);
-	      message->srcNode   = config.akaList[config.uplinkReq[count].originAka].nodeNum;
-	      message->destNode  = config.uplinkReq[count].node;
+      if (helpPtr != message->text)
+      {
+        strcpy(message->fromUserName, config.sysopName);
+        strcpy(message->toUserName,   config.uplinkReq[count].program);
+        strcpy(message->subject,      config.uplinkReq[count].password);
+        message->srcNode   = config.akaList[config.uplinkReq[count].originAka].nodeNum;
+        message->destNode  = config.uplinkReq[count].node;
         message->attribute = PRIVATE|KILLSENT;
 
-	      strcpy(helpPtr, TearlineStr());
-	      writeMsgLocal(message, NETMSG, 1);
-  	  }
+        strcpy(helpPtr, TearlineStr());
+        writeMsgLocal(message, NETMSG, 1);
+      }
     }
 
     strcpy(message->fromUserName, "FMail");
     strcpy(message->toUserName, config.sysopName);
     strcpy(message->subject, "Areas disconnected from uplink");
     message->destNode  = message->srcNode
-                   		 = config.akaList[0].nodeNum;
+                                 = config.akaList[0].nodeNum;
     message->attribute = PRIVATE;
 
     helpPtr = message->text;
     for (count = 0; count < echoCount; count++)
     {
       if (echoAreaList[count].options._reserved)
-	    {
-	      logEntryf(LOG_ALWAYS, 0, "Area %s has been disconnected from %s", echoAreaList[count].areaName, nodeStr(&config.uplinkReq[echoAreaList[count].msgCount].node));
-	      helpPtr += sprintf (helpPtr, "%s\r", tempStr);
+      {
+        logEntryf(LOG_ALWAYS, 0, "Area %s has been disconnected from %s", echoAreaList[count].areaName, nodeStr(&config.uplinkReq[echoAreaList[count].msgCount].node));
+        helpPtr += sprintf (helpPtr, "%s\r", tempStr);
 
         echoAreaList[count].options._reserved = 0;
-	      echoAreaList[count].msgCount = 0;
-	    }
+        echoAreaList[count].msgCount = 0;
+      }
     }
     strcpy(helpPtr, TearlineStr());
     writeMsgLocal(message, NETMSG, 1);
@@ -407,9 +408,9 @@ void deInitAreaInfo(void)
                }
                if ( status )
                   putRec(CFG_ECHOAREAS, count);
-	    }
-	    break;
-	 }
+            }
+            break;
+         }
       }
    }
    closeConfig (CFG_ECHOAREAS);
@@ -417,13 +418,12 @@ void deInitAreaInfo(void)
    for (count = 0; count < echoCount; count++)
    {
       if (echoAreaList[count].JAMdirPtr != NULL)
-      {
          free(echoAreaList[count].JAMdirPtr);
-      }
+
       free(echoAreaList[count].areaName);
       free(echoToNode[count]);
    }
-   free (echoAreaList);
+   free(echoAreaList);
    for (count = 0; count < forwNodeCount; count++)
       free(nodeFileInfo[count]);
 }

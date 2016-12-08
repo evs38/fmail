@@ -95,7 +95,7 @@ typedef struct
   u16 usedCount;
 } keepTxtRecType;
 
-typedef u16 lastReadType[256];
+typedef u16 lastReadType[256];  // Make it 256 for board numbers that are too high
 //----------------------------------------------------------------------------
 const char *semaphore[6] =
 {
@@ -106,6 +106,7 @@ const char *semaphore[6] =
 , "mdrescan.now"
 , "xmrescan.flg"
 };
+
 boardInfoType   boardInfo[MBBOARDS == 200 ? 256 : 512];
 char            configPath[FILENAME_MAX];
 configType      config;
@@ -354,18 +355,25 @@ void Maint(int argc, char *argv[])
 
   memset(&lastReadRec, 0, sizeof(lastReadType));
 
-  if ((lastReadHandle = open(expandName(dLASTREAD"."MBEXTN), O_RDONLY | O_BINARY)) == -1)
-    logEntry("Can't read file "dLASTREAD"."MBEXTN, LOG_ALWAYS, 1);
-
-  if (read(lastReadHandle, &(lastReadRec[1]), 400) != 400)
+  helpPtr = expandName(dLASTREAD"."MBEXTN);
+  if ((lastReadHandle = open(helpPtr, O_RDONLY | O_BINARY)) == -1)
+    logEntryf(LOG_ALWAYS, 0, "Warning: can't open file: %s", helpPtr);
+  else
   {
-    close(lastReadHandle);
-    logEntry("Can't read file "dLASTREAD"."MBEXTN, LOG_ALWAYS, 1);
-  }
-  close(lastReadHandle);
+    if (read(lastReadHandle, &(lastReadRec[1]), MBBOARDS * sizeof(u16)) != MBBOARDS * sizeof(u16))
+    {
+      close(lastReadHandle);
+      logEntryf(LOG_ALWAYS, 0, "Warning: can't read file: %s", helpPtr);
+      lastReadHandle = -1;
+    }
+    else
+    {
+      close(lastReadHandle);
 #ifdef _DEBUG
-  logEntryf(LOG_DEBUG, 0, "DEBUG Read file %s", expandName(dLASTREAD"."MBEXTN));
+      logEntryf(LOG_DEBUG, 0, "DEBUG Read file %s", helpPtr);
 #endif // _DEBUG
+    }
+  }
 
   if (  (msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1
      || (fileSize = filelength(msgTxtHandle)) == -1
@@ -504,6 +512,7 @@ void Maint(int argc, char *argv[])
 
         if (  (switches & SW_D)
            && (  !currBoardInfo.options.sysopRead
+              || lastReadHandle < 0
               || msgHdr->MsgNum < lastReadRec[msgHdr->Board]
               )
            )
@@ -1019,12 +1028,13 @@ void Maint(int argc, char *argv[])
       else
         temp = renumArray[count];
     }
-    if ((lastReadHandle = _sopen(expandName(dLASTREAD"."MBEXTN), O_RDWR | O_CREAT | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
-      logEntryf(LOG_ALWAYS, 0, "Can't open file %s for update", expandName(dLASTREAD"."MBEXTN));
+    helpPtr = expandName(dLASTREAD"."MBEXTN);
+    if ((lastReadHandle = _sopen(helpPtr, O_RDWR | O_BINARY, SH_DENYRW)) == -1)
+      logEntryf(LOG_ALWAYS, 0, "Warning: can't open file: %s for update", helpPtr);
     else
     {
 #ifdef _DEBUG
-      logEntryf(LOG_DEBUG, 0, "DEBUG Updating %s", expandName(dLASTREAD"."MBEXTN));
+      logEntryf(LOG_DEBUG, 0, "DEBUG Updating %s", helpPtr);
 #else
       puts("Updating "dLASTREAD"."MBEXTN"...");
 #endif // _DEBUG
@@ -1278,7 +1288,7 @@ void Sort(int argc, char *argv[])
   s32        switches;
   u16        count;
   u16        index;
-  u16        maxRead;
+  u16        maxRead = 0;
   u16        msgIdxBufCount; // = 0;
 
   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
@@ -1303,15 +1313,15 @@ void Sort(int argc, char *argv[])
       logEntry("Not enough free memory",     LOG_ALWAYS, 2);
 
     if ((lastReadHandle = open(expandName(dLASTREAD"."MBEXTN), O_RDONLY | O_BINARY)) == -1)
-      logEntry("Can't open "dLASTREAD"."MBEXTN, LOG_ALWAYS, 1);
-
-    maxRead = 0;
-    while (read(lastReadHandle, &lastReadRec, 400) == 400)
-      for (count = 0; count < MBBOARDS; count++)
-        if (maxRead < lastReadRec[count])
-          maxRead = lastReadRec[count];
-
-    close(lastReadHandle);
+      logEntryf(LOG_ALWAYS, 0, "Warning: can't open: %s", expandName(dLASTREAD"."MBEXTN));
+    else
+    {
+      while (read(lastReadHandle, &lastReadRec, MBBOARDS * sizeof(u16)) == MBBOARDS * sizeof(u16))
+        for (count = 0; count < MBBOARDS; count++)
+          if (maxRead < lastReadRec[count])
+            maxRead = lastReadRec[count];
+      close(lastReadHandle);
+    }
 
     if ((msgIdxHandle = open(expandName(dMSGIDX"."MBEXTN), O_RDONLY | O_BINARY)) == -1)
       logEntry("Can't open MsgIdx."MBEXTN, LOG_ALWAYS, 1);
@@ -1440,7 +1450,7 @@ void Stat(int argc, char *argv[])
 void Post(int argc, char *argv[])
 {
   char            *helpPtr;
-  fhandle          lastReadHandle;
+  fhandle          txtHandle;
   internalMsgType *message;
   rawEchoType     *areaPtr;
   s16              isNetmail;
@@ -1454,13 +1464,15 @@ void Post(int argc, char *argv[])
   if (argc < 4 || (argv[2][0] == '?' || argv[2][1] == '?'))
   {
     puts("Usage:\n\n"
-         "    FTools Post <file>|- <area tag> [options] [/C] [/D] [/H] [/P]\n\n"
+         "    FTools Post <file>|- <area tag> [options] [/C] [/D] [/H] [/P]\n"
+         "\n"
          "Options with defaults:\n\n"
          "    -from    SysOp name as defined in FSetup\n"
          "    -to      'All'\n"
          "    -subj    <file name>\n"
          "    -dest    <node number> (netmail only)\n"
-         "    -aka     Board dependant\n\n"
+         "    -aka     Board dependant\n"
+         "\n"
          "Switches:\n"
          "    /C  Crash status  (netmail only)     /R  File request       (netmail only)\n"
          "    /H  Hold status   (netmail only)     /F  File attach        (netmail only)\n"
@@ -1546,11 +1558,11 @@ void Post(int argc, char *argv[])
 
   if (strcmp(argv[2], "-"))
   {
-    if ((lastReadHandle = open(argv[2], O_RDONLY | O_BINARY)) == -1)
-      logEntry("Can't locate text file", LOG_ALWAYS, 1);
+    if ((txtHandle = open(argv[2], O_RDONLY | O_BINARY)) == -1)
+      logEntryf(LOG_ALWAYS, 1, "Can't open text file: %s", argv[2]);
 
-    read(lastReadHandle, message->text, TEXT_SIZE - 4096);
-    close(lastReadHandle);
+    read(txtHandle, message->text, TEXT_SIZE - 4096);
+    close(txtHandle);
     removeLf(message->text);
     if (!*message->subject)
       strcpy(message->subject, argv[2]);
@@ -1645,12 +1657,14 @@ void MsgM(int argc, char *argv[])
   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
   {
     puts("Usage:\n\n"
-         "    FTools MsgM [-net] [-sent] [-rcvd] [-pmail] [/N]\n\n"
+         "    FTools MsgM [-net] [-sent] [-rcvd] [-pmail] [/N]\n"
+         "\n"
          "Options:\n\n"
          "    [-net]    Netmail directory\n"
          "    [-sent]   Sent messages directory\n"
          "    [-rcvd]   Received messages directory\n"
-         "    [-pmail]  Personal mail directory\n\n"
+         "    [-pmail]  Personal mail directory\n"
+         "\n"
          "Switches:\n\n"
          "    /N   Renumber messages");
     return;
@@ -1761,7 +1775,7 @@ void MsgM(int argc, char *argv[])
         if (ddd)
           newLine();
 
-        strcpy(helpPtr2, "lastread");
+        strcpy(helpPtr2, dLASTREAD);
         if ((lastReadHandle = _sopen(tempStr2, O_RDWR | O_BINARY, SH_DENYRW)) != -1)
         {
           while (((signed)(newBufCount = read(lastReadHandle, &lastReadRec, 400))) > 0)

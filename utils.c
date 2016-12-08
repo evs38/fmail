@@ -23,9 +23,6 @@
 
 #include <ctype.h>
 #include <dir.h>     // getcwd()
-#ifdef __DOS
-#include <direct.h>  // _chdrive()
-#endif
 #include <dirent.h>
 #include <dos.h>
 #include <errno.h>
@@ -53,22 +50,10 @@
 #include "stpcpy.h"
 #include "version.h"
 
-extern configType config;
 psRecType *seenByArray   = NULL;
 psRecType *tinySeenArray = NULL;
 psRecType *pathArray     = NULL;
 psRecType *tinyPathArray = NULL;
-
-extern u16 echoCount;
-extern u16 forwNodeCount;
-
-extern cookedEchoType *echoAreaList;
-extern nodeFileType    nodeFileInfo;
-
-extern const char *months;
-extern const char *dayName[7];
-
-extern char *version;
 
 //---------------------------------------------------------------------------
 #if !(defined(__WIN32__) || defined(__linux__))
@@ -384,6 +369,21 @@ const char *getAkaStr(int aka, int retMain)
   const nodeNumType *node = getAkaNodeNum(aka, retMain);
 
   return NULL == node ? nullnode : nodeStr(node);
+}
+//---------------------------------------------------------------------------
+int cmpNodeNums(nodeNumType *n1, nodeNumType *n2)
+{
+  return  n1->zone  != n2->zone  ? (int)n1->zone  - (int)n2->zone
+       : (n1->net   != n2->net   ? (int)n1->net   - (int)n2->net
+       : (n1->node  != n2->node  ? (int)n1->node  - (int)n2->node
+       : (                         (int)n1->point - (int)n2->point)));
+}
+//---------------------------------------------------------------------------
+int cmpNodeNumsNoZone(nodeNumType *n1, nodeNumType *n2)
+{
+  return  n1->net   != n2->net   ? (int)n1->net   - (int)n2->net
+       : (n1->node  != n2->node  ? (int)n1->node  - (int)n2->node
+       : (                         (int)n1->point - (int)n2->point));
 }
 //---------------------------------------------------------------------------
 int matchAka(nodeNumType *node, int useAka)
@@ -1001,18 +1001,16 @@ static void writePathSeenBy(u16 type, char *pathSeen, psRecType *psArray, u16 ar
    *helpPtr = 0;
 }
 //---------------------------------------------------------------------------
-static s16 addSeenByNode(u16 net, u16 node, psRecType *array, u16 *seenByCount)
+static s16 addSeenByNode(nodeNumType *nn, psRecType *array, u16 *seenByCount)
 {
-  u16 count;
+  u16 net   = nn->net;
+  u16 node  = nn->node;
+  u16 count = 0;
 
-  for (count = 0; (count < *seenByCount) &&
-                 ((array[count].net < net) ||
-                 ((array[count].net == net) &&
-                  (array[count].node < node)))
-      ; count++)
-  {}
+  while (count < *seenByCount && (array[count].net < net || (array[count].net == net && array[count].node < node)))
+    count++;
 
-  if (count == *seenByCount)
+  if (count >= *seenByCount)
   {
     array[ *seenByCount   ].net  = net;
     array[(*seenByCount)++].node = node;
@@ -1236,7 +1234,7 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
 #endif
 
   // Remove fake-net from seen-by
-  if (seenByCount != 0)
+  if (seenByCount > 0)
     for (count = 0; count < MAX_AKAS; count++)
       if (config.akaList[count].nodeNum.zone != 0)
         for (count2 = 0; count2 < seenByCount; count2++)
@@ -1259,8 +1257,8 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
     // Rescan
     if (rescanNode->point == 0)
     {
-      addSeenByNode(rescanNode->net, rescanNode->node, seenByArray  , &seenByCount  );
-      addSeenByNode(rescanNode->net, rescanNode->node, tinySeenArray, &tinySeenCount);
+      addSeenByNode(rescanNode, seenByArray  , &seenByCount  );
+      addSeenByNode(rescanNode, tinySeenArray, &tinySeenCount);
     }
   }
   else
@@ -1270,24 +1268,17 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
       if (   ETN_READACCESS(echoToNode[ETN_INDEX(count)], count)
          && !nodeFileInfo[count]->destFake
          &&  nodeFileInfo[count]->destNode.point == 0
+         &&  (nodeFileInfo[count]->nodePtr->options.active || stricmp(nodeFileInfo[count]->nodePtr->sysopName, msg->toUserName) == 0)
          )
       {
         // Assign return value of addSeenByNode to
         // echoToNode[ETN_INDEX(count)] & ETN_SET(count) when SEEN-BY usage is required
-        count2 = addSeenByNode( nodeFileInfo[count]->destNode.net
-                              , nodeFileInfo[count]->destNode.node
-                              , seenByArray
-                              , &seenByCount
-                              );
+        count2 = addSeenByNode(&nodeFileInfo[count]->destNode, seenByArray, &seenByCount);
 
         if (echoAreaList[areaIndex].options.checkSeenBy && count2 == 0)
           echoToNode[ETN_INDEX(count)] &= ETN_RESET(count);
 
-        addSeenByNode( nodeFileInfo[count]->destNode.net
-                     , nodeFileInfo[count]->destNode.node
-                     , tinySeenArray
-                     , &tinySeenCount
-                     );
+        addSeenByNode(&nodeFileInfo[count]->destNode, tinySeenArray, &tinySeenCount);
 #ifdef _DEBUG0
         logEntryf(LOG_DEBUG, 0, "DEBUG Add other node to SEENBY: %s", nodeStr(&nodeFileInfo[count]->destNode));
 #endif
@@ -1306,8 +1297,8 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
          && config.akaList[count].nodeNum.point == 0
          )
       {
-        addSeenByNode(config.akaList[count].nodeNum.net, config.akaList[count].nodeNum.node, seenByArray  , &seenByCount  );
-        addSeenByNode(config.akaList[count].nodeNum.net, config.akaList[count].nodeNum.node, tinySeenArray, &tinySeenCount);
+        addSeenByNode(&config.akaList[count].nodeNum, seenByArray  , &seenByCount  );
+        addSeenByNode(&config.akaList[count].nodeNum, tinySeenArray, &tinySeenCount);
 #ifdef _DEBUG0
         logEntryf(LOG_DEBUG, 0, "DEBUG Add other AKA to SEENBY: %s", nodeStr(&config.akaList[count].nodeNum));
 #endif
@@ -1319,8 +1310,8 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
   // Conditionally add main area address to SEENBY (PATH?)
   if (seenByCount == 0 || !mainNode.fakeNet)
   {
-    addSeenByNode(mainNode.nodeNum.net, mainNode.nodeNum.node, seenByArray  , &seenByCount);
-    addSeenByNode(mainNode.nodeNum.net, mainNode.nodeNum.node, tinySeenArray, &tinySeenCount);
+    addSeenByNode(&mainNode.nodeNum, seenByArray  , &seenByCount);
+    addSeenByNode(&mainNode.nodeNum, tinySeenArray, &tinySeenCount);
   }
 
   writePathSeenBy(ECHO_SEENBY, msg->normSeen,   seenByArray,   seenByCount);

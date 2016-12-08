@@ -235,19 +235,19 @@ void Notify(int argc, char *argv[])
 
    if (switches & SW_N)
    {
-      for (nodeCount=0; nodeCount<nodeHeader->totalRecords; nodeCount++)
+      for (nodeCount = 0; nodeCount < nodeHeader->totalRecords; nodeCount++)
       {
          returnTimeSlice(0);
          getRec(CFG_NODES, nodeCount);
-         nodeBuf->password[16] = 0;
-         nodeBuf->packetPwd[8] = 0;
+         nodeBuf->password [16] = 0;
+         nodeBuf->packetPwd[ 8] = 0;
          nodeBuf->sysopName[35] = 0;
 
-         if (packValid(&nodeBuf->node, nodeString) &&
-             (nodeBuf->options.notify || !wildCards))
+         if (//!nodeBuf->options.disabled &&
+             packValid(&nodeBuf->node, nodeString) && (nodeBuf->options.notify || !wildCards))
          {
-            strcpy (message->toUserName, *nodeBuf->sysopName?nodeBuf->sysopName:"SysOp");
-            strcpy (message->subject, "FMail node status report");
+            strcpy(message->toUserName, *nodeBuf->sysopName ? nodeBuf->sysopName : "SysOp");
+            strcpy(message->subject, "FMail node status report");
 
             switch (nodeBuf->archiver)
 #ifdef __32BIT__
@@ -302,13 +302,17 @@ void Notify(int argc, char *argv[])
                 default: strcpy(tempStr, "UNKNOWN");
                          break;
             }
-            if ( (helpPtr = strchr(tempStr, ' ')) != NULL )
-            {   while ( helpPtr > tempStr && *(helpPtr-1) != '\\' )
-                   --helpPtr;
-                strcpy(tempStr, helpPtr);
+            if ((helpPtr = strchr(tempStr, ' ')) != NULL)
+            {
+              while (helpPtr > tempStr && *(helpPtr-1) != '\\')
+                --helpPtr;
+
+              strcpy(tempStr, helpPtr);
             }
-            else if ( (helpPtr = strrchr(tempStr, '\\')) != NULL )
+            else
+              if ((helpPtr = strrchr(tempStr, '\\')) != NULL)
                 strcpy(tempStr, helpPtr);
+
             helpPtr = message->text;
             helpPtr += sprintf (helpPtr, "Following are the options that are set for your system (%s)\r"
                                          "and a list of areas that your system is connected to.\r"
@@ -408,8 +412,8 @@ void Notify(int argc, char *argv[])
       {
          returnTimeSlice(0);
          getRec(CFG_NODES, nodeCount);
-         if (packValid(&nodeBuf->node, nodeString) &&
-             (nodeBuf->options.notify || !wildCards))
+         if (//!nodeBuf->options.disabled &&
+             packValid(&nodeBuf->node, nodeString) && (nodeBuf->options.notify || !wildCards))
          {
             strcpy (message->toUserName, *nodeBuf->sysopName?nodeBuf->sysopName:"SysOp");
             strcpy (message->subject, "FMail area status report");

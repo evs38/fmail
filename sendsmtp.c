@@ -140,14 +140,18 @@ static int sendsmtp_msg(void)
 
       for (xu = 0; xu < nodeCount; ++xu)
       {
-        if (memcmp(&nodeInfo[xu]->node, &message->destNode, sizeof(nodeNumType)))
+        if (//nodeInfo[xu]->options.disabled ||
+            memcmp(&nodeInfo[xu]->node, &message->destNode, sizeof(nodeNumType)))
           continue;
+
         if (!*nodeInfo[xu]->email)
           break;
+
         if ((message->attribute & FILE_ATT))
           strcpy(attachName, message->subject);
         else
           *attachName = 0;
+
         if (make_send_msg(xu, attachName, msg_tfs, msg_kfs))
         {
           if (msg_killsent)
@@ -182,7 +186,8 @@ static int sendsmtp_bink(void)
 
   for (xu = 0; xu < nodeCount; ++xu)
   {
-    if (!*nodeInfo[xu]->email)
+    if (//nodeInfo[xu]->options.disabled ||
+        !*nodeInfo[xu]->email)
       continue;
 
     archiveDirPtr = stpcpy(archiveStr, config.outPath);

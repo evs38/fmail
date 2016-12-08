@@ -77,9 +77,7 @@ s16        zero = 0;
 
 extern char *months,
             *upcaseMonths;
-extern u16   forwNodeCount;
 
-extern nodeFileType nodeFileInfo;
 extern globVarsType globVars;
 extern configType   config;
 
@@ -693,9 +691,12 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
 
   for (count = 0; count < forwNodeCount; count++)
   {
-    if ( ETN_READACCESS(echoToNode[ETN_INDEX(count)], count) &&
-         (nodeFileInfo[count]->nodePtr->options.active ||
-          (stricmp(nodeFileInfo[count]->nodePtr->sysopName, message->toUserName) == 0)))
+    if (  ETN_READACCESS(echoToNode[ETN_INDEX(count)], count)
+       //&& !nodeFileInfo[count]->nodePtr->options.disabled
+       && (  nodeFileInfo[count]->nodePtr->options.active
+          || stricmp(nodeFileInfo[count]->nodePtr->sysopName, message->toUserName) == 0
+          )
+       )
     {
       if (nodeFileInfo[count]->pktHandle == 0)
       {

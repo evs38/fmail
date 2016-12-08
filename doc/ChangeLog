@@ -1,3 +1,11 @@
+2016-12-08  1.73.8.53-Beta
+  * Don't add node numbers of inactive nodes to the seen-by's.
+  * If the hudson message base file lastread.bbs doesn't exist, warn about it,
+    and ignore it. Instead of making it an error condition and exiting FTools.
+  * Used a faster binary search instead of a linear search algorithm to find
+    node numbers in the node configuration.
+  * Attempt to make disabled option for nodes: Commented out the code changes.
+
 2016-11-28  1.73.7.48-Beta
   * Ping reply message uses CHRS: kludge from message replied to.
 

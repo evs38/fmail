@@ -176,12 +176,15 @@ void ChkAutoBCL(void)
   for (index = 0; index < nodeCount; index++)
   {
     nodeInfoType *ni = nodeInfo[index];
-    u16 autobcl = ni->autoBCL;
-
-    if (autobcl && startTime - (time_t)ni->lastSentBCL > autobcl * 86400L)
+    if (ni->options.active) // && !ni->options.disabled)
     {
-      send_bcl(&config.akaList[matchAka(&ni->node, 0)].nodeNum, &ni->node, ni);
-      ni->lastSentBCL = startTime;
+      u16 autobcl = ni->autoBCL;
+
+      if (autobcl && startTime - (time_t)ni->lastSentBCL > autobcl * 86400L)
+      {
+        send_bcl(&config.akaList[matchAka(&ni->node, 0)].nodeNum, &ni->node, ni);
+        ni->lastSentBCL = startTime;
+      }
     }
   }
 }

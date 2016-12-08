@@ -25,20 +25,23 @@
 
 #include "fmail.h"
 
-#if defined(__FMAILX__) || defined(__32BIT__)
 #define MAX_OUTPKT      1024
 #define MAX_OUTPKT_STR "1024"
-#else
-#define MAX_OUTPKT       256
-#define MAX_OUTPKT_STR  "256"
-#endif
-
+#define MAX_BAD_ECHOS     50
 #define ECHONAME_LEN_OLD  25
 #define ECHONAME_LEN      51
 #define COMMENT_LEN       51
 #define ORGLINE_LEN       59
 
-
+//---------------------------------------------------------------------------
+#define ETN_INDEX(i) (i >> 3)
+#define ETN_SET(i)   (1 << (2*(i & 7)))
+#define ETN_SETWO(i) (2 << (2*(i & 7)))
+#define ETN_SETRO(i) (3 << (2*(i & 7)))
+#define ETN_RESET(i) (~(3 << (2*(i & 7))))
+#define ETN_ANYACCESS(h,i)    (((h) & ETN_SETRO(i)) != 0)
+#define ETN_READACCESS(h,i)   (((h) & ETN_SET(i)) != 0)
+#define ETN_WRITEACCESS(h,i)  ((((h) & ETN_SETRO(i)) == ETN_SET(i)) || (((h) & ETN_SETRO(i)) == ETN_SETWO(i)))
 //---------------------------------------------------------------------------
 typedef struct
 {
@@ -48,8 +51,7 @@ typedef struct
 
 } fnRecType;
 
-
-typedef u16  echoToNodeType[MAX_OUTPKT/8];
+typedef u16  echoToNodeType[MAX_OUTPKT / 8];
 typedef u16 *echoToNodePtrType;
 
 //---------------------------------------------------------------------------
@@ -74,9 +76,7 @@ typedef struct
 
 } cookedEchoType;
 
-
 typedef cookedEchoType *cookedEchoPtrType;
-
 
 //---------------------------------------------------------------------------
 typedef struct
@@ -99,9 +99,7 @@ typedef struct
 
 } nodeFileRecType;
 
-
 typedef nodeFileRecType *nodeFileType[MAX_OUTPKT];
-
 
 //---------------------------------------------------------------------------
 typedef struct
@@ -118,27 +116,23 @@ typedef struct
 
 } rawEchoTypeX;
 //---------------------------------------------------------------------------
-
 typedef rawEchoTypeX *areaInfoPtr;
 typedef areaInfoPtr   areaInfoPtrArr[MAX_AREAS];
 
 typedef rawEchoType  *areaInfoPtrO;
 typedef areaInfoPtrO  areaInfoPtrArrO[MAX_AREAS];
 
-#define MAX_BAD_ECHOS 50
+//---------------------------------------------------------------------------
+extern u16               forwNodeCount;
+extern nodeFileType      nodeFileInfo;
+extern u16               echoCount;
+extern cookedEchoType   *echoAreaList;
+extern echoToNodePtrType echoToNode[MAX_AREAS];
 
+//---------------------------------------------------------------------------
 s16  makeNFInfo    (nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode);
 void initAreaInfo  (void);
 void deInitAreaInfo(void);
 
-//---------------------------------------------------------------------------
-#define ETN_INDEX(i) (i >> 3)
-#define ETN_SET(i)   (1 << (2*(i & 7)))
-#define ETN_SETWO(i) (2 << (2*(i & 7)))
-#define ETN_SETRO(i) (3 << (2*(i & 7)))
-#define ETN_RESET(i) (~(3 << (2*(i & 7))))
-#define ETN_ANYACCESS(h,i)    (((h) & ETN_SETRO(i)) != 0)
-#define ETN_READACCESS(h,i)   (((h) & ETN_SET(i)) != 0)
-#define ETN_WRITEACCESS(h,i)  ((((h) & ETN_SETRO(i)) == ETN_SET(i)) || (((h) & ETN_SETRO(i)) == ETN_SETWO(i)))
 //---------------------------------------------------------------------------
 #endif  // areainfoH

@@ -24,9 +24,9 @@
 //---------------------------------------------------------------------------
 
 #ifdef GOLDBASE
-void sortBBS (u32 origTotalMsgBBS, s16 mbSharing);
+void sortBBS(u32 origTotalMsgBBS, s16 mbSharing);
 #else
-void sortBBS (u16 origTotalMsgBBS, s16 mbSharing);
+void sortBBS(u16 origTotalMsgBBS, s16 mbSharing);
 #endif
 
 #endif

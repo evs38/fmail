@@ -622,14 +622,8 @@ typedef struct
 
 #define dNODFNAME  "fmail.nod"
 
-#if defined __32BIT__ || defined __FMAILX__
 #define MAX_NODES        1024
-#else
-#define MAX_NODES        256
-#endif
-
 #define PKTOUT_PATH_LEN  53
-
 #define PKT_TYPE_2PLUS   1
 #define CAPABILITY       PKT_TYPE_2PLUS
 
@@ -640,7 +634,7 @@ typedef struct
   u16             : 1;  // Bit 2
   u16 ignorePwd   : 1;  // Bit 3
   u16 active      : 1;  // Bit 4
-  u16             : 1;  // Bit 5
+  u16             : 1;  // Bit 5  // disabled
   u16 routeToPoint: 1;  // Bit 6
   u16 packNetmail : 1;  // Bit 7
   u16             : 1;  // Bit 8

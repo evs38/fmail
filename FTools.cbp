@@ -65,6 +65,7 @@
 			<Option compilerVar="WINDRES" />
 			<Option weight="60" />
 		</Unit>
+		<Unit filename="SetCompileDate.h" />
 		<Unit filename="addnew.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -132,6 +133,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="mtask.h" />
+		<Unit filename="pp_date.h" />
 		<Unit filename="smtp.c">
 			<Option compilerVar="CC" />
 		</Unit>

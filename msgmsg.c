@@ -344,7 +344,8 @@ void initMsg(s16 noAreaFix)
                         else
                         {
                           for (temp = 0; temp < nodeCount ; temp++)
-                            if (!memcmp(&nodeInfo[temp]->node, &destNode, sizeof(nodeNumType)))
+                            if ( //!nodeInfo[temp]->options.disabled &&
+                               !memcmp(&nodeInfo[temp]->node, &destNode, sizeof(nodeNumType)))
                             {
                               totalBundleSize[temp] += arcSize;
                               break;
@@ -603,7 +604,6 @@ s16 attribMsg(u16 attribute, s32 msgNum)
   return 0;
 }
 //---------------------------------------------------------------------------
-extern u16           nodeCount;
 
 s16 readMsg(internalMsgType *message, s32 msgNum)
 {
@@ -707,22 +707,21 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
   // re-route to point
   if (getLocalAka(&message->destNode) >= 0)
   {
-    count = 0;
-    while (count < nodeCount)
+    for (count = 0; count < nodeCount; count++)
     {
-      if ((nodeInfo[count]->options.routeToPoint) &&
-          (isLocalPoint(&(nodeInfo[count]->node))) &&
-          (memcmp(&(nodeInfo[count]->node), &message->destNode, 6) == 0) &&
-          (stricmp(nodeInfo[count]->sysopName, message->toUserName) == 0))
+      if (  //!nodeInfo[count]->options.disabled &&
+            nodeInfo[count]->options.routeToPoint
+         && isLocalPoint(&(nodeInfo[count]->node))
+         && memcmp(&(nodeInfo[count]->node), &message->destNode, 6) == 0
+         && stricmp(nodeInfo[count]->sysopName, message->toUserName) == 0
+         )
       {
         sprintf(tempStr,"\1TOPT %u\r", message->destNode.point = nodeInfo[count]->node.point);
         insertLine(message->text, tempStr);
         if (!(message->attribute & LOCAL))
           message->attribute |= IN_TRANSIT;
-        count = nodeCount;
+        break;
       }
-      else
-        count++;
     }
   }
 
@@ -821,7 +820,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
   // Determine highest message
 
   highMsgNum = 0;
-  strcpy(helpPtr, "LASTREAD");
+  strcpy(helpPtr, dLASTREAD);
   if (valid && ((msgHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1))
   {
     if (read(msgHandle, &highMsgNum, 2) != 2)

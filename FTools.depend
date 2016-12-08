@@ -22,7 +22,7 @@
 	<stdio.h>
 	<sys/types.h>
 
-1479495580 c:\fmail\fmstruct.h
+1480870403 c:\fmail\fmstruct.h
 	<stdint.h>
 	<time.h>
 	<pshpack1.h>
@@ -45,12 +45,12 @@
 
 1478862964 c:\fmail\update.h
 
-1479241971 c:\fmail\utils.h
+1481057267 c:\fmail\utils.h
 	"fmail.h"
 	"areainfo.h"
 	"fmstruct.h"
 
-1478643189 c:\fmail\areainfo.h
+1481233363 c:\fmail\areainfo.h
 	"fmail.h"
 
 1477129681 source:c:\fmail\cfgfile.c
@@ -112,7 +112,7 @@
 
 1476034823 c:\fmail\version.h
 
-1479932065 source:c:\fmail\ftnotify.c
+1480870477 source:c:\fmail\ftnotify.c
 	<stdlib.h>
 	<stdio.h>
 	<string.h>
@@ -134,7 +134,7 @@
 
 1477413366 c:\fmail\msgradef.h
 
-1480028077 source:c:\fmail\ftools.c
+1481145400 source:c:\fmail\ftools.c
 	<conio.h>
 	<bios.h>
 	<ctype.h>
@@ -196,13 +196,14 @@
 
 1477949075 c:\fmail\lock.h
 
-1476014032 c:\fmail\msgmsg.h
+1481218882 c:\fmail\msgmsg.h
 	<pshpack1.h>
 	<poppack.h>
 
-1480088998 c:\fmail\pp_date.h
+1480540564 c:\fmail\pp_date.h
+	"SetCompileDate.h"
 
-1479569737 c:\fmail\sorthb.h
+1481143972 c:\fmail\sorthb.h
 
 1478862964 c:\fmail\spec.h
 
@@ -344,7 +345,7 @@
 
 1475415727 c:\fmail\smtp.h
 
-1479571382 source:c:\fmail\sorthb.c
+1481144112 source:c:\fmail\sorthb.c
 	<ctype.h>
 	<dos.h>
 	<errno.h>
@@ -396,7 +397,7 @@
 
 1477687086 c:\fmail\bits.h
 
-1479241971 source:c:\fmail\utils.c
+1481057480 source:c:\fmail\utils.c
 	<ctype.h>
 	<dir.h>
 	<direct.h>
@@ -437,13 +438,13 @@
 	"minmax.h"
 	"spec.h"
 
-1477579346 source:c:\fmail\version.c
+1480540527 source:c:\fmail\version.c
 	"Version.h"
 	"pp_date.h"
 	<stdio.h>
 	<windows.h>
 
-1480028314 source:c:\fmail\ftoolsw32.rc
+1481144724 source:c:\fmail\ftoolsw32.rc
 
 1479163400 source:c:\fmail\update.c
 	<fcntl.h>
@@ -486,4 +487,6 @@
 1478185506 c:\fmail\minmax.h
 
 1479920806 c:\fmail\addnew.h
+
+1481235796 c:\fmail\setcompiledate.h
 

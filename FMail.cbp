@@ -12,7 +12,7 @@
 				<Option object_output="obj/FMail/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="PACK" />
+				<Option parameters="TOSS" />
 				<Compiler>
 					<Add option="-mtune=generic" />
 					<Add option="-g" />
@@ -66,6 +66,7 @@
 			<Option compilerVar="WINDRES" />
 			<Option weight="60" />
 		</Unit>
+		<Unit filename="SetCompileDate.h" />
 		<Unit filename="archive.c">
 			<Option compilerVar="CC" />
 		</Unit>

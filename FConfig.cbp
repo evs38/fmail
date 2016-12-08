@@ -49,6 +49,7 @@
 			<Option compilerVar="WINDRES" />
 			<Option weight="60" />
 		</Unit>
+		<Unit filename="SetCompileDate.h" />
 		<Unit filename="amgr_utl.c">
 			<Option compilerVar="CC" />
 		</Unit>

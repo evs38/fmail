@@ -69,10 +69,6 @@
 #define dSENDMAIL
 #endif // __WIN32__
 
-#if !defined(__FMAILX__) && !defined(__32BIT__)
-extern unsigned cdecl _stklen = 16384;
-#endif
-
 fhandle fmailLockHandle;
 
 u16 status;
@@ -227,8 +223,6 @@ const char *smtpID;
 
 globVarsType globVars;
 
-extern configType config;
-
 const char *dayName[7]   = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 const char *months       = "JanFebMarAprMayJunJulAugSepOctNovDec";
 const char *semaphore[6] = {
@@ -243,14 +237,6 @@ const char *semaphore[6] = {
 long       gmtOffset;
 time_t     startTime;
 struct tm  timeBlock;
-extern u16 echoCount;
-extern u16 forwNodeCount;
-
-extern cookedEchoType    *echoAreaList;
-extern echoToNodePtrType echoToNode[MAX_AREAS];
-extern nodeFileType      nodeFileInfo;
-
-extern s16 messagesMoved;
 
 internalMsgType *message   = NULL;
 s16              diskError = 0;
@@ -689,21 +675,20 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                   // re-route to point
                   if (localAkaNum >= 0)
                   {
-                    i = 0;
-                    while (i < nodeCount)
+                    for (i = 0; i < nodeCount; i++)
                     {
-                      if ((nodeInfo[i]->options.routeToPoint) &&
-                          (isLocalPoint(&(nodeInfo[i]->node))) &&
-                          (memcmp(&(nodeInfo[i]->node), &message->destNode, 6) == 0) &&
-                          (stricmp(nodeInfo[i]->sysopName, message->toUserName) == 0))
+                      if (  //!nodeInfo[i]->options.disabled &&
+                            nodeInfo[i]->options.routeToPoint
+                         && isLocalPoint(&(nodeInfo[i]->node))
+                         && memcmp(&(nodeInfo[i]->node), &message->destNode, 6) == 0
+                         && stricmp(nodeInfo[i]->sysopName, message->toUserName) == 0
+                         )
                       {
                         sprintf(tempStr,"\1TOPT %u\r", message->destNode.point = nodeInfo[i]->node.point);
                         insertLine(message->text, tempStr);
-                        i = nodeCount;
                         localAkaNum = getLocalAka(&message->destNode);
+                        break;
                       }
-                      else
-                        i++;
                     }
                   }
                   if (localAkaNum >= 0)
@@ -849,8 +834,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
                 for (i = 0; i < forwNodeCount; i++)
                 {
-                  if (memcmp( &nodeFileInfo[i]->destNode4d.net
-                            , &globVars.packetSrcNode.net, 6) == 0)
+                  if (memcmp(&nodeFileInfo[i]->destNode4d.net, &globVars.packetSrcNode.net, 6) == 0)
                   {
                     if (ETN_ANYACCESS(tempEchoToNode[ETN_INDEX(i)], i))
                     {
@@ -861,8 +845,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                 }
                 for (i = 0; i < forwNodeCount; i++)
                 {
-                  if (memcmp( &nodeFileInfo[i]->destNode4d.net
-                            , &globVars.packetSrcNode.net, 6) == 0)
+                  if (memcmp(&nodeFileInfo[i]->destNode4d.net, &globVars.packetSrcNode.net, 6) == 0)
                   {
                     nodeFileInfo[i]->fromNodeMsg++;
                     i = -1;
@@ -1151,8 +1134,7 @@ void Toss(int argc, char *argv[])
     message->srcNode   = message->destNode = config.akaList[0].nodeNum;
     message->attribute = PRIVATE;
 
-    sprintf(tempStr, "New personal netmail and/or echomail messages have arrived on your system!\r\r%s", TearlineStr());
-    strcpy(message->text, tempStr);
+    strcpy(stpcpy(message->text, "New personal netmail and/or echomail messages have arrived on your system!\r\r"), TearlineStr());
     writeMsgLocal(message, NETMSG, 1);
   }
 
@@ -1166,15 +1148,12 @@ void Toss(int argc, char *argv[])
 
   if (globVars.echoCountV || globVars.dupCountV || globVars.badCountV)
   {
-    if (*config.tossedAreasList &&
-         (tempHandle = open(config.tossedAreasList, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
+    if (*config.tossedAreasList && (tempHandle = open(config.tossedAreasList, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
       for (count = 0; count < echoCount; count++)
         if (echoAreaList[count].msgCountV)
           dprintf(tempHandle, "%s\n", echoAreaList[count].areaName);
 
-    if ( *config.summaryLogName
-       && (tempHandle = open( config.summaryLogName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1
-       )
+    if (*config.summaryLogName && (tempHandle = open( config.summaryLogName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
     {
       logEntry("Writing toss summary", LOG_DEBUG, 0);
       dprintf(tempHandle, "\n----------  %s %4u-%02u-%02u %02u:%02u:%02u, %s - Toss Summary\n\n"
@@ -1304,8 +1283,7 @@ void Toss(int argc, char *argv[])
   // See also end of PACK block
 
   temp = 0;
-  if (  (config.mbOptions.sortNew || config.mbOptions.updateChains)
-     && globVars.mbCountV != 0 && !mailBomb)
+  if ((config.mbOptions.sortNew || config.mbOptions.updateChains) && globVars.mbCountV != 0 && !mailBomb)
   {
     if (mbSharingInternal)
     {
@@ -1939,7 +1917,7 @@ void Pack(int argc, char *argv[])
 {
   s32 switches;
 
-  if ((argc >= 3) && ((argv[2][0] == '?') || (argv[2][1] == '?')))
+  if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
   {
     puts("Usage:\n\n"
          "    FMail Pack [<node> [<node> ...] [VIA <node>] [/A] [/C] [/H] [/O] [/I] [/L]]\n\n"

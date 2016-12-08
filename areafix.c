@@ -66,8 +66,8 @@
 static const char *arcName[12] = { "none", "arc", "zip", "lzh", "pak", "zoo", "arj", "sqz", "cus", "uc2", "rar", "jar" };
 #define ARCCOUNT 12
 
-extern u16             echoCount;
-extern cookedEchoType *echoAreaList;
+//extern u16             echoCount;
+//extern cookedEchoType *echoAreaList;
 
 typedef struct
 {
@@ -217,7 +217,7 @@ static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
     }
     while (++count < MAX_UPLREQ && found == -1);
   }
-  return(found);
+  return found;
 }
 //---------------------------------------------------------------------------
 int toAreaFix(const char *toName)
@@ -428,7 +428,6 @@ int areaFix(internalMsgType *message)
     return -1;
   }
 
-#if defined(__FMAILX__) || defined(__32BIT__)
   if ((areaFixList = (areaFixListType*)malloc(sizeof(areaFixListType))) == NULL )
   {
     mgrLogEntry("Not enough memory available for AreaFix");
@@ -442,18 +441,13 @@ int areaFix(internalMsgType *message)
     free(areaFixList);
     return -1;
   }
-#else
-  areaFixList = (areaFixListType*)(message->text + TEXT_SIZE - sizeof(areaFixListType));
-  badAreaList = (badAreaListType*)(message->text + TEXT_SIZE - sizeof(areaFixListType) - sizeof(badAreaListType));
-#endif
 
   if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
   {
     free(areaSortList);
-#if defined(__FMAILX__) || defined(__32BIT__)
     free(areaFixList);
     free(badAreaList);
-#endif
+
     mgrLogEntry("AreaMgr: Can't open file "dARFNAME" for input");
     return -1;
   }
@@ -476,7 +470,7 @@ int areaFix(internalMsgType *message)
   message->srcNode  = message->destNode;
   message->destNode = nodeInfoPtr->node;
 
-  if (nodeInfoPtr->node.zone == 0)
+  if (nodeInfoPtr->node.zone == 0) // || nodeInfoPtr->options.disabled)
   {
     message->destNode = tempNode;
     sprintf(tempStr, "Unauthorized AreaMgr request from node %s", nodeStr(&tempNode));
@@ -836,10 +830,8 @@ int areaFix(internalMsgType *message)
 
       strcpy(message->subject, "FMail AreaMgr status report");
 
-      helpPtr = message->text+
-                sprintf (message->text, "FMail AreaMgr status report for %s on %s\r",
-                         nodeStr(&nodeInfoPtr->node),
-                         nodeStr(&message->srcNode));
+      helpPtr = message->text
+              + sprintf(message->text, "FMail AreaMgr status report for %s on %s\r", nodeStr(&nodeInfoPtr->node), nodeStr(&message->srcNode));
 
       if (remMaintPtr != NULL)
       {
@@ -855,11 +847,13 @@ int areaFix(internalMsgType *message)
         areaBuf->comment[COMMENT_LEN-1] = 0;
         areaBuf->originLine[ORGLINE_LEN-1] = 0;
 
-        if ((areaBuf->options.active) &&
-            (!areaBuf->options.local) &&
-            (areaBuf->options.allowAreafix) &&
-            (areaBuf->group & nodeInfoPtr->groups) &&
-            (areaFixCount < MAX_AREAFIX) && allType)
+        if (  areaBuf->options.active
+           && !areaBuf->options.local
+           && areaBuf->options.allowAreafix
+           && (areaBuf->group & nodeInfoPtr->groups)
+           && areaFixCount < MAX_AREAFIX
+           && allType
+           )
         {
           compare = 1;
           c = 0;
@@ -920,10 +914,10 @@ int areaFix(internalMsgType *message)
             if ( (*areaFixList)[count].remove )
             {
               c = 0;
-              while ((c < MAX_FORWARD) &&
-                     (memcmp (&(areaBuf->forwards[c].nodeNum),
-                              &nodeInfoPtr->node,
-                              sizeof(nodeNumType)) != 0))
+              while (c < MAX_FORWARD &&
+                     (memcmp(&(areaBuf->forwards[c].nodeNum),
+                             &nodeInfoPtr->node,
+                             sizeof(nodeNumType)) != 0))
               {
                 c++;
               }
@@ -1086,15 +1080,14 @@ int areaFix(internalMsgType *message)
 
       if (activePassive)
       {
-        nodeInfoPtr->options.active = 2-activePassive;
-        if ( activePassive == 1 )
+        nodeInfoPtr->options.active = 2 - activePassive;
+        if (activePassive == 1)
           nodeInfoPtr->referenceLNBDat = 0;
       }
 
       if (notifyChange)
         nodeInfoPtr->options.notify = 2-notifyChange;
 
-#ifdef __32BIT__
       if ((archiver ==  0 && *config.arc32.programName == 0) ||
           (archiver ==  1 && *config.zip32.programName == 0) ||
           (archiver ==  2 && *config.lzh32.programName == 0) ||
@@ -1105,18 +1098,6 @@ int areaFix(internalMsgType *message)
           (archiver ==  8 && *config.uc232.programName == 0) ||
           (archiver ==  9 && *config.rar32.programName == 0) ||
           (archiver == 10 && *config.jar32.programName == 0))
-#else
-      if ((archiver ==  0 && *config.arc.programName == 0) ||
-          (archiver ==  1 && *config.zip.programName == 0) ||
-          (archiver ==  2 && *config.lzh.programName == 0) ||
-          (archiver ==  3 && *config.pak.programName == 0) ||
-          (archiver ==  4 && *config.zoo.programName == 0) ||
-          (archiver ==  5 && *config.arj.programName == 0) ||
-          (archiver ==  6 && *config.sqz.programName == 0) ||
-          (archiver ==  8 && *config.uc2.programName == 0) ||
-          (archiver ==  9 && *config.rar.programName == 0) ||
-          (archiver == 10 && *config.jar.programName == 0))
-#endif
       {
         archiver = 0xFF;
       }
@@ -1149,7 +1130,6 @@ int areaFix(internalMsgType *message)
         mgrLogEntry (helpPtr2);
       }
       switch (nodeInfoPtr->archiver)
-#ifdef __32BIT__
       {
         case 0:
           strcpy(tempStr, config.arc32.programName);
@@ -1184,42 +1164,6 @@ int areaFix(internalMsgType *message)
         case 10:
           strcpy(tempStr, config.jar32.programName);
           break;
-#else
-      {
-        case 0:
-          strcpy(tempStr, config.arc.programName);
-          break;
-        case 1:
-          strcpy(tempStr, config.zip.programName);
-          break;
-        case 2:
-          strcpy(tempStr, config.lzh.programName);
-          break;
-        case 3:
-          strcpy(tempStr, config.pak.programName);
-          break;
-        case 4:
-          strcpy(tempStr, config.zoo.programName);
-          break;
-        case 5:
-          strcpy(tempStr, config.arj.programName);
-          break;
-        case 6:
-          strcpy(tempStr, config.sqz.programName);
-          break;
-        case 7:
-          strcpy(tempStr, config.customArc.programName);
-          break;
-        case 8:
-          strcpy(tempStr, config.uc2.programName);
-          break;
-        case 9:
-          strcpy(tempStr, config.rar.programName);
-          break;
-        case 10:
-          strcpy(tempStr, config.jar.programName);
-          break;
-#endif
         case 0xFF:
           strcpy(tempStr, "None");
           break;
@@ -1240,7 +1184,6 @@ int areaFix(internalMsgType *message)
       helpPtr += sprintf(helpPtr, "Compression : %s%s", tempStr, archiver == 1 ? " (new setting)" : "");
       mgrLogEntry (helpPtr2);
       helpPtr += sprintf (helpPtr, "\r- available : NONE");
-#ifdef __32BIT__
       if (*config.arc32.programName != 0)
         helpPtr += sprintf (helpPtr, " ARC");
       if (*config.zip32.programName != 0)
@@ -1261,28 +1204,6 @@ int areaFix(internalMsgType *message)
         helpPtr += sprintf (helpPtr, " RAR");
       if (*config.jar32.programName != 0)
         helpPtr += sprintf (helpPtr, " JAR");
-#else
-      if (*config.arc.programName != 0)
-        helpPtr += sprintf (helpPtr, " ARC");
-      if (*config.zip.programName != 0)
-        helpPtr += sprintf (helpPtr, " ZIP");
-      if (*config.lzh.programName != 0)
-        helpPtr += sprintf (helpPtr, " LZH");
-      if (*config.pak.programName != 0)
-        helpPtr += sprintf (helpPtr, " PAK");
-      if (*config.zoo.programName != 0)
-        helpPtr += sprintf (helpPtr, " ZOO");
-      if (*config.arj.programName != 0)
-        helpPtr += sprintf (helpPtr, " ARJ");
-      if (*config.sqz.programName != 0)
-        helpPtr += sprintf (helpPtr, " SQZ");
-      if (*config.uc2.programName != 0)
-        helpPtr += sprintf (helpPtr, " UC2");
-      if (*config.rar.programName != 0)
-        helpPtr += sprintf (helpPtr, " RAR");
-      if (*config.jar.programName != 0)
-        helpPtr += sprintf (helpPtr, " JAR");
-#endif
       *(helpPtr++) = '\r';
 
       if (passwordChange)
@@ -1805,10 +1726,9 @@ Send:
     send_bcl(&message->srcNode, &message->destNode, nodeInfoPtr);
 
   free(areaSortList);
-#if defined(__FMAILX__) || defined(__32BIT__)
   free(areaFixList);
   free(badAreaList);
-#endif
+
   return 0;
 }
 //---------------------------------------------------------------------------

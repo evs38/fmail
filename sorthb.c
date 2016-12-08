@@ -50,7 +50,7 @@
 extern configType config;
 
 #ifdef GOLDBASE
-void sortBBS()
+void sortBBS(u32 origTotalMsgBBS, s16 mbSharing)
 {
 }
 #else

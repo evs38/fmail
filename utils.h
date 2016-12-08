@@ -101,6 +101,8 @@ const char *strError       (int errn);
 
 const nodeNumType *getAkaNodeNum(int aka, int retMain);
 const char *getAkaStr      (int aka, int retMain);
+int         cmpNodeNums    (nodeNumType *n1, nodeNumType *n2);
+int         cmpNodeNumsNoZone(nodeNumType *n1, nodeNumType *n2);
 int         matchAka       (nodeNumType *node, int useAka);
 s16         emptyText      (char *text);
 s32         getSwitch      (int *argc, char *argv[], s32 mask);
