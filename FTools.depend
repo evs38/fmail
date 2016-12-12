@@ -132,9 +132,9 @@
 
 1478862342 c:\fmail\mtask.h
 
-1477413366 c:\fmail\msgradef.h
+1481322285 c:\fmail\msgradef.h
 
-1481145400 source:c:\fmail\ftools.c
+1481322284 source:c:\fmail\ftools.c
 	<conio.h>
 	<bios.h>
 	<ctype.h>
@@ -397,10 +397,9 @@
 
 1477687086 c:\fmail\bits.h
 
-1481057480 source:c:\fmail\utils.c
+1481234061 source:c:\fmail\utils.c
 	<ctype.h>
 	<dir.h>
-	<direct.h>
 	<dirent.h>
 	<dos.h>
 	<errno.h>
@@ -444,7 +443,7 @@
 	<stdio.h>
 	<windows.h>
 
-1481144724 source:c:\fmail\ftoolsw32.rc
+1481235796 source:c:\fmail\ftoolsw32.rc
 
 1479163400 source:c:\fmail\update.c
 	<fcntl.h>
@@ -488,5 +487,5 @@
 
 1479920806 c:\fmail\addnew.h
 
-1481235796 c:\fmail\setcompiledate.h
+1481300842 c:\fmail\setcompiledate.h
 

@@ -487,24 +487,25 @@ u16 editNM(s16 editType, u16 setdef)
    addItem(nodeMenu, EMAIL, "E-mail", 0, tempInfoN.email, PKTOUT_PATH_LEN-1, 0,
                      "E-mail address where mail bundles should be sent to");
    addItem(nodeMenu, BOOL_INT, "Active", 0, &tempInfoN.options, BIT4, 0,
-                     "Not Active means that a node will only receive echomail directed to SysOp Name");
+                     "Not Active means that a node will not receive echomail");
    addItem(nodeMenu, BOOL_INT, "Forw.requests", 22, &tempInfoN.options, BIT12, 0,
                      "Automatically send requests by this node for new areas to your uplinks");
    addItem(nodeMenu, BOOL_INT, "Rem.maint       ", 45, &tempInfoN.options, BIT13, 0,
                      "If this node is allowed to perform remote maintenance");
-   addItem(nodeMenu, BOOL_INT, "Notify", 0, &tempInfoN.options, BIT15, 0,
-                     "Send list of active areas to this node with the FTools Notify command");
+   addItem(nodeMenu, BOOL_INT_REV, "ÈÍ> Sysop Mail", 0, &tempInfoN.options, BIT5, 0,
+                     "Will receive echomail directed to SysOp Name when not active");
    addItem(nodeMenu, BOOL_INT, "Allow rescan ", 22, &tempInfoN.options, BIT14, 0,
                      "If this node is allowed to use %RESCAN");
    addItem(nodeMenu, BOOL_INT, "Tiny SEEN-BYs   ", 45, &tempInfoN.options, BIT1, 0,
                      "Remove all SEEN-BYs except of your own downlinks (should normally NOT be used)");
-   addItem(nodeMenu, BOOL_INT, "Pack netm.", 0, &tempInfoN.options, BIT7, 0,
-                      "Pack netmail direct for this node");
+   addItem(nodeMenu, BOOL_INT, "Notify", 0, &tempInfoN.options, BIT15, 0,
+                     "Send list of active areas to this node with the FTools Notify command");
    addItem(nodeMenu, BOOL_INT, "Route point  ", 22, &tempInfoN.options, BIT6, 0,
                      "Reroute netmail for this point directed to a local AKA to the point number");
    addItem(nodeMenu, BOOL_INT, "Reformat date   ", 45, &tempInfoN.options, BIT0, 0,
                      "Correct the format of dates in forwarded messages (should normally NOT be used)");
-   addItem(nodeMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
+   addItem(nodeMenu, BOOL_INT, "Pack netm.", 0, &tempInfoN.options, BIT7, 0,
+                      "Pack netmail direct for this node");
    addItem(nodeMenu, NUM_INT, "Auto BCL days   ", 45, &tempInfoN.autoBCL, 3, 999,
                      "Interval in days between automatic BCL files");
    addItem(nodeMenu, WORD, "AreaMgr pwd", 0, &tempInfoN.password, sizeof(tempInfoN.password) - 2, 0,

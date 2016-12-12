@@ -176,7 +176,7 @@ void ChkAutoBCL(void)
   for (index = 0; index < nodeCount; index++)
   {
     nodeInfoType *ni = nodeInfo[index];
-    if (ni->options.active) // && !ni->options.disabled)
+    if (ni->options.active)
     {
       u16 autobcl = ni->autoBCL;
 

@@ -140,8 +140,7 @@ static int sendsmtp_msg(void)
 
       for (xu = 0; xu < nodeCount; ++xu)
       {
-        if (//nodeInfo[xu]->options.disabled ||
-            memcmp(&nodeInfo[xu]->node, &message->destNode, sizeof(nodeNumType)))
+        if (memcmp(&nodeInfo[xu]->node, &message->destNode, sizeof(nodeNumType)))
           continue;
 
         if (!*nodeInfo[xu]->email)
@@ -186,8 +185,7 @@ static int sendsmtp_bink(void)
 
   for (xu = 0; xu < nodeCount; ++xu)
   {
-    if (//nodeInfo[xu]->options.disabled ||
-        !*nodeInfo[xu]->email)
+    if (!*nodeInfo[xu]->email)
       continue;
 
     archiveDirPtr = stpcpy(archiveStr, config.outPath);

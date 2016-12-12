@@ -634,7 +634,7 @@ typedef struct
   u16             : 1;  // Bit 2
   u16 ignorePwd   : 1;  // Bit 3
   u16 active      : 1;  // Bit 4
-  u16             : 1;  // Bit 5  // disabled
+  u16 nosysopmail : 1;  // Bit 5
   u16 routeToPoint: 1;  // Bit 6
   u16 packNetmail : 1;  // Bit 7
   u16             : 1;  // Bit 8

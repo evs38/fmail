@@ -1544,13 +1544,23 @@ E-mail
 
 Active
 
-          A system that is not active will not receive echomail
-          for the connected areas except for messages that are
-          directed to the Sysop name of that system. A system that
-          has the Active set to No is still allowed to send
-          echomail for connected areas. The Active status can be
-          changed by the system through the %ACTIVE and %PASSIVE
-          commands in a message to AreaMgr.
+          A system that is not active will not receive echomail for
+          the connected areas except for messages that are directed to
+          the Sysop name of that system if the 'Sysop mail' option is
+          turned on. A system that has Active set to No is still
+          allowed to send echomail for connected areas. The Active
+          status can be changed by the system through the %ACTIVE and
+          %PASSIVE commands in a message to AreaMgr.
+          Note: When a system is not Active, it won't receive BCL files
+          either.
+
+Sysop mail
+
+          When Active is set to no, receive echo mail addressed to the
+          Sysop name anyway. When Active is set to yes, this option
+          has no effect.
+          Note: When a node sets itself to Passive through a command to
+          AreaMgr, this option is turned on automatically.
 
 Notify
 

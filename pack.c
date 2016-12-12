@@ -415,8 +415,7 @@ s16 pack(s16 argc, char *argv[], s32 switches)
   else
   {
     for (count = nodeCount - 1; count >= 0; count--)
-      if (//!nodeInfo[count]->options.disabled &&
-          nodeInfo[count]->options.packNetmail)
+      if (nodeInfo[count]->options.packNetmail)
         packRoute(NULL, NULL, DEST_VIA, &(nodeInfo[count]->node), switches);
 
     for (count = 0; count < MAX_PACK && *(*pack)[count]; count++)

@@ -344,8 +344,7 @@ void initMsg(s16 noAreaFix)
                         else
                         {
                           for (temp = 0; temp < nodeCount ; temp++)
-                            if ( //!nodeInfo[temp]->options.disabled &&
-                               !memcmp(&nodeInfo[temp]->node, &destNode, sizeof(nodeNumType)))
+                            if (!memcmp(&nodeInfo[temp]->node, &destNode, sizeof(nodeNumType)))
                             {
                               totalBundleSize[temp] += arcSize;
                               break;
@@ -709,8 +708,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
   {
     for (count = 0; count < nodeCount; count++)
     {
-      if (  //!nodeInfo[count]->options.disabled &&
-            nodeInfo[count]->options.routeToPoint
+      if (  nodeInfo[count]->options.routeToPoint
          && isLocalPoint(&(nodeInfo[count]->node))
          && memcmp(&(nodeInfo[count]->node), &message->destNode, 6) == 0
          && stricmp(nodeInfo[count]->sysopName, message->toUserName) == 0

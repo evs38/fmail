@@ -209,8 +209,7 @@ void closeNodeInfo(void)
         continue;
 
       memcpy(nodeBuf, nodeInfo[count], sizeof(nodeInfoType));
-      if (//!nodeBuf->options.disabled &&
-          nodeBuf->options.active && nodeBuf->lastNewBundleDat == nodeBuf->referenceLNBDat)
+      if (nodeBuf->options.active && nodeBuf->lastNewBundleDat == nodeBuf->referenceLNBDat)
       {
         if (nodeBuf->passiveSize && totalBundleSize[count] / 1024ul > nodeBuf->passiveSize * 100ul)
         {

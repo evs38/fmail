@@ -28,6 +28,7 @@
 #define dMSGINFO   "msginfo"
 #define dMSGTOIDX  "msgtoidx"
 #define dMSGMULTI  "msg*"
+#define dUSERSBBS  "users.bbs"
 
 //---------------------------------------------------------------------------
 #endif

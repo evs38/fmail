@@ -470,7 +470,7 @@ int areaFix(internalMsgType *message)
   message->srcNode  = message->destNode;
   message->destNode = nodeInfoPtr->node;
 
-  if (nodeInfoPtr->node.zone == 0) // || nodeInfoPtr->options.disabled)
+  if (nodeInfoPtr->node.zone == 0)
   {
     message->destNode = tempNode;
     sprintf(tempStr, "Unauthorized AreaMgr request from node %s", nodeStr(&tempNode));
@@ -905,10 +905,10 @@ int areaFix(internalMsgType *message)
 
         if (count < areaFixCount && (*areaFixList)[count].remove != 8 )
         {
-          if ((areaBuf->options.active) &&
-              (!areaBuf->options.local) &&
-              (areaBuf->options.allowAreafix) /* &&
-                   (!areaBuf->options.disconnected)*/)
+          if (   areaBuf->options.active
+             && !areaBuf->options.local
+             &&  areaBuf->options.allowAreafix
+             )
           {
             /* found */
             if ( (*areaFixList)[count].remove )
@@ -1083,6 +1083,9 @@ int areaFix(internalMsgType *message)
         nodeInfoPtr->options.active = 2 - activePassive;
         if (activePassive == 1)
           nodeInfoPtr->referenceLNBDat = 0;
+        else
+          // If node sets himself to inactive, force receiving echomail addressed to sysop to true
+          nodeInfoPtr->options.nosysopmail = 0;
       }
 
       if (notifyChange)

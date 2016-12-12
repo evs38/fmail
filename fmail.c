@@ -677,8 +677,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                   {
                     for (i = 0; i < nodeCount; i++)
                     {
-                      if (  //!nodeInfo[i]->options.disabled &&
-                            nodeInfo[i]->options.routeToPoint
+                      if (  nodeInfo[i]->options.routeToPoint
                          && isLocalPoint(&(nodeInfo[i]->node))
                          && memcmp(&(nodeInfo[i]->node), &message->destNode, 6) == 0
                          && stricmp(nodeInfo[i]->sysopName, message->toUserName) == 0

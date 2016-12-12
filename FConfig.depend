@@ -22,7 +22,7 @@
 	<stdio.h>
 	<sys/types.h>
 
-1480870403 c:\fmail\fmstruct.h
+1481578032 c:\fmail\fmstruct.h
 	<stdint.h>
 	<time.h>
 	<pshpack1.h>
@@ -266,7 +266,7 @@
 1480540564 c:\fmail\pp_date.h
 	"SetCompileDate.h"
 
-1478893076 source:c:\fmail\import.c
+1481236062 source:c:\fmail\import.c
 	<dir.h>
 	<fcntl.h>
 	<io.h>
@@ -299,7 +299,7 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1480456623 source:c:\fmail\nodemgr.c
+1481578032 source:c:\fmail\nodemgr.c
 	<ctype.h>
 	<fcntl.h>
 	<io.h>
@@ -375,7 +375,7 @@
 
 1312487460 c:\fmail\os.h
 
-1480369985 source:c:\fmail\fconfigw32.rc
+1481235925 source:c:\fmail\fconfigw32.rc
 
 1476478327 source:c:\fmail\stricmp.c
 	"stricmp.h"
@@ -390,5 +390,5 @@
 
 1478639913 source:c:\fmail\stpcpy.c
 
-1481235924 c:\fmail\setcompiledate.h
+1481579408 c:\fmail\setcompiledate.h
 

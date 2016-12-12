@@ -1049,12 +1049,12 @@ void Maint(int argc, char *argv[])
       close(lastReadHandle);
     }
 
-    if ((usersBBSHandle = open(expandName("users.bbs"), O_RDWR | O_BINARY)) != -1)
+    if ((usersBBSHandle = open(expandName(dUSERSBBS), O_RDWR | O_BINARY)) != -1)
     {
 #ifdef _DEBUG
-      logEntryf(LOG_DEBUG, 0, "DEBUG Updating %s", expandName("users.bbs"));
+      logEntryf(LOG_DEBUG, 0, "DEBUG Updating %s", expandName(dUSERSBBS));
 #else
-      puts("Updating users.bbs...");
+      puts("Updating "dUSERSBBS"...");
 #endif // _DEBUG
       c = 0;
 
@@ -1066,7 +1066,7 @@ void Maint(int argc, char *argv[])
         if (filelength(usersBBSHandle) % 1016)
         {
           newLine();
-          logEntry("Incorrect USERS.BBS version, check BBS program settings!", LOG_ALWAYS, 0);
+          logEntry("Incorrect "dUSERSBBS" version, check BBS program settings!", LOG_ALWAYS, 0);
         }
         else
         {
@@ -1086,7 +1086,7 @@ void Maint(int argc, char *argv[])
         if (filelength(usersBBSHandle) % 158)
         {
           newLine();
-          logEntry("Incorrect USERS.BBS version, check BBS program settings!", LOG_ALWAYS, 0);
+          logEntry("Incorrect "dUSERSBBS" version, check BBS program settings!", LOG_ALWAYS, 0);
         }
         else
         {

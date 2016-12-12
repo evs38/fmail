@@ -1268,7 +1268,11 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
       if (   ETN_READACCESS(echoToNode[ETN_INDEX(count)], count)
          && !nodeFileInfo[count]->destFake
          &&  nodeFileInfo[count]->destNode.point == 0
-         &&  (nodeFileInfo[count]->nodePtr->options.active || stricmp(nodeFileInfo[count]->nodePtr->sysopName, msg->toUserName) == 0)
+         &&  (  nodeFileInfo[count]->nodePtr->options.active
+             || (  !nodeFileInfo[count]->nodePtr->options.nosysopmail
+                && stricmp(nodeFileInfo[count]->nodePtr->sysopName, msg->toUserName) == 0
+                )
+             )
          )
       {
         // Assign return value of addSeenByNode to
