@@ -1259,8 +1259,7 @@ menuType *createMenu(char *title)
   return menu;
 }
 //---------------------------------------------------------------------------
-s16 addItem( menuType *menu, u16 entryType, char *prompt, u16 offset
-           , void *data, u16 par1, u16 par2, char *comment)
+s16 addItem(menuType *menu, u16 entryType, char *prompt, u16 offset, void *data, u16 par1, u16 par2, const char *comment)
 {
   u16 promptSize = 0;
   u16 dataSize   = 0;

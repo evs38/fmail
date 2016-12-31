@@ -280,7 +280,7 @@ void unpackArc(const struct bt *bp)
             , dirStr
             , pathStr;
   s16 temp;
-  char *extPtr = "";
+  char *extPtr = "Unknown";
   char parStr[MAX_PARSIZE];
   char procStr1[64];
   char procStr2[MAX_PARSIZE];
@@ -348,13 +348,26 @@ void unpackArc(const struct bt *bp)
     break;
   }
 
+  logEntryf(LOG_INBOUND, 0, "Decompressing %s (%s)", fullFileName, extPtr);
+  {
+    struct tm *tm = localtime(&bp->mtime);
+    if (tm != NULL)
+      sprintf(tempStr, "Archive info: %ld, %04u-%02u-%02u %02u:%02u:%02u"
+                     , bp->size
+                     , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
+                     , tm->tm_hour, tm->tm_min, tm->tm_sec);
+    else
+      sprintf(tempStr, "Archive info: %ld, * Illegal date/time", bp->size);
+
+    logEntry(tempStr, LOG_INBOUND, 0);
+  }
   if (*arcPath == 0)
   {
     if (!*config.GUS32.programName)
     {
       if (arcType == 0xFF)
       {
-        logEntryf(LOG_ALWAYS, 0, "Unknown archiving utility used for %s"                  , fullFileName);
+        logEntry("Unknown archiving utility used", LOG_ALWAYS, 0);
         addExtension(fullFileName, ".unknown_archiver");
       }
       else
@@ -371,19 +384,6 @@ void unpackArc(const struct bt *bp)
   {
     logEntryf(LOG_ALWAYS, 0, "Archive decompression program for %s method not found", extPtr);
     return;
-  }
-  logEntryf(LOG_INBOUND, 0, "Decompressing %s (%s)", fullFileName, extPtr);
-  {
-    struct tm *tm = localtime(&bp->mtime);  // TODO (Wilfred#1#10/21/16): Check if correct value is logged
-    if (tm != NULL)
-      sprintf(tempStr, "Archive info: %ld, %04u-%02u-%02u %02u:%02u:%02u"
-                     , bp->size
-                     , tm->tm_year + 1900, tm->tm_mon +1, tm->tm_mday
-                     , tm->tm_hour, tm->tm_min, tm->tm_sec);
-    else
-      sprintf(tempStr, "Archive info: %ld, 1970-01-01 00:00:00", bp->size);
-
-    logEntry(tempStr, LOG_INBOUND, 0);
   }
   strcpy(unpackPathStr, config.inPath);  // pktPath
 

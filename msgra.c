@@ -594,10 +594,33 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, u16 impSeenBy)
         *message->normPath = 0;
       }
 
-      if (writeText(message->text, message->normSeen, message->normPath,
-                     (boardNum != config.badBoard) && (boardNum != config.dupBoard),
-                     &msgRa.StartRec,
-                     &msgRa.NumRecs))
+      if (*message->dateStr)
+      {
+        // Insert after the AREA: line and last kludge line
+        char *p = message->text;
+        int d = 1;
+        while (*p == '\1' || strnicmp(p, "AREA:", 5) == 0)
+        {
+          if ((d = strnicmp(++p, "DATE:", 5)) == 0)
+            break;  // DATE: kludge already present
+          {
+            char *p2;
+            if ((p2 = strchr(p, '\r')) == NULL)
+              p = strchr(p, 0);
+            else
+              if (*(p = ++p2) == '\n')
+                p++;
+          }
+        }
+        if (d)
+          addKludge(p, "DATE:", message->dateStr);
+      }
+
+      if (writeText( message->text, message->normSeen, message->normPath
+                   , boardNum != config.badBoard && boardNum != config.dupBoard
+                   , &msgRa.StartRec, &msgRa.NumRecs
+                   )
+         )
          return 1;
 
       sprintf((char*)&msgRa.ptLength, "\x05%02d:%02d\x08%02d-%02d-%02d"
@@ -637,17 +660,12 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, u16 impSeenBy)
       msgRa.sjLength = strlen(message->subject);
       strncpy (msgRa.Subj, message->subject, 72);
 
-      if ((msgRa.sjLength) <= 56)
+      if (msgRa.sjLength <= 56)
       {
-         msgRa.subjCrc    = crc32alpha(message->subject);
-
-         msgRa.wrTime     = checkDate (message->year,  message->month,   message->day,
-                                       message->hours, message->minutes, message->seconds);
-         msgRa.recTime    = startTime;  // TODO gmtOffset needed?
-
-         msgRa.checkSum = CS_SECURITY ^ msgRa.subjCrc
-                                      ^ msgRa.wrTime
-                                      ^ msgRa.recTime;
+         msgRa.subjCrc  = crc32alpha(message->subject);
+         msgRa.wrTime   = checkDate(message->year, message->month, message->day, message->hours, message->minutes, message->seconds);
+         msgRa.recTime  = startTime;  // TODO gmtOffset needed?
+         msgRa.checkSum = CS_SECURITY ^ msgRa.subjCrc ^ msgRa.wrTime ^ msgRa.recTime;
       }
 
       if (hdrBufCount == HDR_BUFSIZE)
@@ -667,7 +685,7 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, u16 impSeenBy)
       msgIdxBuf[hdrBufCount].MsgNum = msgRa.MsgNum;
       msgIdxBuf[hdrBufCount].Board  = msgRa.Board;
 
-      memcpy (&(msgToIdxBuf[hdrBufCount]), &(msgRa.wtLength), 36);
+      memcpy(&(msgToIdxBuf[hdrBufCount]), &(msgRa.wtLength), 36);
 
       msgHdrBuf[hdrBufCount++] = msgRa;
 
@@ -933,7 +951,7 @@ void moveBadBBS(void)
 
       if ((areaIndex = getAreaCode(message->text)) < 0)
       {
-         if ( areaIndex == BADMSG )
+         if (areaIndex == BADMSG)
             newLine();
          else
             putchar('\r');
@@ -967,14 +985,14 @@ deleteMsg:
       lseek(msgHdrHandle, (offset - 1)*(u32)sizeof(msgHdrRec), SEEK_SET);
       write(msgHdrHandle, &msgRa, sizeof(msgHdrRec));
 
-      if ( msgRa.MsgNum == infoRec.LowMsg )
+      if (msgRa.MsgNum == infoRec.LowMsg)
          infoRec.LowMsg++;
-      if ( msgRa.MsgNum == infoRec.HighMsg )
+      if (msgRa.MsgNum == infoRec.HighMsg)
          infoRec.HighMsg--;
       infoRec.TotalActive--;
       infoRec.ActiveMsgs[config.badBoard-1]--;
       globVars.movedBad++;
-      if ( validate1BBS() || validateEchoPktWr() == 0 )
+      if (validate1BBS() || validateEchoPktWr() == 0)
          validate2BBS(1);
    }
    if ( move )
@@ -993,7 +1011,6 @@ deleteMsg:
 //---------------------------------------------------------------------------
 void closeBBSWr(u16 orgName)
 {
-
    lseek (msgHdrHandle, 0, SEEK_SET);
    chsize(msgHdrHandle, raHdrRecValid*(u32)sizeof(msgHdrRec));
    close (msgHdrHandle);
@@ -1068,6 +1085,8 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
       && !(msgRa.MsgAttr & RA_DELETED)
       )
    {
+      struct tm *tm;
+
       if ((u32)msgRa.NumRecs > ((u32)((u32)TEXT_SIZE - 2048) >> 8))
       {
          putchar('\r');
@@ -1079,42 +1098,6 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
       strncpy(message->fromUserName, msgRa.WhoFrom, msgRa.wfLength);
       strncpy(message->toUserName,   msgRa.WhoTo,   msgRa.wtLength);
       strncpy(message->subject,      msgRa.Subj,    msgRa.sjLength);
-
-      if (scanDate((char*)&msgRa.ptLength,
-                   &message->year, &message->month, &message->day,
-                   &message->hours, &message->minutes) != 0)
-      {
-         putchar('\r');
-         logEntryf(LOG_MSGBASE, 0, "Bad date in message base: message #%u in board #%u "dARROW" Skipped", msgRa.MsgNum, msgRa.Board);
-         return -1;
-      }
-
-      if (message->year >= 100)
-         message->year = 1980;
-      else
-      {
-         if (message->year >= 80)
-            message->year += 1900;
-         else
-            message->year += 2000;
-      }
-
-      if ((message->month == 0) || (message->month > 12))
-         message->month = 1;
-
-      if ((message->day == 0) || (message->day > 31))
-         message->day = 1;
-
-      if (message->hours >= 24)
-         message->hours = 0;
-
-      if (message->minutes >= 60)
-         message->minutes = 0;
-
-      message->seconds   = secondsInc++;
-
-      if (secondsInc == 60)
-         secondsInc = 0;
 
       if (msgRa.MsgAttr & RA_PRIVATE)
          message->attribute |= PRIVATE;
@@ -1135,6 +1118,79 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
       }
 
       removeLfSr(message->text);
+
+      // Check if wrTime is used and valid
+      if (  msgRa.sjLength <= 56
+         && msgRa.checkSum == (CS_SECURITY ^ msgRa.subjCrc ^ msgRa.wrTime ^ msgRa.recTime)
+         && (tm = localtime((const time_t *)&msgRa.wrTime)) != NULL
+         )
+      {
+        message->year    = tm->tm_year + 1900;
+        message->month   = tm->tm_mon + 1;
+        message->day     = tm->tm_mday;
+        message->hours   = tm->tm_hour;
+        message->minutes = tm->tm_min;
+        message->seconds = tm->tm_sec;
+#ifdef _DEBUG
+        logEntryf(LOG_DEBUG, 0, "DEBUG scanBBS wrTime used: %04u-%02u-%02u %02u:%02u:%02u", message->year, message->month, message->day, message->hours, message->minutes, message->seconds);
+#endif
+        // Remove DATE kludge if it exists
+        if ((helpPtr = findCLStr(message->text, "\1DATE: ")) != NULL)
+          removeLine(helpPtr);
+      }
+      else
+      {
+        tempStrType tStr;
+        // check if there's a DATE: kludge and use it. getKludge() removes the kludge!
+        if ( !getKludge(message->text, "\1DATE: ", tStr, sizeof(tStr))
+           || getPktDate(tStr, &message->year, &message->month, &message->day, &message->hours, &message->minutes, &message->seconds)
+           )
+        {
+          if (scanDate( (char*)&msgRa.ptLength
+                      , &message->year, &message->month, &message->day
+                      , &message->hours, &message->minutes) != 0
+             )
+          {
+             putchar('\r');
+             logEntryf(LOG_MSGBASE, 0, "Bad date in message base: message #%u in board #%u "dARROW" Skipped", msgRa.MsgNum, msgRa.Board);
+             return -1;
+          }
+
+          if (message->year >= 100)
+             message->year = 1980;
+          else
+          {
+             if (message->year >= 80)
+                message->year += 1900;
+             else
+                message->year += 2000;
+          }
+
+          if (message->month == 0 || message->month > 12)
+             message->month = 1;
+
+          if (message->day == 0 || message->day > 31)
+             message->day = 1;
+
+          if (message->hours >= 24)
+             message->hours = 0;
+
+          if (message->minutes >= 60)
+             message->minutes = 0;
+
+          message->seconds = secondsInc++;
+
+          if (secondsInc == 60)
+             secondsInc = 0;
+#ifdef _DEBUG
+          logEntryf(LOG_DEBUG, 0, "DEBUG scanBBS hudson date/time used: %04u-%02u-%02u %02u:%02u:%02u", message->year, message->month, message->day, message->hours, message->minutes, message->seconds);
+#endif
+        }
+#ifdef _DEBUG
+        else
+          logEntryf(LOG_DEBUG, 0, "DEBUG scanBBS DATE kludge used: %04u-%02u-%02u %02u:%02u:%02u", message->year, message->month, message->day, message->hours, message->minutes, message->seconds);
+#endif
+      }
 
       if (getFlags(message->text) & FL_LOK)
          return -1;
@@ -1166,15 +1222,15 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
          message->destNode.net  = msgRa.DestNet;
          message->destNode.node = msgRa.DestNode;
 
-         if ((helpPtr = findCLStr (message->text, "\1MSGID:")) != NULL)
+         if ((helpPtr = findCLStr(message->text, "\1MSGID:")) != NULL)
          {
-            temp = atoi (helpPtr+7);
+            temp = atoi(helpPtr + 7);
             if (temp % 256 == msgRa.OrigZone)
                message->srcNode.zone = temp;
             if (temp % 256 == msgRa.DestZone)
                message->destNode.zone = temp;
          }
-         point4d (message);
+         point4d(message);
 
          for (count = 0; count < MAX_NETAKAS; count++)
             if (config.netmailBoard[count] == msgRa.Board)
@@ -1259,15 +1315,10 @@ s16 updateCurrHdrBBS(internalMsgType *message)
    }
    if (msgRa.sjLength <= 56)
    {
-      msgRa.subjCrc = crc32alpha(msgRa.Subj);
-
-      msgRa.wrTime     = checkDate (message->year,  message->month,   message->day,
-                                    message->hours, message->minutes, message->seconds);
-      msgRa.recTime    = startTime;  // TODO gmtOffset needed?
-
-      msgRa.checkSum = CS_SECURITY ^ msgRa.subjCrc
-                                   ^ msgRa.wrTime
-                                   ^ msgRa.recTime;
+      msgRa.subjCrc  = crc32alpha(msgRa.Subj);
+      msgRa.wrTime   = checkDate(message->year, message->month, message->day, message->hours, message->minutes, message->seconds);
+      msgRa.recTime  = startTime;  // TODO gmtOffset needed?
+      msgRa.checkSum = CS_SECURITY ^ msgRa.subjCrc ^ msgRa.wrTime ^ msgRa.recTime;
    }
 
    if (config.mbOptions.scanUpdate)

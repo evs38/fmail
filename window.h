@@ -153,7 +153,7 @@ typedef struct
   u16      selected;
   u16      par1
          , par2;
-  char    *comment;
+  const char *comment;
 } menuEntryType;
 
 typedef struct
@@ -212,7 +212,7 @@ void      initWindow   (u16 mode);
 menuType *createMenu   (char *title);
 s16       displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey);
 void      removeWindow (void);
-s16       addItem      (menuType *menu, u16 entryType, char *prompt, u16 offset, void *data, u16 par1, u16 par2, char *comment);
+s16       addItem      (menuType *menu, u16 entryType, char *prompt, u16 offset, void *data, u16 par1, u16 par2, const char *comment);
 s16       displayMenu  (menuType *menu, u16 sx, u16 sy);
 s16       groupToChar  (s32 group);
 u16       editString   (char *string, u16 width, u16 x, u16 y, u16 fieldType);

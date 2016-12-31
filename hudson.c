@@ -91,7 +91,8 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 
    if (boardNum)
    {
-      if (lockMB()) return (1);
+      if (lockMB())
+        return 1;
 
       if (((msgInfoHandle = open(expandNameH(dMSGINFO), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
           (read(msgInfoHandle, &infoRec, sizeof(infoRecType)) != sizeof(infoRecType)))
@@ -228,9 +229,9 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 //---------------------------------------------------------------------------
 void closeBBS(void)
 {
-   close(msgHdrHandle);
-   close(msgTxtHandle);
-   close(msgIdxHandle);
-   close(msgToIdxHandle);
+  close(msgHdrHandle);
+  close(msgTxtHandle);
+  close(msgIdxHandle);
+  close(msgToIdxHandle);
 }
 //---------------------------------------------------------------------------

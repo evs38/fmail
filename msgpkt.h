@@ -109,6 +109,8 @@ s16   openPktRd        (char *fileName, s16 secure);
 s16   readPkt          (internalMsgType *message);
 void  closePktRd       (void);
 
+int   getPktDate       (char *dateStr, u16 *year, u16 *month, u16 *day, u16 *hours, u16 *minutes, u16 *seconds);
+
 char *setSeenByPath    (internalMsgType *msg, char *txtEnd, areaOptionsType areaOptions, nodeOptionsType nodeOptions);
 s16   writeEchoPkt     (internalMsgType *message, areaOptionsType areaOptions, echoToNodeType echoToNode);
 void  freePktHandles   (void);

@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1481578996 source:c:\fmail\fmail.c
+1483026458 source:c:\fmail\fmail.c
 	<conio.h>
 	<ctype.h>
 	<dir.h>
@@ -95,7 +95,7 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1476216280 c:\fmail\msgpkt.h
+1483026458 c:\fmail\msgpkt.h
 	<pshpack1.h>
 	<poppack.h>
 
@@ -125,7 +125,7 @@
 
 1476034437 c:\fmail\sendsmtp.h
 
-1479318082 source:c:\fmail\archive.c
+1482941162 source:c:\fmail\archive.c
 	<dir.h>
 	<dirent.h>
 	<dos.h>
@@ -207,7 +207,7 @@
 	"utils.h"
 	"version.h"
 
-1481218615 source:c:\fmail\areainfo.c
+1481843889 source:c:\fmail\areainfo.c
 	<dos.h>
 	<fcntl.h>
 	<io.h>
@@ -443,7 +443,7 @@
 	"utils.h"
 	"version.h"
 
-1481578996 source:c:\fmail\msgpkt.c
+1483026458 source:c:\fmail\msgpkt.c
 	<ctype.h>
 	<dir.h>
 	<dos.h>
@@ -470,7 +470,7 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1481216692 source:c:\fmail\msgra.c
+1482269411 source:c:\fmail\msgra.c
 	<dir.h>
 	<dos.h>
 	<errno.h>
@@ -600,7 +600,7 @@
 	"smtp.h"
 	"utils.h"
 
-1481144112 source:c:\fmail\sorthb.c
+1482269417 source:c:\fmail\sorthb.c
 	<ctype.h>
 	<dos.h>
 	<errno.h>
@@ -651,7 +651,7 @@
 	<stdio.h>
 	<windows.h>
 
-1481578996 source:c:\fmail\utils.c
+1482943079 source:c:\fmail\utils.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -683,7 +683,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1481215486 source:c:\fmail\fmailw32.rc
+1483020278 source:c:\fmail\fmailw32.rc
 
 1481322285 c:\fmail\msgradef.h
 
@@ -694,5 +694,5 @@
 
 1478185506 c:\fmail\minmax.h
 
-1481579408 c:\fmail\setcompiledate.h
+1483020278 c:\fmail\setcompiledate.h
 

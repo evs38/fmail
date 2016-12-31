@@ -408,23 +408,15 @@ static s16 bgets(char *s, size_t n) // !MSGSIZE
       ++endBuf;
     }
   }
-#ifdef __32BIT__
   startBuf += helpPtr - s - sLen;
-#else
-  startBuf += (u16)helpPtr - (u16)s - (u16)sLen;
-#endif
+
   return 0;
 }
 //---------------------------------------------------------------------------
-s16 bgetdate( char *dateStr
-            , u16 *year,  u16 *month,   u16 *day
-            , u16 *hours, u16 *minutes, u16 *seconds
-            )
+int getPktDate(char *dateStr, u16 *year, u16 *month, u16 *day, u16 *hours, u16 *minutes, u16 *seconds)
 {
-  char monthStr[23];
-
-  if (bgets(dateStr, 23) || strlen(dateStr) < 15)
-    return EOF;
+  if (strlen(dateStr) < 15)
+    return -1;
 
   *seconds = 0;
 
@@ -433,15 +425,20 @@ s16 bgetdate( char *dateStr
 
   if (sscanf(dateStr, "%hd-%hd-%hd %hd:%hd:%hd", day, month, year, hours, minutes, seconds) < 5)
   {
+    char monthStr[23];
+
     if (sscanf(dateStr, "%hd %s %hd %hd:%hd:%hd", day, monthStr, year, hours, minutes, seconds) < 5)
     {
-      printf(" Error in date: %s\n", dateStr);
+      logEntryf(LOG_ALWAYS, 0, "Error in pkt date: %s", dateStr);
 
-      *day     =  1;
-      *month   =  1;
-      *year    = 80;
-      *hours   =  0;
-      *minutes =  0;
+      *day     =    1;
+      *month   =    1;
+      *year    = 1980;
+      *hours   =    0;
+      *minutes =    0;
+      *seconds =    0;
+
+      return 1;
     }
     else
     {
@@ -482,6 +479,17 @@ s16 bgetdate( char *dateStr
 
   if (*seconds >= 60)
     *seconds = 0;
+
+  return 0;
+}
+//---------------------------------------------------------------------------
+s16 bgetdate( char *dateStr
+            , u16 *year,  u16 *month,   u16 *day
+            , u16 *hours, u16 *minutes, u16 *seconds
+            )
+{
+  if (bgets(dateStr, 23) || getPktDate(dateStr, year, month, day, hours, minutes, seconds) < 0)
+    return EOF;
 
   if (endBuf - startBuf < 1)
   {
@@ -730,6 +738,10 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
         strcpy(helpPtr = ftsPtr - strlen(message->dateStr) - 1, message->dateStr);
 
       helpPtr2 = setSeenByPath(message, psbStart, areaOptions, nodeFileInfo[count]->nodePtr->options);
+
+#ifdef _DEBUG0
+      logEntryf(LOG_DEBUG, 0, "DEBUG srcAka: %s reqAka: %s", getAkaStr(nodeFileInfo[count]->srcAka, 0), getAkaStr(nodeFileInfo[count]->requestedAka, 0));
+#endif // _DEBUG
 
       if (  config.akaList[nodeFileInfo[count]->srcAka].nodeNum.zone
          && nodeFileInfo[count]->srcAka != nodeFileInfo[count]->requestedAka
@@ -1016,10 +1028,9 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
    if ((nfInfo->nodePtr->options.fixDate) || (*message->dateStr == 0))
    {
       if (*message->okDateStr == 0)
-         sprintf (message->okDateStr,
-                           "%02d %.3s %02d  %02d:%02d:%02d",
-                           message->day, months+(message->month-1)*3,
-                           message->year%100, message->hours,
+         sprintf(message->okDateStr, "%02d %.3s %02d  %02d:%02d:%02d",
+                           message->day, months + (message->month - 1) * 3,
+                           message->year % 100, message->hours,
                            message->minutes,  message->seconds);
       len = strlen(message->okDateStr) + 1;
       error |= (write(pktHandle, message->okDateStr, len) != len);

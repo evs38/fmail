@@ -1,3 +1,11 @@
+2016-12-29  1.73.10.59-Beta
+  * Insert a DATE: kludge line when a message is tossed to a hudson messagebase
+    area.
+  * Use and remove the DATE: kludge if a message is scanned from a hudson area.
+    Either in case of a 'rescan' or a 'toss /b' action.
+  * Log info of received bundles first, before any errors.
+    So it's clear which file causes the problem.
+
 2016-12-12  1.73.9.54-Beta
   * When a node is not Active, you can now specify if it will still receive mail
     addressed to the Sysop name.

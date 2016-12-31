@@ -418,10 +418,8 @@ void tossBad(internalMsgType *message, const char *badStr)
 {
   tempStrType tempStr;
 
-  sprintf(tempStr, "\1FMAIL DEST: %s\r", nodeStr(&globVars.packetDestNode));
-  insertLineN(message->text, tempStr, 1);
-
-  sprintf(tempStr, "\1FMAIL SRC: %s\r", nodeStr(&globVars.packetSrcNode));
+  sprintf(tempStr, "\1FMAIL SRC: %s\r"
+                   "\1FMAIL DEST: %s\r", nodeStr(&globVars.packetSrcNode), nodeStr(&globVars.packetDestNode));
   insertLineN(message->text, tempStr, 1);
 
   if (NULL != badStr)
@@ -740,11 +738,11 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                 if (!secure)
                 {
                   i = 0;
-                  while ((i < forwNodeCount) &&
-                         ((!ETN_WRITEACCESS(echoToNode[areaIndex][ETN_INDEX(i)], i)) ||
-                          (memcmp (&(nodeFileInfo[i]->destNode4d.net),
-                                   &(globVars.packetSrcNode.net),
-                                   sizeof(nodeNumType)-2) != 0)))
+                  while (  i < forwNodeCount
+                        && (  !ETN_WRITEACCESS(echoToNode[areaIndex][ETN_INDEX(i)], i)
+                           || memcmp(&(nodeFileInfo[i]->destNode4d.net), &(globVars.packetSrcNode.net), sizeof(nodeNumType)-2) != 0
+                           )
+                        )
                     i++;
 
                   if ((i == forwNodeCount &&
@@ -781,12 +779,13 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                   time_t msgTime;
 
                   // Calculate message time
-                  tm.tm_year = message->year  - 1900;
-                  tm.tm_mon  = message->month - 1;
-                  tm.tm_mday = message->day;
-                  tm.tm_hour = message->hours;
-                  tm.tm_min  = message->minutes;
-                  tm.tm_sec  = message->seconds;
+                  tm.tm_year  = message->year  - 1900;
+                  tm.tm_mon   = message->month - 1;
+                  tm.tm_mday  = message->day;
+                  tm.tm_hour  = message->hours;
+                  tm.tm_min   = message->minutes;
+                  tm.tm_sec   = message->seconds;
+                  tm.tm_isdst = -1;
                   msgTime = mktime(&tm);  // todo: Possibly need to add gmtOffset!
 
                   if (msgTime < oldMsgTime)

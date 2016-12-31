@@ -947,71 +947,42 @@ int main(int argc, char *argv[])
   if ((netMenu = createMenu(" Netmail boards ")) == NULL)
     goto nomem;
 
-// addItem(netMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(netMenu, FUNC_VPAR, "Main", 0, netmailMenu, 0, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA  8", 9, netmailMenu, 8, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 16", 18, netmailMenu, 16, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 24", 27, netmailMenu, 24, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA  1", 0, netmailMenu, 1, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA  9", 9, netmailMenu, 9, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 17", 18, netmailMenu, 17, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 25", 27, netmailMenu, 25, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA  2", 0, netmailMenu, 2, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 10", 9, netmailMenu, 10, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 18", 18, netmailMenu, 18, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 26", 27, netmailMenu, 26, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA  3", 0, netmailMenu, 3, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 11", 9, netmailMenu, 11, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 19", 18, netmailMenu, 19, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 27", 27, netmailMenu, 27, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA  4", 0, netmailMenu, 4, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 12", 9, netmailMenu, 12, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 20", 18, netmailMenu, 20, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 28", 27, netmailMenu, 28, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA  5", 0, netmailMenu, 5, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 13", 9, netmailMenu, 13, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 21", 18, netmailMenu, 21, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 29", 27, netmailMenu, 29, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA  6", 0, netmailMenu, 6, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 14", 9, netmailMenu, 14, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 22", 18, netmailMenu, 22, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 30", 27, netmailMenu, 30, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA  7", 0, netmailMenu, 7, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 15", 9, netmailMenu, 15, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 23", 18, netmailMenu, 23, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
-  addItem(netMenu, FUNC_VPAR, "AKA 31", 27, netmailMenu, 31, 0,
-           "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base");
+  {
+    const char *nmHelpTxt = "Netmail board in the RemoteAccess/SuperBBS/QuickBBS/TAG message base";
+
+    addItem(netMenu, FUNC_VPAR, "Main"  ,  0, netmailMenu,  0, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA  8",  9, netmailMenu,  8, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 16", 18, netmailMenu, 16, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 24", 27, netmailMenu, 24, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA  1",  0, netmailMenu,  1, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA  9",  9, netmailMenu,  9, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 17", 18, netmailMenu, 17, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 25", 27, netmailMenu, 25, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA  2",  0, netmailMenu,  2, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 10",  9, netmailMenu, 10, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 18", 18, netmailMenu, 18, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 26", 27, netmailMenu, 26, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA  3",  0, netmailMenu,  3, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 11",  9, netmailMenu, 11, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 19", 18, netmailMenu, 19, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 27", 27, netmailMenu, 27, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA  4",  0, netmailMenu,  4, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 12",  9, netmailMenu, 12, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 20", 18, netmailMenu, 20, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 28", 27, netmailMenu, 28, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA  5",  0, netmailMenu,  5, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 13",  9, netmailMenu, 13, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 21", 18, netmailMenu, 21, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 29", 27, netmailMenu, 29, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA  6",  0, netmailMenu,  6, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 14",  9, netmailMenu, 14, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 22", 18, netmailMenu, 22, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 30", 27, netmailMenu, 30, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA  7",  0, netmailMenu,  7, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 15",  9, netmailMenu, 15, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 23", 18, netmailMenu, 23, 0, nmHelpTxt);
+    addItem(netMenu, FUNC_VPAR, "AKA 31", 27, netmailMenu, 31, 0, nmHelpTxt);
+  }
 
   if ((mbMenu = createMenu(" Message base ")) == NULL)
     goto nomem;
@@ -1041,130 +1012,80 @@ int main(int argc, char *argv[])
   if ((groupMenu = createMenu(" Group names ")) == NULL)
     goto nomem;
 
-  addItem(groupMenu, TEXT, "A", 0, config.groupDescr[0], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "N", 32, config.groupDescr[13], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "B", 0, config.groupDescr[1], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "O", 32, config.groupDescr[14], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "C", 0, config.groupDescr[2], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "P", 32, config.groupDescr[15], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "D", 0, config.groupDescr[3], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "Q", 32, config.groupDescr[16], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "E", 0, config.groupDescr[4], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "R", 32, config.groupDescr[17], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "F", 0, config.groupDescr[5], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "S", 32, config.groupDescr[18], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "G", 0, config.groupDescr[6], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "T", 32, config.groupDescr[19], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "H", 0, config.groupDescr[7], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "U", 32, config.groupDescr[20], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "I", 0, config.groupDescr[8], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "V", 32, config.groupDescr[21], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "J", 0, config.groupDescr[9], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "W", 32, config.groupDescr[22], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "K", 0, config.groupDescr[10], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "X", 32, config.groupDescr[23], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "L", 0, config.groupDescr[11], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "Y", 32, config.groupDescr[24], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "M", 0, config.groupDescr[12], 26, 0,
-           "Description of a group of echomail conferences");
-  addItem(groupMenu, TEXT, "Z", 32, config.groupDescr[25], 26, 0,
-           "Description of a group of echomail conferences");
+  {
+    const char *gmHelpTxt = "Description of a group of echomail conferences";
+
+    addItem(groupMenu, TEXT, "A",  0, config.groupDescr[ 0], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "N", 32, config.groupDescr[13], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "B",  0, config.groupDescr[ 1], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "O", 32, config.groupDescr[14], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "C",  0, config.groupDescr[ 2], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "P", 32, config.groupDescr[15], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "D",  0, config.groupDescr[ 3], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "Q", 32, config.groupDescr[16], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "E",  0, config.groupDescr[ 4], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "R", 32, config.groupDescr[17], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "F",  0, config.groupDescr[ 5], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "S", 32, config.groupDescr[18], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "G",  0, config.groupDescr[ 6], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "T", 32, config.groupDescr[19], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "H",  0, config.groupDescr[ 7], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "U", 32, config.groupDescr[20], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "I",  0, config.groupDescr[ 8], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "V", 32, config.groupDescr[21], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "J",  0, config.groupDescr[ 9], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "W", 32, config.groupDescr[22], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "K",  0, config.groupDescr[10], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "X", 32, config.groupDescr[23], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "L",  0, config.groupDescr[11], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "Y", 32, config.groupDescr[24], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "M",  0, config.groupDescr[12], 26, 0, gmHelpTxt);
+    addItem(groupMenu, TEXT, "Z", 32, config.groupDescr[25], 26, 0, gmHelpTxt);
+  }
 
   if ((address1Menu = createMenu(" Addresses 1 ")) == NULL)
     goto nomem;
 
-  addItem(address1Menu, NODE, "Main", 0, &config.akaList[0], FAKE, 0,
-           "Main Address  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA  1", 0, &config.akaList[1], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA  2", 0, &config.akaList[2], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA  3", 0, &config.akaList[3], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA  4", 0, &config.akaList[4], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA  5", 0, &config.akaList[5], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA  6", 0, &config.akaList[6], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA  7", 0, &config.akaList[7], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA  8", 0, &config.akaList[8], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA  9", 0, &config.akaList[9], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA 10", 0, &config.akaList[10], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA 11", 0, &config.akaList[11], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA 12", 0, &config.akaList[12], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA 13", 0, &config.akaList[13], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA 14", 0, &config.akaList[14], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address1Menu, NODE, "AKA 15", 0, &config.akaList[15], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
+  {
+    const char *amHelpTxt = "AKA  zone:net/node[.point][-fakenet]";
 
-  if ((address2Menu = createMenu(" Addresses 2 ")) == NULL)
-    goto nomem;
+    addItem(address1Menu, NODE, "Main", 0, &config.akaList[0], FAKE, 0, "Main Address  zone:net/node[.point][-fakenet]");
+    addItem(address1Menu, NODE, "AKA  1", 0, &config.akaList[1], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA  2", 0, &config.akaList[2], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA  3", 0, &config.akaList[3], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA  4", 0, &config.akaList[4], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA  5", 0, &config.akaList[5], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA  6", 0, &config.akaList[6], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA  7", 0, &config.akaList[7], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA  8", 0, &config.akaList[8], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA  9", 0, &config.akaList[9], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA 10", 0, &config.akaList[10], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA 11", 0, &config.akaList[11], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA 12", 0, &config.akaList[12], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA 13", 0, &config.akaList[13], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA 14", 0, &config.akaList[14], FAKE, 0, amHelpTxt);
+    addItem(address1Menu, NODE, "AKA 15", 0, &config.akaList[15], FAKE, 0, amHelpTxt);
 
-  addItem(address2Menu, NODE, "AKA 16", 0, &config.akaList[16], FAKE, 0,
-           "Main Address  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 17", 0, &config.akaList[17], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 18", 0, &config.akaList[18], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 19", 0, &config.akaList[19], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 20", 0, &config.akaList[20], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 21", 0, &config.akaList[21], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 22", 0, &config.akaList[22], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 23", 0, &config.akaList[23], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 24", 0, &config.akaList[24], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 25", 0, &config.akaList[25], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 26", 0, &config.akaList[26], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 27", 0, &config.akaList[27], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 28", 0, &config.akaList[28], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 29", 0, &config.akaList[29], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 30", 0, &config.akaList[30], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
-  addItem(address2Menu, NODE, "AKA 31", 0, &config.akaList[31], FAKE, 0,
-           "AKA  zone:net/node[.point][-fakenet]");
+    if ((address2Menu = createMenu(" Addresses 2 ")) == NULL)
+      goto nomem;
+
+    addItem(address2Menu, NODE, "AKA 16", 0, &config.akaList[16], FAKE, 0, "Main Address  zone:net/node[.point][-fakenet]");
+    addItem(address2Menu, NODE, "AKA 17", 0, &config.akaList[17], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 18", 0, &config.akaList[18], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 19", 0, &config.akaList[19], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 20", 0, &config.akaList[20], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 21", 0, &config.akaList[21], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 22", 0, &config.akaList[22], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 23", 0, &config.akaList[23], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 24", 0, &config.akaList[24], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 25", 0, &config.akaList[25], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 26", 0, &config.akaList[26], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 27", 0, &config.akaList[27], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 28", 0, &config.akaList[28], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 29", 0, &config.akaList[29], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 30", 0, &config.akaList[30], FAKE, 0, amHelpTxt);
+    addItem(address2Menu, NODE, "AKA 31", 0, &config.akaList[31], FAKE, 0, amHelpTxt);
+  }
 
   if ((genMenu = createMenu(" General ")) == NULL)
     goto nomem;

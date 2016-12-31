@@ -193,7 +193,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
             if (config.mbOptions.sortNew)
             {
-               if (scanDate ((char*)&msgHdrBuf[bufCount].ptLength, &year, &month, &day, &hours, &minutes) == 0)
+               if (scanDate((char*)&msgHdrBuf[bufCount].ptLength, &year, &month, &day, &hours, &minutes) == 0)
                {
                   sli_bsTimeStampHi[count] = (u16)((code = checkDate(year, month, day, hours, minutes, 0)) >> 16);
                   sli_bsTimeStampLo[count] = (u16)code;
@@ -209,8 +209,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
          }
          else
          {
-            sli_subjectCrcHi[count]  = (u16)((code = msgHdrBuf[bufCount].subjCrc) >> 16);
-            sli_subjectCrcLo[count]  = (u16)code;
+            sli_subjectCrcHi[count] = (u16)((code = msgHdrBuf[bufCount].subjCrc) >> 16);
+            sli_subjectCrcLo[count] = (u16)code;
             if (config.mbOptions.sortNew)
             {
                sli_bsTimeStampHi[count] = (u16)((code = msgHdrBuf[bufCount].wrTime) >> 16);

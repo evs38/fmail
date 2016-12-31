@@ -737,38 +737,40 @@ s16 scanDate(const char *dtPtr, u16 *year , u16 *month, u16 *day, u16 *hours, u1
 //---------------------------------------------------------------------------
 s32 checkDate(u16 year, u16 month, u16 day, u16 hours, u16 minutes, u16 seconds)
 {
-    struct tm tms;
+  struct tm tms;
 
-    if (((year >= 100) && (year  < 1980)) || (year  > 2099) ||
-        (month < 1)    || (month > 12)   ||
-        (day   < 1)    || (day   > 31))
-    {
-       year  = 1980;
-       month = 1;
-       day   = 1;
-    }
-    if (year < 100)
-    {
-       if (year >= 80)
-          year += 1900;
-       else
-          year += 2000;
-    }
-    if ((hours >= 24) || (minutes >= 60) || (seconds >= 60))
-    {
-       hours   = 0;
-       minutes = 0;
-       seconds = 0;
-    }
+  if (  (year >= 100 && year  < 1980) || year  > 2099
+     || month < 1    || month > 12
+     || day   < 1    || day   > 31
+     )
+  {
+    year  = 1980;
+    month = 1;
+    day   = 1;
+  }
+  if (year < 100)
+  {
+    if (year >= 80)
+      year += 1900;
+    else
+      year += 2000;
+  }
+  if (hours >= 24 || minutes >= 60 || seconds >= 60)
+  {
+    hours   = 0;
+    minutes = 0;
+    seconds = 0;
+  }
 
-    tms.tm_year = year - 1900;
-    tms.tm_mon  = month - 1;
-    tms.tm_mday = day;
-    tms.tm_hour = hours;
-    tms.tm_min  = minutes;
-    tms.tm_sec  = seconds;
+  tms.tm_year  = year - 1900;
+  tms.tm_mon   = month - 1;
+  tms.tm_mday  = day;
+  tms.tm_hour  = hours;
+  tms.tm_min   = minutes;
+  tms.tm_sec   = seconds;
+  tms.tm_isdst = -1;
 
-    return mktime(&tms);
+  return mktime(&tms);
 }
 //---------------------------------------------------------------------------
 void removeLine(char *s)
@@ -925,25 +927,16 @@ static void writePathSeenBy(u16 type, char *pathSeen, psRecType *psArray, u16 ar
          helpPtr2 = tempStr+5;
          do
          {
-#ifndef __32BIT__
-	   _AX = num;
-	   _DX = 0;
-	   _CX = 10;
-	   __emit__ (0xf7, 0xf1);
-	   num = _AX;
-	   *(--helpPtr2) = _DX + '0';
-#else
-	   div_t divRes;
+           div_t divRes;
 
-	   divRes = div (num, 10);
-	   *(--helpPtr2) = divRes.rem + '0';
-	   num = divRes.quot;
-#endif /* __32BIT__ */
-	 }
-	 while (num != 0);
-	 helpPtr = stpcpy (helpPtr, helpPtr2);
+           divRes = div(num, 10);
+           *(--helpPtr2) = divRes.rem + '0';
+           num = divRes.quot;
+         }
+         while (num != 0);
+         helpPtr = stpcpy (helpPtr, helpPtr2);
 
-	 *(helpPtr++) = '/';
+         *(helpPtr++) = '/';
       }
       else
       {
@@ -954,45 +947,27 @@ static void writePathSeenBy(u16 type, char *pathSeen, psRecType *psArray, u16 ar
             helpPtr2 = tempStr+5;
             do
 	          {
-#ifndef __32BIT__
-	       _AX = num;
-	       _DX = 0;
-	       _CX = 10;
-	       __emit__ (0xf7, 0xf1);
-	       num = _AX;
-	       *(--helpPtr2) = _DX + '0';
-#else
-	       div_t divRes;
+               div_t divRes;
 
-	       divRes = div (num, 10);
-	       *(--helpPtr2) = divRes.rem + '0';
-	       num = divRes.quot;
-#endif /* __32BIT__ */
-	    }
-	    while (num);
-	    helpPtr = stpcpy (helpPtr, helpPtr2);
+               divRes = div(num, 10);
+               *(--helpPtr2) = divRes.rem + '0';
+               num = divRes.quot;
+            }
+            while (num);
+            helpPtr = stpcpy (helpPtr, helpPtr2);
 
-	    *(helpPtr++) = '/';
-	 }
+            *(helpPtr++) = '/';
+         }
       }
       num = psArray[count].node;
       helpPtr2 = tempStr+5;
       do
       {
-#ifndef __32BIT__
-	 _AX = num;
-	 _DX = 0;
-	 _CX = 10;
-	 __emit__ (0xf7, 0xf1);
-	 num = _AX;
-	 *(--helpPtr2) = _DX + '0';
-#else
-	 div_t divRes;
+         div_t divRes;
 
-	 divRes = div (num, 10);
-	 *(--helpPtr2) = divRes.rem + '0';
-	 num = divRes.quot;
-#endif /* __32BIT__ */
+         divRes = div(num, 10);
+         *(--helpPtr2) = divRes.rem + '0';
+         num = divRes.quot;
       }
       while (num);
       helpPtr = stpcpy (helpPtr, helpPtr2);

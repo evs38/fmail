@@ -74,9 +74,9 @@ s16 makeNFInfo(nodeFileRecType *nfInfo, s16 srcAka, nodeNumType *destNode)
    nfInfo->requestedAka = srcAka;
 
    if (  nfInfo->nodePtr->useAka && nfInfo->nodePtr->useAka <= MAX_AKAS
-      && config.akaList[nfInfo->nodePtr->useAka-1].nodeNum.zone
+      && config.akaList[nfInfo->nodePtr->useAka - 1].nodeNum.zone
       )
-      nfInfo->srcAka = nfInfo->nodePtr->useAka-1;
+      nfInfo->srcAka = nfInfo->nodePtr->useAka - 1;
    else
      if ((nfInfo->srcAka = srcAka) == -1)
         nfInfo->srcAka = matchAka(&nfInfo->destNode4d, nfInfo->nodePtr->useAka);
