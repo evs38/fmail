@@ -674,8 +674,11 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
   fnRecType *fnPtr;
   char       dateStr[24];
   char      *ftsPtr;
-  char      *helpPtr
-          , *helpPtr2;
+  char      *helpPtr;
+#if 0
+#define ADDPATH
+  char      *helpPtr2;
+#endif
   char      *pktBufStart;
   char      *psbStart;
   udef       pktBufLen;
@@ -737,8 +740,12 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
       else
         strcpy(helpPtr = ftsPtr - strlen(message->dateStr) - 1, message->dateStr);
 
-      helpPtr2 = setSeenByPath(message, psbStart, areaOptions, nodeFileInfo[count]->nodePtr->options);
+#ifdef ADDPATH
+      helpPtr2 =
+#endif
+      setSeenByPath(message, psbStart, areaOptions, nodeFileInfo[count]->nodePtr->options);
 
+#ifdef ADDPATH
 #ifdef _DEBUG0
       logEntryf(LOG_DEBUG, 0, "DEBUG srcAka: %s reqAka: %s", getAkaStr(nodeFileInfo[count]->srcAka, 0), getAkaStr(nodeFileInfo[count]->requestedAka, 0));
 #endif // _DEBUG
@@ -747,6 +754,9 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
          && nodeFileInfo[count]->srcAka != nodeFileInfo[count]->requestedAka
          )
       {
+        // Add an extra PATH line if the "Use AKA" for the destination node (srcAka)
+        // isn't the same as the "Origin AKA" for the echomail area the message is received in (requestedAka).
+        // 2017-01-03 Don't think this is necessary, so turned off the code.
         sprintf( helpPtr2 , "\1PATH: %u/%u\r"
                , config.akaList[nodeFileInfo[count]->srcAka].nodeNum.net
                , config.akaList[nodeFileInfo[count]->srcAka].nodeNum.node
@@ -756,6 +766,7 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
                                                                , config.akaList[nodeFileInfo[count]->srcAka].nodeNum.node);
 #endif // _DEBUG
       }
+#endif // ADDPATH
 
       pktBufStart = helpPtr - sizeof(pmHdrType);
       pktBufLen   = (udef)strchr(message->text, 0) - (udef)pktBufStart + 1;

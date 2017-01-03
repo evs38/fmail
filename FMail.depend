@@ -443,7 +443,7 @@
 	"utils.h"
 	"version.h"
 
-1483026458 source:c:\fmail\msgpkt.c
+1483478575 source:c:\fmail\msgpkt.c
 	<ctype.h>
 	<dir.h>
 	<dos.h>
@@ -470,7 +470,7 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1482269411 source:c:\fmail\msgra.c
+1483027061 source:c:\fmail\msgra.c
 	<dir.h>
 	<dos.h>
 	<errno.h>
@@ -683,7 +683,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1483020278 source:c:\fmail\fmailw32.rc
+1483476707 source:c:\fmail\fmailw32.rc
 
 1481322285 c:\fmail\msgradef.h
 
@@ -694,5 +694,5 @@
 
 1478185506 c:\fmail\minmax.h
 
-1483020278 c:\fmail\setcompiledate.h
+1483478718 c:\fmail\setcompiledate.h
 

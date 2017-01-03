@@ -1,3 +1,8 @@
+2017-01-03  1.73.11.61-Beta
+  * Turned off code to add extra path line when the "Use AKA" for the
+    destination node isn't the same as the "Origin AKA" for the echomail area
+    the message is received in. Deemed not necessary.
+
 2016-12-29  1.73.10.59-Beta
   * Insert a DATE: kludge line when a message is tossed to a hudson messagebase
     area.
