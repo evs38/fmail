@@ -1,3 +1,7 @@
+2017-01-04  1.73.11.61-Beta
+  * FConfig: When importing AREAS.BBS, the Group and AreaFix settings from the
+    'AreaMgr defaults' is used for newly created areas.
+
 2017-01-03  1.73.11.61-Beta
   * Turned off code to add extra path line when the "Use AKA" for the
     destination node isn't the same as the "Origin AKA" for the echomail area

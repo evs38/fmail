@@ -151,7 +151,7 @@
 	<ctype.h>
 	"fmail.h"
 
-1481664655 source:c:\fmail\fsetup.c
+1483561990 source:c:\fmail\fsetup.c
 	<conio.h>
 	<errno.h>
 	<fcntl.h>
@@ -375,7 +375,7 @@
 
 1312487460 c:\fmail\os.h
 
-1481666864 source:c:\fmail\fconfigw32.rc
+1483561573 source:c:\fmail\fconfigw32.rc
 
 1476478327 source:c:\fmail\stricmp.c
 	"stricmp.h"
@@ -390,5 +390,5 @@
 
 1478639913 source:c:\fmail\stpcpy.c
 
-1481666862 c:\fmail\setcompiledate.h
+1483561572 c:\fmail\setcompiledate.h
 

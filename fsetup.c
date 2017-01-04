@@ -660,60 +660,37 @@ int main(int argc, char *argv[])
     goto nomem;
 
   addItem(anImpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(anImpMenu, FUNCTION, "Import Areas.BBS", 0, importAreasBBS, 0, 0,
-           "Convert Areas.BBS into "dARFNAME);
-  addItem(anImpMenu, FUNCTION, "Import RA info", 0, importRAInfo, 0, 0,
-           "Import RA area (security) info into an existing FMail areas file");
-  addItem(anImpMenu, FUNCTION, "Import Folder.FD", 0, importFolderFD, 0, 0,
-           "Convert FrontDoor's Folder.FD into "dARFNAME);
-  addItem(anImpMenu, FUNCTION, "Import Backbone.NA", 0, importNAInfo, 0, 0,
-           "Import descriptions from Backbone.NA into "dARFNAME);
+  addItem(anImpMenu, FUNCTION, "Import Areas.BBS"  , 0, importAreasBBS  , 0, 0, "Convert Areas.BBS into "dARFNAME);
+  addItem(anImpMenu, FUNCTION, "Import RA info"    , 0, importRAInfo    , 0, 0, "Import RA area (security) info into an existing FMail areas file");
+  addItem(anImpMenu, FUNCTION, "Import Folder.FD"  , 0, importFolderFD  , 0, 0, "Convert FrontDoor's Folder.FD into "dARFNAME);
+  addItem(anImpMenu, FUNCTION, "Import Backbone.NA", 0, importNAInfo    , 0, 0, "Import descriptions from Backbone.NA into "dARFNAME);
   addItem(anImpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(anImpMenu, FUNCTION, "Import AreaFile.FD", 0, importAreaFileFD, 0, 0,
-           "Convert TosScan's AreaFile.FD into "dARFNAME);
-  addItem(anImpMenu, FUNCTION, "Import NodeFile.FD", 0, importNodeFileFD, 0, 0,
-           "Convert TosScan's NodeFile.FD into "dNODFNAME);
+  addItem(anImpMenu, FUNCTION, "Import AreaFile.FD", 0, importAreaFileFD, 0, 0, "Convert TosScan's AreaFile.FD into "dARFNAME);
+  addItem(anImpMenu, FUNCTION, "Import NodeFile.FD", 0, importNodeFileFD, 0, 0, "Convert TosScan's NodeFile.FD into "dNODFNAME);
   addItem(anImpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(anImpMenu, FUNCTION, "Import AREAFILE.GE", 0, importGechoAr, 0, 0,
-           "Convert GECHO's AREAFILE.GE into "dARFNAME" (GECHO 1.00 and up)");
-  addItem(anImpMenu, FUNCTION, "Import NODEFILE.GE", 0, importGechoNd, 0, 0,
-           "Convert GECHO's NODEFILE.GE into "dNODFNAME" (GECHO 1.00 and up)");
-  addItem(anImpMenu, FUNCTION, "Import FE areas", 0, importFEAr, 0, 0,
-           "Convert FastEcho's areas into "dARFNAME" (FastEcho 1.46 and up)");
-  addItem(anImpMenu, FUNCTION, "Import FE nodes", 0, importFENd, 0, 0,
-           "Convert FastEcho's nodes into "dNODFNAME" (FastEcho 1.46 and up)");
-  addItem(anImpMenu, FUNCTION, "Import IMAIL.Ar", 0, importImailAr, 0, 0,
-           "Convert IMAIL's IMAIL.AR into "dARFNAME" (IMAIL 1.40 and up)");
-  addItem(anImpMenu, FUNCTION, "Import IMAIL.Nd", 0, importImailNd, 0, 0,
-           "Convert IMAIL's IMAIL.Nd into "dNODFNAME" (IMAIL 1.40 and up)");
+  addItem(anImpMenu, FUNCTION, "Import AREAFILE.GE", 0, importGechoAr   , 0, 0, "Convert GECHO's AREAFILE.GE into "dARFNAME" (GECHO 1.00 and up)");
+  addItem(anImpMenu, FUNCTION, "Import NODEFILE.GE", 0, importGechoNd   , 0, 0, "Convert GECHO's NODEFILE.GE into "dNODFNAME" (GECHO 1.00 and up)");
+  addItem(anImpMenu, FUNCTION, "Import FE areas"   , 0, importFEAr      , 0, 0, "Convert FastEcho's areas into "dARFNAME" (FastEcho 1.46 and up)");
+  addItem(anImpMenu, FUNCTION, "Import FE nodes"   , 0, importFENd      , 0, 0, "Convert FastEcho's nodes into "dNODFNAME" (FastEcho 1.46 and up)");
+  addItem(anImpMenu, FUNCTION, "Import IMAIL.Ar"   , 0, importImailAr   , 0, 0, "Convert IMAIL's IMAIL.AR into "dARFNAME" (IMAIL 1.40 and up)");
+  addItem(anImpMenu, FUNCTION, "Import IMAIL.Nd"   , 0, importImailNd   , 0, 0, "Convert IMAIL's IMAIL.Nd into "dNODFNAME" (IMAIL 1.40 and up)");
 
   if ((impExpMenu = createMenu(" Import/export ")) == NULL)
     goto nomem;
 
   addItem(impExpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(impExpMenu, FUNCTION, "List area config", 0, listAreaConfig, 0, 0,
-           "List area configuration");
-  addItem(impExpMenu, FUNCTION, "List node config", 0, listNodeConfig, 0, 0,
-           "List node configuration");
-  addItem(impExpMenu, FUNCTION, "List pack config", 0, listPackConfig, 0, 0,
-           "List Pack Manager configuration");
-  addItem(impExpMenu, FUNCTION, "List groups", 0, listGroups, 0, 0,
-           "List all existing groups and the areas belonging to them");
-  addItem(impExpMenu, FUNCTION, "List member", 0, listNodeEcho, 0, 0,
-           "List all conferences received by one system");
-  addItem(impExpMenu, FUNCTION, "List "MBNAME" boards", 0, listHudsonBoards, 0, 0,
-           "List "MBNAME" message base boards");
-  addItem(impExpMenu, FUNCTION, "List JAM boards", 0, listJAMBoards, 0, 0,
-           "List JAM message base boards");
-  addItem(impExpMenu, FUNCTION, "List PT areas", 0, listPtAreas, 0, 0,
-           "List all passthrough areas");
-  addItem(impExpMenu, FUNCTION, "List general info", 0, listGeneralConfig, 0, 0,
-           "List general configuration");
+  addItem(impExpMenu, FUNCTION, "List area config"    , 0, listAreaConfig   , 0, 0, "List area configuration");
+  addItem(impExpMenu, FUNCTION, "List node config"    , 0, listNodeConfig   , 0, 0, "List node configuration");
+  addItem(impExpMenu, FUNCTION, "List pack config"    , 0, listPackConfig   , 0, 0, "List Pack Manager configuration");
+  addItem(impExpMenu, FUNCTION, "List groups"         , 0, listGroups       , 0, 0, "List all existing groups and the areas belonging to them");
+  addItem(impExpMenu, FUNCTION, "List member"         , 0, listNodeEcho     , 0, 0, "List all conferences received by one system");
+  addItem(impExpMenu, FUNCTION, "List "MBNAME" boards", 0, listHudsonBoards , 0, 0, "List "MBNAME" message base boards");
+  addItem(impExpMenu, FUNCTION, "List JAM boards"     , 0, listJAMBoards    , 0, 0, "List JAM message base boards");
+  addItem(impExpMenu, FUNCTION, "List PT areas"       , 0, listPtAreas      , 0, 0, "List all passthrough areas");
+  addItem(impExpMenu, FUNCTION, "List general info"   , 0, listGeneralConfig, 0, 0, "List general configuration");
   addItem(impExpMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(impExpMenu, NEW_WINDOW, "Import config", 0, anImpMenu, 2, 0,
-           "Import FD/IMAIL/Areas.BBS node and area configuration files");
-  addItem(impExpMenu, NEW_WINDOW, "AutoExport", 0, autoExpMenu, 0, 0,
-           "Automatically create GoldEd/FM/RA/Other BBS's area files and Areas.BBS");
+  addItem(impExpMenu, NEW_WINDOW, "Import config"     , 0, anImpMenu        , 2, 0, "Import FD/IMAIL/Areas.BBS node and area configuration files");
+  addItem(impExpMenu, NEW_WINDOW, "AutoExport"        , 0, autoExpMenu      , 0, 0, "Automatically create GoldEd/FM/RA/Other BBS's area files and Areas.BBS");
 
   if ((arc32Menu = createMenu(" Compression programs ")) == NULL)
     goto nomem;

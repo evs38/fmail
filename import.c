@@ -286,135 +286,137 @@ static u16 checkDupBoard(u8 *echoNumCheck, rawEchoType *echoAreaRec, u16 *echoCo
   }
   return 1;
 }
-
-
-
+//---------------------------------------------------------------------------
 extern rawEchoType echoDefaultsRec;
 
 s16 importAreasBBS(void)
 {
-   char          *areaLinePtr;
-   char           tempStr[1024];
-   u8             echoNumCheck[MBBOARDS];
-   u16            count,
-                              scanCount;
-   u16            echoCount,
-                              nodeCount;
-   u16            lastNet = 0,
-                              lastNode = 0;
-   u16            skiparname = 0, clearboard = 0;
-   nodeNumType    nodeRec;
-   rawEchoType    *echoAreaRec;
-   FILE           *textFile;
+  char          *areaLinePtr;
+  char           tempStr[1024];
+  u8             echoNumCheck[MBBOARDS];
+  u16            count
+              , scanCount;
+  u16            echoCount
+              , nodeCount;
+  u16            lastNet = 0
+              , lastNode = 0;
+  u16            skiparname = 0
+              , clearboard = 0;
+  nodeNumType    nodeRec;
+  rawEchoType   *echoAreaRec;
+  FILE          *textFile;
 
-   if (!askFMArExist(&echoCount))
-      return 0;
-   memset(echoNumCheck, 0, MBBOARDS);
-   if ( (textFile = fopen(getSourceFileName(" Source file "), "rt")) == NULL )
-   {  displayMessage("Can't find the requested file.");
-      releaseAreas(echoCount);
-      return 0;
-   }
-   working();
-   fgets(tempStr, sizeof(tempStr), textFile);
-   while ( fgets(tempStr, sizeof(tempStr), textFile) != NULL )
-   {  if ( tempStr[0] != ';' &&
-           (areaLinePtr = strtok(tempStr, " \t\n")) != NULL )
-      {  if ( echoCount == MAX_AREAS )
-         {  displayMessage("Too many areas listed in Areas.BBS");
-            releaseAreas(echoCount);
-            return 0;
-         }
-         if ( (echoAreaRec = malloc(RAWECHO_SIZE)) == NULL )
-         {  fclose(textFile);
-            displayMessage("Not enough memory available");
-            releaseAreas(echoCount);
-            return 0;
-         }
-         memcpy(echoAreaRec, &echoDefaultsRec, RAWECHO_SIZE);
-         if ( *areaLinePtr == '!' )
-         {  echoAreaRec->board = 0;
-//#pragma message ("NIEUW ipv ^^^!!!")
-//       {  echoAreaRec->board = BOARDTYPEJAM;
-            strncpy(echoAreaRec->msgBasePath, areaLinePtr+1, MB_PATH_LEN-1);
-         }
-         else
-         {
-           echoAreaRec->board = atoi(areaLinePtr);
-     *echoAreaRec->msgBasePath = 0;
-     if (!checkDupBoard(echoNumCheck, echoAreaRec, &echoCount, &clearboard))
-             return 0;
-         }
-         if ( (areaLinePtr = strtok(NULL, " \t\n")) == NULL )
-            free(echoAreaRec);
-         else
-         {  strupr(areaLinePtr);
-            strncpy(echoAreaRec->areaName, areaLinePtr, ECHONAME_LEN-1);
-            echoAreaRec->group = 1;
-            echoAreaRec->options.active = 1;
-            echoAreaRec->options.allowAreafix = 1;
-            nodeRec.zone  = config.akaList[0].nodeNum.zone;
-            nodeCount = 0;
-            while ( (areaLinePtr = strtok(NULL, " \t\n")) != NULL &&
-                    areaLinePtr[0] != ';' )
-            {  nodeRec.point = 0;
-               if( strchr(areaLinePtr, ':') != NULL )
-               {  nodeRec.zone  = atoi(areaLinePtr);
-                  areaLinePtr = strchr(areaLinePtr, ':') + 1;
-               }
-               if ( strchr(areaLinePtr, '/') != NULL )
-                  scanCount = sscanf(areaLinePtr, "%hd/%hd.%hd", &nodeRec.net,
-                                     &nodeRec.node, &nodeRec.point);
-               else
-               {  if ( areaLinePtr[0] != '.' )
-                  {  scanCount = sscanf(areaLinePtr, "%hd.%hd",
-                                        &nodeRec.node, &nodeRec.point) + 1;
-                     nodeRec.net = lastNet;
-                  }
-                  else
-                  {  scanCount = sscanf(areaLinePtr, ".%hd", &nodeRec.point) + 1;
-                     nodeRec.net  = lastNet;
-                     nodeRec.node = lastNode;
-                  }
-               }
-               if ( scanCount >= 2 )
-               {  lastNet  = nodeRec.net;
-                  lastNode = nodeRec.node;
-                  node4d(&nodeRec);
-                  count = 0;
-                  while ( count < nodeCount &&
-                          greater(&nodeRec, &echoAreaRec->forwards[count].nodeNum) )
-                  {  count++;
-                  }
-                  if ( memcmp(&nodeRec, &echoAreaRec->forwards[count].nodeNum,
-                              sizeof(nodeNumType)) != 0 )
-                  {  memmove(&echoAreaRec->forwards[count+1],
-                             &echoAreaRec->forwards[count],
-                             (nodeCount++-count)*sizeof(nodeNumXType));
-                     echoAreaRec->forwards[count].nodeNum = nodeRec;
-                  }
-               }
-            }
-            if ( areaLinePtr != NULL )
-               strncpy(echoAreaRec->comment, areaLinePtr+1, COMMENT_LEN-1);
-            else
-               strcpy(echoAreaRec->comment, echoAreaRec->areaName);
-            if ( !checkDupArea(echoAreaRec, &echoCount, &skiparname) )
-               return 0;
-            if ( skiparname )
-               continue;
-         }
+  if (!askFMArExist(&echoCount))
+    return 0;
+  memset(echoNumCheck, 0, MBBOARDS);
+  if ((textFile = fopen(getSourceFileName(" Source file "), "rt")) == NULL)
+  {
+    displayMessage("Can't find the requested file.");
+    releaseAreas(echoCount);
+    return 0;
+  }
+  working();
+  fgets(tempStr, sizeof(tempStr), textFile);
+  while (fgets(tempStr, sizeof(tempStr), textFile) != NULL)
+  {
+    if (tempStr[0] != ';' && (areaLinePtr = strtok(tempStr, " \t\n")) != NULL)
+    {
+      if (echoCount == MAX_AREAS)
+      {
+        displayMessage("Too many areas listed in Areas.BBS");
+        releaseAreas(echoCount);
+        return 0;
       }
-   }
-   fclose(textFile);
-   updateAreas(echoCount);
-   sprintf(tempStr, "%u areas processed", echoCount);
-   displayMessage(tempStr);
-   return 0;
+      if ((echoAreaRec = malloc(RAWECHO_SIZE)) == NULL)
+      {
+        fclose(textFile);
+        displayMessage("Not enough memory available");
+        releaseAreas(echoCount);
+        return 0;
+      }
+      memcpy(echoAreaRec, &echoDefaultsRec, RAWECHO_SIZE);
+      if (*areaLinePtr == '!')
+      {
+        echoAreaRec->board = 0;
+        strncpy(echoAreaRec->msgBasePath, areaLinePtr+1, MB_PATH_LEN-1);
+      }
+      else
+      {
+        echoAreaRec->board = atoi(areaLinePtr);
+        *echoAreaRec->msgBasePath = 0;
+        if (!checkDupBoard(echoNumCheck, echoAreaRec, &echoCount, &clearboard))
+          return 0;
+      }
+      if ((areaLinePtr = strtok(NULL, " \t\n")) == NULL)
+        free(echoAreaRec);
+      else
+      {
+        strupr(areaLinePtr);
+        strncpy(echoAreaRec->areaName, areaLinePtr, ECHONAME_LEN - 1);
+        //echoAreaRec->group = 1;
+        echoAreaRec->options.active = 1;
+        //echoAreaRec->options.allowAreafix = 1;
+        nodeRec.zone = config.akaList[0].nodeNum.zone;
+        nodeCount = 0;
+        while ((areaLinePtr = strtok(NULL, " \t\n")) != NULL && areaLinePtr[0] != ';')
+        {
+          nodeRec.point = 0;
+          if (strchr(areaLinePtr, ':') != NULL)
+          {
+            nodeRec.zone = atoi(areaLinePtr);
+            areaLinePtr = strchr(areaLinePtr, ':') + 1;
+          }
+          if (strchr(areaLinePtr, '/') != NULL)
+            scanCount = sscanf(areaLinePtr, "%hd/%hd.%hd", &nodeRec.net, &nodeRec.node, &nodeRec.point);
+          else
+          {
+            if (areaLinePtr[0] != '.')
+            {
+              scanCount = sscanf(areaLinePtr, "%hd.%hd", &nodeRec.node, &nodeRec.point) + 1;
+              nodeRec.net = lastNet;
+            }
+            else
+            {
+              scanCount = sscanf(areaLinePtr, ".%hd", &nodeRec.point) + 1;
+              nodeRec.net  = lastNet;
+              nodeRec.node = lastNode;
+            }
+          }
+          if (scanCount >= 2)
+          {
+            lastNet  = nodeRec.net;
+            lastNode = nodeRec.node;
+            node4d(&nodeRec);
+            count = 0;
+            while (count < nodeCount && greater(&nodeRec, &echoAreaRec->forwards[count].nodeNum))
+              count++;
+
+            if (memcmp(&nodeRec, &echoAreaRec->forwards[count].nodeNum, sizeof(nodeNumType)) != 0)
+            {
+              memmove(&echoAreaRec->forwards[count + 1], &echoAreaRec->forwards[count], (nodeCount++ - count) * sizeof(nodeNumXType));
+              echoAreaRec->forwards[count].nodeNum = nodeRec;
+            }
+          }
+        }
+        if (areaLinePtr != NULL)
+          strncpy(echoAreaRec->comment, areaLinePtr + 1, COMMENT_LEN - 1);
+        else
+          strcpy(echoAreaRec->comment, echoAreaRec->areaName);
+        if (!checkDupArea(echoAreaRec, &echoCount, &skiparname))
+          return 0;
+        if (skiparname)
+          continue;
+      }
+    }
+  }
+  fclose(textFile);
+  updateAreas(echoCount);
+  sprintf(tempStr, "%u areas processed", echoCount);
+  displayMessage(tempStr);
+
+  return 0;
 }
-
-
-
+//---------------------------------------------------------------------------
 s16 importFolderFD(void)
 {
    fhandle        folderHandle;
