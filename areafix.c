@@ -50,25 +50,16 @@
 #include "utils.h"
 #include "version.h"
 
-#define ADD_ALL    1
-#define DELETE_ALL 2
+#define ADD_ALL         1
+#define DELETE_ALL      2
+#define MAX_DISPLAY   128
+#define MAX_AREAFIX  5124
+#define MAX_BADAREA   128
 
-#define MAX_DISPLAY 128
+#define ARCCOUNT       12
+static const char *arcName[ARCCOUNT] = { "none", "arc", "zip", "lzh", "pak", "zoo", "arj", "sqz", "cus", "uc2", "rar", "jar" };
 
-#if defined(__FMAILX__) || defined(__32BIT__)
-#define MAX_AREAFIX 5124
-#else
-#define MAX_AREAFIX 1024
-#endif
-
-#define MAX_BADAREA 128
-
-static const char *arcName[12] = { "none", "arc", "zip", "lzh", "pak", "zoo", "arj", "sqz", "cus", "uc2", "rar", "jar" };
-#define ARCCOUNT 12
-
-//extern u16             echoCount;
-//extern cookedEchoType *echoAreaList;
-
+//---------------------------------------------------------------------------
 typedef struct
 {
   char        remove;
@@ -83,15 +74,13 @@ typedef struct
   char groupChar;
 } areaSortType;
 
-
 typedef areaFixType  areaFixListType[MAX_AREAFIX];
 typedef areaSortType areaSortListType[MAX_AREAFIX];
 typedef areaNameType badAreaListType[MAX_BADAREA];
+//---------------------------------------------------------------------------
 
 badAreaListType *badAreaList;
 u16              badAreaCount = 0;
-
-extern char *version;
 
 //---------------------------------------------------------------------------
 int getGroupCode(s32 groupCode)
@@ -616,9 +605,9 @@ int areaFix(internalMsgType *message)
               if (count < ARCCOUNT)
                 archiver = count - 1;
             }
-            else if (config.mgrOptions.allowPassword &&
-                     (!strnicmp(helpPtr, "PWD ", 4) ||
-                      !strnicmp(helpPtr, "PASSWORD ", 9)) )
+            else if (  config.mgrOptions.allowPassword
+                    && (!strnicmp(helpPtr, "PWD ", 4) || !strnicmp(helpPtr, "PASSWORD ", 9))
+                    )
             {
               if ( *(helpPtr + 3) == 'S' )
                 helpPtr += 5;
@@ -647,18 +636,16 @@ int areaFix(internalMsgType *message)
               strcpy (nodeInfoPtr->packetPwd, tempStr);
               pktPasswordChange = 2;
             }
-            else if (config.mgrOptions.allowBCL &&
-                     strnicmp(helpPtr, "AUTOBCL ", 8) == 0)
+            else if (config.mgrOptions.allowBCL && strnicmp(helpPtr, "AUTOBCL ", 8) == 0)
             {
               nodeInfoPtr->autoBCL = atoi(helpPtr + 8);
               autoBCLchange = 1;
             }
-            else if ((strnicmp(helpPtr, "HELP", 4) == 0) && !isalnum(*(helpPtr+4)))
-            {
+            else if ((strnicmp(helpPtr, "HELP", 4) == 0) && !isalnum(*(helpPtr + 4)))
               replyHelp = 1;
-            }
-            else if ( (strnicmp(helpPtr, "LIST", 4) == 0) &&
-                      (*(helpPtr+4) == ',' || *(helpPtr+4) == ' ' || !isalnum(*(helpPtr+4))) )
+            else if (  strnicmp(helpPtr, "LIST", 4) == 0
+                    && (*(helpPtr + 4) == ',' || *(helpPtr+4) == ' ' || !isalnum(*(helpPtr + 4)))
+                    )
             {
               helpPtr += 4;
               while (*helpPtr == ' ')
@@ -672,56 +659,48 @@ int areaFix(internalMsgType *message)
               else
                 replyList = 1;
             }
-            else if ((strnicmp(helpPtr, "BLIST", 5) == 0) && !isalnum(*(helpPtr+5)))
-            {
+            else if ((strnicmp(helpPtr, "BLIST", 5) == 0) && !isalnum(*(helpPtr + 5)))
               replyBCL = 1;
-            }
-            else if ((strnicmp(helpPtr, "QUERY", 5) == 0) && !isalnum(*(helpPtr+5)))
-            {
+            else if ((strnicmp(helpPtr, "QUERY", 5) == 0) && !isalnum(*(helpPtr + 5)))
               replyQuery = 1;
-            }
-            else if ((strnicmp(helpPtr, "UNLINKED", 8) == 0) && !isalnum(*(helpPtr+8)))
-            {
+            else if ((strnicmp(helpPtr, "UNLINKED", 8) == 0) && !isalnum(*(helpPtr + 8)))
               replyUnlinked = 1;
-            }
-            else if ((strnicmp(helpPtr, "RESCAN", 6) == 0) && !isalnum(*(helpPtr+6)))
+            else if ((strnicmp(helpPtr, "RESCAN", 6) == 0) && !isalnum(*(helpPtr + 6)))
             {
               rescanRequest++;
-              if ( *(helpPtr+6) == '=' || *(helpPtr+6) == ':' )
-              {
-                rescanAll = atoi(helpPtr+7);
-              }
+              if (*(helpPtr + 6) == '=' || *(helpPtr + 6) == ':')
+                rescanAll = atoi(helpPtr + 7);
               else
-              {
-                rescanAll = config.defMaxRescan ?
-                            config.defMaxRescan : 0x7fff;
-              }
+                rescanAll = config.defMaxRescan ? config.defMaxRescan : 0x7fff;
             }
-            else if (config.mgrOptions.allowActive &&
-                     ((strnicmp(helpPtr, "ACTIVE", 6) == 0) ||
-                      (strnicmp(helpPtr, "RESUME", 6) == 0)) &&
-                     !isalnum(*(helpPtr+6)))
-            {
+            else if (  config.mgrOptions.allowActive
+                    && (  strnicmp(helpPtr, "ACTIVE", 6) == 0
+                       || strnicmp(helpPtr, "RESUME", 6) == 0
+                       )
+                    && !isalnum(*(helpPtr + 6))
+                    )
               activePassive = 1;
-            }
-            else if (config.mgrOptions.allowActive &&
-                     ((strnicmp(helpPtr, "PASSIVE", 7) == 0) ||
-                      (strnicmp(helpPtr, "PAUSE", 5) == 0)) &&
-                     !isalnum(*(helpPtr+8)))
-            {
+            else if (  config.mgrOptions.allowActive
+                    && strnicmp(helpPtr, "PASSIVE", 7) == 0
+                    && !isalnum(*(helpPtr + 7))
+                    )
               activePassive = 2;
-            }
+            else if (  config.mgrOptions.allowActive
+                    && strnicmp(helpPtr, "PAUSE", 5) == 0
+                    && !isalnum(*(helpPtr + 5))
+                    )
+              activePassive = 3;
             else if (config.mgrOptions.allowNotify &&
                      (strnicmp(helpPtr, "NOTIFY ", 7) == 0))
             {
-              if ((strnicmp (helpPtr+7, "ON", 2) == 0) && !isalnum(*(helpPtr+9)))
+              if ((strnicmp(helpPtr + 7, "ON", 2) == 0) && !isalnum(*(helpPtr + 9)))
                 notifyChange = 1;
-              else if ((strnicmp (helpPtr+7, "OFF", 3) == 0) && !isalnum(*(helpPtr+10)))
+              else if ((strnicmp(helpPtr + 7, "OFF", 3) == 0) && !isalnum(*(helpPtr + 10)))
                 notifyChange = 2;
             }
             else if (config.mgrOptions.allowAddAll &&
-                     (((strnicmp(helpPtr, "ALL", 3) == 0) && !isalnum(*(helpPtr+3))) ||
-                      ((strnicmp(helpPtr, "+ALL", 4) == 0) && !isalnum(*(helpPtr+4)))))
+                     (((strnicmp(helpPtr, "ALL", 3) == 0) && !isalnum(*(helpPtr + 3))) ||
+                      ((strnicmp(helpPtr, "+ALL", 4) == 0) && !isalnum(*(helpPtr + 4)))))
             {
               if (*helpPtr == '+')
                 helpPtr++;
@@ -1078,14 +1057,20 @@ int areaFix(internalMsgType *message)
       else
         helpPtr += sprintf(helpPtr, "\rYou are not connected to any areas.\r");
 
-      if (activePassive)
+      switch (activePassive)
       {
-        nodeInfoPtr->options.active = 2 - activePassive;
-        if (activePassive == 1)
-          nodeInfoPtr->referenceLNBDat = 0;
-        else
-          // If node sets himself to inactive, force receiving echomail addressed to sysop to true
+        case 1:  // ACTIVE / RESUME
+          nodeInfoPtr->options.active      = 1;
+          nodeInfoPtr->referenceLNBDat     = 0;
+          break;
+        case 2:  // PASIVE
+          nodeInfoPtr->options.active      = 0;
           nodeInfoPtr->options.nosysopmail = 0;
+          break;
+        case 3:  // PAUSE
+          nodeInfoPtr->options.active      = 0;
+          nodeInfoPtr->options.nosysopmail = 1;
+          break;
       }
 
       if (notifyChange)
@@ -1119,9 +1104,9 @@ int areaFix(internalMsgType *message)
       {
         *(helpPtr++) = '\r';
         helpPtr2 = helpPtr;
-        helpPtr += sprintf( helpPtr, "Node status : %s%s", nodeInfoPtr->options.active ? "ACTIVE" : "PASSIVE"
+        helpPtr += sprintf( helpPtr, "Node status : %s%s", nodeInfoPtr->options.active ? "ACTIVE" : nodeInfoPtr->options.nosysopmail ? "PAUSE" : "PASSIVE"
                           , activePassive ? " (new setting)" : "" );
-        mgrLogEntry (helpPtr2);
+        mgrLogEntry(helpPtr2);
       }
 
       if (config.mgrOptions.allowNotify)
@@ -1185,8 +1170,8 @@ int areaFix(internalMsgType *message)
       *(helpPtr++) = '\r';
       helpPtr2 = helpPtr;
       helpPtr += sprintf(helpPtr, "Compression : %s%s", tempStr, archiver == 1 ? " (new setting)" : "");
-      mgrLogEntry (helpPtr2);
-      helpPtr += sprintf (helpPtr, "\r- available : NONE");
+      mgrLogEntry(helpPtr2);
+      helpPtr += sprintf(helpPtr, "\r- available : NONE");
       if (*config.arc32.programName != 0)
         helpPtr += sprintf (helpPtr, " ARC");
       if (*config.zip32.programName != 0)
@@ -1213,27 +1198,27 @@ int areaFix(internalMsgType *message)
       {
         helpPtr2 = helpPtr;
         if (passwordChange == 1)
-          helpPtr += sprintf (helpPtr, "AreaMgr pwd : new password ignored (should be at least 5 characters long)");
+          helpPtr += sprintf(helpPtr, "AreaMgr pwd : new password ignored (should be at least 5 characters long)");
         else
-          helpPtr += sprintf (helpPtr, "AreaMgr pwd : new password accepted");
-        mgrLogEntry (helpPtr2);
+          helpPtr += sprintf(helpPtr, "AreaMgr pwd : new password accepted");
+        mgrLogEntry(helpPtr2);
         *((helpPtr)++) = '\r';
       }
       if (pktPasswordChange)
       {
         helpPtr2 = helpPtr;
-        helpPtr += sprintf (helpPtr, "Packet pwd  : new password accepted");
-        mgrLogEntry (helpPtr2);
+        helpPtr += sprintf(helpPtr, "Packet pwd  : new password accepted");
+        mgrLogEntry(helpPtr2);
         *((helpPtr)++) = '\r';
       }
       if ( autoBCLchange )
       {
         helpPtr2 = helpPtr;
         if ( nodeInfoPtr->autoBCL )
-          helpPtr += sprintf (helpPtr, "Auto BCL    : %u days", nodeInfoPtr->autoBCL);
+          helpPtr += sprintf(helpPtr, "Auto BCL    : %u days", nodeInfoPtr->autoBCL);
         else
-          helpPtr += sprintf (helpPtr, "Auto BCL    : OFF");
-        mgrLogEntry (helpPtr2);
+          helpPtr += sprintf(helpPtr, "Auto BCL    : OFF");
+        mgrLogEntry(helpPtr2);
         *((helpPtr)++) = '\r';
       }
     }

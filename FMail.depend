@@ -160,7 +160,7 @@
 1312491216 c:\fmail\spawno.h
 	<stdarg.h>
 
-1481579358 source:c:\fmail\areafix.c
+1483735460 source:c:\fmail\areafix.c
 	<ctype.h>
 	<dos.h>
 	<fcntl.h>
@@ -683,7 +683,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1483476707 source:c:\fmail\fmailw32.rc
+1483732299 source:c:\fmail\fmailw32.rc
 
 1481322285 c:\fmail\msgradef.h
 
@@ -694,5 +694,5 @@
 
 1478185506 c:\fmail\minmax.h
 
-1483478718 c:\fmail\setcompiledate.h
+1483732298 c:\fmail\setcompiledate.h
 

@@ -44,13 +44,15 @@ In the body of the message to AreaMgr (with area FMAIL_HELP as an example) :
   %RESCAN            Request a rescan of all new areas
   %RESCAN=50         Request a rescan of at most 50 messages per area for
                      all new areas
-  %PAUSE             or
   %PASSIVE           Temporarily disable all areas. This means that you won't
                      receive any echo mail anymore unless it is addressed to
                      you personally (only if the sysop on this node has
                      entered your name correctly in the Node Manager). You
                      will still be allowed to send echo mail to this system
                      in areas to which you are connected.
+  %PAUSE             Same as %PASSIVE, but without the exception for mail
+                     addressed to the name of the sysop. You will receive
+                     no mail at all. You can still send mail.
   %RESUME            or
   %ACTIVE            Make your node active again.
 
