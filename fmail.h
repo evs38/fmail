@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -83,13 +83,15 @@
 #define dFMAIL32_DUP   "fmail32.dup"
 #define dLASTREAD      "lastread"
 
-extern long       gmtOffset;
-extern time_t     startTime;
-extern struct tm  timeBlock;
-extern char       funcStr[32];
-extern char       configPath[FILENAME_MAX];
-extern configType config;
+//---------------------------------------------------------------------------
+extern long         gmtOffset;
+extern time_t       startTime;
+extern struct tm    timeBlock;
+extern char         funcStr[32];
+extern char         configPath[FILENAME_MAX];
+extern configType   config;
 
+//---------------------------------------------------------------------------
 typedef struct
 {
   char        fromUserName[36];
@@ -177,6 +179,8 @@ typedef struct
   fromNoExpDup,
   fromNoExpSec;
 } globVarsType;
+
+extern globVarsType globVars;
 
 // AttributeWord   bit       meaning
 //                 ---       --------------------

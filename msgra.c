@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -86,8 +86,8 @@ u16             raTxtRecValid;
 #endif
 u16             secondsInc = 0;
 
-extern globVarsType globVars;
-extern configType   config;
+//extern globVarsType globVars;
+//extern configType   config;
 
 extern char    *months;
 extern u16      echoCount;

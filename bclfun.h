@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2017  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -30,9 +30,9 @@
 
 typedef struct
 {
-  char FingerPrint[4];   // BCL<NUL>
+  char FingerPrint[ 4];  // BCL<NUL>
   char ConfMgrName[31];  // Name of "ConfMgr"
-  char Origin[51];       // Originating network addr
+  char Origin     [51];  // Originating network addr
   u32  CreationTime;     // UNIX-timestamp when created
   u32  flags;            // Options, see below
   u8   Reserved[256];    // Reserved data
@@ -52,20 +52,20 @@ typedef struct
 } bcl_type;
 
 extern bcl_header_type bcl_header;
-extern bcl_type bcl;
+// extern bcl_type bcl;
 
 #include <poppack.h>
 
 //---------------------------------------------------------------------------
-udef openBCL (uplinkReqType *uplinkReq);
-udef readBCL (char **tag, char **descr);
-udef closeBCL(void);
+int  openBCL (uplinkReqType *uplinkReq);
+int  readBCL (char **tag, char **descr);
+int  closeBCL(void);
 
-udef process_bcl(char *fileName);
+int  process_bcl(char *fileName);
+int  ScanNewBCL(void);
+
 void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInfoPtr);
-
 void ChkAutoBCL(void);
-udef ScanNewBCL(void);
 
 //---------------------------------------------------------------------------
 #endif  // bclfunH

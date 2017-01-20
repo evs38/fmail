@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -1027,7 +1027,7 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
         width = 3;
         strcpy(tempStr, NoYes[(*(s16*)menu->menuEntry[count].data & menu->menuEntry[count].par1) ? 0 : 1]);
         break;
-      case ENUM_INT  : {  u16 teller = 0;
+      case ENUM_INT  : { u16 teller = 0;
                          while ((teller < menu->menuEntry[count].par2) &&
                                 (((toggleType*)menu->menuEntry[count].data)->retval[teller] !=
                                  *(u8*)(((toggleType*)menu->menuEntry[count].data)->data)))

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016  Wilfred van Velzen
+//  Copyright (C) 2007 - 2017  Wilfred van Velzen
 //
 //  This file is part of FMail.
 //
@@ -65,7 +65,7 @@ typedef struct
 typedef netRecType netListType[MAXNETREC];
 
 extern internalMsgType *message;
-extern globVarsType     globVars;
+//extern globVarsType     globVars;
 
 static s16              errorDisplay = 0;
 static u16              netIndex;

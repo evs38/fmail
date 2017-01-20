@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -264,84 +264,82 @@ s16 defaultBBS (void)
 
    return update;
 }
-
-
-
+//---------------------------------------------------------------------------
 uplinkNodeStrType uplinkNodeStr;
 
-s16 uplinkMenu (u16 v)
+s16 uplinkMenu(u16 v)
 {
   menuType *uplMenu;
   s16       update;
   u16       count;
   char      title[20];
-  char      addressText[MAX_AKAS+1][34];
+  char      addressText[MAX_AKAS + 1][34];
 
-   toggleType fileTypeToggle;
-   toggleType addressToggle;
+  toggleType fileTypeToggle;
+  toggleType bclReportToggle;
+  toggleType addressToggle;
 
-   fileTypeToggle.data      = &config.uplinkReq[v].fileType;
-   fileTypeToggle.text  [0] = "Random";
-   fileTypeToggle.retval[0] = 0;
-   fileTypeToggle.text  [1] = "<AREANAME> <DESCRIPTION>";
-   fileTypeToggle.retval[1] = 1;
-   fileTypeToggle.text  [2] = "BCL";
-   fileTypeToggle.retval[2] = 2;
+  fileTypeToggle.data      = &config.uplinkReq[v].fileType;
+  fileTypeToggle.text  [0] = "Random";
+  fileTypeToggle.retval[0] = 0;
+  fileTypeToggle.text  [1] = "<AREANAME> <DESCRIPTION>";
+  fileTypeToggle.retval[1] = 1;
+  fileTypeToggle.text  [2] = "BCL";
+  fileTypeToggle.retval[2] = 2;
 
-   addressToggle.data = &config.uplinkReq[v].originAka;
-   for (count = 0; count < MAX_AKAS; count++)
-   {
-      if (config.akaList[count].nodeNum.zone != 0)
-         strcpy(addressText[count], nodeStr((nodeNumType*)(&config.akaList[count])));
+  bclReportToggle.data      = &config.uplinkReq[v].bclReport;
+  bclReportToggle.text  [0] = "None";
+  bclReportToggle.retval[0] = 0;
+  bclReportToggle.text  [1] = "Changes";
+  bclReportToggle.retval[1] = 1;
+  bclReportToggle.text  [2] = "Full";
+  bclReportToggle.retval[2] = 2;
+
+  addressToggle.data = &config.uplinkReq[v].originAka;
+  for (count = 0; count < MAX_AKAS; count++)
+  {
+    if (config.akaList[count].nodeNum.zone != 0)
+      strcpy(addressText[count], nodeStr((nodeNumType*)(&config.akaList[count])));
+    else
+      if (count == 0)
+        strcpy(addressText[0], "Main (not defined)");
       else
-         if (count == 0)
-            strcpy(addressText[0], "Main (not defined)");
-         else
-            sprintf(addressText[count], "AKA %2u (not defined)", count);
-      addressToggle.text[count] = addressText[count];
-      addressToggle.retval[count] = count;
-   }
+        sprintf(addressText[count], "AKA %2u (not defined)", count);
 
-   groupsSelect.numPtr = (u16*)&config.uplinkReq[v].groups;
-   groupsSelect.f      = askGroups;
+    addressToggle.text[count] = addressText[count];
+    addressToggle.retval[count] = count;
+  }
 
-   sprintf (title, " Uplink %u ", v+1);
-   if ((uplMenu = createMenu (title)) == NULL)
-   {
-      return(0);
-   }
-   addItem (uplMenu, NODE, "Uplink system", 0, &config.uplinkReq[v].node, 0, 0,
-		     "Node number of the uplink");
-   addItem (uplMenu, WORD, "AreaFix program", 0, config.uplinkReq[v].program, 8, 0,
-		     "Name of the program to which to send the request");
-   addItem (uplMenu, WORD, "AreaFix password", 0, config.uplinkReq[v].password, 16, 0,
-		     "Password to put on the subject line");
-   addItem (uplMenu, BOOL_INT, "Add '+' prefix", 0, &config.uplinkReq[v].options, BIT0, 0,
-		     "If the AreaFix program requires a '+' prefix to connect an area");
-   addItem (uplMenu, FUNC_PAR, "Authorized groups", 0, &groupsSelect, 26, 0,
-                     "The groups a requesting node must have access to");
-   addItem (uplMenu, BOOL_INT, "Unconditional", 0, &config.uplinkReq[v].options, BIT4, 0,
-                     "Forward all requests to this uplink if the node has access to a group");
-   addItem (uplMenu, ENUM_INT, "Areas file type", 0, &fileTypeToggle, 0, 3,
-                     "Type of areas file");
-   addItem (uplMenu, SFILE_NAME|UPCASE, "Areas file name", 0, &config.uplinkReq[v].fileName, 12, 0,
-                     "File with list of areas available from this uplink");
-   addItem (uplMenu, ENUM_INT, "Origin address", 0, &addressToggle, 0, MAX_AKAS,
-		     "The AKA that should be used as origin address for the uplink request messages");
+  groupsSelect.numPtr = (u16*)&config.uplinkReq[v].groups;
+  groupsSelect.f      = askGroups;
 
-   update = runMenu (uplMenu, 7, 8);
+  sprintf(title, " Uplink %u ", v + 1);
+  if ((uplMenu = createMenu (title)) == NULL)
+    return 0;
 
-   free (uplMenu);
+  addItem(uplMenu, NODE      , "Uplink system"    , 0, &config.uplinkReq[v].node    ,    0,        0, "Node number of the uplink"                                                    );
+  addItem(uplMenu, WORD      , "AreaFix program"  , 0,  config.uplinkReq[v].program ,    8,        0, "Name of the program to which to send the request"                             );
+  addItem(uplMenu, WORD      , "AreaFix password" , 0,  config.uplinkReq[v].password,   16,        0, "Password to put on the subject line"                                          );
+  addItem(uplMenu, BOOL_INT  , "Add '+' prefix"   , 0, &config.uplinkReq[v].options , BIT0,        0, "If the AreaFix program requires a '+' prefix to connect an area"              );
+  addItem(uplMenu, FUNC_PAR  , "Authorized groups", 0, &groupsSelect                ,   26,        0, "The groups a requesting node must have access to"                             );
+  addItem(uplMenu, BOOL_INT  , "Unconditional"    , 0, &config.uplinkReq[v].options , BIT4,        0, "Forward all requests to this uplink if the node has access to a group"        );
+  addItem(uplMenu, ENUM_INT  , "Areas file type"  , 0, &fileTypeToggle              ,    0,        3, "Type of areas file"                                                           );
+  addItem(uplMenu, ENUM_INT  , "BCL report type"  , 0, &bclReportToggle             ,    0,        3, "If file type is BCL: select the report type for received BCL files"           );
+  addItem(uplMenu, SFILE_NAME, "Areas file name"  , 0, &config.uplinkReq[v].fileName,   12,        0, "File with list of areas available from this uplink"                           );
+  addItem(uplMenu, ENUM_INT  , "Origin address"   , 0, &addressToggle               ,    0, MAX_AKAS, "The AKA that should be used as origin address for the uplink request messages");
 
-   count = sprintf(uplinkNodeStr[v], "%2u  %s", v + 1, config.uplinkReq[v].node.zone ? nodeStr(&config.uplinkReq[v].node) : "                       ");
-   memset (uplinkNodeStr[v]+count, ' ', 27-count);
+  update = runMenu (uplMenu, 7, 8);
 
-   uplinkNodeStr[v][27] = 0;
+  free (uplMenu);
 
-   return update;
+  count = sprintf(uplinkNodeStr[v], "%2u  %s", v + 1, config.uplinkReq[v].node.zone ? nodeStr(&config.uplinkReq[v].node) : "                       ");
+  memset (uplinkNodeStr[v]+count, ' ', 27-count);
+
+  uplinkNodeStr[v][27] = 0;
+
+  return update;
 }
-
-
+//---------------------------------------------------------------------------
 extern char displayAreasArray[MBBOARDS];
 extern s16  displayAreasSelect;
 

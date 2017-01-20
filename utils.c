@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -408,7 +408,7 @@ int matchAka(nodeNumType *node, int useAka)
   }
   while (valid > 0 && srcAka < 0);
 
-  return srcAka >=0 ? srcAka : 0;
+  return srcAka >= 0 ? srcAka : 0;
 }
 //---------------------------------------------------------------------------
 s16 emptyText(char *text)
@@ -1330,7 +1330,7 @@ void addPathSeenBy(internalMsgType *msg, echoToNodeType echoToNode, u16 areaInde
 }
 //---------------------------------------------------------------------------
 #ifdef FMAIL
-extern char funcStr[];
+//extern char funcStr[];
 
 void setViaStr(char *buf, const char *preStr, u16 aka)
 {
@@ -1678,23 +1678,24 @@ void setCurDateMsg(internalMsgType *msg)
   msg->seconds = tm->tm_sec;
 }
 //---------------------------------------------------------------------------
-const char *time_t2strGmt(const time_t t)
+const char *isoFmtTimeGmt(const time_t t)
 {
   return tm2str(gmtime(&t));  // gmt ok!
 }
 //---------------------------------------------------------------------------
-const char *time_t2str(const time_t t)
+const char *isoFmtTime(const time_t t)
 {
   return tm2str(localtime(&t));  // localtime ok
 }
 //---------------------------------------------------------------------------
 const char *tm2str(struct tm *tm)
 {
-  static tempStrType tStr;
+  static char tStr[24];  // 20 should be enough
+
   if (NULL != tm)
-    sprintf( tStr, "%04d-%02d-%02d %02d:%02d:%02d dst:%d"
+    sprintf( tStr, "%04d-%02d-%02d %02d:%02d:%02d"
            , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
-           , tm->tm_hour, tm->tm_min, tm->tm_sec, tm->tm_isdst
+           , tm->tm_hour, tm->tm_min, tm->tm_sec
            );
   else
     strcpy(tStr, "*** Illegal time ***");

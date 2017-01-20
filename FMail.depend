@@ -39,13 +39,13 @@
 	"version.h"
 	"sendsmtp.h"
 
-1479853717 c:\fmail\fmail.h
+1484168306 c:\fmail\fmail.h
 	"fmstruct.h"
 	"stricmp.h"
 	<stdio.h>
 	<sys/types.h>
 
-1481578032 c:\fmail\fmstruct.h
+1484949818 c:\fmail\fmstruct.h
 	<stdint.h>
 	<time.h>
 	<pshpack1.h>
@@ -62,7 +62,7 @@
 1481233363 c:\fmail\areainfo.h
 	"fmail.h"
 
-1477494841 c:\fmail\bclfun.h
+1484776169 c:\fmail\bclfun.h
 	<pshpack1.h>
 	<poppack.h>
 
@@ -116,7 +116,7 @@
 
 1478862964 c:\fmail\stpcpy.h
 
-1481057267 c:\fmail\utils.h
+1484083488 c:\fmail\utils.h
 	"fmail.h"
 	"areainfo.h"
 	"fmstruct.h"
@@ -226,12 +226,13 @@
 	"utils.h"
 	"version.h"
 
-1481578996 source:c:\fmail\bclfun.c
+1484952478 source:c:\fmail\bclfun.c
 	<dirent.h>
 	<fcntl.h>
 	<io.h>
 	<share.h>
 	<stdio.h>
+	<stdlib.h>
 	<string.h>
 	<sys/stat.h>
 	<time.h>
@@ -242,6 +243,7 @@
 	"cfgfile.h"
 	"config.h"
 	"log.h"
+	"msgmsg.h"
 	"msgpkt.h"
 	"mtask.h"
 	"nodeinfo.h"
@@ -417,7 +419,7 @@
 	<stdio.h>
 	<sys\locking.h>
 
-1481578996 source:c:\fmail\msgmsg.c
+1484168159 source:c:\fmail\msgmsg.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -443,7 +445,7 @@
 	"utils.h"
 	"version.h"
 
-1483478575 source:c:\fmail\msgpkt.c
+1484168159 source:c:\fmail\msgpkt.c
 	<ctype.h>
 	<dir.h>
 	<dos.h>
@@ -470,7 +472,7 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1483027061 source:c:\fmail\msgra.c
+1484168159 source:c:\fmail\msgra.c
 	<dir.h>
 	<dos.h>
 	<errno.h>
@@ -526,7 +528,7 @@
 	"utils.h"
 	"version.h"
 
-1481578996 source:c:\fmail\pack.c
+1484168159 source:c:\fmail\pack.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -549,7 +551,7 @@
 	"stpcpy.h"
 	"utils.h"
 
-1480367182 source:c:\fmail\ping.c
+1484080853 source:c:\fmail\ping.c
 	<ctype.h>
 	<stdio.h>
 	<stdlib.h>
@@ -651,7 +653,7 @@
 	<stdio.h>
 	<windows.h>
 
-1482943079 source:c:\fmail\utils.c
+1484691487 source:c:\fmail\utils.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -677,13 +679,13 @@
 	"stpcpy.h"
 	"version.h"
 
-1478862964 c:\fmail\stricmp.h
+1484776169 c:\fmail\stricmp.h
 
 1476478327 source:c:\fmail\stricmp.c
 	"stricmp.h"
 	<ctype.h>
 
-1483732299 source:c:\fmail\fmailw32.rc
+1484952200 source:c:\fmail\fmailw32.rc
 
 1481322285 c:\fmail\msgradef.h
 
@@ -694,5 +696,5 @@
 
 1478185506 c:\fmail\minmax.h
 
-1483732298 c:\fmail\setcompiledate.h
+1484952200 c:\fmail\setcompiledate.h
 

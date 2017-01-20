@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016  Wilfred van Velzen
+//  Copyright (C) 2007 - 2017  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -78,8 +78,8 @@ s16        zero = 0;
 extern char *months,
             *upcaseMonths;
 
-extern globVarsType globVars;
-extern configType   config;
+//extern globVarsType globVars;
+//extern configType   config;
 
 //---------------------------------------------------------------------------
 void initPkt(void)

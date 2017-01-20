@@ -13,7 +13,7 @@
 
 
           Copyright (C) 1991 - 1999  Folkert J. Wijnstra
-          Copyright (C) 2013 - 2016  Wilfred van Velzen
+          Copyright (C) 2013 - 2017  Wilfred van Velzen
 
 
 
@@ -1386,6 +1386,17 @@ Areas file type
           FMail). FMail will automatically connect received BCL
           files to the right entry of the Uplink Manager if this
           switch is set to BCL.
+
+BCL report type
+
+          Choices: None / Changes / Full
+
+          If not set to 'None' a report netmail will be send to the
+          sysop on receipt of a BCL file from the uplink. If set to
+          'Full' all conferences listed in the BCL file will be listed
+          in the report. If set to 'Changes' only new, deleted, or
+          conferences with a changed description will be listed in the
+          report.
 
 Areas file name
 

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016  Wilfred van Velzen
+//  Copyright (C) 2007 - 2017  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -26,6 +26,7 @@
 #include <io.h>
 #include <share.h>
 #include <stdio.h>
+#include <stdlib.h>   // calloc()
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -38,6 +39,7 @@
 #include "cfgfile.h"
 #include "config.h"
 #include "log.h"
+#include "msgmsg.h"    // writeMsg()
 #include "msgpkt.h"
 #include "mtask.h"
 #include "nodeinfo.h"
@@ -48,52 +50,103 @@
 
 //---------------------------------------------------------------------------
 bcl_header_type bcl_header;
-bcl_type        bcl;
+static bcl_type bcl;
 static fhandle  bclHandle;
+static char    *bclBuf = NULL;
 
-//---------------------------------------------------------------------------
-udef openBCL(uplinkReqType *uplinkReq)
+typedef struct
 {
-  tempStrType tempStr;
-  nodeNumType tempNode;
+  void     *next;
+  bcl_type *bcl;
+  char     *tag;
+  char     *descr;
+//char     *admin;  // not used
 
-  strcpy(stpcpy(tempStr, configPath), uplinkReq->fileName);
-  if ( (bclHandle = _sopen(tempStr, O_RDONLY | O_BINARY, SH_DENYRW)) == -1
-     || read(bclHandle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header)
+} bclListNode;
+//---------------------------------------------------------------------------
+int openBcl(const char *fname, bcl_header_type *bh, nodeNumType *nodeNum)
+{
+  int hndl;
+
+  if ( (hndl = _sopen(fname, O_RDONLY | O_BINARY, SH_DENYRW)) == -1
+     || read(hndl, bh, sizeof(bcl_header_type)) != sizeof(bcl_header_type)
      )
   {
-    close(bclHandle);
-    return 0;
+    close(hndl);
+
+    return -1;
   }
-  tempNode.point = 0;
-  if (  memcmp(bcl_header.FingerPrint, "BCL", 4)
-     || sscanf(bcl_header.Origin, "%hu:%hu/%hu.%hu", &tempNode.zone, &tempNode.net, &tempNode.node, &tempNode.point) < 3 )
+  nodeNum->point = 0;
+  if (  memcmp(bh->FingerPrint, "BCL", 4)
+     || sscanf(bh->Origin, "%hu:%hu/%hu.%hu", &nodeNum->zone, &nodeNum->net, &nodeNum->node, &nodeNum->point) < 3
+     )
   {
-    close(bclHandle);
-    return 0;
+    close(hndl);
+
+    return -1;
   }
+  return hndl;
+}
+//---------------------------------------------------------------------------
+int openBCL(uplinkReqType *uplinkReq)
+{
+  tempStrType tempStr;
+  nodeNumType tmpNode;
+
+  strcpy(stpcpy(tempStr, configPath), uplinkReq->fileName);
+
+  return (bclHandle = openBcl(tempStr, &bcl_header, &tmpNode)) >= 0;
+}
+//---------------------------------------------------------------------------
+char *readBcl(fhandle hndl)
+{
+  int l;
+  char *buf;
+
+  if (eof(hndl))
+    return NULL;
+
+  if ((buf = malloc(sizeof(bcl_type))) == NULL)
+    return NULL;
+
+  if (read(hndl, buf, sizeof(bcl_type)) != sizeof(bcl_type))
+  {
+    free(buf);
+
+    return NULL;
+  }
+
+  if ((buf = realloc(buf, ((bcl_type*)buf)->EntryLength)) == NULL)
+    return NULL;
+
+  l = ((bcl_type*)buf)->EntryLength - sizeof(bcl_type);
+  if (read(hndl, buf + sizeof(bcl_type), l) != l)
+  {
+    free(buf);
+
+    return NULL;
+  }
+
+  return buf;
+}
+//---------------------------------------------------------------------------
+int readBCL(char **tag, char **descr)
+{
+  free(bclBuf);
+
+  if ((bclBuf = readBcl(bclHandle)) == NULL);
+    return 0;
+
+  *tag   = bclBuf + sizeof(bcl_type);
+  *descr = strchr(*tag, 0) + 1;
+
   return 1;
 }
 //---------------------------------------------------------------------------
-udef readBCL(char **tag, char **descr)
+int closeBCL(void)
 {
-  static char buf[256];
+  free(bclBuf);
 
-  if (eof(bclHandle))
-    return 0;
-  if (read(bclHandle, &bcl, sizeof(bcl_type)) != sizeof(bcl_type) )
-    return 0;
-  if (read(bclHandle, buf, bcl.EntryLength - sizeof(bcl_type)) != (int)(bcl.EntryLength - sizeof(bcl_type)))
-    return 0;
-
-  *tag = buf;
-  *descr = strchr(buf, 0) + 1;
-
-  return 1;
-}
-//---------------------------------------------------------------------------
-udef closeBCL(void)
-{
   return close(bclHandle);
 }
 //---------------------------------------------------------------------------
@@ -104,10 +157,10 @@ void LogFileDetails(const char *fname, const char *txt)
   struct tm *tm;
 
   if (  0 == stat(fname, &statbuf)
-     && (tm = localtime(&statbuf.st_mtime)) != NULL  // TODO (Wilfred#1#10/21/16): Check if correct time (of bcl file) is logged
+     && (tm = localtime(&statbuf.st_mtime)) != NULL
      )
     sprintf(tempStr, "%s %s %lu, %04d-%02d-%02d %02d:%02d:%02d", txt, fname, statbuf.st_size
-                   , tm->tm_year + 1900, tm->tm_mon +1, tm->tm_mday
+                   , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
                    , tm->tm_hour, tm->tm_min, tm->tm_sec);
   else
     sprintf(tempStr, "%s %s", txt, fname);
@@ -115,54 +168,282 @@ void LogFileDetails(const char *fname, const char *txt)
   logEntry(tempStr, LOG_ALWAYS, 0);
 }
 //---------------------------------------------------------------------------
-udef process_bcl(char *fileName)
+bclListNode *readBclList(fhandle hndl, int *maxLen, int *no)
 {
-  fhandle     handle;
-  tempStrType tempStr
-            , tempStr2;
-  char        newFileName[13];
-  u16         index;
-  nodeNumType tempNode;
+  bclListNode *bln = NULL
+            , *tln
+            , *nln = NULL;
+  void        *buf;
+  size_t       sl;
+  int          n = 0;
 
-  strcpy(stpcpy(tempStr, config.inPath), fileName);
-  if ( (handle = _sopen(tempStr, O_RDONLY | O_BINARY, SH_DENYRW)) == -1
-     || read(handle, &bcl_header, sizeof(bcl_header)) != sizeof(bcl_header)
-     )
+  while ((buf = readBcl(hndl)) != NULL)
   {
-    close(handle);
-    return 0;
+    n++;
+    if ((tln = malloc(sizeof(bclListNode))) == NULL)
+      break;
+
+    if (nln != NULL)
+      nln->next = tln;
+
+    nln = tln;
+    nln->next  = NULL;
+    nln->bcl   = buf;
+    nln->tag   = buf + sizeof(bcl_type);
+    sl = strlen(nln->tag);
+    if (sl > *maxLen)
+      *maxLen = sl;
+    nln->descr = nln->tag + sl + 1;
+  //nln->admin = strchr(nln->descr, 0) + 1;  // not used
+
+    if (bln == NULL)
+      bln = nln;
   }
-  close(handle);
-  tempNode.point = 0;
-  if (  memcmp(bcl_header.FingerPrint, "BCL", 4)
-     || sscanf(bcl_header.Origin, "%hu:%hu/%hu.%hu",
-                                 &tempNode.zone, &tempNode.net,
-                                 &tempNode.node, &tempNode.point) < 3 )
+  if (no)
+    *no = n;
+
+  return bln;
+}
+//---------------------------------------------------------------------------
+void freeBclList(bclListNode *bln)
+{
+  bclListNode *tln;
+
+  while (bln != NULL)
+  {
+    tln = bln->next;
+    free(bln->bcl);
+    free(bln);
+    bln = tln;
+  }
+}
+//---------------------------------------------------------------------------
+int process_bcl(char *fileName)
+{
+  fhandle         hndl;
+  tempStrType     recFile
+                , newFile
+                , oldFile;
+  char            newFileName[13];
+  u16             index;
+  uplinkReqType  *uplink;
+  nodeNumType     tmpNode;
+  bcl_header_type bclhdr;
+
+  strcpy(stpcpy(recFile, config.inPath), fileName);
+  if ((hndl = openBcl(recFile, &bclhdr, &tmpNode)) < 0)
     return 0;
+
+  logEntryf(LOG_ALWAYS, 0, "New BCL file [%s] received from: %s", fileName, nodeStr(&tmpNode));
 
   index = 0;
   while (index < MAX_UPLREQ)
   {
     if (  config.uplinkReq[index].node.zone && config.uplinkReq[index].fileType == 2
-       && !memcmp(&config.uplinkReq[index].node, &tempNode, sizeof(nodeNumType)) )
+       && !memcmp(&config.uplinkReq[index].node, &tmpNode, sizeof(nodeNumType))
+       )
       break;
     ++index;
   }
-  if (index == MAX_UPLREQ)
+  if (index >= MAX_UPLREQ)
+  {
+    close(hndl);
+    logEntryf(LOG_ALWAYS, 0, "Not processed, %s is not a configured uplink of this system", nodeStr(&tmpNode));
+    addExtension(recFile, ".not_an_uplink");
+
     return 0;
+  }
+  uplink = &config.uplinkReq[index];
 
   sprintf(newFileName, "%08x.bcl", uniqueID());
-  strcpy(stpcpy(tempStr2, configPath), newFileName);
-  if (!moveFile(tempStr, tempStr2))
+  strcpy(stpcpy(newFile, configPath), newFileName);
+  if (*uplink->fileName)
+    strcpy(stpcpy(oldFile, configPath), uplink->fileName);
+
+  if (uplink->bclReport)
   {
-    logEntryf(LOG_ALWAYS, 0, "New BCL file received from uplink %s", nodeStr(&tempNode));
-    strcpy(stpcpy(tempStr, configPath), config.uplinkReq[index].fileName);
-    LogFileDetails(tempStr , "Old:");
-    unlink(tempStr);
-    LogFileDetails(tempStr2, "New:");
-    strcpy(config.uplinkReq[index].fileName, newFileName);
+    // Do report and/or compare.
+    char           *helpPtr;
+    bclListNode    *bln
+                 , *nln
+                 , *bln2
+                 , *nln2;
+    int             aka;
+    fhandle         hndl2;
+    bcl_header_type bclhdr2;
+    int             maxLen = 0;
+    int             epilog = 0;
+    int             no     = 0;
+    // Make new message
+    internalMsgType *msg;
+    int msgLen = 1000000; // sizeof bcl file * 3 + msgHeader
+
+    if (NULL == (msg = (internalMsgType *)calloc(msgLen, 1)))
+      logEntry("Not enough memory to create bcl report message", LOG_ALWAYS, 2);
+
+    logEntry("Generating bcl report message", LOG_ALWAYS, 0);
+
+    // Set nodenumber, name, and other items for destination
+    snprintf(msg->fromUserName, 36, "FMail %s", funcStr);
+    strncpy (msg->toUserName  , config.sysopName, 35);
+    strcpy  (msg->subject     , "BCL receive report");
+    aka = matchAka(&tmpNode, 0);
+    msg->destNode  =
+    msg->srcNode   = *getAkaNodeNum(aka, 1);
+    msg->attribute = PRIVATE;
+    setCurDateMsg(msg);
+    // Add kludges
+    helpPtr = addINTLKludge  (msg, msg->text);
+    helpPtr = addPointKludges(msg, helpPtr);
+    helpPtr = addMSGIDKludge (msg, helpPtr);
+    helpPtr = addTZUTCKludge (helpPtr);
+    helpPtr = addPIDKludge   (helpPtr);
+
+    // Add some text
+    helpPtr += sprintf( helpPtr
+                      , "\r"
+                        "From node       : %s\r"
+                        "Received file   : %s\r"
+                      , nodeStr(&tmpNode)
+                      , fileName
+                      );
+
+    if (*uplink->fileName)
+      helpPtr += sprintf( helpPtr
+                        , "Replaces        : %s\r"
+                        , uplink->fileName
+                        );
+
+    helpPtr += sprintf( helpPtr
+                      , "Saved as        : %s\r"
+                        "Sending software: %s\r"
+                        "Creation time   : %s\r"
+                        "Type            : %s\r"
+                        "\r"
+                      , newFileName
+                      , bclhdr.ConfMgrName
+                      , isoFmtTime(bclhdr.CreationTime)
+                      , bclhdr.flags == BCLH_ISLIST ? "Full list" : bclhdr.flags == BCLH_ISUPDATE ? "Update" : "Unknown"
+                      );
+
+    if (  bclhdr.flags == BCLH_ISLIST && uplink->bclReport == 1 && *uplink->fileName
+       && (hndl2 = openBcl(oldFile, &bclhdr2, &tmpNode)) >= 0
+       )
+    {
+      nln  = bln  = readBclList(hndl , &maxLen, &no);
+      nln2 = bln2 = readBclList(hndl2, &maxLen, NULL);
+      epilog = 1;
+
+      while (nln != NULL || nln2 != NULL)
+      {
+        int c;
+        if      (nln  == NULL)
+          c = -1;
+        else if (nln2 == NULL)
+          c =  1;
+        else
+          c = stricmp(nln2->tag, nln->tag);
+
+        if (c < 0)
+        {
+          helpPtr += sprintf(helpPtr, "- %-*s %s\r", maxLen, nln2->tag, nln2->descr);
+          nln2 = nln2->next;
+          epilog = 2;
+        }
+        else if (c > 0)
+        {
+          helpPtr += sprintf(helpPtr, "+ %-*s %s\r", maxLen, nln->tag, nln->descr);
+          nln = nln->next;
+          epilog = 2;
+        }
+        else
+        {
+          if (strcmp(nln2->descr, nln->descr))
+          {
+            helpPtr += sprintf(helpPtr, "~ %-*s %s\r", maxLen, nln->tag, nln->descr);
+            epilog = 2;
+          }
+
+          nln  = nln ->next;
+          nln2 = nln2->next;
+        }
+      }
+      freeBclList(bln2);
+      close(hndl2);
+    }
+    else
+      if (bclhdr.flags == BCLH_ISUPDATE)
+        for (nln = bln = readBclList(hndl, &maxLen, &no); nln != NULL; nln = nln->next)
+          helpPtr += sprintf(helpPtr, "%c %-*s %s\r", (nln->bcl->flags1 & FLG1_REMOVE) ? '-' : '+', maxLen, nln->tag, nln->descr);
+      else
+        // Full list
+        for (nln = bln = readBclList(hndl, &maxLen, &no); nln != NULL; nln = nln->next)
+          helpPtr += sprintf(helpPtr, "  %-*s %s\r", maxLen, nln->tag, nln->descr);
+
+    freeBclList(bln);
+
+    if (epilog)
+      helpPtr = stpcpy(helpPtr, epilog == 1 ? "\rThere are no changes in the listed conferences, compared to the previous list.\r\r"
+                                            : "\r"
+                                              "- = Conference was removed.\r"
+                                              "+ = Conference was added.\r"
+                                              "~ = Conference description has changed.\r"
+                      );
+
+    helpPtr += sprintf(helpPtr, "\r%d Conferences are listed in the received file.\r", no);
+
+    *helpPtr++ = '\r';
+    addVia(helpPtr, aka, 1);
+
+    // Plaats het in netmail.
+    writeMsg(msg, NETMSG, 1);
+    free(msg);
   }
+#ifdef _DEBUG
+  else
+    logEntryf(LOG_DEBUG, 0, "DEBUG Not generating bcl report message: %u", uplink->bclReport);
+#endif // _DEBUG
+
+  // File needs to be closed before moving it.
+  close(hndl);
+  if (!moveFile(recFile, newFile))
+  {
+    if (*uplink->fileName)
+    {
+      LogFileDetails(oldFile , "Replaces:");
+      unlink(oldFile);
+    }
+    LogFileDetails(newFile, "Saved as:");
+    strcpy(uplink->fileName, newFileName);
+  }
+  else
+    logEntryf(LOG_ALWAYS, 0, "* Error moving %s -> %s", recFile, newFile);
+
   return 1;
+}
+//---------------------------------------------------------------------------
+int ScanNewBCL(void)
+{
+  int            count = 0;
+  DIR           *dir;
+  struct dirent *ent;
+
+#ifdef _DEBUG
+  logEntry("DEBUG Scan for received BCL files", LOG_DEBUG, 0);
+#endif
+
+  if ((dir = opendir(config.inPath)) != NULL)
+  {
+    while ((ent = readdir(dir)) != NULL)
+      if (match_spec("*.bcl", ent->d_name))
+        count += process_bcl(ent->d_name);
+
+    closedir(dir);
+  }
+  if (count)
+    newLine();
+
+  return count;
 }
 //---------------------------------------------------------------------------
 void ChkAutoBCL(void)
@@ -187,30 +468,6 @@ void ChkAutoBCL(void)
       }
     }
   }
-}
-//---------------------------------------------------------------------------
-udef ScanNewBCL(void)
-{
-  udef           count = 0;
-  DIR           *dir;
-  struct dirent *ent;
-
-#ifdef _DEBUG
-  logEntry("DEBUG Scan for received BCL files", LOG_DEBUG, 0);
-#endif
-
-  if ((dir = opendir(config.inPath)) != NULL)
-  {
-    while ((ent = readdir(dir)) != NULL)
-      if (match_spec("*.bcl", ent->d_name))
-        count += process_bcl(ent->d_name);
-
-    closedir(dir);
-  }
-  if (count)
-    newLine();
-
-  return count;
 }
 //---------------------------------------------------------------------------
 void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInfoPtr)

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2016  Wilfred van Velzen
+//  Copyright (C) 2016 - 2017  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -111,10 +111,8 @@ int Ping(internalMsgType *message, int localAkaNum)
 
   // Maak de replyMsg aan de hand van de lengte van het ontvangen bericht.
   msgLen = (((sizeof(internalMsgType) - DEF_TEXT_SIZE) + strlen(message->text)) & 0xFFFFF000) + 0x2000;
-  if (NULL == (replyMsg = (internalMsgType *)malloc(msgLen)))
+  if (NULL == (replyMsg = (internalMsgType *)calloc(msgLen, 1)))
     logEntry("Not enough memory to create PING message", LOG_ALWAYS, 2);
-
-  memset(replyMsg, 0, msgLen);
 
   // Get the string for the REPLY: kludge
   if ((helpPtr = findCLStr(message->text, "\1MSGID: ")) != NULL)

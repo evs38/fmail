@@ -16,19 +16,19 @@
 	"minmax.h"
 	"window.h"
 
-1479853717 c:\fmail\fmail.h
+1484168306 c:\fmail\fmail.h
 	"fmstruct.h"
 	"stricmp.h"
 	<stdio.h>
 	<sys/types.h>
 
-1481578032 c:\fmail\fmstruct.h
+1484949818 c:\fmail\fmstruct.h
 	<stdint.h>
 	<time.h>
 	<pshpack1.h>
 	<poppack.h>
 
-1478862964 c:\fmail\stricmp.h
+1484776169 c:\fmail\stricmp.h
 
 1478861308 c:\fmail\amgr_utl.h
 
@@ -39,7 +39,7 @@
 
 1478861963 c:\fmail\fs_util.h
 
-1481667023 c:\fmail\window.h
+1484949818 c:\fmail\window.h
 	"bits.h"
 
 1477687086 c:\fmail\bits.h
@@ -72,7 +72,7 @@
 
 1478644024 c:\fmail\fs_func.h
 
-1481057267 c:\fmail\utils.h
+1484083488 c:\fmail\utils.h
 	"fmail.h"
 	"areainfo.h"
 	"fmstruct.h"
@@ -266,7 +266,7 @@
 1480540564 c:\fmail\pp_date.h
 	"SetCompileDate.h"
 
-1481236062 source:c:\fmail\import.c
+1483563866 source:c:\fmail\import.c
 	<dir.h>
 	<fcntl.h>
 	<io.h>
@@ -390,5 +390,5 @@
 
 1478639913 source:c:\fmail\stpcpy.c
 
-1483561572 c:\fmail\setcompiledate.h
+1484947474 c:\fmail\setcompiledate.h
 

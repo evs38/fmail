@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -147,8 +147,8 @@ char       *addPIDKludge   (char *txt);
 char       *addPointKludges(internalMsgType *message, char *insertPoint);
 char       *addTZUTCKludge (char *txt);
 void        setCurDateMsg  (internalMsgType *msg);
-const char *time_t2str     (const time_t t);
-const char *time_t2strGmt  (const time_t t);
+const char *isoFmtTime     (const time_t t);
+const char *isoFmtTimeGmt  (const time_t t);
 const char *tm2str         (struct tm *tm);
 u16         firstFile      (char *string, char **filename);
 u16         nextFile       (char **filename);
