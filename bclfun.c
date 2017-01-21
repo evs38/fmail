@@ -283,6 +283,8 @@ int process_bcl(char *fileName)
 
     logEntry("Generating bcl report message", LOG_ALWAYS, 0);
 
+    nln  = bln  = readBclList(hndl , &maxLen, &no);
+
     // Set nodenumber, name, and other items for destination
     snprintf(msg->fromUserName, 36, "FMail %s", funcStr);
     strncpy (msg->toUserName  , config.sysopName, 35);
@@ -302,35 +304,36 @@ int process_bcl(char *fileName)
     // Add some text
     helpPtr += sprintf( helpPtr
                       , "\r"
-                        "From node       : %s\r"
-                        "Received file   : %s\r"
+                        "From node            : %s\r"
+                        "Received file        : %s\r"
                       , nodeStr(&tmpNode)
                       , fileName
                       );
 
     if (*uplink->fileName)
       helpPtr += sprintf( helpPtr
-                        , "Replaces        : %s\r"
+                        , "Replaces             : %s\r"
                         , uplink->fileName
                         );
 
     helpPtr += sprintf( helpPtr
-                      , "Saved as        : %s\r"
-                        "Sending software: %s\r"
-                        "Creation time   : %s\r"
-                        "Type            : %s\r"
+                      , "Saved as             : %s\r"
+                        "Sending software     : %s\r"
+                        "Creation time        : %s\r"
+                        "Type                 : %s\r"
+                        "Number of conferences: %d\r"
                         "\r"
                       , newFileName
                       , bclhdr.ConfMgrName
                       , isoFmtTime(bclhdr.CreationTime)
                       , bclhdr.flags == BCLH_ISLIST ? "Full list" : bclhdr.flags == BCLH_ISUPDATE ? "Update" : "Unknown"
+                      , no
                       );
 
     if (  bclhdr.flags == BCLH_ISLIST && uplink->bclReport == 1 && *uplink->fileName
        && (hndl2 = openBcl(oldFile, &bclhdr2, &tmpNode)) >= 0
        )
     {
-      nln  = bln  = readBclList(hndl , &maxLen, &no);
       nln2 = bln2 = readBclList(hndl2, &maxLen, NULL);
       epilog = 1;
 
@@ -373,24 +376,22 @@ int process_bcl(char *fileName)
     }
     else
       if (bclhdr.flags == BCLH_ISUPDATE)
-        for (nln = bln = readBclList(hndl, &maxLen, &no); nln != NULL; nln = nln->next)
+        for (; nln != NULL; nln = nln->next)
           helpPtr += sprintf(helpPtr, "%c %-*s %s\r", (nln->bcl->flags1 & FLG1_REMOVE) ? '-' : '+', maxLen, nln->tag, nln->descr);
       else
         // Full list
-        for (nln = bln = readBclList(hndl, &maxLen, &no); nln != NULL; nln = nln->next)
+        for (; nln != NULL; nln = nln->next)
           helpPtr += sprintf(helpPtr, "  %-*s %s\r", maxLen, nln->tag, nln->descr);
 
     freeBclList(bln);
 
     if (epilog)
-      helpPtr = stpcpy(helpPtr, epilog == 1 ? "\rThere are no changes in the listed conferences, compared to the previous list.\r\r"
+      helpPtr = stpcpy(helpPtr, epilog == 1 ? "\rThere are no changes in the listed conferences, compared to the previous list.\r"
                                             : "\r"
                                               "- = Conference was removed.\r"
                                               "+ = Conference was added.\r"
                                               "~ = Conference description has changed.\r"
                       );
-
-    helpPtr += sprintf(helpPtr, "\r%d Conferences are listed in the received file.\r", no);
 
     *helpPtr++ = '\r';
     addVia(helpPtr, aka, 1);
