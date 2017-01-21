@@ -1,4 +1,7 @@
-2017-01-21  1.73.12.67-Beta
+2017-01-21  1.73.13.69-Beta
+  * FConfig: Display full date + time in node manager instead of just the date.
+
+2017-01-21  1.73.12.68-Beta
   * BCL reports: On receipt of a BCL file a report netmail to the sysop can be
     generated.
 

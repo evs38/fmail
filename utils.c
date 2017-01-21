@@ -1683,26 +1683,6 @@ const char *isoFmtTimeGmt(const time_t t)
   return tm2str(gmtime(&t));  // gmt ok!
 }
 //---------------------------------------------------------------------------
-const char *isoFmtTime(const time_t t)
-{
-  return tm2str(localtime(&t));  // localtime ok
-}
-//---------------------------------------------------------------------------
-const char *tm2str(struct tm *tm)
-{
-  static char tStr[24];  // 20 should be enough
-
-  if (NULL != tm)
-    sprintf( tStr, "%04d-%02d-%02d %02d:%02d:%02d"
-           , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
-           , tm->tm_hour, tm->tm_min, tm->tm_sec
-           );
-  else
-    strcpy(tStr, "*** Illegal time ***");
-
-  return tStr;
-}
-//---------------------------------------------------------------------------
 static tempStrType searchString;
 static char       *searchPos;
 

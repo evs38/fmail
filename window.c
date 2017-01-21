@@ -979,6 +979,12 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
                            sprintf(tempStr, "%2u %s %u", tblock->tm_mday, months[tblock->tm_mon], tblock->tm_year + 1900);
                         }
                         break;
+       case DATETIME  : width = 19;
+                        if (!*((u32*)menu->menuEntry[count].data))
+                          strcpy(tempStr, "n/a");
+                        else
+                          strcpy(tempStr, isoFmtTime(*(const time_t *)menu->menuEntry[count].data));
+                        break;
        case FUNC_PAR  : if (*((funcParType*)menu->menuEntry[count].data)->f == askGroup)
                         {  sprintf (tempStr, "%c  %s",
                                     groupToChar(*(s32*)((funcParType*)menu->menuEntry[count].data)->numPtr),
@@ -1307,6 +1313,8 @@ s16 addItem(menuType *menu, u16 entryType, char *prompt, u16 offset, void *data,
                        break;
       case DATE      : dataSize = 11;
                        break;
+      case DATETIME  : dataSize = 19;
+                       break;
       case NUM_LONG  : dataSize = 10;
                        break;
       case FUNC_PAR  : dataSize = par1;
@@ -1473,6 +1481,7 @@ s16 changeGlobal(menuType *menu, void *org, void *upd)
                               }
                               break;
             case DATE:
+            case DATETIME:
             case NUM_LONG:    if (*(u32*)menu->menuEntry[count].data != *((u32*)((u8*)upd + (int)(menu->menuEntry[count].data - org))))
                               {
                                 update = 1;
@@ -1549,7 +1558,6 @@ s16 changeGlobal(menuType *menu, void *org, void *upd)
             case AKA_SELECT:
             case NODE_MATCH:
             case WSELECT:
-//          case TIME:
             case EXTRA_TEXT:  displayMessage("Unexpected code");
                               break;
             default:          displayMessage("Undefined code");

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016  Wilfred van Velzen
+//  Copyright (C) 2007 - 2017  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -444,6 +444,7 @@ u16 editNM(s16 editType, u16 setdef)
             strcpy(addressText[0], "Main (not defined)");
          else
             sprintf(addressText[count], "AKA %2u (not defined)", count);
+
       addressToggle.text  [count + 1] = addressText[count];
       addressToggle.retval[count + 1] = count+1;
    }
@@ -451,88 +452,54 @@ u16 editNM(s16 editType, u16 setdef)
    if ((nodeMenu = createMenu(" Node Manager ")) == NULL)
       return 0;
 
-//   addItem(nodeMenu, BOOL_INT, "Disabled", 0, &tempInfoN.options, BIT5, 0,
-//                     "Set to fully disable a node");
-   addItem(nodeMenu, TEXT, "SysOp Name", 0, tempInfoN.sysopName, sizeof(tempInfoN.sysopName) - 1, 0,
-                     "Name of the SysOp");
-   addItem(nodeMenu, DATE|DISPLAY, "Ref", 52, &tempInfoN.referenceLNBDat, 0, 0,
-                     "");
-   addItem(nodeMenu, nodeNGOnly(editType, NODE), "System", 0, &tempInfoN.node, 0, 0,
-                     "Node number");
-   addItem(nodeMenu, DATE|DISPLAY, "LastRcvd", 47, &tempInfoN.lastMsgRcvdDat, 0, 0,
-                     "Last time a message was received from this node");
-   addItem(nodeMenu, NODE, "Via system", 0, &tempInfoN.viaNode, 0, 0,
-                     "Address where to send (compressed or not) PKT files for this node to");
-   addItem(nodeMenu, DATE|DISPLAY, "LastSent", 47, &tempInfoN.lastMsgSentDat, 0, 0,
-                     "Last time a message was sent to this node");
-   addItem(nodeMenu, ENUM_INT, "Use AKA", 0, &addressToggle, 0, MAX_AKAS+1,
-                     "Which AKA should be used in PKT files for this node (NORMALLY USE AUTO)");
-   addItem(nodeMenu, DATE|DISPLAY, "New bundle", 45, &tempInfoN.lastNewBundleDat, 0, 0,
-                     "Last time a new bundle was created for this node");
-   addItem(nodeMenu, FUNC_PAR, "Groups", 0, &groupsSelect, 26, 0,
-                     "Groups of message areas available to a node");
-   addItem(nodeMenu, DATE|DISPLAY, "Last BCL", 47, &tempInfoN.lastSentBCL, 0, 0,
-                     "Last time a BCL file was sent to this node");
-
-   addItem(nodeMenu, NUM_INT, "Write level", 0, &tempInfoN.writeLevel, 5, 32767,
-                     "Level should be >= than Write Level of an area in order to be allowed to write");
-   addItem(nodeMenu, ENUM_INT, "Capability   ", 22, &pktTypeToggle, 0, 2,
-                     "Capability of the echomail processor used at the remote node");
-   addItem(nodeMenu, ENUM_INT, "Compression", 0, &archiveToggle, 0, 12,
-                     "Compression method used to create mailbundles");
-   addItem(nodeMenu, ENUM_INT, "Attach status", 22, &statusToggle, 0, 6,
-                     "Status of file attach messages");
-   addItem(nodeMenu, PATH, "PKT path", 0, tempInfoN.pktOutPath, PKTOUT_PATH_LEN - 1, 0,
-                     "Directory where uncompressed PKT files should be stored");
-   addItem(nodeMenu, EMAIL, "E-mail", 0, tempInfoN.email, PKTOUT_PATH_LEN-1, 0,
-                     "E-mail address where mail bundles should be sent to");
-   addItem(nodeMenu, BOOL_INT, "Active", 0, &tempInfoN.options, BIT4, 0,
-                     "Not Active means that a node will not receive echomail");
-   addItem(nodeMenu, BOOL_INT, "Forw.requests", 22, &tempInfoN.options, BIT12, 0,
-                     "Automatically send requests by this node for new areas to your uplinks");
-   addItem(nodeMenu, BOOL_INT, "Rem.maint       ", 45, &tempInfoN.options, BIT13, 0,
-                     "If this node is allowed to perform remote maintenance");
-   addItem(nodeMenu, BOOL_INT_REV, "ÈÍ> Sysop Mail", 0, &tempInfoN.options, BIT5, 0,
-                     "Will receive echomail directed to SysOp Name when not active");
-   addItem(nodeMenu, BOOL_INT, "Allow rescan ", 22, &tempInfoN.options, BIT14, 0,
-                     "If this node is allowed to use %RESCAN");
-   addItem(nodeMenu, BOOL_INT, "Tiny SEEN-BYs   ", 45, &tempInfoN.options, BIT1, 0,
-                     "Remove all SEEN-BYs except of your own downlinks (should normally NOT be used)");
-   addItem(nodeMenu, BOOL_INT, "Notify", 0, &tempInfoN.options, BIT15, 0,
-                     "Send list of active areas to this node with the FTools Notify command");
-   addItem(nodeMenu, BOOL_INT, "Route point  ", 22, &tempInfoN.options, BIT6, 0,
-                     "Reroute netmail for this point directed to a local AKA to the point number");
-   addItem(nodeMenu, BOOL_INT, "Reformat date   ", 45, &tempInfoN.options, BIT0, 0,
-                     "Correct the format of dates in forwarded messages (should normally NOT be used)");
-   addItem(nodeMenu, BOOL_INT, "Pack netm.", 0, &tempInfoN.options, BIT7, 0,
-                      "Pack netmail direct for this node");
-   addItem(nodeMenu, NUM_INT, "Auto BCL days   ", 45, &tempInfoN.autoBCL, 3, 999,
-                     "Interval in days between automatic BCL files");
-   addItem(nodeMenu, WORD, "AreaMgr pwd", 0, &tempInfoN.password, sizeof(tempInfoN.password) - 2, 0,
-                     "Password for AreaMgr requests");
-   addItem(nodeMenu, NUM_INT, "AutoPassive days", 45, &tempInfoN.passiveDays, 4, 9999,
-                     "Max number of days between polls before auto-passive (1-9999, 0 = no max)");
-   addItem(nodeMenu, WORD|UPCASE, "Packet pwd", 0, &tempInfoN.packetPwd, 8, 0,
-                     "Password put in outgoing mail packets and required in incoming mail packets");
-   addItem(nodeMenu, BOOL_INT, dARROW" Ignore   ", 22, &tempInfoN.options, BIT3, 0,
-                     "Put password in outgoing packets but do not check incoming packets for it");
-   addItem(nodeMenu, NUM_INT, "AutoPassive size", 45, &tempInfoN.passiveSize, 4, 9999,
-                      "Max size of mail bundle before auto-passive (1-9999, 0 = no max)");
+// addItem(nodeMenu, BOOL_INT                  , "Disabled"        ,  0, &tempInfoN.options         , BIT5, 0, "Set to fully disable a node");
+   addItem(nodeMenu, TEXT                      , "SysOp Name"      ,  0,  tempInfoN.sysopName       , sizeof(tempInfoN.sysopName) - 1,            0, "Name of the SysOp"                                                              );
+   addItem(nodeMenu, DATETIME | DISPLAY        , "Ref"             , 51, &tempInfoN.referenceLNBDat , 0                              ,            0, ""                                                                               );
+   addItem(nodeMenu, nodeNGOnly(editType, NODE), "System"          ,  0, &tempInfoN.node            , 0                              ,            0, "Node number"                                                                    );
+   addItem(nodeMenu, DATETIME | DISPLAY        , "LastRcvd"        , 46, &tempInfoN.lastMsgRcvdDat  , 0                              ,            0, "Last time a message was received from this node"                                );
+   addItem(nodeMenu, NODE                      , "Via system"      ,  0, &tempInfoN.viaNode         , 0                              ,            0, "Address where to send (compressed or not) PKT files for this node to"           );
+   addItem(nodeMenu, DATETIME | DISPLAY        , "LastSent"        , 46, &tempInfoN.lastMsgSentDat  , 0                              ,            0, "Last time a message was sent to this node"                                      );
+   addItem(nodeMenu, ENUM_INT                  , "Use AKA"         ,  0, &addressToggle             , 0                              , MAX_AKAS + 1, "Which AKA should be used in PKT files for this node (NORMALLY USE AUTO)"        );
+   addItem(nodeMenu, DATETIME | DISPLAY        , "New bundle"      , 44, &tempInfoN.lastNewBundleDat, 0                              ,            0, "Last time a new bundle was created for this node"                               );
+   addItem(nodeMenu, FUNC_PAR                  , "Groups"          ,  0, &groupsSelect              , 26                             ,            0, "Groups of message areas available to a node"                                    );
+   addItem(nodeMenu, DATETIME | DISPLAY        , "Last BCL"        , 46, &tempInfoN.lastSentBCL     , 0                              ,            0, "Last time a BCL file was sent to this node"                                     );
+   addItem(nodeMenu, NUM_INT                   , "Write level"     ,  0, &tempInfoN.writeLevel      , 5                              ,        32767, "Level should be >= than Write Level of an area in order to be allowed to write" );
+   addItem(nodeMenu, ENUM_INT                  , "Capability   "   , 22, &pktTypeToggle             , 0                              ,            2, "Capability of the echomail processor used at the remote node"                   );
+   addItem(nodeMenu, ENUM_INT                  , "Compression"     ,  0, &archiveToggle             , 0                              ,           12, "Compression method used to create mailbundles"                                  );
+   addItem(nodeMenu, ENUM_INT                  , "Attach status"   , 22, &statusToggle              , 0                              ,            6, "Status of file attach messages"                                                 );
+   addItem(nodeMenu, PATH                      , "PKT path"        ,  0,  tempInfoN.pktOutPath      , PKTOUT_PATH_LEN - 1            ,            0, "Directory where uncompressed PKT files should be stored"                        );
+   addItem(nodeMenu, EMAIL                     , "E-mail"          ,  0,  tempInfoN.email           , PKTOUT_PATH_LEN - 1            ,            0, "E-mail address where mail bundles should be sent to"                            );
+   addItem(nodeMenu, BOOL_INT                  , "Active"          ,  0, &tempInfoN.options         , BIT4                           ,            0, "Not Active means that a node will not receive echomail"                         );
+   addItem(nodeMenu, BOOL_INT                  , "Forw.requests"   , 22, &tempInfoN.options         , BIT12                          ,            0, "Automatically send requests by this node for new areas to your uplinks"         );
+   addItem(nodeMenu, BOOL_INT                  , "Rem.maint       ", 45, &tempInfoN.options         , BIT13                          ,            0, "If this node is allowed to perform remote maintenance"                          );
+   addItem(nodeMenu, BOOL_INT_REV              , "ÈÍ> Sysop Mail"  ,  0, &tempInfoN.options         , BIT5                           ,            0, "Will receive echomail directed to SysOp Name when not active"                   );
+   addItem(nodeMenu, BOOL_INT                  , "Allow rescan "   , 22, &tempInfoN.options         , BIT14                          ,            0, "If this node is allowed to use %RESCAN"                                         );
+   addItem(nodeMenu, BOOL_INT                  , "Tiny SEEN-BYs   ", 45, &tempInfoN.options         , BIT1                           ,            0, "Remove all SEEN-BYs except of your own downlinks (should normally NOT be used)" );
+   addItem(nodeMenu, BOOL_INT                  , "Notify"          ,  0, &tempInfoN.options         , BIT15                          ,            0, "Send list of active areas to this node with the FTools Notify command"          );
+   addItem(nodeMenu, BOOL_INT                  , "Route point  "   , 22, &tempInfoN.options         , BIT6                           ,            0, "Reroute netmail for this point directed to a local AKA to the point number"     );
+   addItem(nodeMenu, BOOL_INT                  , "Reformat date   ", 45, &tempInfoN.options         , BIT0                           ,            0, "Correct the format of dates in forwarded messages (should normally NOT be used)");
+   addItem(nodeMenu, BOOL_INT                  , "Pack netm."      ,  0, &tempInfoN.options         , BIT7                           ,            0,  "Pack netmail direct for this node"                                             );
+   addItem(nodeMenu, NUM_INT                   , "Auto BCL days   ", 45, &tempInfoN.autoBCL         , 3                              ,          999, "Interval in days between automatic BCL files"                                   );
+   addItem(nodeMenu, WORD                      , "AreaMgr pwd"     ,  0, &tempInfoN.password        , sizeof(tempInfoN.password) - 2 ,            0, "Password for AreaMgr requests"                                                  );
+   addItem(nodeMenu, NUM_INT                   , "AutoPassive days", 45, &tempInfoN.passiveDays     , 4                              ,         9999, "Max number of days between polls before auto-passive (1-9999, 0 = no max)"      );
+   addItem(nodeMenu, WORD | UPCASE             , "Packet pwd "     ,  0, &tempInfoN.packetPwd       , 8                              ,            0, "Password put in outgoing mail packets and required in incoming mail packets"    );
+   addItem(nodeMenu, BOOL_INT                  , "-> Ignore "      , 25, &tempInfoN.options         , BIT3                           ,            0, "Put password in outgoing packets but do not check incoming packets for it"      );
+   addItem(nodeMenu, NUM_INT                   , "AutoPassive size", 45, &tempInfoN.passiveSize     , 4                              ,         9999, "Max size of mail bundle before auto-passive (1-9999, 0 = no max)"               );
 
    switch (editType)
    {
       case DISPLAY_NODE_WINDOW:
-        update = displayMenu(nodeMenu, 2, 5);
+        update = displayMenu(nodeMenu, 0, 5);
         break;
       case DISPLAY_NODE_DATA  :
-        displayData(nodeMenu, 2, 5, 0);
+        displayData(nodeMenu, 0, 5, 0);
         update = 0;
         break;
       case EDIT_NODE          :
-        update = runMenuD(nodeMenu, 2, 5, NULL, setdef);
+        update = runMenuD(nodeMenu, 0, 5, NULL, setdef);
         break;
       case EDIT_NODE_GLOBAL   :
-        runMenuD(nodeMenu, 2, 5, NULL, setdef);
+        runMenuD(nodeMenu, 0, 5, NULL, setdef);
         update = 0;
         break;
    }

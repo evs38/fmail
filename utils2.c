@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -67,7 +67,6 @@ char *insertLine(char *pos, const char *line)
 //---------------------------------------------------------------------------
 u16  nodeStrIndex = -1;
 char nodeNameStr[NO_NodeStrIndex][24];  // 65535:65535/65535.65535  4 * 5 + 3 + 1 = 24
-
 
 char *tmpNodeStr(void)
 {
@@ -287,4 +286,24 @@ int dprintf(int fd, const char *format, ...)
   return bw;
 }
 #endif  // __linux__
+//---------------------------------------------------------------------------
+const char *isoFmtTime(const time_t t)
+{
+  return tm2str(localtime(&t));  // localtime ok
+}
+//---------------------------------------------------------------------------
+const char *tm2str(struct tm *tm)
+{
+  static char tStr[24];  // 20 should be enough
+
+  if (NULL != tm)
+    sprintf( tStr, "%04d-%02d-%02d %02d:%02d:%02d"
+           , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
+           , tm->tm_hour, tm->tm_min, tm->tm_sec
+           );
+  else
+    strcpy(tStr, "*** Illegal time ***");
+
+  return tStr;
+}
 //---------------------------------------------------------------------------

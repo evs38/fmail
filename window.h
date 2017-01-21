@@ -53,7 +53,7 @@
 #define SFILE_NAME      19
 #define PACK            20
 #define DATE            22
-//#define TIME          23
+#define DATETIME        23
 #define FUNCTION        24
 #define FUNC_PAR        25
 #define FUNC_VPAR       26
