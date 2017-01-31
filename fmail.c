@@ -503,7 +503,6 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
   u16                pktMsgCount;
   DIR               *dir;
   struct dirent     *ent;
-  char               prodCodeStr[20];
 
   if (secure && *config.securePath == 0)
     secure = 0;
@@ -538,27 +537,13 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
         if (0 == openPktRd(pktStr, secure))
         {
-          helpPtr = NULL;
-          i = 0;
-          while (ftscprod[i].prodcode != 0xFFFF)
-          {
-            if (ftscprod[i].prodcode == globVars.remoteProdCode)
-            {
-              helpPtr = (char*)ftscprod[i].prodname;
-              break;
-            }
-            ++i;
-          }
-          if (helpPtr == NULL)
-          {
-            sprintf(prodCodeStr, "Program id %04hX", globVars.remoteProdCode);
-            helpPtr = prodCodeStr;
-          }
+          const char *fpStr = GetFtscProdStr(globVars.remoteProdCode);
+
           logEntryf(LOG_PKTINFO, 0, "Processing %s from %s to %s", ent->d_name, nodeStr(&globVars.packetSrcNode), nodeStr(&globVars.packetDestNode));
 
           if ((globVars.remoteCapability & 1) == 1)
             sprintf( tempStr, "Pkt info: %s %u.%02u, Type 2+, %d, %04u-%02u-%02u %02u:%02u:%02u%s%s"
-                   , helpPtr, globVars.versionHi, globVars.versionLo
+                   , fpStr, globVars.versionHi, globVars.versionLo
                    , globVars.packetSize
                    , globVars.year, globVars.month, globVars.day
                    , globVars.hour, globVars.min, globVars.sec
@@ -566,7 +551,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                    );
           else
             sprintf( tempStr, "Pkt info: %s, Type %s, %d, %04u-%02u-%02u %02u:%02u:%02u%s%s"
-                   , helpPtr
+                   , fpStr
                    , globVars.remoteCapability == 0xffff ? "2.2" :"2.0"
                    , globVars.packetSize
                    , globVars.year, globVars.month, globVars.day
@@ -1073,7 +1058,7 @@ void Toss(int argc, char *argv[])
             bundlePtr3 = bundlePtr3->nextb;
           }
           if ((bundlePtr3 = (struct bt*)malloc(sizeof(struct bt))) == NULL)
-            logEntry("Not enough memory available", LOG_ALWAYS, 2);
+            logEntry("Not enough memory available for Tossing", LOG_ALWAYS, 2);
 
           strcpy(bundlePtr3->fname, ent->d_name);
           bundlePtr3->mtime = st.st_mtime;
@@ -1136,6 +1121,7 @@ void Toss(int argc, char *argv[])
     writeMsgLocal(message, NETMSG, 1);
   }
 
+  freeFtscTable();
   closeBBSWr(0);
 #ifdef dSENDMAIL
   sendmail_smtp();

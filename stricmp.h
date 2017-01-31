@@ -22,7 +22,7 @@
 //
 //---------------------------------------------------------------------------
 
-#if defined(__MINGW32__) || defined(_LINUX)
+#if defined(__MINGW32__) || defined(__linux__)
 
 int _fm_stricmp (const char *s1, const char *s2);
 int _fm_strnicmp(const char *s1, const char *s2, long unsigned int n);

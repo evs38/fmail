@@ -451,7 +451,8 @@ typedef struct
   uchar           _descrAKA[MAX_NA_OLD][51];
   userType        users[MAX_USERS];
   akaMatchType    akaMatch[MAX_MATCH];     // not used yet
-  u8              reserved6[496];
+  u8              reserved6[448];
+  pathType        ftscProdFile;
   pathType        inBakPath;
   pathType        outBakPath;
   char            emailAddress[80];        // max 56 chars used

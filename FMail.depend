@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1483026458 source:c:\fmail\fmail.c
+1485888653 source:c:\fmail\fmail.c
 	<conio.h>
 	<ctype.h>
 	<dir.h>
@@ -45,7 +45,7 @@
 	<stdio.h>
 	<sys/types.h>
 
-1484953689 c:\fmail\fmstruct.h
+1485034728 c:\fmail\fmstruct.h
 	<stdint.h>
 	<time.h>
 	<pshpack1.h>
@@ -69,13 +69,13 @@
 1399578407 c:\fmail\cfgfile.h
 	"fmstruct.h"
 
-1479571240 c:\fmail\config.h
+1485380171 c:\fmail\config.h
 	"fmail.h"
 	"bits.h"
 
 1476013525 c:\fmail\dups.h
 
-1478627433 c:\fmail\ftscprod.h
+1485888678 c:\fmail\ftscprod.h
 
 1404329706 c:\fmail\jamfun.h
 	"jam.h"
@@ -116,7 +116,7 @@
 
 1478862964 c:\fmail\stpcpy.h
 
-1484953821 c:\fmail\utils.h
+1485468139 c:\fmail\utils.h
 	"fmail.h"
 	"areainfo.h"
 	"fmstruct.h"
@@ -337,9 +337,16 @@
 1474316225 c:\fmail\ping.h
 	"fmail.h"
 
-1478627408 source:c:\fmail\ftscprod.c
-	"fmstruct.h"
+1485888653 source:c:\fmail\ftscprod.c
+	<fcntl.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"fmail.h"
 	"ftscprod.h"
+	"log.h"
+	"stpcpy.h"
+	"utils.h"
 
 1426945558 source:c:\fmail\ispathch.c
 
@@ -631,7 +638,7 @@
 	<string.h>
 	"spec.h"
 
-1479142705 source:c:\fmail\utils2.c
+1485020188 source:c:\fmail\utils2.c
 	<ctype.h>
 	<direct.h>
 	<dirent.h>
@@ -653,7 +660,7 @@
 	<stdio.h>
 	<windows.h>
 
-1484953745 source:c:\fmail\utils.c
+1485020190 source:c:\fmail\utils.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -679,13 +686,13 @@
 	"stpcpy.h"
 	"version.h"
 
-1484953732 c:\fmail\stricmp.h
+1485537817 c:\fmail\stricmp.h
 
 1476478327 source:c:\fmail\stricmp.c
 	"stricmp.h"
 	<ctype.h>
 
-1485015613 source:c:\fmail\fmailw32.rc
+1485884442 source:c:\fmail\fmailw32.rc
 
 1481322285 c:\fmail\msgradef.h
 
@@ -696,5 +703,5 @@
 
 1478185506 c:\fmail\minmax.h
 
-1485015612 c:\fmail\setcompiledate.h
+1485896206 c:\fmail\setcompiledate.h
 

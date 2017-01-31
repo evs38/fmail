@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,14 +21,34 @@
 //
 //---------------------------------------------------------------------------
 
+#include <fcntl.h>    // open(); O_flags
+#include <stdio.h>    // sprintf()
+#include <stdlib.h>   // malloc
+#include <string.h>   // strerror()
 
-#include "fmstruct.h"
+#include "fmail.h"
+
 #include "ftscprod.h"
+#include "log.h"
+#include "stpcpy.h"
+#include "utils.h"
 
+#define dTBLSIZE  600
+//---------------------------------------------------------------------------
+typedef struct
+{
+  u16   prodcode;
+  char *prodname;
+} ftscps;
+
+static ftscps *fileTbl = NULL
+            , *tbl     = NULL;
+
+const static char *dMEM_ERR_STR = "Not enough memory available in GetFtscProdStr";
 //---------------------------------------------------------------------------
 // Updated upto ftscprod.017
 //---------------------------------------------------------------------------
-struct ftscps ftscprod[] =
+static ftscps ftscprod[] =
 {
   { 0x0000, "Fido" }
 , { 0x0001, "Rover" }
@@ -333,6 +353,148 @@ struct ftscps ftscprod[] =
 , { 0x1BFF, "AfterShock" }
 , { 0x1CFF, "FTN::Packet" }
 , { 0x1DFF, "WWIV_BBS" }
-, { 0xFFFF, "" }
 };
+//---------------------------------------------------------------------------
+const char *GetFtscProdStr(u16 pcode)
+{
+  const char *helpPtr = NULL;
+  size_t t = 0;
+  int L
+    , R
+    , m
+    , r;
+
+  if (NULL == tbl)
+  {
+    if (*config.ftscProdFile)
+    {
+      tempStrType fname;
+      char *fn;
+      int f;
+
+      if (NULL == strpbrk(config.ftscProdFile, ":\\/"))  // configuratie filename bevat geen path tekens
+      {
+        strcpy(stpcpy(fname, configPath), config.ftscProdFile);
+        fn = fname;
+      }
+      else
+        fn = config.ftscProdFile;
+
+      if ((f = open(fn, O_RDONLY | O_BINARY)) >= 0)
+      {
+        char *buf;
+        u32 fl = fileLength(f);
+
+        logEntryf(LOG_ALWAYS, 0, "Using ftscprod file: %s", fn);
+
+        if ((buf = malloc(fl + 1)) == NULL)
+          logEntry(dMEM_ERR_STR, LOG_ALWAYS, 2);
+
+        if (read(f, buf, fl) == fl)
+        {
+          char *pbuf = buf;
+          int pc
+            , p;
+
+          t = 0;
+          if ((fileTbl = calloc(dTBLSIZE, sizeof(ftscps))) == NULL)
+            logEntry(dMEM_ERR_STR, LOG_ALWAYS, 2);
+
+          buf[fl] = 0;  // Make sure str(c)spn functions don't overshoot buffer end.
+          for (t = 0; t < dTBLSIZE && pbuf < buf + fl;)
+          {
+            // Get product code
+            if (sscanf(pbuf, "%x", &pc) == 1)
+            {
+              fileTbl[t].prodcode = pc;
+              p = strcspn(pbuf, ",\r\n");
+              if (pbuf[p] == ',')
+              {
+                // Get product name
+                pbuf += ++p;
+                p = strcspn(pbuf, ",\r\n");
+                if (p > 0)
+                {
+                  if ((fileTbl[t].prodname = malloc(p + 1)) == NULL)
+                    logEntry(dMEM_ERR_STR, LOG_ALWAYS, 2);
+
+                  memcpy(fileTbl[t].prodname, pbuf, p);
+                  fileTbl[t].prodname[p] = 0;
+                  pbuf += p;
+                }
+              }
+              else
+                // No product name?
+                pbuf += p;
+
+              t++;
+            }
+            pbuf += strcspn(pbuf, "\r\n");  // Skip unused extra text in current line
+            pbuf += strspn (pbuf, "\r\n");  // Skip line ending(s)
+#ifdef _DEBUG0
+            logEntryf(LOG_DEBUG, 0, "DEBUG ftscprod %3d %04X,%s", t, tbl[t].prodcode, tbl[t].prodname);
+#endif // _DEBUG
+          }
+          tbl = fileTbl;
+        }
+        close(f);
+        free(buf);
+      }
+      else
+        logEntryf(LOG_ALWAYS, 0, "Problem opening ftscprod file: %s [%s]", config.ftscProdFile, strError(errno));
+    }
+    if (NULL == tbl)
+    {
+      tbl = ftscprod;
+      t = sizeof(ftscprod) / sizeof(ftscps);
+    }
+  }
+
+#ifdef _DEBUG0
+  logEntryf(LOG_DEBUG, 0, "DEBUG GetFtscProdStr %d", t);
+#endif
+
+  // binary search for the product code in the array
+  L = 0;
+  R = t - 1;
+  for (;;)
+  {
+    if (L > R)
+      break;   // Not found
+    m = (L + R) / 2;
+    if ((r = pcode - tbl[m].prodcode) == 0)
+    {
+      // Found
+      helpPtr = tbl[m].prodname;
+      break;
+    }
+    if (r > 0)
+      L = m + 1;
+    else
+      R = m - 1;
+  }
+
+  if (helpPtr == NULL || *helpPtr == 0)
+  {
+    static char prodCodeStr[20] = "Program id ";
+
+    sprintf(prodCodeStr + 11, "%04hX", pcode);
+    helpPtr = prodCodeStr;
+  }
+  return helpPtr;
+}
+//---------------------------------------------------------------------------
+void freeFtscTable(void)
+{
+  if (fileTbl)
+  {
+    int i;
+
+    for (i = 0; i < dTBLSIZE; i++)
+      free(fileTbl[i].prodname);
+
+    free(fileTbl);
+    tbl = fileTbl = NULL;
+  }
+}
 //---------------------------------------------------------------------------

@@ -741,6 +741,20 @@ Daily mailbundles
 
           Create a new mail bundle every day.
 
+Ftscprod file
+
+          Specify a file to be read/used instead of the internal list
+          of ftscprod codes and names. These are used to translate the
+          product code as found in pkt files to product names, which
+          are printed in fmails log file. If the specified file name
+          doesn't contain the full path to the file, the current
+          configuration directory is used to read the file from. The
+          file is expected to be formatted as it is regularly
+          published by the FTSC as a file named 'FTSCPROD.nnn', where
+          'nnn' is a serial number. And should contain a sorted list
+          of at least a hexadecimal product code followed by a comma
+          and a product name on each line of the file.
+
 
 3.3.4     Mgr options
 
