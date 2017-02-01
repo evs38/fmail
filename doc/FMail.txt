@@ -751,9 +751,10 @@ Ftscprod file
           configuration directory is used to read the file from. The
           file is expected to be formatted as it is regularly
           published by the FTSC as a file named 'FTSCPROD.nnn', where
-          'nnn' is a serial number. And should contain a sorted list
-          of at least a hexadecimal product code followed by a comma
-          and a product name on each line of the file.
+          'nnn' is a serial number. And as documented in FTA-1005. It
+          should contain a sorted list of at least a hexadecimal
+          product code followed by a comma and a product name on each
+          line of the file.
 
 
 3.3.4     Mgr options

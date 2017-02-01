@@ -1,3 +1,7 @@
+2017-02-01  1.73.15.74-Beta
+  * Fixed a bug in the GetFtscProdStr() function, which made FMail crash
+    on the second pkt file it processed in a toss session.
+
 2017-01-31  1.73.14.73-Beta
   * Can use the FTSCPROD.nnn files, as published by the ftsc, for translating
     the product code in pkt files to product names in the log, instead of the

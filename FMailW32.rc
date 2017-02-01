@@ -1,8 +1,8 @@
 MAINICON ICON "FMail.ico"
 
 1 VERSIONINFO
-FILEVERSION 1,73,14,73
-PRODUCTVERSION 1,73,14,73
+FILEVERSION 1,73,15,74
+PRODUCTVERSION 1,73,15,74
 FILEOS 0x4
 FILETYPE 0x1
 BEGIN
@@ -12,9 +12,9 @@ BEGIN
     BEGIN
       VALUE "CompanyName", "FMail GPL"
       VALUE "FileDescription", "FMail mail tosser"
-      VALUE "FileVersion", "1.73.14.73"
+      VALUE "FileVersion", "1.73.15.74"
       VALUE "InternalName", "fmail"
-      VALUE "LegalCopyright", "Copyright (c) 1991 - 2016 FMail developers"
+      VALUE "LegalCopyright", "Copyright (c) 1991 - 2017 FMail developers"
 //    VALUE "LegalTrademarks", ""
       VALUE "OriginalFilename", "FMailW32.exe"
       VALUE "ProductName", "FMail"
