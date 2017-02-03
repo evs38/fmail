@@ -1,5 +1,12 @@
+2017-02-03  1.73.17.76-Beta
+  * FConfig: Existence of the ftscprod file is checked when it's entered.
+
+2017-02-02  1.73.16.75-Beta
+  * Bug fixed: When the ftscprod file contains 0x00 bytes, the code would end
+    up in an endless loop.
+
 2017-02-01  1.73.15.74-Beta
-  * Fixed a bug in the GetFtscProdStr() function, which made FMail crash
+  * Bug fixed: in the GetFtscProdStr() function, which made FMail crash
     on the second pkt file it processed in a toss session.
 
 2017-01-31  1.73.14.73-Beta

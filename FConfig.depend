@@ -72,7 +72,7 @@
 
 1478644024 c:\fmail\fs_func.h
 
-1485468139 c:\fmail\utils.h
+1486125368 c:\fmail\utils.h
 	"fmail.h"
 	"areainfo.h"
 	"fmstruct.h"
@@ -151,7 +151,7 @@
 	<ctype.h>
 	"fmail.h"
 
-1485035806 source:c:\fmail\fsetup.c
+1486072023 source:c:\fmail\fsetup.c
 	<conio.h>
 	<errno.h>
 	<fcntl.h>
@@ -241,7 +241,7 @@
 
 1478344329 c:\fmail\log.h
 
-1485020188 source:c:\fmail\utils2.c
+1486139420 source:c:\fmail\utils2.c
 	<ctype.h>
 	<direct.h>
 	<dirent.h>
@@ -249,6 +249,7 @@
 	<stdarg.h>
 	<stdlib.h>
 	<string.h>
+	<sys/stat.h>
 	<time.h>
 	"utils.h"
 	"ispathch.h"
@@ -340,7 +341,7 @@
 	<conio.h>
 	<windows.h>
 
-1485021201 source:c:\fmail\window.c
+1486139341 source:c:\fmail\window.c
 	<ctype.h>
 	<dir.h>
 	<io.h>
@@ -375,7 +376,7 @@
 
 1312487460 c:\fmail\os.h
 
-1485035935 source:c:\fmail\fconfigw32.rc
+1486139621 source:c:\fmail\fconfigw32.rc
 
 1476478327 source:c:\fmail\stricmp.c
 	"stricmp.h"
@@ -390,5 +391,5 @@
 
 1478639913 source:c:\fmail\stpcpy.c
 
-1485896206 c:\fmail\setcompiledate.h
+1486139620 c:\fmail\setcompiledate.h
 

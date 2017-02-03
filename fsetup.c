@@ -770,49 +770,30 @@ int main(int argc, char *argv[])
   addItem(pathMenu, PATH, "Sent echomail"   , 0, config.sentEchoPath , sizeof(pathType) - 1, 0, "Where sent echomail messages are copied to (optional)");
   addItem(pathMenu, PATH, "Semaphore"       , 0, config.semaphorePath, sizeof(pathType) - 1, 0, "Where the rescan semaphore files of your mailer should be created (optional)");
 
-  if ((logMenu = createMenu(" Log files ")) == NULL)
+  if ((logMenu = createMenu(" Logging ")) == NULL)
     goto nomem;
 
-  addItem(logMenu, ENUM_INT, "Log style", 0, &logStyleToggle, 0, 5,
-           "Which log file format should be used");
-  addItem(logMenu, FILE_NAME, "Log file name", 0, config.logName, sizeof(pathType) - 1, 0,
-           "Name of the FMail log file");
-  addItem(logMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(logMenu, BOOL_INT, "Inbound activities", 0, &config.logInfo, BIT0, 0,
-           "Log inbound activities such as decompressing files");
-  addItem(logMenu, BOOL_INT, "Unexpected pwd       ", 32, &config.logInfo, BIT4, 0,
-           "Log unexpected packet passwords");
-  addItem(logMenu, BOOL_INT, "Outbound activities", 0, &config.logInfo, BIT1, 0,
-           "Log outbound activities such created and updated mail files");
-  addItem(logMenu, BOOL_INT, "Moving Sent/Rcvd mail", 32, &config.logInfo, BIT5, 0,
-           "Log moving of Sent and Received netmail");
-  addItem(logMenu, BOOL_INT, "Pack routing", 0, &config.logInfo, BIT7, 0,
-           "Log netmail packing information");
-  addItem(logMenu, BOOL_INT, "Outbound echomail    ", 32, &config.logInfo, BIT9, 0,
-           "Log outbound echomail activity");
-  addItem(logMenu, BOOL_INT, "Netmail import", 0, &config.logInfo, BIT10, 0,
-           "Log netmail import information");
-  addItem(logMenu, BOOL_INT, "Netmail export       ", 32, &config.logInfo, BIT11, 0,
-           "Log netmail export information");
-  addItem(logMenu, BOOL_INT, "FMail statistics", 0, &config.logInfo, BIT6, 0,
-           "Log FMail's statistics");
-  addItem(logMenu, BOOL_INT, "Message base info    ", 32, &config.logInfo, BIT8, 0,
-           "Log message base information");
-  addItem(logMenu, BOOL_INT, "Inbound packet info", 0, &config.logInfo, BIT2, 0,
-           "Log inbound mail packet filenames and origin/destination nodes");
-  addItem(logMenu, BOOL_INT, "Program execution    ", 32, &config.logInfo, BIT13, 0,
-           "Log information about programs being started (e.g. compression programs)");
-  addItem(logMenu, BOOL_INT, "ÈÍ> Extended info", 0, &config.logInfo, BIT3, 0,
-           "Log extended packet info, such as program name, type, size, date and time");
-  addItem(logMenu, BOOL_INT, "File open errors     ", 32, &config.logInfo, LOG_OPENERR, 0,
-           "Log info about files that could not be opened by FMail (NOT ALWAYS REAL ERRORS!)");
-  addItem(logMenu, BOOL_INT, "DEBUG: log all", 0, &config.logInfo, BIT15, 0,
-           "Log all information without losing your custom settings");
-  addItem(logMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(logMenu, FILE_NAME, "AreaMgr log", 0, config.areaMgrLogName, sizeof(pathType)-1, 0,
-           "Name of the AreaMgr log file");
-  addItem(logMenu, FILE_NAME, "Toss summary", 0, config.summaryLogName, sizeof(pathType)-1, 0,
-           "Name of the Toss Summary log file");
+  addItem(logMenu, ENUM_INT  , "Log style"            ,  0, &logStyleToggle      , 0                   , 5, "Which log file format should be used");
+  addItem(logMenu, FILE_NAME , "Log file name"        ,  0, config.logName       , sizeof(pathType) - 1, 0, "Name of the FMail log file");
+  addItem(logMenu, FILE_NAME , "AreaMgr log"          ,  0, config.areaMgrLogName, sizeof(pathType) - 1, 0, "Name of the AreaMgr log file");
+  addItem(logMenu, FILE_NAME , "Toss summary"         ,  0, config.summaryLogName, sizeof(pathType) - 1, 0, "Name of the Toss Summary log file");
+  addItem(logMenu, SFILE_NAME, "Ftscprod file"        ,  0, config.ftscProdFile  , sizeof(pathType) - 1, 0, "Use this file instead of the internal list of ftscprod codes and names");
+  addItem(logMenu, DISPLAY   , NULL                   ,  0, NULL, 0, 0,  NULL);
+  addItem(logMenu, BOOL_INT  , "Inbound activities"   ,  0, &config.logInfo, BIT0 , 0, "Log inbound activities such as decompressing files");
+  addItem(logMenu, BOOL_INT  , "Unexpected pwd       ", 32, &config.logInfo, BIT4 , 0, "Log unexpected packet passwords");
+  addItem(logMenu, BOOL_INT  , "Outbound activities"  ,  0, &config.logInfo, BIT1 , 0, "Log outbound activities such created and updated mail files");
+  addItem(logMenu, BOOL_INT  , "Moving Sent/Rcvd mail", 32, &config.logInfo, BIT5 , 0, "Log moving of Sent and Received netmail");
+  addItem(logMenu, BOOL_INT  , "Pack routing"         ,  0, &config.logInfo, BIT7 , 0, "Log netmail packing information");
+  addItem(logMenu, BOOL_INT  , "Outbound echomail    ", 32, &config.logInfo, BIT9 , 0, "Log outbound echomail activity");
+  addItem(logMenu, BOOL_INT  , "Netmail import"       ,  0, &config.logInfo, BIT10, 0, "Log netmail import information");
+  addItem(logMenu, BOOL_INT  , "Netmail export       ", 32, &config.logInfo, BIT11, 0, "Log netmail export information");
+  addItem(logMenu, BOOL_INT  , "FMail statistics"     ,  0, &config.logInfo, BIT6 , 0, "Log FMail's statistics");
+  addItem(logMenu, BOOL_INT  , "Message base info    ", 32, &config.logInfo, BIT8 , 0, "Log message base information");
+  addItem(logMenu, BOOL_INT  , "Inbound packet info"  ,  0, &config.logInfo, BIT2 , 0, "Log inbound mail packet filenames and origin/destination nodes");
+  addItem(logMenu, BOOL_INT  , "Program execution    ", 32, &config.logInfo, BIT13, 0, "Log information about programs being started (e.g. compression programs)");
+  addItem(logMenu, BOOL_INT  , "ÈÍ> Extended info"    ,  0, &config.logInfo, BIT3 , 0, "Log extended packet info, such as program name, type, size, date and time");
+  addItem(logMenu, BOOL_INT  , "File open errors     ", 32, &config.logInfo, LOG_OPENERR, 0, "Log info about files that could not be opened by FMail (NOT ALWAYS REAL ERRORS!)");
+  addItem(logMenu, BOOL_INT  , "DEBUG: log all"       ,  0, &config.logInfo, BIT15, 0, "Log all information without losing your custom settings");
 
   if ((internetMenu = createMenu(" Internet settings ")) == NULL)
     goto nomem;
@@ -847,8 +828,6 @@ int main(int argc, char *argv[])
   addItem(mailMenu, BOOL_INT , "Set Pvt on import     ", 28, &config.mailOptions      , BIT13,    0, "Set private status on all imported netmail messages"                            );
   addItem(mailMenu, BOOL_INT , "No point in PATH"      ,  0, &config.mailOptions      , BIT1 ,    0, "Do not add the node number of the boss to the PATH kludge on point systems"     );
   addItem(mailMenu, BOOL_INT , "Daily mailbundles     ", 28, &config.mailOptions      , BIT5 ,    0, "Create a new mail bundle every day"                                             );
-  addItem(mailMenu, DISPLAY  , NULL                    ,  0, NULL                     , 0    ,    0, NULL                                                                             );
-  addItem(mailMenu, FILE_NAME, "Ftscprod file         ",  0, config.ftscProdFile, sizeof(pathType) - 1, 0, "Use this file instead of the internal list of ftscprod codes and names");
 
   if ((mgrMenu = createMenu(" Mgr options ")) == NULL)
     goto nomem;
@@ -1125,19 +1104,17 @@ int main(int argc, char *argv[])
 
   addItem(systemMenu, DISPLAY   , NULL           , 0, NULL        ,  0,  0, NULL);
   addItem(systemMenu, NEW_WINDOW, "Miscellaneous", 0, sysMiscMenu ,  2, -2, "File handles, colors, buffer sizes");
-  addItem(systemMenu, NEW_WINDOW, "Directories"  , 0, pathMenu    ,  2,  0, "Various path and file names");
-  addItem(systemMenu, NEW_WINDOW, "Log files"    , 0, logMenu     ,  0, -3, "Log file settings");
+  addItem(systemMenu, NEW_WINDOW, "Directories"  , 0, pathMenu    ,  2,  0, "Various path names");
+  addItem(systemMenu, NEW_WINDOW, "Logging"      , 0, logMenu     ,  0, -2, "Log file settings");
   addItem(systemMenu, NEW_WINDOW, "Internet"     , 0, internetMenu, -4,  4, "Internet mail settings");
   addItem(systemMenu, DISPLAY   , NULL           , 0, NULL        ,  0,  0, NULL);
   addItem(systemMenu, NEW_WINDOW, "Compression"  , 0, arc32Menu   ,  2, -2, "Programs and switches used to compress mailbundles");
   addItem(systemMenu, NEW_WINDOW, "Decompression", 0, deArc32Menu ,  2, -1, "Programs and switches used to decompress mailbundles");
 
   memset (uplinkNodeStr, 0, sizeof(uplinkNodeStrType));
-  for ( count = 0; count < MAX_UPLREQ; count++ )
-  {
-    sprintf (uplinkNodeStr[count], "%2u  %s", count+1,
-             config.uplinkReq[count].node.zone?nodeStr(&config.uplinkReq[count].node):"                       ");
-  }
+  for (count = 0; count < MAX_UPLREQ; count++)
+    sprintf(uplinkNodeStr[count], "%2u  %s", count + 1, config.uplinkReq[count].node.zone ? nodeStr(&config.uplinkReq[count].node) : "                       ");
+
   if ((uplMenu = createMenu(" Uplink Manager ")) == NULL)
     goto nomem;
 
@@ -1156,7 +1133,7 @@ int main(int argc, char *argv[])
            "General options");
   addItem(miscMenu, NEW_WINDOW, "Message base", 0, mbMenu, 2, 0,
            "Message base related options");
-  addItem(miscMenu, NEW_WINDOW, "Mail options", 0, mailMenu, -3, -1,
+  addItem(miscMenu, NEW_WINDOW, "Mail options", 0, mailMenu, 5, -1,
            "Mailflow related options");
   addItem(miscMenu, NEW_WINDOW, "Mgr options", 0, mgrMenu, 2, -1,
            "Mgr related options");

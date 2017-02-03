@@ -534,7 +534,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                update++;
             }
          } else
-         if ((ch != 0) && (ch < 256) &&
+         if (ch != 0 && ch < 256 &&
              (((fieldType & CTRLCODES) && ch >= 1 && ch <= 26 && ch != 13 && config.genOptions.ctrlcodes) ||
               (((fieldType & MASK) == TEXT) && (ch >= ' ')) ||
               (((fieldType & MASK) == PACK) && (ch >= ' ') && (ch <= '~')) ||
@@ -549,7 +549,8 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                                                (ch != '|') && (ch != '+') &&
                                                (ch != '+') && (ch != '%') &&
                                                (ch != '*') && (ch != '?')) ||
-              (((fieldType & MASK) == FILE_NAME) && (ch > ' ') && (ch <= '~') &&
+              (((fieldType & MASK) == SFILE_NAME ||
+                (fieldType & MASK) == FILE_NAME) && (ch > ' ') && (ch <= '~') &&
                                                     (ch != '<') && (ch != '>') &&
                                                     (ch != '|') && (ch != '+') &&
                                                     (ch != '*') && (ch != '?')) ||
@@ -557,8 +558,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                                                   (ch != '<') && (ch != '>') &&
                                                   (ch != '|') && (ch != '+') &&
                                                   (ch != '*') && (ch != '?')) ||
-              ((((fieldType & MASK) == SFILE_NAME) ||
-                 (fieldType & MASK) == EMAIL)     && (ch > ' ') && (ch <= '~') &&
+              (((fieldType & MASK) == EMAIL)      && (ch > ' ') && (ch <= '~') &&
                                                      (ch != '<') && (ch != '>') &&
                                                      (ch != '|') && (ch != '+') &&
                                                      (ch != '*') && (ch != '?') &&
@@ -576,9 +576,9 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                sPos = 0;
                *tempStr = 0;
             }
-            if ((!insert) && (sPos < strlen(tempStr)))
+            if (!insert && sPos < strlen(tempStr))
             {
-               if ( fieldType & UPCASE )
+               if (fieldType & UPCASE)
                   tempStr[sPos++] = toupper(ch);
                else
                   tempStr[sPos++] = ch;
@@ -602,15 +602,11 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
 
       removeCursor();
 
-      /* Remove trailing spaces */
-
+      // Remove trailing spaces
       while (((sPos = strlen(tempStr)) != 0) && (tempStr[--sPos] == ' '))
-      {
          tempStr[sPos] = 0;
-      }
 
-      if ((ch == _K_ENTER_) || (ch == _K_UP_) || (ch == _K_DOWN_) /* ||
-          ((ch == _K_ESC_) && (windowLook.wAttr & FAST_EDIT)) */ )
+      if (ch == _K_ENTER_ || ch == _K_UP_ || ch == _K_DOWN_)
       {
          error = 0;
          if ((fieldType & MASK) == PACK)
@@ -713,19 +709,19 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                   strtok(NULL, " ");
                }
             }
-         } else
+         }
+         else
 
-         if (((fieldType & MASK) == PATH) || ((fieldType & MASK) == FILE_NAME) ||
-             ((fieldType & MASK) == MB_NAME))
+         if ((fieldType & MASK) == PATH || (fieldType & MASK) == FILE_NAME || (fieldType & MASK) == MB_NAME)
          {
             for (sPos = 0; sPos < strlen(tempStr); sPos++)
                if (tempStr[sPos] == '/')
                   tempStr[sPos] = '\\';
 
-            strcpy (testStr, tempStr);
+            strcpy(testStr, tempStr);
             if ((fieldType & MASK) == FILE_NAME)
             {
-               if ((helpPtr = strrchr(testStr,'\\')) != NULL)
+               if ((helpPtr = strrchr(testStr, '\\')) != NULL)
                   *helpPtr = 0;
                else
                   *testStr = 0;
@@ -734,7 +730,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
             {
                if ((fieldType & MASK) == MB_NAME)
                {
-                  helpPtr = strrchr(testStr,'\\');
+                  helpPtr = strrchr(testStr, '\\');
 //                if ( (!config.genOptions.lfn || !(fieldType & LFN)) && helpPtr != NULL && strchr(helpPtr, '.') != NULL )
                   if ( (                          !(fieldType & LFN)) && helpPtr != NULL && strchr(helpPtr, '.') != NULL )
                   {
@@ -744,7 +740,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                   else
                   {
                      if (helpPtr != NULL)
-                       *(helpPtr+1) = 0;
+                       *(helpPtr + 1) = 0;
                   }
                }
                else
@@ -967,7 +963,7 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
        case MB_NAME   :
        case SFILE_NAME:
        case FILE_NAME : width = menu->menuEntry[count].par1;
-                        strcpy (tempStr, menu->menuEntry[count].data);
+                        strcpy(tempStr, menu->menuEntry[count].data);
                         break;
        case DATE      : width = 11;
                         if ( !*((u32*)menu->menuEntry[count].data) )
@@ -1453,10 +1449,11 @@ s16 changeGlobal(menuType *menu, void *org, void *upd)
    u16 count;
    u16 update = 0;
 
-   for ( count = 0; count < menu->entryCount; count++ )
+   for (count = 0; count < menu->entryCount; count++)
    {
-      if ( menu->menuEntry[count].selected )
-      {  switch ( menu->menuEntry[count].entryType & MASK )
+      if (menu->menuEntry[count].selected)
+      {
+         switch (menu->menuEntry[count].entryType & MASK)
          {  case TEXT:
             case WORD:
             case EMAIL:
@@ -1708,50 +1705,59 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, u16 *dataPtr, u16 setdef, u16 esc)
             case PATH       :
             case MB_NAME    :
             case SFILE_NAME :
-            case FILE_NAME  : strcpy(tempStr, menu->menuEntry[count].data);
-
-                              for ( ; ; )
+            case FILE_NAME  : helpPtr = menu->menuEntry[count].data;
+                              // strcpy(tempStr, helpPtr);
+                              for (;;)
                               {
-                                 editString(menu->menuEntry[count].data,
-                                            menu->menuEntry[count].par1+1,
-                                            editX, py,
-                                            menu->menuEntry[count].entryType);
+                                 editString(helpPtr, menu->menuEntry[count].par1 + 1, editX, py, menu->menuEntry[count].entryType);
 
-                                 if ( (menu->menuEntry[count].entryType & MASK) == MB_NAME &&
-                                      menu->menuEntry[count].data == tempInfo.msgBasePath &&
-                                      *tempInfo.msgBasePath )
-                                 {  for ( count2 = 0; count2 < areaInfoCount; ++count2 )
-                                       if ( !stricmp(tempInfo.msgBasePath, areaInfo[count2]->msgBasePath) )
+                                 if ( (menu->menuEntry[count].entryType & MASK) == MB_NAME
+                                    && helpPtr == tempInfo.msgBasePath
+                                    && *tempInfo.msgBasePath
+                                    )
+                                 {
+                                    for (count2 = 0; count2 < areaInfoCount; ++count2)
+                                       if (!stricmp(tempInfo.msgBasePath, areaInfo[count2]->msgBasePath))
                                           break;
-                                    if ( count2 < areaInfoCount && stricmp(tempInfo.areaName, areaInfo[count2]->areaName) )
-                                    {  if (askBoolean ("Message base name already used. Edit ?", 'Y') == 'Y')
+                                    if (count2 < areaInfoCount && stricmp(tempInfo.areaName, areaInfo[count2]->areaName))
+                                    {
+                                       if (askBoolean("Message base name already used. Edit ?", 'Y') == 'Y')
                                           continue;
                                        *tempInfo.msgBasePath = 0;
                                     }
                                  }
 
-                                 if ( (menu->menuEntry[count].entryType & MASK) != SFILE_NAME ||
-                                      !*(u8*)menu->menuEntry[count].data )
+                                 if (  (menu->menuEntry[count].entryType & MASK) != SFILE_NAME
+                                    || !*helpPtr
+                                    )
                                     break;
 
-                                 sprintf(tempStr2, "%s%s", configPath, (char*)menu->menuEntry[count].data);
+                                 if (NULL == strpbrk(helpPtr, ":\\/"))  // Check for path chars
+                                 {
+                                    strcpy(stpcpy(tempStr2, configPath), helpPtr);
+                                    if (isFile(tempStr2))
+                                        break;
+                                 }
+                                 else
+                                   if (isFile(helpPtr))
+                                      break;
 
-                                 if (!access(tempStr2, 0))
-                                    break;
                                  displayMessage("File not found");
-                                 strcpy(menu->menuEntry[count].data, tempStr);
+                                 // strcpy(helpPtr, tempStr);
                               }
 
-                              /* PATCH */
+                              // PATCH
                               if (menu->menuEntry[count].data == tempInfo.msgBasePath)
                               {
                                  if (*tempInfo.msgBasePath)
-                                 {  if ( editDefault )
+                                 {
+                                    if (editDefault)
                                        tempInfo.board = 2;
                                     else
-                                    {  /* clear extern boardCodeInfo */
+                                    {  // clear extern boardCodeInfo
                                        if (tempInfo.board && tempInfo.board-- <= MBBOARDS)
                                            boardCodeInfo[tempInfo.board>>3] &= ~(1<<(tempInfo.board&7));
+
                                        tempInfo.board = 0;
                                     }
                                  }
@@ -1882,7 +1888,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, u16 *dataPtr, u16 setdef, u16 esc)
                               }
                      /*ch =*/ editString (tempStr, menu->menuEntry[count].par2,
                                           editX, py, menu->menuEntry[count].entryType);
-                              if ((helpPtr = strchr (tempStr, '-')) != NULL)
+                              if ((helpPtr = strchr(tempStr, '-')) != NULL)
                               {
                                  if (menu->menuEntry[count].par1 == FAKE)
                                     (*(nodeFakeType*)menu->menuEntry[count].data).fakeNet = atoi (helpPtr+1);
@@ -2135,13 +2141,13 @@ void displayMessage(char *msg)
 //---------------------------------------------------------------------------
 char fileNameStr[65];
 
-char *getSourceFileName (char *title)
+char *getSourceFileName(char *title)
 {
    *fileNameStr = 0;
    if (displayWindow(title, 6, 12, 72, 14) == 0)
    {
-      editString(fileNameStr, 64, 8, 13, FILE_NAME|UPCASE);
-      removeWindow ();
+      editString(fileNameStr, 64, 8, 13, FILE_NAME | UPCASE);
+      removeWindow();
       if (strcmp(fileNameStr, "CON") == 0)
       {
          displayMessage("Can't read from or write to the console");
@@ -2149,7 +2155,7 @@ char *getSourceFileName (char *title)
       }
       if (strcmp(fileNameStr, "CLOCK$") == 0)
       {
-         displayMessage("Can't read from ot write to the clock device");
+         displayMessage("Can't read from oR write to the clock device");
          *fileNameStr = 0;
       }
    }

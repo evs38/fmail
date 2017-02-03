@@ -337,7 +337,7 @@
 1474316225 c:\fmail\ping.h
 	"fmail.h"
 
-1485956665 source:c:\fmail\ftscprod.c
+1486061264 source:c:\fmail\ftscprod.c
 	<fcntl.h>
 	<stdio.h>
 	<stdlib.h>
@@ -692,7 +692,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1485969428 source:c:\fmail\fmailw32.rc
+1485986482 source:c:\fmail\fmailw32.rc
 
 1481322285 c:\fmail\msgradef.h
 
@@ -703,5 +703,5 @@
 
 1478185506 c:\fmail\minmax.h
 
-1485969428 c:\fmail\setcompiledate.h
+1486061724 c:\fmail\setcompiledate.h
 

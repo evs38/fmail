@@ -378,7 +378,9 @@ void GetTable(void)
       char *buf;
       u32 fl = fileLength(f);
 
-      logEntryf(LOG_ALWAYS, 0, "Using ftscprod file: %s", fn);
+#ifdef _DEBUG0
+      logEntry("DEBUG GetTable opened", LOG_DEBUG, 0);
+#endif // _DEBUG
 
       if ((buf = malloc(fl + 1)) == NULL)
         logEntry(dMEM_ERR_STR, LOG_ALWAYS, 2);
@@ -388,6 +390,10 @@ void GetTable(void)
         char *pbuf = buf;
         unsigned long pc;
         int p;
+
+#ifdef _DEBUG0
+        logEntry("DEBUG GetTable read", LOG_DEBUG, 0);
+#endif // _DEBUG
 
         if ((fileTbl = calloc(dTBLSIZE, sizeof(ftscps))) == NULL)
           logEntry(dMEM_ERR_STR, LOG_ALWAYS, 2);
@@ -410,16 +416,23 @@ void GetTable(void)
               memcpy(fileTbl[tSize].prodname, pbuf, p);
               fileTbl[tSize].prodname[p] = 0;
               pbuf += p;
+#ifdef _DEBUG0
+              logEntryf(LOG_DEBUG, 0, "DEBUG ftscprod %3d %04X,%s", tSize, fileTbl[tSize].prodcode, fileTbl[tSize].prodname);
+#endif // _DEBUG
               tSize++;
             }
           }
+#ifdef _DEBUG0
+          else
+            logEntryf(LOG_DEBUG, 0, "DEBUG GetTable %lu %u", pc, (unsigned int)*pbuf);
+#endif // _DEBUG
           pbuf += strcspn(pbuf, "\r\n");  // Skip unused extra text in current line
           pbuf += strspn (pbuf, "\r\n");  // Skip line ending chars
-#ifdef _DEBUG0
-          logEntryf(LOG_DEBUG, 0, "DEBUG ftscprod %3d %04X,%s", t, fileTbl[tSize].prodcode, fileTbl[tSize].prodname);
-#endif // _DEBUG
+          while (*pbuf == 0 && pbuf < buf + fl)
+            ++pbuf;
         }
         tbl = fileTbl;
+        logEntryf(LOG_ALWAYS, 0, "Using ftscprod file: %s", fn);
       }
       else
         logEntryf(LOG_ALWAYS, 0, "Problem reading ftscprod file: %s [%s]", config.ftscProdFile, strError(errno));

@@ -28,6 +28,7 @@
 #include <stdarg.h>  // va_start()
 #include <stdlib.h>  // atoi()
 #include <string.h>
+#include <sys/stat.h>
 #include <time.h>
 
 #include "utils.h"
@@ -267,6 +268,13 @@ int existPattern(const char *path, const char *pattern)
   }
 
   return ent != NULL;
+}
+//---------------------------------------------------------------------------
+int isFile(const char *path)
+{
+  struct stat st;
+
+  return stat(path, &st) == 0 && S_ISREG(st.st_mode);
 }
 //---------------------------------------------------------------------------
 #ifndef __linux__

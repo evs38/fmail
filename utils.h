@@ -86,6 +86,7 @@ s16         existDir       (const char *dir, const char *descr);
 int         ChDir          (const char *path);
 const char *_searchpath    (const char *filename);
 int         existPattern   (const char *path, const char *pattern);
+int         isFile         (const char *path);
 u32         fileLength     (int handle);
 long        fileSize       (const char *filename);
 void        Delete         (const char *path, const char *wildCard);
