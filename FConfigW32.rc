@@ -14,7 +14,7 @@ BEGIN
       VALUE "FileDescription", "FConfig: FMail configuration util"
       VALUE "FileVersion", "1.73.17.22"
       VALUE "InternalName", "fconfig"
-      VALUE "LegalCopyright", "Copyright (c) 1991 - 2016 FMail developers"
+      VALUE "LegalCopyright", "Copyright (c) 1991 - 2017 FMail developers"
 //    VALUE "LegalTrademarks", ""
       VALUE "OriginalFilename", "FConfigW32.exe"
       VALUE "ProductName", "FMail"

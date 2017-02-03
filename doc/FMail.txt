@@ -1693,9 +1693,11 @@ Ignore
 
 AutoPassive days
 
-          The system will automatically be set to the Passive
-          status, if more days passed by since the last time new
-          mail created than the number of days entered here.
+          The system will automatically be set to the Passive status,
+          if more days passed by since the last time new mail created
+          than the number of days entered here. The date it uses for
+          this calculation is displayed after 'Ref' in the upper left
+          corner of the nodes configuration window.
 
 AutoPassive size
 

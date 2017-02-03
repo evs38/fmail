@@ -1,4 +1,6 @@
 2017-02-03  1.73.17.76-Beta
+  * FConfig: Rearranged the Node Manager window a bit.
+  * FMail.txt: Explained the 'Ref' date in the Node Manager window.
   * FConfig: Existence of the ftscprod file is checked when it's entered.
 
 2017-02-02  1.73.16.75-Beta
