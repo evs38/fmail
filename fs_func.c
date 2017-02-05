@@ -345,7 +345,7 @@ extern s16  displayAreasSelect;
 
 extern char boardCodeInfo[512];
 
-s16 netDisplayAreas (u16 *v)
+s16 netDisplayAreas(u16 *v)
 {
    u16         count;
    s16         temp;
@@ -392,8 +392,7 @@ s16 netDisplayAreas (u16 *v)
 }
 
 
-
-s16 badduprecDisplayAreas (u16 *v)
+s16 badduprecDisplayAreas(u16 *v)
 {
    s16         temp;
    u16         count;
@@ -496,7 +495,7 @@ funcParType mgrBoardSelect;
 funcParType boardCodeSelect;
 funcParType boardCodeSelectGold;
 
-s16 echoDisplayAreas (u16 *v)
+s16 echoDisplayAreas(u16 *v)
 {
    u16   count;
    s16   temp;
@@ -948,25 +947,25 @@ static s16 replaceNode(void)
    }
    return (updated);
 }
+//---------------------------------------------------------------------------
 
 static u16 globNodeChange;
 
 s16 gndFun(void)
 {
-	menuType    *gNdMenu;
+	menuType *gNdMenu;
 
-	if ((gNdMenu = createMenu (" Export ")) == NULL)
-		return(0);
+	if ((gNdMenu = createMenu(" Export ")) == NULL)
+		return 0;
+
 	addItem (gNdMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-	addItem (gNdMenu, FUNCTION, "Insert node", 0, insNode, 0, 0,
-				"Insert a node in connected systems list");
-	addItem (gNdMenu, FUNCTION, "Delete node", 0, delNode, 0, 0,
-				"Remove a node from connected systems list");
-	addItem (gNdMenu, FUNCTION, "Replace node", 0, replaceNode, 0, 0,
-				"Replace a node from connected systems list");
-	return (globNodeChange |= runMenu(gNdMenu, 16, 14));
-}
+	addItem (gNdMenu, FUNCTION, "Insert node", 0, insNode, 0, 0, "Insert a node in connected systems list");
+	addItem (gNdMenu, FUNCTION, "Delete node", 0, delNode, 0, 0, "Remove a node from connected systems list");
+	addItem (gNdMenu, FUNCTION, "Replace node", 0, replaceNode, 0, 0, "Replace a node from connected systems list");
 
+  return (globNodeChange |= runMenu(gNdMenu, 16, 14));
+}
+//---------------------------------------------------------------------------
 extern menuType    *raMenu;
 extern menuType    *areaMenu;
 
@@ -1326,22 +1325,16 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    addItem(areaMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
    addItem(areaMenu, echoOnly(editType, ENUM_INT), "Origin AKA", 0, &addressToggle, 0, MAX_AKAS,
                      "Address used for origin line and as packet origin address");
-   if ( !(editType & EDIT_ECHO_DEFAULT) )
-     addItem (areaMenu, DATE|DISPLAY, "LastScanned", 47, &tempInfo.lastMsgScanDat, 0, 0,
-                      "Last time a message was scanned from this area");
-   addItem (areaMenu, echoOnly(editType,FUNC_PAR), "Other AKAs", 0, &multiAkaSelectRec, 0, 4,
-                      "AKAs added to SEEN-BY lines");
-   if ( !(editType & EDIT_ECHO_DEFAULT) )
-      addItem (areaMenu, DATE|DISPLAY, "LastTossed ", 47, &tempInfo.lastMsgTossDat, 0, 0,
-                      "Last time a message was tossed into this area");
-   addItem (areaMenu, echoDefOnly(editType,TEXT), "Origin line", 0, tempInfo.originLine, ORGLINE_LEN-1, 0,
-                      "Origin line that will be used for messages from your system");
-   if ( !(editType & EDIT_ECHO_GLOBAL) )
-      addItem (areaMenu, echoOnly(editType,FUNCTION), "Export", 0, nodeScroll, 2, 2,
-                      "Nodes to which the echo area is exported");
+   if (!(editType & EDIT_ECHO_DEFAULT))
+     addItem(areaMenu, DATETIME | DISPLAY, "LastScanned", 41, &tempInfo.lastMsgScanDat, 0, 0, "Last time a message was scanned from this area");
+   addItem(areaMenu, echoOnly(editType, FUNC_PAR), "Other AKAs", 0, &multiAkaSelectRec, 0, 4, "AKAs added to SEEN-BY lines");
+   if (!(editType & EDIT_ECHO_DEFAULT))
+     addItem(areaMenu, DATETIME | DISPLAY, "LastTossed ", 41, &tempInfo.lastMsgTossDat, 0, 0, "Last time a message was tossed into this area");
+   addItem(areaMenu, echoDefOnly(editType, TEXT), "Origin line", 0, tempInfo.originLine, ORGLINE_LEN-1, 0, "Origin line that will be used for messages from your system");
+   if (!(editType & EDIT_ECHO_GLOBAL))
+      addItem(areaMenu, echoOnly(editType, FUNCTION), "Export", 0, nodeScroll, 2, 2, "Nodes to which the echo area is exported");
    else
-      addItem (areaMenu, FUNCTION, "Export", 0, gndFun, 2, 2,
-                      "Nodes to which the echo area is exported");
+      addItem(areaMenu, FUNCTION, "Export", 0, gndFun, 2, 2, "Nodes to which the echo area is exported");
 
    if (  editType == EDIT_ECHO
       || editType == DISPLAY_ECHO_WINDOW
@@ -1349,32 +1342,36 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
       )
       addItem(areaMenu, echoOnly(editType, EXTRA_TEXT | NO_EDIT), NULL, 0, NULL, ORGLINE_LEN - 1, 0, "");
 
+#define dAM_X  1
+#define dAM_Y  4
+
    switch (editType)
    {
       case DISPLAY_ECHO_WINDOW :
-        temp = displayMenu(areaMenu, 1, 5);
+        temp = displayMenu(areaMenu, dAM_X, dAM_Y);
         break;
       case DISPLAY_ECHO_DATA   :
-        displayData(areaMenu, 1, 5, 0);
+        displayData(areaMenu, dAM_X, dAM_Y, 0);
         temp = 0;
         break;
       case EDIT_GLOB_BBS       :
         temp = runMenuD   (raMenu  , 2, 7, NULL, setdef);
         break;
       case EDIT_ECHO           :
-        temp = runMenuD   (areaMenu, 1, 5, NULL, setdef);
+        temp = runMenuD   (areaMenu, dAM_X, dAM_Y, NULL, setdef);
         break;
       case EDIT_NETMAIL        :
-        temp = runMenuD   (areaMenu, 1, 5, NULL, setdef);
+        temp = runMenuD   (areaMenu, dAM_X, dAM_Y, NULL, setdef);
         break;
       case EDIT_ECHO_GLOBAL    :
-        runMenuD   (areaMenu, 1, 5, NULL, setdef);
+        runMenuD   (areaMenu, dAM_X, dAM_Y, NULL, setdef);
         temp = 0;
         break;
       case EDIT_ECHO_DEFAULT   :
-        temp = runMenuD   (areaMenu, 1, 5, NULL, setdef);
+        temp = runMenuD   (areaMenu, dAM_X, dAM_Y, NULL, setdef);
         break;
    }
+
    if (editType == EDIT_ECHO_DEFAULT)
    {
       if (defaultEnumRA)

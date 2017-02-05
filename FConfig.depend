@@ -44,7 +44,7 @@
 
 1477687086 c:\fmail\bits.h
 
-1478893312 source:c:\fmail\areamgr.c
+1486331583 source:c:\fmail\areamgr.c
 	<ctype.h>
 	<dir.h>
 	<fcntl.h>
@@ -131,7 +131,7 @@
 
 1476034823 c:\fmail\version.h
 
-1484949796 source:c:\fmail\fs_func.c
+1486332499 source:c:\fmail\fs_func.c
 	<ctype.h>
 	<fcntl.h>
 	<io.h>
@@ -341,7 +341,7 @@
 	<conio.h>
 	<windows.h>
 
-1486139341 source:c:\fmail\window.c
+1486162052 source:c:\fmail\window.c
 	<ctype.h>
 	<dir.h>
 	<io.h>
@@ -376,7 +376,7 @@
 
 1312487460 c:\fmail\os.h
 
-1486139621 source:c:\fmail\fconfigw32.rc
+1486332214 source:c:\fmail\fconfigw32.rc
 
 1476478327 source:c:\fmail\stricmp.c
 	"stricmp.h"
@@ -391,5 +391,5 @@
 
 1478639913 source:c:\fmail\stpcpy.c
 
-1486139620 c:\fmail\setcompiledate.h
+1486332214 c:\fmail\setcompiledate.h
 

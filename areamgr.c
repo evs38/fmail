@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016  Wilfred van Velzen
+//  Copyright (C) 2007 - 2017  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -261,7 +261,8 @@ s16 multiAkaSelect(void)
             strcat (tempStr, nodeStr((nodeNumType*)(&config.akaList[count])));
 
          if ( count >= offset && count < offset+16 )
-         {  if (count == currentElem)
+         {
+            if (count == currentElem)
                printStringFill (tempStr, ' ', 34, 34, 5+count-offset,
                                 windowLook.scrollfg, windowLook.scrollbg,
                                 MONO_INV);
@@ -687,9 +688,9 @@ s16 areaMgr(void)
 	    }
 	    groupSearch = 0;
 	    sprintf(tempStr, " %*u/%u ", areaInfoCount < 10 ? 1 :
-                                          areaInfoCount < 100 ? 2 : 3,
-                                          index+1, areaInfoCount);
-	    printString(tempStr, /*areaMenu->xWidth*/75-strlen(tempStr)+1, /*areaMenu->yWidth*/17+5, YELLOW, LIGHTGRAY, MONO_HIGH);
+                                   areaInfoCount < 100 ? 2 : 3
+                                 , index + 1, areaInfoCount);
+	    printString(tempStr, /*areaMenu->xWidth*/75 - strlen(tempStr) + 1, /*areaMenu->yWidth*/ 17 + 4, YELLOW, LIGHTGRAY, MONO_HIGH);
 
 //          tempInfo = *areaInfo[index];
             getRec(CFG_ECHOAREAS, index);
@@ -733,11 +734,11 @@ s16 areaMgr(void)
 	 if (groupSelectMask)
 	 {
 	    sprintf(tempStr, " Group %c ", '@' + groupSelectMask);
-	    printString(tempStr,  3, 22, windowLook.titlefg     , windowLook.background, MONO_HIGH);
-	    printString("ÄÄÄ"  , 12, 22, windowLook.actvborderfg, windowLook.background, MONO_HIGH);
+	    printString(tempStr,  3, 21, windowLook.titlefg     , windowLook.background, MONO_HIGH);
+	    printString("ÄÄÄ"  , 12, 21, windowLook.actvborderfg, windowLook.background, MONO_HIGH);
 	 }
 	 else
-	    printString(" All groups ", 3, 22, windowLook.titlefg, windowLook.background, MONO_HIGH);
+	    printString(" All groups ", 3, 21 , windowLook.titlefg, windowLook.background, MONO_HIGH);
 
 	 if (badEchoCount)
 	    ch = _K_INS_;

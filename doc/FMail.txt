@@ -50,6 +50,7 @@
          3.4.1  Miscellaneous
          3.4.2  Directories
          3.4.3  Logging
+         3.4.4  Internet
          3.4.6  Compression
          3.4.7  Decompression
     3.5  Import/export
@@ -1197,9 +1198,11 @@ Ftscprod file
           file is expected to be formatted as it is regularly
           published by the FTSC as a file named 'FTSCPROD.nnn', where
           'nnn' is a serial number. And as documented in FTA-1005. It
-          should contain a sorted list of at least a hexadecimal
-          product code followed by a comma and a product name on each
-          line of the file.
+          must contain a sorted list of at least a hexadecimal product
+          code followed by a comma and a product name on each used
+          line of the file. Lines not containing a hexadecimal product
+          code at the start of the line are skipped when reading the
+          file.
 
 Log settings
 
@@ -1207,17 +1210,15 @@ Log settings
           information you want to have logged.
 
 
-3.4.4     Internet (Windows 32-bit only, start FConfig with /32)
+3.4.4     Internet
 
-The Windows 32-bit version of FMail is capable of sending mail
-bundles directly to Internet e-mail addresses. In this section of
-FConfig you can set up the necessary general parameters. If you
-want to send mail for a particular uplink or downlink thru the
-Internet, you need to enter the e-mail address of that node in the
-Node Manager on the PKT path line. FMail can add text to e-mail
-messages. If you place an ASCII file called EMAIL.TXT in the FMail
-directory, its contents will be placed in the body of the e-mail
-message.
+FMail is capable of sending mail bundles directly to Internet e-mail
+addresses. In this section of FConfig you can set up the necessary
+general parameters. If you want to send mail for a particular uplink
+or downlink thru the Internet, you need to enter the e-mail address of
+that node in the Node Manager. FMail can add text to e-mail messages.
+If you place an ASCII file called EMAIL.TXT in the FMail directory,
+its contents will be placed in the body of the e-mail message.
 
 Send smtp
 
@@ -1231,6 +1232,7 @@ SMTP server
 
           Enter the name of your mailserver here, e.g.
           mail.chello.nl
+
 
 3.4.6     Compression and Compression/32
 

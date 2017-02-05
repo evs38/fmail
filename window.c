@@ -426,7 +426,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
    u16      clear  = 1; /* fieldType & CLEAR; */
    tempStrType  tempStr;
    tempStrType  testStr;
-   char         *helpPtr;
+   char        *helpPtr;
    nodeNumType  nodeNum;
 
    es__8c = 0;
@@ -434,7 +434,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
    if (fieldType & NOCLEAR)
       clear = 0;
 
-   strcpy (tempStr, string);
+   strcpy(tempStr, string);
    do
    {
       largeCursor();
@@ -445,7 +445,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
       {
          if (update)
          {
-            printStringFill(tempStr, '°', width-1, x, y, windowLook.editfg, windowLook.editbg, MONO_NORM);
+            printStringFill(tempStr, '°', width - 1, x, y, windowLook.editfg, windowLook.editbg, MONO_NORM);
             update = 0;
          }
          locateCursor(x + sPos, y);
@@ -521,7 +521,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
          if (ch == _K_CEND_)                           /* Ctrl-End */
          {
             clear = 0;
-            *(tempStr+sPos) = 0;
+            *(tempStr + sPos) = 0;
             update++;
          } else
          if (ch == _K_BSPC_)                                /* Backspace */
@@ -626,7 +626,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                     (strcmp (helpPtr, "VIA") == 0) ||
                     (strcmp (helpPtr, "EXCEPT") == 0)))
                {
-                  redo = (askBoolean ("Missing node in pack string. Edit ?", 'Y') == 'Y');
+                  redo = (askBoolean("Missing node in pack string. Edit ?", 'Y') == 'Y');
                   error = 1;
                }
 
@@ -638,7 +638,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                   numSign |= (strchr(helpPtr, '#') != 0);
                   if (checkPackNode (helpPtr, &defaultValid, 1, 1))
                   {
-                     redo = (askBoolean ("Bad node in pack string. Edit ?", 'Y') == 'Y');
+                     redo = (askBoolean("Bad node in pack string. Edit ?", 'Y') == 'Y');
                      error = 1;
                   }
                   helpPtr = strtok(NULL, " ");
@@ -654,7 +654,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                   {
                      if (checkPackNode (helpPtr, &defaultValid, 1, 1))
                      {
-                        redo = (askBoolean ("Bad node in pack string. Edit ?", 'Y') == 'Y');
+                        redo = (askBoolean("Bad node in pack string. Edit ?", 'Y') == 'Y');
                         error = 1;
                      }
                      helpPtr = strtok(NULL, " ");
@@ -667,12 +667,12 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                   defaultValid = 0;
                   if ((helpPtr = strtok(NULL, " ")) == NULL)
                   {
-                     redo = (askBoolean ("Missing VIA node. Edit ?", 'Y') == 'Y');
+                     redo = (askBoolean("Missing VIA node. Edit ?", 'Y') == 'Y');
                      error = 1;
                   } else
                   if ((!error) && stricmp(helpPtr,"HOST") && checkPackNode (helpPtr, &defaultValid, 0, numSign))
                   {
-                     redo = (askBoolean ("Bad VIA node. Edit ?", 'Y') == 'Y');
+                     redo = (askBoolean("Bad VIA node. Edit ?", 'Y') == 'Y');
                      error = 1;
                   } else
                   {  nodeNum.point = 0;
@@ -686,7 +686,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                      }
                      if (count < MAX_AKAS)
                      {
-                        redo = (askBoolean ("VIA node is local AKA. Edit ?", 'Y') == 'Y');
+                        redo = (askBoolean("VIA node is local AKA. Edit ?", 'Y') == 'Y');
                         error = 1;
                      }
                   }
@@ -703,7 +703,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                         ((*(++helpPtr) != ' ') &&
                          (*helpPtr != 0)))
                   {
-                    redo = (askBoolean ("Illegal switch. Edit ?", 'Y') == 'Y');
+                    redo = (askBoolean("Illegal switch. Edit ?", 'Y') == 'Y');
                     error = 1;
                   }
                   strtok(NULL, " ");
@@ -735,7 +735,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
                   if ( (                          !(fieldType & LFN)) && helpPtr != NULL && strchr(helpPtr, '.') != NULL )
                   {
                      error = 1;
-                     redo = (askBoolean ("File name may not contain an extension. Edit filename ?", 'Y') == 'Y');
+                     redo = (askBoolean("File name may not contain an extension. Edit filename ?", 'Y') == 'Y');
                   }
                   else
                   {
@@ -800,7 +800,8 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
          }
          else
          if ( (fieldType & MASK) == EMAIL )
-         {  error = 0;
+         {
+            error = 0;
             if ( *tempStr &&
                  ((helpPtr = strchr(tempStr, '@')) == NULL ||
                   helpPtr == tempStr || !*(helpPtr + 1) ||
@@ -1545,9 +1546,11 @@ s16 changeGlobal(menuType *menu, void *org, void *upd)
             case FUNCTION:
             case FUNC_VPAR:   break;
             case FUNC_PAR:    // Q&D
-                              if ( menu->menuEntry[count].data == &multiAkaSelectRec )
-                              {  if ( ((rawEchoType*)org)->alsoSeenBy != alsoSeenBy )
-                                 {  update = 1;
+                              if (menu->menuEntry[count].data == &multiAkaSelectRec)
+                              {
+                                 if (((rawEchoType*)org)->alsoSeenBy != alsoSeenBy)
+                                 {
+                                    update = 1;
                                     ((rawEchoType*)org)->alsoSeenBy = alsoSeenBy;
                                  }
                               }
@@ -1706,7 +1709,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, u16 *dataPtr, u16 setdef, u16 esc)
             case MB_NAME    :
             case SFILE_NAME :
             case FILE_NAME  : helpPtr = menu->menuEntry[count].data;
-                              // strcpy(tempStr, helpPtr);
+                              strcpy(tempStr, helpPtr);
                               for (;;)
                               {
                                  editString(helpPtr, menu->menuEntry[count].par1 + 1, editX, py, menu->menuEntry[count].entryType);
@@ -1742,8 +1745,11 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, u16 *dataPtr, u16 setdef, u16 esc)
                                    if (isFile(helpPtr))
                                       break;
 
-                                 displayMessage("File not found");
-                                 // strcpy(helpPtr, tempStr);
+                                 if (askBoolean("File not found. Continue editing ?", 'Y') != 'Y')
+                                 {
+                                    strcpy(helpPtr, tempStr);
+                                    break;
+                                 }
                               }
 
                               // PATCH

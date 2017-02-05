@@ -1,3 +1,9 @@
+2017-02-05  1.73.17.76-Beta
+  * FConfig: LastScanned and LastTossed now display the full date + time.
+  * Some changes in FMail.txt.
+  * FConfig: Entering the ftscprod file name: If the file name doesn't exist,
+    you get the option to continue editting or restore the previous state.
+
 2017-02-03  1.73.17.76-Beta
   * FConfig: Rearranged the Node Manager window a bit.
   * FMail.txt: Explained the 'Ref' date in the Node Manager window.
