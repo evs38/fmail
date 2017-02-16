@@ -143,7 +143,7 @@ static void removeTrunc(char *path)
 
         if (access(fileNameStr, 6) == 0)  // File is writable
         {
-          if (config.mailer == 2)
+          if (config.mailer == dMT_DBridge)
           {
             count2 = 0;
             while (  count2 < fAttCount
@@ -351,8 +351,8 @@ void initMsg(s16 noAreaFix)
                       if (isdigit(ext[3] || isalpha(ext[3] && config.mailOptions.extNames))
                          && (  config.maxBundleSize == 0
                             || (arcSize >> 10) < config.maxBundleSize
-  // necessary for prevention of truncation of mailbundles: (config.mailer == 2)
-                            || config.mailer == 2
+  // necessary for prevention of truncation of mailbundles: (config.mailer == dMT_DBridge)
+                            || config.mailer == dMT_DBridge
                             || toupper(ext[3]) == (int)(config.mailOptions.extNames ? 'Z' : '9')
                             )
                          )
@@ -474,7 +474,7 @@ void initMsg(s16 noAreaFix)
     }
 
   // Remove old truncated mailbundles (or w/o file attach in D'B mode)
-  if (config.mailer == 3 || config.mailer == 5)  // Binkley/Xenia
+  if (config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
   {
     tempStrType dirStr;
     int bl;

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016  Wilfred van Velzen
+//  Copyright (C) 2007 - 2017  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -2082,19 +2082,19 @@ int main(int argc, char *argv[])
   //
   // Create FDRESCAN / FMRESCAN / IMRESCAN / IERESCAN / MDRESCAN
 
-  if ((config.mailer <= 2 || config.mailer >= 4)
+  if ((config.mailer <= dMT_DBridge || config.mailer >= dMT_MainDoor)
      && *config.semaphorePath && (globVars.createSemaphore || messagesMoved))
   {
     strcpy(tempStr, semaphore[config.mailer]);
     touch(config.semaphorePath, tempStr, "");
-    if (config.mailer <= 1)
+    if (config.mailer <= dMT_InterMail)
     {
       tempStr[1] = 'M';
       touch(config.semaphorePath, tempStr, "");
     }
   }
 
-  if (config.mailer == 2)  // D'Bridge
+  if (config.mailer == dMT_DBridge)
   {
     if (globVars.mbCountV)
       touch(config.semaphorePath, "dbridge.emw", "Mail");

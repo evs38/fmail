@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016  Wilfred van Velzen
+//  Copyright (C) 2007 - 2017  Wilfred van Velzen
 //
 //  This file is part of FMail.
 //
@@ -257,7 +257,7 @@ int sendmail_smtp(void)
 #if 0
   tzset2();
 #endif
-  if (config.mailer == 3 || config.mailer == 5)
+  if (config.mailer == dMT_Binkley || config.mailer == dMT_Xenia)
     ret = sendsmtp_bink();
   else
     ret = sendsmtp_msg();

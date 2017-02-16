@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------------
-//  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016  Wilfred van Velzen
+//  Copyright (C) 2007        Folkert J. Wijnstra
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -501,7 +501,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     extn = "pkt";
   }
 
-  if (nodeInfo->archiver == 0xFF && *nodeInfo->pktOutPath)
+  if (*nodeInfo->pktOutPath)
   {
     // Write uncompressed pkt files directly to configured 'pkt outputpath'
     strcpy(pktName, nodeInfo->pktOutPath);
@@ -941,10 +941,12 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
         closedir(dir);
       }
       if (ent == NULL)
-        sprintf(  extPtr, ".%clo"
-               ,  nodeInfo->outStatus == 1  ? 'h'
-               : (nodeInfo->outStatus == 2) ? 'c'
-               : (nodeInfo->outStatus >= 3 && nodeInfo->outStatus <= 5) ? 'c' : 'f');
+      {
+        if (nodeInfo->outStatus > 5)
+          nodeInfo->outStatus = 0;
+
+        sprintf(extPtr, ".%clo", "fhchdd"[nodeInfo->outStatus]);
+      }
 
       if ((tempHandle = open(archiveStr, O_RDWR | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       {
@@ -958,6 +960,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 
         return 1;
       }
+      logEntryf(LOG_OUTBOUND, 0, "Create/Update flow file: %s", archiveStr);
       strcpy(archiveStr, tempStr);
       memset(arcPath, 0x20, sizeof(tempStrType) - 2);
       arcPath[sizeof(tempStrType) - 2] = 0;

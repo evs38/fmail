@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2014 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -688,19 +688,18 @@ void autoUpdate(void)
   }
   if (*config.autoFolderFdPath != 0)
   {
-    ;
-    strcpy(stpcpy(tempStr, config.autoFolderFdPath), config.mailer == 1 ? "imfolder.cfg" : "folder.fd");
+    strcpy(stpcpy(tempStr, config.autoFolderFdPath), config.mailer == dMT_InterMail ? "imfolder.cfg" : "folder.fd");
 
     if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT| O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
     {
-      if (config.mailer!=1)
+      if (config.mailer != dMT_InterMail)
         displayMessage("Can't open FOLDER.FD for output");
       else
         displayMessage("Can't open IMFOLDER.CFG for output");
     }
     else
     {
-      if (config.mailer != 1)
+      if (config.mailer != dMT_InterMail)
       {
         if (*config.sentPath && !strcmp(config.sentPath, config.rcvdPath))
         {

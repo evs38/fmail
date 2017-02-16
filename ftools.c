@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -1576,12 +1576,13 @@ void Post(int argc, char *argv[])
   // netmail
   if (postBoard == 0)
   {
-    message->attribute = LOCAL | KILLSENT
-                         | ((switches & SW_P) ? PRIVATE : 0)
-                         | ((switches & SW_K) ? KILLSENT : 0)
-                         | ((switches & SW_R) ? FILE_REQ : 0)
-                         | ((switches & SW_F) ? FILE_ATT : 0)
-                         | ((switches & SW_C) ? CRASH : ((switches & SW_H) ? HOLDPICKUP : 0));
+    message->attribute = LOCAL
+                       | ((switches & SW_P) ? PRIVATE  : 0)
+                       | ((switches & SW_K) ? KILLSENT : 0)
+                       | ((switches & SW_R) ? FILE_REQ : 0)
+                       | ((switches & SW_F) ? FILE_ATT : 0)
+                       | ((switches & SW_C) ? CRASH    : ((switches & SW_H) ? HOLDPICKUP : 0))
+                       ;
     if (switches & (SW_D | SW_E | SW_T))
     {
       sprintf( tempStr, "\1FLAGS%s%s\r", (switches & SW_D) ? " DIR" : ""
@@ -1690,7 +1691,7 @@ void MsgM(int argc, char *argv[])
     {
       helpPtr2 = stpcpy(tempStr2, config.netPath);
       helpPtr3 = stpcpy(tempStr3, config.netPath);
-      if (*config.semaphorePath && (config.mailer == 1))
+      if (*config.semaphorePath && (config.mailer == dMT_InterMail))
       {
         sprintf(tempStr, "%simrenum.now", config.semaphorePath);
         if (((semaHandle = _sopen(tempStr, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
@@ -1794,17 +1795,18 @@ void MsgM(int argc, char *argv[])
           close(lastReadHandle);
         }
       }
-      if (((config.mailer <= 2) || (config.mailer >= 4))
-          && *config.semaphorePath && (stricmp(argv[c], "-net") == 0))
+      if (  (config.mailer <= dMT_DBridge || config.mailer >= dMT_MainDoor)
+         && *config.semaphorePath && (stricmp(argv[c], "-net") == 0)
+         )
       {
         strcpy(tempStr, semaphore[config.mailer]);
         touch(config.semaphorePath, tempStr, "");
-        if (config.mailer <= 1)
+        if (config.mailer <= dMT_InterMail)
         {
           tempStr[1] = 'M';
           touch(config.semaphorePath, tempStr, "");
         }
-        if (config.mailer == 1)
+        if (config.mailer == dMT_InterMail)
         {
           unlock(semaHandle, 0, 1000);
           close(semaHandle);

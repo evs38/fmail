@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1485888653 source:c:\fmail\fmail.c
+1486414697 source:c:\fmail\fmail.c
 	<conio.h>
 	<ctype.h>
 	<dir.h>
@@ -116,7 +116,7 @@
 
 1478862964 c:\fmail\stpcpy.h
 
-1485468139 c:\fmail\utils.h
+1486125368 c:\fmail\utils.h
 	"fmail.h"
 	"areainfo.h"
 	"fmstruct.h"
@@ -125,7 +125,7 @@
 
 1476034437 c:\fmail\sendsmtp.h
 
-1482941162 source:c:\fmail\archive.c
+1486500822 source:c:\fmail\archive.c
 	<dir.h>
 	<dirent.h>
 	<dos.h>
@@ -337,7 +337,7 @@
 1474316225 c:\fmail\ping.h
 	"fmail.h"
 
-1486061264 source:c:\fmail\ftscprod.c
+1486061728 source:c:\fmail\ftscprod.c
 	<fcntl.h>
 	<stdio.h>
 	<stdlib.h>
@@ -426,7 +426,7 @@
 	<stdio.h>
 	<sys\locking.h>
 
-1484953785 source:c:\fmail\msgmsg.c
+1486415021 source:c:\fmail\msgmsg.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -571,7 +571,7 @@
 	"stpcpy.h"
 	"utils.h"
 
-1481578996 source:c:\fmail\sendsmtp.c
+1486415142 source:c:\fmail\sendsmtp.c
 	<stdlib.h>
 	<stdio.h>
 	<string.h>
@@ -638,7 +638,7 @@
 	<string.h>
 	"spec.h"
 
-1485020188 source:c:\fmail\utils2.c
+1486139420 source:c:\fmail\utils2.c
 	<ctype.h>
 	<direct.h>
 	<dirent.h>
@@ -646,6 +646,7 @@
 	<stdarg.h>
 	<stdlib.h>
 	<string.h>
+	<sys/stat.h>
 	<time.h>
 	"utils.h"
 	"ispathch.h"
@@ -692,7 +693,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1485986482 source:c:\fmail\fmailw32.rc
+1486139621 source:c:\fmail\fmailw32.rc
 
 1481322285 c:\fmail\msgradef.h
 
@@ -703,5 +704,5 @@
 
 1478185506 c:\fmail\minmax.h
 
-1486061724 c:\fmail\setcompiledate.h
+1487195676 c:\fmail\setcompiledate.h
 

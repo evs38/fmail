@@ -2,7 +2,7 @@
 
 
 
-                            FMail 1.73
+                            FMail 2.0
 
 
 
@@ -1552,19 +1552,30 @@ Capability
           cases setting the capability of a system to Type 2+ will
           be fine.
 
-Attach status
+Netmail/flo status
 
-          You may set the status of the file attach messages for a
-          system to "None", "Hold", "Crash", "Hold/Direct",
-          "Crash/Direct" and "Direct". Normally "None" is fine.
-          Please see the manual of your mailer on how to handle
-          mail bundles.
+          You may choose the following settings: "None", "Hold",
+          "Crash", "Hold/Direct", "Crash/Direct" and "Direct".
+          Normally "None" is fine. This status applies to all netmail
+          messages created by FMail for this node. I.e, area manager
+          report messages, status report message, but also file attach
+          messages when the mailer type selected is an ArcMail attach
+          type mailer, such as FrontDoor or InterMail. In case of a
+          Binkley Style Outbound mailer, such as BinkleyTem or Portal
+          of Power, it applies to the *.?lo files created for this
+          system. Please see the manual of your mailer on how to
+          handle mail bundles.
 
-PKT path
+File box
 
-          If you enter a path here, FMail will not compress the
-          mail for this node, but store the PKT files in this
-          directory.
+          If your mailer supports file boxes, you may enter the path
+          to the file box for this node here. If a path is defined,
+          FMail will not create file attach messages or *.?lo files
+          but just drop mail for this node in this directory. Please
+          note that this also overrides the compression setting. Fmail
+          will not compress outgoing mail and just use uncompressed
+          *.pkt's Please consult the manual of your mailer on the use
+          of file boxes.
 
 E-mail
 
@@ -2688,4 +2699,4 @@ APPENDIX B     -    Technical notes
 
 
 
-###  End of file  FMAIL.TXT  version: 2016-11-20  ###
+###  End of file  FMAIL.TXT  version: 2017-02-06  ###

@@ -1,3 +1,10 @@
+2017-02-15  1.73.17.78-Beta
+  * Unconditionally use the File box path if specified.
+  * FConfig: Node Manager: Renamed 'Attach status' to 'Netmail/flo status' and
+    'PKT path' to 'File box'.
+  * FTools: Don't force kill/send flag on netmail posts.
+  * Log the creating or updating of BSO flow files.
+
 2017-02-05  1.73.17.76-Beta
   * FConfig: LastScanned and LastTossed now display the full date + time.
   * Some changes in FMail.txt.
