@@ -1,3 +1,165 @@
+2017-03-05  2.0.0.0
+  * Release candidate 2
+  * FConfig: 'Say Hi to the author' function in 'Miscellaneous' menu.
+  * Specify 'Create' or 'Update' when logging the creating or updating of
+    BSO flow files.
+  * Print 'None' instead of 'Non' in AreaManager for hudson board number
+    (if not set).
+
+2017-02-27  2.0.0.0
+  * Release candidate 1
+
+2017-02-15  1.73.17.78-Beta
+  * Unconditionally use the File box path if specified.
+  * FConfig: Node Manager: Renamed 'Attach status' to 'Netmail/flo status' and
+    'PKT path' to 'File box'.
+  * FTools: Don't force kill/send flag on netmail posts.
+  * Log the creating or updating of BSO flow files.
+
+2017-02-05  1.73.17.76-Beta
+  * FConfig: LastScanned and LastTossed now display the full date + time.
+  * Some changes in FMail.txt.
+  * FConfig: Entering the ftscprod file name: If the file name doesn't exist,
+    you get the option to continue editting or restore the previous state.
+
+2017-02-03  1.73.17.76-Beta
+  * FConfig: Rearranged the Node Manager window a bit.
+  * FMail.txt: Explained the 'Ref' date in the Node Manager window.
+  * FConfig: Existence of the ftscprod file is checked when it's entered.
+
+2017-02-02  1.73.16.75-Beta
+  * Bug fixed: When the ftscprod file contains 0x00 bytes, the code would end
+    up in an endless loop.
+
+2017-02-01  1.73.15.74-Beta
+  * Bug fixed: in the GetFtscProdStr() function, which made FMail crash
+    on the second pkt file it processed in a toss session.
+
+2017-01-31  1.73.14.73-Beta
+  * Can use the FTSCPROD.nnn files, as published by the ftsc, for translating
+    the product code in pkt files to product names in the log, instead of the
+    internal table.
+  * Product code table lookup now uses a faster binary search algorithm.
+
+2017-01-21  1.73.13.69-Beta
+  * FConfig: Display full date + time in node manager instead of just the date.
+
+2017-01-21  1.73.12.68-Beta
+  * BCL reports: On receipt of a BCL file a report netmail to the sysop can be
+    generated.
+
+2017-01-06  1.73.11.62-Beta
+  * Difference between %PASSIVE and %PAUSE AreaFix commands.
+    %PAUSE sets 'Sysop Mail' setting to 'No'.
+
+2017-01-04  1.73.11.61-Beta
+  * FConfig: When importing AREAS.BBS, the Group and AreaFix settings from the
+    'AreaMgr defaults' is used for newly created areas.
+
+2017-01-03  1.73.11.61-Beta
+  * Turned off code to add extra path line when the "Use AKA" for the
+    destination node isn't the same as the "Origin AKA" for the echomail area
+    the message is received in. Deemed not necessary.
+
+2016-12-29  1.73.10.59-Beta
+  * Insert a DATE: kludge line when a message is tossed to a hudson messagebase
+    area.
+  * Use and remove the DATE: kludge if a message is scanned from a hudson area.
+    Either in case of a 'rescan' or a 'toss /b' action.
+  * Log info of received bundles first, before any errors.
+    So it's clear which file causes the problem.
+
+2016-12-12  1.73.9.54-Beta
+  * When a node is not Active, you can now specify if it will still receive mail
+    addressed to the Sysop name.
+
+2016-12-08  1.73.8.53-Beta
+  * Don't add node numbers of inactive nodes to the seen-by's.
+  * If the hudson message base file lastread.bbs doesn't exist, warn about it,
+    and ignore it. Instead of making it an error condition and exiting FTools.
+  * Used a faster binary search instead of a linear search algorithm to find
+    node numbers in the node configuration.
+
+2016-11-28  1.73.7.48-Beta
+  * Ping reply message uses CHRS: kludge from message replied to.
+
+2016-11-28  1.73.7.47-Beta
+  * Improved inbound pkt backup function.
+
+2016-11-25  1.73.6.44-Beta
+  * Inbound pkt backup function.
+  * Incase of mailbomb detection, rename with ".mailbomb" extenstion instead of ".mlb"
+
+2016-11-25  1.73.5.43-Beta
+  * ftools.c: Split up the very long main() function in separate funcions,
+    and lots of other code improvements.
+  * Fixed a bug in the hudson code for the FTools maint /p (pack) function.
+    Where big messages (>= 65536 bytes), caused the msginfo.bbs file to contain
+    invalid information.
+  * Check if the directory exists where the environment variable FMAIL
+    points to before using it.
+  * Made the auto passive mail text more clear.
+  * Made the documentation for 'Never use ARCmail' and 'Out-of-zone'
+    more clear.
+
+2016-11-17  1.73.4.41-Beta
+  * Removed the configuration for "Message base sharing". It's always on.
+
+2016-11-17  1.73.4.38-Beta
+  * Renamed some unused configuration structure members to "reserved*".
+  * Pkt file rename extensions changed: ".ERR" -> ".error",
+    ".DST" -> ".wrong_destination", ".SEC" -> ".wrong_password"
+
+2016-11-15  1.73.4.37-Beta
+  * When a bundle can't be unpacked, it's renamed with an extension that
+    describes the problem: ".unknown_archiver", ".undefined_archiver",
+    ".unpack_error". So it won't be tossed again untill the sysop manually
+    intervenes.
+  * Replaced sprintf + write pairs by dprintf function.
+  * Save and restore console cursor type on start and end of FConfigW32.
+  * moveFile() is now a macro to rename().
+
+2016-11-11  1.73.3.34-Beta
+  * FConfig MingW compilation is working fine now.
+  * Fixed all compiler warnings in FConfig source.
+  * Fixed cursor type bug in FConfig.
+
+2016-11-10  1.73.3.33-Beta
+  * Still working on FConfig mingw conversion.
+  * Fixed all mingw compiler warnings in FMail and FTools.
+  * update.c: Faster bitswap algorithm.
+  * Flush stdout before starting external archiver.
+  * Added empty line at the end of notify report messages.
+
+2016-11-08  1.73.3.30-Beta
+  * FConfig conversion to MingW compiler in progress.
+  * Updated to FTSCPROD.017 (preliminary).
+  * FTools always logs Active time, and function.
+  * More debug logging in ftools hudson maint.
+
+2016-11-05  1.73.2.28-Beta
+  * Renamed function flogEntry to logEntryf.
+
+2016-11-05  1.73.2.27-Beta
+  * FToolsW32 MingW32 compiled version is working.
+  * Sort hudson function doesn't print progress anymore.
+  * New formatted string logging function.
+  * Removed some more of the OS2, DOS and FMAILX code.
+  * Lot's of little code changes.
+
+2016-10-28  1.73.1.20-Beta
+  * Removed some of the OS2, DOS and FMAILX code: extra-handles, buffers, 16bit compressors, swap, ems
+  * New option "Outgoing backup".
+  * Use time.h functions instead of Borland specific functions.
+  * More changes for MingW32 compilation. Partly done with FTools code too.
+  * Create lowercase bcl and hudson message base names.
+  * Fixed return timeslice bug.
+  * Fixed other minor bugs.
+
+2016-10-05  1.73.0.0-Beta
+  * Made all the sources for FMailW32 compile with code::blocks/mingw32
+  * Prevented 'Error opening ...\0.msg: No such file or directory' log line on rescans.
+
 2016-09-18  1.72.0.0
   * Build 1.72.0 release versions of all 3 modules.
   * Updated the documentation for the release.
@@ -37,7 +199,7 @@
   * Updated the documentation for the release.
 
 2016-08-11  1.69.24.186-Beta
-  * SEEN-BY's are storred as kludge lines in the hudson message base. Convert them back to
+  * SEEN-BY's are stored as kludge lines in the hudson message base. Convert them back to
     real SEEN-BY lines on a rescan.
   * On a rescan of a hudson area all stored SEEN-BY and PATH lines of a rescanned message
     were unconditionally removed, which is wrong.

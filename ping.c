@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2016  Wilfred van Velzen
+//  Copyright (C) 2016 - 2017  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -23,6 +23,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "ping.h"
@@ -97,28 +98,24 @@ int Ping(internalMsgType *message, int localAkaNum)
 {
   u32              msgLen;
   s32              msgNum;
-  tempStrType      tempStr
-                ,  replyStr
-                ,  fromNodeStr;
+  tempStrType      replyStr
+                 , chrsStr;
   char            *helpPtr
                 , *helpPtr2;
   internalMsgType *replyMsg;
   char            *funcText = localAkaNum >= 0 ? "PING" : "TRACE";
 
 #ifdef _DEBUG
-  sprintf(tempStr, "Processing PING message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
-  logEntry(tempStr, LOG_DEBUG, 0);
+  logEntryf(LOG_DEBUG, 0, "DEBUG Processing PING message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
 #endif
 
   // Maak de replyMsg aan de hand van de lengte van het ontvangen bericht.
   msgLen = (((sizeof(internalMsgType) - DEF_TEXT_SIZE) + strlen(message->text)) & 0xFFFFF000) + 0x2000;
-  if (NULL == (replyMsg = (internalMsgType *)malloc(msgLen)))
+  if (NULL == (replyMsg = (internalMsgType *)calloc(msgLen, 1)))
     logEntry("Not enough memory to create PING message", LOG_ALWAYS, 2);
 
-  memset(replyMsg, 0, msgLen);
-
   // Get the string for the REPLY: kludge
-  if ((helpPtr = findCLStr(message->text, "\x1MSGID: ")) != NULL)
+  if ((helpPtr = findCLStr(message->text, "\1MSGID: ")) != NULL)
   {
     helpPtr += 8;
     if ((helpPtr2 = strchr(helpPtr, 0x0d)) != NULL)
@@ -135,6 +132,25 @@ int Ping(internalMsgType *message, int localAkaNum)
   }
   else
     *replyStr = 0;
+
+  // Get the string for the CHRS: kludge
+  if ((helpPtr = findCLStr(message->text, "\1CHRS:")) != NULL)
+  {
+    if ((helpPtr2 = strchr(helpPtr + 6, 0x0d)) != NULL)
+    {
+      int l = helpPtr2 - helpPtr;
+      if (l > 78)            // Set arbitrary max len
+        l = 78;
+
+      memcpy(chrsStr, helpPtr, l);
+      chrsStr[l++] = 0x0d;
+      chrsStr[l  ] = 0;
+    }
+    else
+      *chrsStr = 0;
+  }
+  else
+    *chrsStr = 0;
 
   strncpy(replyMsg->fromUserName, "FMail PING bot"     , 35);
   strncpy(replyMsg->toUserName  , message->fromUserName, 35);
@@ -163,6 +179,8 @@ int Ping(internalMsgType *message, int localAkaNum)
   if (*replyStr != 0)
     helpPtr = addKludge(helpPtr, "REPLY:", replyStr);
   helpPtr = addTZUTCKludge (helpPtr);
+  if (*chrsStr != 0)
+    helpPtr = stpcpy(helpPtr, chrsStr);
   helpPtr = addPIDKludge   (helpPtr);
 
   // Add some text
@@ -207,15 +225,14 @@ int Ping(internalMsgType *message, int localAkaNum)
   // Add closing line
 #if 0
   helpPtr2 =
-#endif  
+#endif
   stpcpy(helpPtr2, "==============================================================================\r");
 
   msgNum = writeMsg(replyMsg, NETMSG, 1);
 
   free(replyMsg);
 
-  sprintf(tempStr, "Processed PING request message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
-  logEntry(tempStr, LOG_ALWAYS, 0);
+  logEntryf(LOG_ALWAYS, 0, "Processed PING request message from %s to %s", nodeStr(&message->srcNode), nodeStr(&message->destNode));
 
   return msgNum < 0;
 }

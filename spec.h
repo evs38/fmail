@@ -1,3 +1,5 @@
+#ifndef specH
+#define specH
 //---------------------------------------------------------------------------
 //
 // Copyright (C) 2011 Mathieu Turcotte (mathieuturcotte.ca)
@@ -17,15 +19,13 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
-#ifndef specH
-#define specH
-
 // Matches the regular language accepted by findfirst/findnext. More
 // precisely, * matches zero or more characters and ? matches any
 // characters, but only one. Every other characters match themself.
 // To respect the Windows behavior, *.* matches everything.
+//---------------------------------------------------------------------------
 
 int match_spec(const char* spec, const char* text);
 
-#endif  // specH
 //---------------------------------------------------------------------------
+#endif  // specH

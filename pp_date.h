@@ -1,6 +1,8 @@
+#ifndef pp_dateH
+#define pp_dateH
 //----------------------------------------------------------------------------
 //
-// Copyright (C) 2011  Wilfred van Velzen
+// Copyright (C) 2011 - 2016 Wilfred van Velzen
 //
 //----------------------------------------------------------------------------
 //
@@ -24,8 +26,8 @@
 // Contains just pre-processor date variables derived from __DATE__
 //
 //----------------------------------------------------------------------------
-#ifndef __pp_date_h
-#define __pp_date_h
+
+#include "SetCompileDate.h"
 
 #define NUM(C)   ((C) - '0')
 #define DIGIT(C) (((C) == ' ') ? 0 : NUM(C))
@@ -86,4 +88,5 @@
 "30\0"\
 "31" + (3*DAY))
 
-#endif
+//----------------------------------------------------------------------------
+#endif  // pp_dateH

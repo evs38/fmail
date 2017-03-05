@@ -26,4 +26,5 @@ extern unsigned char _pathtype[256];
 
 #define ispathch(c)  (_pathtype[(unsigned char)(c)])
 
+//---------------------------------------------------------------------------
 #endif  // ispathchH
