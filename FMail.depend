@@ -125,7 +125,7 @@
 
 1476034437 c:\fmail\sendsmtp.h
 
-1486500822 source:c:\fmail\archive.c
+1487196225 source:c:\fmail\archive.c
 	<dir.h>
 	<dirent.h>
 	<dos.h>
@@ -655,7 +655,7 @@
 
 1478862342 c:\fmail\ispathch.h
 
-1480540527 source:c:\fmail\version.c
+1488232507 source:c:\fmail\version.c
 	"Version.h"
 	"pp_date.h"
 	<stdio.h>
@@ -693,7 +693,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1486139621 source:c:\fmail\fmailw32.rc
+1488232396 source:c:\fmail\fmailw32.rc
 
 1481322285 c:\fmail\msgradef.h
 
@@ -704,5 +704,5 @@
 
 1478185506 c:\fmail\minmax.h
 
-1487195676 c:\fmail\setcompiledate.h
+1488555886 c:\fmail\setcompiledate.h
 

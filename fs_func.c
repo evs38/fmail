@@ -453,9 +453,9 @@ s16 echoNGOnly (s16 editType, s16 code)
 {
    if ((editType == EDIT_ECHO) || (editType == DISPLAY_ECHO_DATA) ||
                                   (editType == DISPLAY_ECHO_WINDOW))
-      return (code);
+      return code;
    else
-      return (DISPLAY);
+      return DISPLAY;
 }
 //---------------------------------------------------------------------------
 s16 echoDefOnly(s16 editType, s16 code)
@@ -500,7 +500,7 @@ s16 echoDisplayAreas(u16 *v)
    u16   count;
    s16   temp;
 
-   memset (displayAreasArray, 0, MBBOARDS);
+   memset(displayAreasArray, 0, MBBOARDS);
 
    if (*v > MBBOARDS) *v = 0;
 
@@ -525,14 +525,14 @@ s16 echoDisplayAreas(u16 *v)
       displayAreasArray[config.recBoard-1]++;
 
    if (*v)
-      boardCodeInfo[(*v-1)>>3] &= ~(1<<((*v-1)&7));
+      boardCodeInfo[(*v - 1) >> 3] &= ~(1 << ((*v - 1) & 7));
 
    displayAreasSelect = *mgrBoardSelect.numPtr;
-   temp = displayAreas ();
+   temp = displayAreas();
    *v = displayAreasSelect;
 
    if (*v)
-      boardCodeInfo[(*v-1)>>3] |= (1<<((*v-1)&7));
+      boardCodeInfo[(*v - 1) >> 3] |= (1 << ((*v - 1) & 7));
 
    if ((displayAreasSelect != 0) ||
        ((displayAreasSelect == 0) &&
@@ -542,11 +542,11 @@ s16 echoDisplayAreas(u16 *v)
    {
       tempInfo.boardNumRA = 0;
    }
-   return (temp);
+   return temp;
 }
 
 
-s16 selectBoardCode (u16 *v)
+s16 selectBoardCode(u16 *v)
 {
    s16 index = *v;
    s16 ixc;
@@ -608,7 +608,7 @@ s16 selectBoardCode (u16 *v)
                strcpy(tempStr, "    ");
             else
                strcpy(tempStr, "None");
-         printString(tempStr, 39, 14-count, windowLook.promptfg, windowLook.background, MONO_NORM);
+         printString(tempStr, 39, 14 - count, windowLook.promptfg, windowLook.background, MONO_NORM);
       }
       ch = readKbd();
 
@@ -979,10 +979,10 @@ extern u16         editDefault;
 
 char        tempToggleRA;
 
-s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
+s16 editAM(s16 editType, u16 setdef, rawEchoType *areaBuf)
 {
-   menuType    *raMenu;
-   menuType    *areaMenu;
+   menuType   *raMenu;
+   menuType   *areaMenu;
    toggleType  boardTypeToggle;
    toggleType  RAToggle;
    toggleType  RAToggle2;
@@ -1004,8 +1004,10 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    groupSelect.f      = askGroup;
 
    mgrBoardSelect.numPtr = &tempInfo.board;
-   if ( (editType == EDIT_ECHO) || (editType == DISPLAY_ECHO_WINDOW) ||
-        (editType == DISPLAY_ECHO_DATA) )
+   if (  editType == EDIT_ECHO
+      || editType == DISPLAY_ECHO_WINDOW
+      || editType == DISPLAY_ECHO_DATA
+      )
       mgrBoardSelect.f = (function)echoDisplayAreas;
    else
       mgrBoardSelect.f = (function)netDisplayAreas;
@@ -1269,20 +1271,18 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
 
    addItem (areaMenu, (editType&(EDIT_NETMAIL|EDIT_ECHO_DEFAULT|EDIT_ECHO_GLOBAL))?(DISPLAY|WORD):(WORD|UPCASE), "Area name  ", 0, tempInfo.areaName, ECHONAME_LEN - 1, 0,
                       "Name of the area (echo tag)");
-   addItem (areaMenu, (editType&(EDIT_ECHO_DEFAULT))?(DISPLAY|TEXT):TEXT|CTRLCODES, "Comment", 0, tempInfo.comment, COMMENT_LEN - 1, 0,
+   addItem (areaMenu, (editType&(EDIT_ECHO_DEFAULT))?(DISPLAY|FMTEXT):FMTEXT|CTRLCODES, "Comment", 0, tempInfo.comment, COMMENT_LEN - 1, 0,
                       "Comment describing the area");
-   addItem (areaMenu, (editType&(EDIT_NETMAIL|EDIT_ECHO_GLOBAL))?(DISPLAY|TEXT):((editType&EDIT_ECHO_DEFAULT)?(PATH|UPCASE|LFN):(MB_NAME|UPCASE|LFN)), "JAM MB name", 0, tempInfo.msgBasePath, (editType&EDIT_ECHO_DEFAULT)?MB_PATH_LEN-11:MB_PATH_LEN-3, 0,
+   addItem (areaMenu, (editType&(EDIT_NETMAIL|EDIT_ECHO_GLOBAL))?(DISPLAY|FMTEXT):((editType&EDIT_ECHO_DEFAULT)?(PATH|UPCASE|LFN):(MB_NAME|UPCASE|LFN)), "JAM MB name", 0, tempInfo.msgBasePath, (editType&EDIT_ECHO_DEFAULT)?MB_PATH_LEN-11:MB_PATH_LEN-3, 0,
                       "Path and file name of the JAM message base");
    if (editType == EDIT_ECHO_DEFAULT)
-     addItem (areaMenu, ENUM_INT, "Board type", 0, &boardTypeToggle, 0, 3, "Message base type to be used for a new area");
+     addItem(areaMenu, ENUM_INT, "Board type", 0, &boardTypeToggle, 0, 3, "Message base type to be used for a new area");
    else
    {
 #ifndef GOLDBASE
-      addItem (areaMenu, nonGlobOnly(editType,FUNC_PAR), "Board", 0, &mgrBoardSelect, 0, 0,
-                         MBNAME" message base board in which messages will be imported");
+      addItem(areaMenu, nonGlobOnly(editType, FUNC_PAR), "Board", 0, &mgrBoardSelect     , 0, 0, MBNAME" message base board in which messages will be imported");
 #else
-      addItem (areaMenu, nonGlobOnly(editType,FUNC_PAR), "Board", 0, &boardCodeSelectGold, 0, 0,
-                         MBNAME" message base board in which messages will be imported");
+      addItem(areaMenu, nonGlobOnly(editType, FUNC_PAR), "Board", 0, &boardCodeSelectGold, 0, 0, MBNAME" message base board in which messages will be imported");
 #endif
    }
    addItem(areaMenu, echoOnly(editType,BOOL_INT), "Local      ", 37, &tempInfo.options, BIT8, 0,
@@ -1330,7 +1330,7 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
    addItem(areaMenu, echoOnly(editType, FUNC_PAR), "Other AKAs", 0, &multiAkaSelectRec, 0, 4, "AKAs added to SEEN-BY lines");
    if (!(editType & EDIT_ECHO_DEFAULT))
      addItem(areaMenu, DATETIME | DISPLAY, "LastTossed ", 41, &tempInfo.lastMsgTossDat, 0, 0, "Last time a message was tossed into this area");
-   addItem(areaMenu, echoDefOnly(editType, TEXT), "Origin line", 0, tempInfo.originLine, ORGLINE_LEN-1, 0, "Origin line that will be used for messages from your system");
+   addItem(areaMenu, echoDefOnly(editType, FMTEXT), "Origin line", 0, tempInfo.originLine, ORGLINE_LEN-1, 0, "Origin line that will be used for messages from your system");
    if (!(editType & EDIT_ECHO_GLOBAL))
       addItem(areaMenu, echoOnly(editType, FUNCTION), "Export", 0, nodeScroll, 2, 2, "Nodes to which the echo area is exported");
    else
@@ -1355,20 +1355,20 @@ s16 editAM (s16 editType, u16 setdef, rawEchoType *areaBuf)
         temp = 0;
         break;
       case EDIT_GLOB_BBS       :
-        temp = runMenuD   (raMenu  , 2, 7, NULL, setdef);
+        temp = runMenuD(raMenu  , 2, 7, NULL, setdef);
         break;
       case EDIT_ECHO           :
-        temp = runMenuD   (areaMenu, dAM_X, dAM_Y, NULL, setdef);
+        temp = runMenuD(areaMenu, dAM_X, dAM_Y, NULL, setdef);
         break;
       case EDIT_NETMAIL        :
-        temp = runMenuD   (areaMenu, dAM_X, dAM_Y, NULL, setdef);
+        temp = runMenuD(areaMenu, dAM_X, dAM_Y, NULL, setdef);
         break;
       case EDIT_ECHO_GLOBAL    :
-        runMenuD   (areaMenu, dAM_X, dAM_Y, NULL, setdef);
+        runMenuD(areaMenu, dAM_X, dAM_Y, NULL, setdef);
         temp = 0;
         break;
       case EDIT_ECHO_DEFAULT   :
-        temp = runMenuD   (areaMenu, dAM_X, dAM_Y, NULL, setdef);
+        temp = runMenuD(areaMenu, dAM_X, dAM_Y, NULL, setdef);
         break;
    }
 

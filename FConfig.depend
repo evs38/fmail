@@ -39,7 +39,7 @@
 
 1478861963 c:\fmail\fs_util.h
 
-1485020521 c:\fmail\window.h
+1488648358 c:\fmail\window.h
 	"bits.h"
 
 1477687086 c:\fmail\bits.h
@@ -101,7 +101,7 @@
 
 1474316224 c:\fmail\crc.h
 
-1486415173 source:c:\fmail\export.c
+1488558922 source:c:\fmail\export.c
 	<dir.h>
 	<fcntl.h>
 	<io.h>
@@ -131,7 +131,7 @@
 
 1476034823 c:\fmail\version.h
 
-1486332968 source:c:\fmail\fs_func.c
+1488648358 source:c:\fmail\fs_func.c
 	<ctype.h>
 	<fcntl.h>
 	<io.h>
@@ -151,7 +151,7 @@
 	<ctype.h>
 	"fmail.h"
 
-1486072023 source:c:\fmail\fsetup.c
+1488648409 source:c:\fmail\fsetup.c
 	<conio.h>
 	<errno.h>
 	<fcntl.h>
@@ -172,6 +172,7 @@
 	"nodeinfo.h"
 	"nodemgr.h"
 	"packmgr.h"
+	"sayhi.h"
 	"stpcpy.h"
 	"update.h"
 	"utils.h"
@@ -258,7 +259,7 @@
 
 1478862342 c:\fmail\ispathch.h
 
-1480540527 source:c:\fmail\version.c
+1488232507 source:c:\fmail\version.c
 	"Version.h"
 	"pp_date.h"
 	<stdio.h>
@@ -300,7 +301,7 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1487108924 source:c:\fmail\nodemgr.c
+1488648358 source:c:\fmail\nodemgr.c
 	<ctype.h>
 	<fcntl.h>
 	<io.h>
@@ -341,7 +342,7 @@
 	<conio.h>
 	<windows.h>
 
-1486332968 source:c:\fmail\window.c
+1488648358 source:c:\fmail\window.c
 	<ctype.h>
 	<dir.h>
 	<io.h>
@@ -376,7 +377,7 @@
 
 1312487460 c:\fmail\os.h
 
-1487107894 source:c:\fmail\fconfigw32.rc
+1488232369 source:c:\fmail\fconfigw32.rc
 
 1476478327 source:c:\fmail\stricmp.c
 	"stricmp.h"
@@ -391,5 +392,23 @@
 
 1478639913 source:c:\fmail\stpcpy.c
 
-1487195676 c:\fmail\setcompiledate.h
+1488721916 c:\fmail\setcompiledate.h
+
+1488558922 c:\fmail\sayhi.h
+
+1488720125 source:c:\fmail\sayhi.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"io.h"
+	"winsock2.h"
+	<netdb.h>
+	<netinet/in.h>
+	<sys/socket.h>
+	<unistd.h>
+	"fmail.h"
+	"stpcpy.h"
+	"utils.h"
+	"version.h"
+	"window.h"
 

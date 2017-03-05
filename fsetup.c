@@ -43,6 +43,7 @@
 #include "nodeinfo.h"
 #include "nodemgr.h"
 #include "packmgr.h"
+#include "sayhi.h"
 #include "stpcpy.h"
 #include "update.h"
 #include "utils.h"
@@ -697,61 +698,61 @@ int main(int argc, char *argv[])
 
   addItem(arc32Menu, ENUM_INT, "Def", 0, &arcToggle, 0, 11,
            "Compression program to be used for nodes not listed in the Node Manager");
-  addItem(arc32Menu, TEXT, "ARC", 0, config.arc32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "ARC", 0, config.arc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, TEXT, "ZIP", 0, config.zip32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "ZIP", 0, config.zip32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, TEXT, "LZH", 0, config.lzh32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "LZH", 0, config.lzh32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, TEXT, "PAK", 0, config.pak32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "PAK", 0, config.pak32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, TEXT, "ZOO", 0, config.zoo32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "ZOO", 0, config.zoo32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, TEXT, "ARJ", 0, config.arj32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "ARJ", 0, config.arj32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, TEXT, "SQZ", 0, config.sqz32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "SQZ", 0, config.sqz32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, TEXT, "UC2", 0, config.uc232.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "UC2", 0, config.uc232.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, TEXT, "RAR", 0, config.rar32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "RAR", 0, config.rar32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, TEXT, "JAR", 0, config.jar32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "JAR", 0, config.jar32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(arc32Menu, TEXT, "-?-", 0, config.customArc32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "-?-", 0, config.customArc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches> of extra compression utility");
-  addItem(arc32Menu, TEXT, "Pre", 0, config.preArc32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "Pre", 0, config.preArc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches> of program called before compression");
-  addItem(arc32Menu, TEXT, "Post", 0, config.postArc32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(arc32Menu, FMTEXT, "Post", 0, config.postArc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches> of program called after compression");
 
   if ((deArc32Menu = createMenu(" Decompression programs ")) == NULL)
     goto nomem;
 
-  addItem(deArc32Menu, TEXT, "ARC", 0, config.unArc32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "ARC", 0, config.unArc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, TEXT, "ZIP", 0, config.unZip32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "ZIP", 0, config.unZip32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, TEXT, "LZH", 0, config.unLzh32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "LZH", 0, config.unLzh32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, TEXT, "PAK", 0, config.unPak32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "PAK", 0, config.unPak32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, TEXT, "ZOO", 0, config.unZoo32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "ZOO", 0, config.unZoo32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, TEXT, "ARJ", 0, config.unArj32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "ARJ", 0, config.unArj32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, TEXT, "SQZ", 0, config.unSqz32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "SQZ", 0, config.unSqz32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, TEXT, "UC2", 0, config.unUc232.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "UC2", 0, config.unUc232.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, TEXT, "RAR", 0, config.unRar32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "RAR", 0, config.unRar32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, TEXT, "JAR", 0, config.unJar32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "JAR", 0, config.unJar32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches>");
-  addItem(deArc32Menu, TEXT, "GUS", 0, config.GUS32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "GUS", 0, config.GUS32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches> of General Unpack Shell");
-  addItem(deArc32Menu, TEXT, "Pre", 0, config.preUnarc32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "Pre", 0, config.preUnarc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches> of program called before decompression");
-  addItem(deArc32Menu, TEXT, "Post", 0, config.postUnarc32.programName, sizeof(archiverInfo)-3, 0,
+  addItem(deArc32Menu, FMTEXT, "Post", 0, config.postUnarc32.programName, sizeof(archiverInfo)-3, 0,
            "<program name>.<extension> <switches> of program called after decompression");
 
   if ((pathMenu = createMenu(" Directories ")) == NULL)
@@ -953,32 +954,32 @@ int main(int argc, char *argv[])
   {
     const char *gmHelpTxt = "Description of a group of echomail conferences";
 
-    addItem(groupMenu, TEXT, "A",  0, config.groupDescr[ 0], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "N", 32, config.groupDescr[13], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "B",  0, config.groupDescr[ 1], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "O", 32, config.groupDescr[14], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "C",  0, config.groupDescr[ 2], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "P", 32, config.groupDescr[15], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "D",  0, config.groupDescr[ 3], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "Q", 32, config.groupDescr[16], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "E",  0, config.groupDescr[ 4], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "R", 32, config.groupDescr[17], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "F",  0, config.groupDescr[ 5], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "S", 32, config.groupDescr[18], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "G",  0, config.groupDescr[ 6], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "T", 32, config.groupDescr[19], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "H",  0, config.groupDescr[ 7], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "U", 32, config.groupDescr[20], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "I",  0, config.groupDescr[ 8], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "V", 32, config.groupDescr[21], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "J",  0, config.groupDescr[ 9], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "W", 32, config.groupDescr[22], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "K",  0, config.groupDescr[10], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "X", 32, config.groupDescr[23], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "L",  0, config.groupDescr[11], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "Y", 32, config.groupDescr[24], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "M",  0, config.groupDescr[12], 26, 0, gmHelpTxt);
-    addItem(groupMenu, TEXT, "Z", 32, config.groupDescr[25], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "A",  0, config.groupDescr[ 0], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "N", 32, config.groupDescr[13], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "B",  0, config.groupDescr[ 1], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "O", 32, config.groupDescr[14], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "C",  0, config.groupDescr[ 2], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "P", 32, config.groupDescr[15], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "D",  0, config.groupDescr[ 3], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "Q", 32, config.groupDescr[16], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "E",  0, config.groupDescr[ 4], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "R", 32, config.groupDescr[17], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "F",  0, config.groupDescr[ 5], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "S", 32, config.groupDescr[18], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "G",  0, config.groupDescr[ 6], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "T", 32, config.groupDescr[19], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "H",  0, config.groupDescr[ 7], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "U", 32, config.groupDescr[20], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "I",  0, config.groupDescr[ 8], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "V", 32, config.groupDescr[21], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "J",  0, config.groupDescr[ 9], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "W", 32, config.groupDescr[22], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "K",  0, config.groupDescr[10], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "X", 32, config.groupDescr[23], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "L",  0, config.groupDescr[11], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "Y", 32, config.groupDescr[24], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "M",  0, config.groupDescr[12], 26, 0, gmHelpTxt);
+    addItem(groupMenu, FMTEXT, "Z", 32, config.groupDescr[25], 26, 0, gmHelpTxt);
   }
 
   if ((address1Menu = createMenu(" Addresses 1 ")) == NULL)
@@ -1028,11 +1029,10 @@ int main(int argc, char *argv[])
   if ((genMenu = createMenu(" General ")) == NULL)
     goto nomem;
 
-  addItem(genMenu, TEXT, "SysOp name", 0, &config.sysopName, sizeof(config.sysopName)-1, 0, "Name of the SysOp");
+  addItem(genMenu, FMTEXT, "SysOp name", 0, &config.sysopName, sizeof(config.sysopName)-1, 0, "Name of the SysOp");
   addItem(genMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(genMenu, ENUM_INT, "Mailer", 0, &mailerToggle, 0, 6, "Mailer used");
-  addItem(genMenu, BOOL_INT, "ÈÍ> Busy flags", 0, &config.mailOptions, BIT4, 0
-          , "Create busy flags when mail is being compressed");
+  addItem(genMenu, BOOL_INT, "ÈÍ> Busy flags", 0, &config.mailOptions, BIT4, 0, "Create busy flags when mail is being compressed");
   addItem(genMenu,
 #ifdef GOLDBASE
            ENUM_INT|NO_EDIT,
@@ -1046,29 +1046,29 @@ int main(int argc, char *argv[])
   */
   addItem(genMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
   addItem(genMenu, ENUM_INT, "Tearline      ", 0, &tearToggle, 0, 5, "Tearline type");
-  addItem(genMenu, TEXT  , "ÈÍ> Custom    ", 0, &config.tearLine, 24, 0, "Custom tearline");
+  addItem(genMenu, FMTEXT  , "ÈÍ> Custom    ", 0, &config.tearLine, 24, 0, "Custom tearline");
   addItem(genMenu, BOOL_INT, "ReTear        ", 0, &config.mbOptions, BIT3, 0, "Replace an existing tear line");
 
   if ((userMenu = createMenu(" Users ")) == NULL)
     goto nomem;
 
-  addItem(userMenu, TEXT, " 1 ", 0, config.users[0].userName, 35, 0, "Name of user");
-  addItem(userMenu, TEXT, " 2 ", 0, config.users[1].userName, 35, 0, "Name of user");
-  addItem(userMenu, TEXT, " 3 ", 0, config.users[2].userName, 35, 0, "Name of user");
-  addItem(userMenu, TEXT, " 4 ", 0, config.users[3].userName, 35, 0, "Name of user");
-  addItem(userMenu, TEXT, " 5 ", 0, config.users[4].userName, 35, 0, "Name of user");
-  addItem(userMenu, TEXT, " 6 ", 0, config.users[5].userName, 35, 0, "Name of user");
-  addItem(userMenu, TEXT, " 7 ", 0, config.users[6].userName, 35, 0, "Name of user");
-  addItem(userMenu, TEXT, " 8 ", 0, config.users[7].userName, 35, 0, "Name of user");
+  addItem(userMenu, FMTEXT, " 1 ", 0, config.users[0].userName, 35, 0, "Name of user");
+  addItem(userMenu, FMTEXT, " 2 ", 0, config.users[1].userName, 35, 0, "Name of user");
+  addItem(userMenu, FMTEXT, " 3 ", 0, config.users[2].userName, 35, 0, "Name of user");
+  addItem(userMenu, FMTEXT, " 4 ", 0, config.users[3].userName, 35, 0, "Name of user");
+  addItem(userMenu, FMTEXT, " 5 ", 0, config.users[4].userName, 35, 0, "Name of user");
+  addItem(userMenu, FMTEXT, " 6 ", 0, config.users[5].userName, 35, 0, "Name of user");
+  addItem(userMenu, FMTEXT, " 7 ", 0, config.users[6].userName, 35, 0, "Name of user");
+  addItem(userMenu, FMTEXT, " 8 ", 0, config.users[7].userName, 35, 0, "Name of user");
 
   if ((pmailMenu = createMenu(" Personal mail ")) == NULL)
     goto nomem;
 
   addItem(pmailMenu, PATH, "Pers. mail path", 0, config.pmailPath, sizeof(pathType)-1, 0,
            "Where copies of echo messages directed to the SysOp will be stored (optional)");
-  addItem(pmailMenu, TEXT|UPCASE, "ÌÍ> Topic 1", 0, config.topic1, 15, 0,
+  addItem(pmailMenu, FMTEXT|UPCASE, "ÌÍ> Topic 1", 0, config.topic1, 15, 0,
            "Scan subject line of messages for a topic");
-  addItem(pmailMenu, TEXT|UPCASE, "ÈÍ> Topic 2", 0, config.topic2, 15, 0,
+  addItem(pmailMenu, FMTEXT|UPCASE, "ÈÍ> Topic 2", 0, config.topic2, 15, 0,
            "Scan subject line of messages for a topic");
   addItem(pmailMenu, BOOL_INT, "Include netmail", 0, &config.mailOptions, BIT12, 0,
            "Also scan netmail messages for personal mail");
@@ -1120,36 +1120,25 @@ int main(int argc, char *argv[])
 
   for ( count = 0; count < MAX_UPLREQ/2; count++ )
   {
-    addItem(uplMenu, FUNC_VPAR, uplinkNodeStr[count], 0, uplinkMenu, count, 0,
-             " - Uplink system -");
-    addItem(uplMenu, FUNC_VPAR, uplinkNodeStr[count+(MAX_UPLREQ/2)], 30, uplinkMenu, count+(MAX_UPLREQ/2), 0,
-             " - Uplink system -");
+    addItem(uplMenu, FUNC_VPAR, uplinkNodeStr[count], 0, uplinkMenu, count, 0, " - Uplink system -");
+    addItem(uplMenu, FUNC_VPAR, uplinkNodeStr[count+(MAX_UPLREQ/2)], 30, uplinkMenu, count+(MAX_UPLREQ/2), 0, " - Uplink system -");
   }
   if ((miscMenu = createMenu(" Miscellaneous ")) == NULL)
     goto nomem;
 
-  addItem(miscMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(miscMenu, NEW_WINDOW, "General options", 0, genMenu, 2, -1,
-           "General options");
-  addItem(miscMenu, NEW_WINDOW, "Message base", 0, mbMenu, 2, 0,
-           "Message base related options");
-  addItem(miscMenu, NEW_WINDOW, "Mail options", 0, mailMenu, 5, -1,
-           "Mailflow related options");
-  addItem(miscMenu, NEW_WINDOW, "Mgr options", 0, mgrMenu, 2, -1,
-           "Mgr related options");
-  addItem(miscMenu, NEW_WINDOW, "Ping/trace options", 0, pingMenu, 2, -1,
-           "Ping/trace related options");
-  addItem(miscMenu, NEW_WINDOW, "Personal mail", 0, pmailMenu, 2, 2,
-           "Personal mail settings");
-  addItem(miscMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(miscMenu, NEW_WINDOW, "Addresses 1", 0, address1Menu, 2, -4,
-           "Main address and AKA's 1-15");
-  addItem(miscMenu, NEW_WINDOW, "Addresses 2", 0, address2Menu, 2, -4,
-           "AKA's 16-31");
-  addItem(miscMenu, NEW_WINDOW, "Group names", 0, groupMenu, 2, -1,
-           "Description of groups of echomail conferences");
-  addItem(miscMenu, FUNCTION, "AreaMgr defaults", 0, defaultBBS, 0, 0,
-           "Default settings used for new areas: origin line, message base maintenance");
+  addItem(miscMenu, DISPLAY   , NULL                  , 0, NULL        , 0,  0, NULL                                                                        );
+  addItem(miscMenu, NEW_WINDOW, "General options"     , 0, genMenu     , 2, -1, "General options"                                                           );
+  addItem(miscMenu, NEW_WINDOW, "Message base"        , 0, mbMenu      , 2,  0, "Message base related options"                                              );
+  addItem(miscMenu, NEW_WINDOW, "Mail options"        , 0, mailMenu    , 5, -1, "Mailflow related options"                                                  );
+  addItem(miscMenu, NEW_WINDOW, "Mgr options"         , 0, mgrMenu     , 2, -1, "Mgr related options"                                                       );
+  addItem(miscMenu, NEW_WINDOW, "Ping/trace options"  , 0, pingMenu    , 2, -1, "Ping/trace related options"                                                );
+  addItem(miscMenu, NEW_WINDOW, "Personal mail"       , 0, pmailMenu   , 2,  2, "Personal mail settings"                                                    );
+  addItem(miscMenu, FUNCTION  , "Say Hi to the author", 0, sayHi       , 0,  0, "Send a message to the FMail developer"                                     );
+  addItem(miscMenu, DISPLAY   , NULL                  , 0, NULL        , 0,  0, NULL                                                                        );
+  addItem(miscMenu, NEW_WINDOW, "Addresses 1"         , 0, address1Menu, 2, -4, "Main address and AKA's 1-15"                                               );
+  addItem(miscMenu, NEW_WINDOW, "Addresses 2"         , 0, address2Menu, 2, -4, "AKA's 16-31"                                                               );
+  addItem(miscMenu, NEW_WINDOW, "Group names"         , 0, groupMenu   , 2, -1, "Description of groups of echomail conferences"                             );
+  addItem(miscMenu, FUNCTION  , "AreaMgr defaults"    , 0, defaultBBS  , 0,  0, "Default settings used for new areas: origin line, message base maintenance");
 
   if ((mainMenu = createMenu(" Main ")) == NULL)
   {
@@ -1162,22 +1151,14 @@ nomem:
     return 1;
   }
   addItem(mainMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
-  addItem(mainMenu, NEW_WINDOW, "Miscellaneous", 0, miscMenu, 2, 2,
-           "Miscellaneous options");
-  addItem(mainMenu, NEW_WINDOW, "System info", 0, systemMenu, 2, 2,
-           "System related options");
-  addItem(mainMenu, NEW_WINDOW, "Import/export", 0, impExpMenu, 2, -1,
-           "Import or export configuration information");
-  /*   addItem(mainMenu, NEW_WINDOW, "AKA matching", 0, akaMatchMenu, 2, -2,
-  		      "AKA matching");*/
-  addItem(mainMenu, NEW_WINDOW, "Uplink manager", 0, uplMenu, 2, -2,
-           "Uplink manager configuration");
-  addItem(mainMenu, FUNCTION, "Pack manager", 0, packMgr, 0, 0,
-           "Netmail routing configuration");
-  addItem(mainMenu, FUNCTION, "Node manager", 0, nodeMgr, 0, 0,
-           "Connected systems configuration");
-  addItem(mainMenu, FUNCTION, "Area manager", 0, areaMgr, 0, 0,
-           "Area (conference) configuration");
+  addItem(mainMenu, NEW_WINDOW, "Miscellaneous", 0, miscMenu, 4, 1, "Miscellaneous options");
+  addItem(mainMenu, NEW_WINDOW, "System info", 0, systemMenu, 4, 2, "System related options");
+  addItem(mainMenu, NEW_WINDOW, "Import/export", 0, impExpMenu, 4, -1, "Import or export configuration information");
+  /*   addItem(mainMenu, NEW_WINDOW, "AKA matching", 0, akaMatchMenu, 4, -2, "AKA matching");*/
+  addItem(mainMenu, NEW_WINDOW, "Uplink manager", 0, uplMenu, 4, -2, "Uplink manager configuration");
+  addItem(mainMenu, FUNCTION, "Pack manager", 0, packMgr, 0, 0, "Netmail routing configuration");
+  addItem(mainMenu, FUNCTION, "Node manager", 0, nodeMgr, 0, 0, "Connected systems configuration");
+  addItem(mainMenu, FUNCTION, "Area manager", 0, areaMgr, 0, 0, "Area (conference) configuration");
   addItem(mainMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
 
   do

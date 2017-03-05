@@ -43,9 +43,10 @@
          3.3.4  Mgr options
          3.3.5  Ping/trace options
          3.3.6  Personal mail
-         3.3.7  Addresses 1/2
-         3.3.8  Group names
-         3.3.9  AreaMgr defaults
+         3.3.7  Say Hi to the author
+         3.3.8  Addresses 1/2
+         3.3.9  Group names
+         3.3.10 AreaMgr defaults
     3.4  System info
          3.4.1  Miscellaneous
          3.4.2  Directories
@@ -668,8 +669,11 @@ Ignore MSGID
 
 Dups recs (x1024)
 
-          Number of signatures of messages that are stored on
-          disk.
+          Number of signatures of messages that are stored on disk.
+          The minimum value for this setting is 16 (If you fill in a
+          lower number, 16 will be used). It is not recommended to set
+          this value above 64, because the chance on false positive
+          dupe detections becomes to high with a bigger database.
 
 Max PKT size (kb)
 
@@ -929,7 +933,14 @@ Users
           copied to the Personal mail board too.
 
 
-3.3.7     Addresses 1/2
+3.3.7     Say Hi to the author
+
+Send a message to the FMail developer. This function makes a direct
+internet connection to the server of the developer and leaves a
+message in a log file. You might get back a routed netmail. ;-)
+
+
+3.3.8     Addresses 1/2
 
 Your main address and up to fifteen other addresses that you may
 use, can be entered in this window. If the echomail processors of
@@ -941,7 +952,7 @@ by appending it to your normal 4-d address using a dash '-'. eg.
 will be addressed to 2:7619/1.
 
 
-3.3.8     Group names
+3.3.9     Group names
 
 If you are using a lot of different groups, remembering what each
 group letter stands for can be rather difficult. The Group names
@@ -950,7 +961,7 @@ descriptions will be used in the Node Manager, the Area Manager
 and in AreaMgr replies.
 
 
-3.3.9     AreaMgr defaults
+3.3.10     AreaMgr defaults
 
 To save some time when installing new areas in the Area Manager,
 you may enter a number of default settings that will be used for
@@ -2457,6 +2468,7 @@ The following copyrighted programs are mentioned in this manual:
           ARJ, JAR       ARJ Software
           Binkley        Bit Bucket Software
           Borland C++    Borland International, Inc.
+          Code::Blocks   MortenMacFly and others.
           D'Bridge       Chris Irwin
           FrontDoor,
           TosScan        Joaquim Homrighausen
@@ -2471,11 +2483,11 @@ The following copyrighted programs are mentioned in this manual:
           MainDoor       Francisco Sedano
           Microsoft,
           Windows        Microsoft Corporation
+          MingW32        Colin Peters and others.
           PAK            NoGate Consulting
           PKZIP, PKPAK   PKWARE, Inc.
           Portal
           of Power       The Portal Team
-          QEMM, DESQview Quarterdeck Office Systems, Inc.
           QuickBBS       Pegasus Software
           RemoteAccess,
           RA, RAMSG      Wantree Development
@@ -2679,7 +2691,8 @@ APPENDIX B     -    Technical notes
           Base sharing specifications.
 
 *         FMail is written in C and compiled using Borland C++ Builder
-          Version 6. MingW32, using the Code::blocks ide.
+          Version 6. From version 2.x and higher the MingW32 compiler,
+          using the Code::blocks ide is used.
 
 *         The implementation of the Binary Conference Listing
           system is based upon FSC-0057 rev. 3.
@@ -2699,4 +2712,4 @@ APPENDIX B     -    Technical notes
 
 
 
-###  End of file  FMAIL.TXT  version: 2017-02-06  ###
+###  End of file  FMAIL.TXT  version: 2017-03-05  ###

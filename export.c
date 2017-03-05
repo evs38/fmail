@@ -313,7 +313,7 @@ s16 listHudsonBoards(void)
          freeAreaInfo ();
          return (0);
       }
-      fprintf (textFile, "\n%s  -  List of "MBNAME" message base boards  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
+      fprintf(textFile, "\n%s  -  List of "MBNAME" message base boards  -  %s%s\n\n", VersionStr(), ctime(&timer), bar);
 
       for (count1 = 1; count1 <= MBBOARDS; count1++)
       {
@@ -545,7 +545,7 @@ s16 listAreaConfig (void)
          return (0);
       }
 
-     working ();
+     working();
 
      if ((textFile = fopen(fileNamePtr, "wt")) == NULL)
       {

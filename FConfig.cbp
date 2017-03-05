@@ -121,6 +121,10 @@
 		</Unit>
 		<Unit filename="packmgr.h" />
 		<Unit filename="pp_date.h" />
+		<Unit filename="sayhi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="sayhi.h" />
 		<Unit filename="spec.c">
 			<Option compilerVar="CC" />
 		</Unit>

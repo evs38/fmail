@@ -453,7 +453,7 @@ u16 editNM(s16 editType, u16 setdef)
       return 0;
 
 // addItem(nodeMenu, BOOL_INT                  , "Disabled"          ,  0, &tempInfoN.options         , BIT5, 0, "Set to fully disable a node");
-   addItem(nodeMenu, TEXT                      , "SysOp Name"        ,  0,  tempInfoN.sysopName       , sizeof(tempInfoN.sysopName) - 1,            0, "Name of the SysOp"                                                              );
+   addItem(nodeMenu, FMTEXT                    , "SysOp Name"        ,  0,  tempInfoN.sysopName       , sizeof(tempInfoN.sysopName) - 1,            0, "Name of the SysOp"                                                              );
    addItem(nodeMenu, nodeNGOnly(editType, NODE), "System"            ,  0, &tempInfoN.node            , 0                              ,            0, "Node number"                                                                    );
    addItem(nodeMenu, DATETIME | DISPLAY        , "Ref"               , 49, &tempInfoN.referenceLNBDat , 0                              ,            0, ""                                                                               );
    addItem(nodeMenu, DISPLAY, NULL, 0, NULL, 0, 0, NULL);
@@ -523,7 +523,7 @@ u16 editNM(s16 editType, u16 setdef)
                            , windowLook.commentfg, windowLook.commentbg, MONO_NORM);
             if (displayWindow(" Node number mask ", 10, 12, 12 + 23, 14) != 0)
                return 0;
-            ch = editString(tempStr, 23, 12, 13, TEXT);
+            ch = editString(tempStr, 23, 12, 13, FMTEXT);
             removeWindow();
             if (ch == _K_ESC_)
                break;

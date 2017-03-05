@@ -3,11 +3,11 @@ This file contains information about FMail releases since 1.60.GPL
 
 2017-02-06  -  2.0.0.0
 
-  This release has the "big" version bump to 2.0, because all the three modules
+  This release has the "big" version jump to 2.0, because all the three modules
   are now compiled with the MingW32 windows compiler. MingW32 is in their own
-  words: "MinGW, a contraction of "Minimalist GNU for Windows", is a minimalist
-  development environment for native Microsoft Windows applications." It's a
-  free modern compiler, derived from the gnu c compiler, which is more or less
+  words: 'MinGW, a contraction of "Minimalist GNU for Windows", is a minimalist
+  development environment for native Microsoft Windows applications.' It's a
+  modern free compiler, derived from the gnu c compiler, which is more or less
   the standard compiler on Linux.
 
   As my development environment I'm using Code::Blocks
@@ -18,15 +18,24 @@ This file contains information about FMail releases since 1.60.GPL
   towards Linux compatibility. We are not there yet, but it's next on my agenda.
 
   Besides the MingW compatibility of the source code, the main new features are:
+  - 'Say Hi to the author' function in the FConfig 'Miscellaneous' menu.
+    Please use this to let me know you are out there!
   - Using the FTSCPROD.nnn files, as published by the ftsc, for translating the
     product code in pkt files to product names in the log, instead of the
     internal table.
-  - BCL reports: On receipt of a BCL file from your links, a report netmail
-    with either the full content of the BCL file, or the changes since the last
-    one can be generated.
+  - BCL reports: On receipt of a BCL file from one of your links, a report
+    netmail with either the full content of the BCL file, or the changes since
+    the last one can be generated.
   - Inbound and outbound .pkt file backups.
   - Lots of other small features and bug fixes, which you can read about in
     the ChangeLog file.
+
+  A warning: If you are not using Binkd as your mailer, or one of the other
+  mailers that use a Binkley Style Outbound: The other outbound styles are not
+  very well tested, for this MingW32 release, because I and the other test node
+  only use Binkd. So if you are a user of an other mailer, I'm very much
+  interested in your experience with this version of FMail, so please let me
+  know! (You could use the new "Say Hi" function for this)
 
 
 2016-09-18  -  1.72.0.0

@@ -33,7 +33,7 @@
 #define TITLE_RIGHT      8
 #define SHADOW          16
 #define NO_SAVE         32
-#define TEXT             1
+#define FMTEXT           1
 #define WORD             2
 #define ALPHA            3
 #define ALPHA_AST        4
@@ -210,7 +210,7 @@ void locateCursor(int x, int y);
 u16       readKbd      (void);
 void      initWindow   (u16 mode);
 menuType *createMenu   (char *title);
-s16       displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey);
+s16       displayWindow(const char *title, u16 sx, u16 sy, u16 ex, u16 ey);
 void      removeWindow (void);
 s16       addItem      (menuType *menu, u16 entryType, char *prompt, u16 offset, void *data, u16 par1, u16 par2, const char *comment);
 s16       displayMenu  (menuType *menu, u16 sx, u16 sy);
@@ -229,9 +229,10 @@ void  displayData      (menuType *menu, u16 sx, u16 sy, s16 mark);
 void  fillRectangle    (char ch, u16 sx, u16 sy, u16 ex, u16 ey, u16 fgc, u16 bgc, u16 mAttr);
 nodeNumType getNodeNum (char *title, u16 sx, u16 sy, u16 aka);
 const char *nodeStr    (const nodeNumType *nodeNum);
+char *getStr           (const char *title, const char *init);
 char *getSourceFileName(char *title);
 char *getDestFileName  (char *title);
-void  displayMessage   (char *msg);
+void  displayMessage   (const char *msg);
 int   askChar          (char *prompt, char *keys);
 int   askBoolean       (char *prompt, int dfault);
 void  working          (void);

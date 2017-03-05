@@ -536,7 +536,7 @@ u16 editString(char *string, u16 width, u16 x, u16 y, u16 fieldType)
          } else
          if (ch != 0 && ch < 256 &&
              (((fieldType & CTRLCODES) && ch >= 1 && ch <= 26 && ch != 13 && config.genOptions.ctrlcodes) ||
-              (((fieldType & MASK) == TEXT) && (ch >= ' ')) ||
+              (((fieldType & MASK) == FMTEXT) && (ch >= ' ')) ||
               (((fieldType & MASK) == PACK) && (ch >= ' ') && (ch <= '~')) ||
               (((fieldType & MASK) == WORD) && (ch > ' ') && (ch <= 254)) ||
               (((fieldType & MASK) == PATH ||
@@ -954,7 +954,7 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
                         }
                         width = ORGLINE_LEN-1;
                         break;
-       case TEXT      :
+       case FMTEXT    :
        case WORD      :
        case EMAIL     :
        case ALPHA     :
@@ -1003,11 +1003,12 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
                            width = 12;
                         }
                         else
-                        {  if (*((funcParType*)menu->menuEntry[count].data)->numPtr == 0)
-                              sprintf (tempStr, "None");
+                        {
+                           if (*((funcParType*)menu->menuEntry[count].data)->numPtr == 0)
+                              sprintf(tempStr, "None");
                            else
-                              sprintf (tempStr, "%-4u", *((funcParType*)menu->menuEntry[count].data)->numPtr);
-                           width = 3;
+                              sprintf(tempStr, "%-4u", *((funcParType*)menu->menuEntry[count].data)->numPtr);
+                           width = 4;
                         }
                         break;
        case NUM_P_INT : if (*((s16*)menu->menuEntry[count].data) == 0)
@@ -1107,7 +1108,7 @@ void fillRectangle(char ch, u16 sx, u16 sy, u16 ex, u16 ey, u16 fgc, u16 bgc, u1
     puttext(sx + 1, count + 1, ex + 1, count + 1, line);
 }
 //---------------------------------------------------------------------------
-s16 displayWindow(char *title, u16 sx, u16 sy, u16 ex, u16 ey)
+s16 displayWindow(const char *title, u16 sx, u16 sy, u16 ex, u16 ey)
 {
   u16       x, y;
   u16       nx;
@@ -1295,7 +1296,7 @@ s16 addItem(menuType *menu, u16 entryType, char *prompt, u16 offset, void *data,
   switch (entryType & MASK)
   {
     case EXTRA_TEXT:
-      case TEXT      :
+      case FMTEXT    :
       case WORD      :
       case EMAIL     :
       case ALPHA     :
@@ -1455,7 +1456,7 @@ s16 changeGlobal(menuType *menu, void *org, void *upd)
       if (menu->menuEntry[count].selected)
       {
          switch (menu->menuEntry[count].entryType & MASK)
-         {  case TEXT:
+         {  case FMTEXT:
             case WORD:
             case EMAIL:
             case ALPHA:
@@ -1694,12 +1695,12 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, u16 *dataPtr, u16 setdef, u16 esc)
          || ((menu->menuEntry[count].entryType & MASK) == BIT_TOGGLE && ch >= '1' && ch <= '8')
          )
       {
-         if ( setdef && (menu->menuEntry[count].entryType & MASK) != FUNCTION )
-                         menu->menuEntry[count].selected = 1;
+         if (setdef && (menu->menuEntry[count].entryType & MASK) != FUNCTION)
+           menu->menuEntry[count].selected = 1;
 
          switch (menu->menuEntry[count].entryType & MASK)
          {
-            case TEXT       :
+            case FMTEXT     :
             case WORD       :
             case EMAIL      :
             case ALPHA      :
@@ -1876,7 +1877,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, u16 *dataPtr, u16 setdef, u16 esc)
                free(tempMenu);
                break;
             }
-            case WSELECT    : removeWindow ();
+            case WSELECT    : removeWindow();
                               if (dataPtr != NULL)
                                  *dataPtr = count;
                               update = 1;
@@ -1942,7 +1943,7 @@ s16 runMenuDE(menuType *menu, u16 sx, u16 sy, u16 *dataPtr, u16 setdef, u16 esc)
                                                  sy+menu->menuEntry[count].par2, NULL, setdef);
                               break;
          }
-         displayData (menu, sx, sy, 1);
+         displayData(menu, sx, sy, 1);
 #ifdef _DEBUG0
          sprintf (tempStr, " %lu ", coreleft());
          printString (tempStr, 70, 2, YELLOW, RED, MONO_HIGH);
@@ -2132,7 +2133,7 @@ void printString(const char *string, u16 sx, u16 sy, u16 fgc, u16 bgc, u16 mAttr
   }
 }
 //---------------------------------------------------------------------------
-void displayMessage(char *msg)
+void displayMessage(const char *msg)
 {
   u16 sx = (76 - strlen(msg)) / 2;
 
@@ -2143,6 +2144,20 @@ void displayMessage(char *msg)
     readKbd();
     removeWindow();
   }
+}
+//---------------------------------------------------------------------------
+char *getStr(const char *title, const char *init)
+{
+  static char str[65];
+  strncpy(str, init, 64);
+  str[64] = 0;
+  if (displayWindow(title, 6, 12, 72, 14) == 0)
+  {
+    if (_K_ESC_ == editString(str, 64, 8, 13, NOCLEAR | FMTEXT))
+      *str = 0;
+    removeWindow();
+  }
+  return str;
 }
 //---------------------------------------------------------------------------
 char fileNameStr[65];
@@ -2259,10 +2274,10 @@ char displayAreasArray[MBBOARDS];
 s16  displayAreasSelect;
 extern s16 boardEdit;
 
-s16 displayAreas (void)
+s16 displayAreas(void)
 {
    s16      count;
-   u16 x = 0,
+   u16      x = 0,
             y = 0;
    u16      ch;
    char     boardStr[5];
@@ -2270,23 +2285,23 @@ s16 displayAreas (void)
    boardEdit = 1;
 
    if (displayAreasSelect > 0 && displayAreasSelect <= MBBOARDS)
-      displayAreasArray[displayAreasSelect-1] = 0;
+      displayAreasArray[displayAreasSelect - 1] = 0;
 
-   if (displayWindow (" Available boardnumbers ", 4, 7, 76, 21) != 0)
+   if (displayWindow(" Available boardnumbers ", 4, 7, 76, 21) != 0)
    {
-      return (0);
+      return 0;
    }
 
    for (count = 0; count < MBBOARDS; count++)
    {
-      sprintf (boardStr, "%3u", count+1);
+      sprintf(boardStr, "%3u", count + 1);
       if (displayAreasArray[count])
-                {
-         printString (boardStr, 7+(4*x++), 9+y, DARKGRAY, windowLook.background, MONO_NORM);
+      {
+         printString(boardStr, 7+(4*x++), 9+y, DARKGRAY, windowLook.background, MONO_NORM);
       }
       else
       {
-         printString (boardStr, 7+(4*x++), 9+y, WHITE, windowLook.background, MONO_HIGH);
+         printString(boardStr, 7+(4*x++), 9+y, WHITE, windowLook.background, MONO_HIGH);
       }
       if (x == 17)
       {
@@ -2302,13 +2317,13 @@ s16 displayAreas (void)
    if ((count = displayAreasSelect-1) == -1)
      count = MBBOARDS;
 
-   if ((count < 0) || (count > MBBOARDS))
+   if (count < 0 || count > MBBOARDS)
      count = 0;
 
    if (count < MBBOARDS && displayAreasArray[count])
    {
      count = 0;
-     while ((displayAreasArray[count]) && (count < MBBOARDS))
+     while (displayAreasArray[count] && count < MBBOARDS)
        count++;
    }
 
@@ -2319,13 +2334,11 @@ s16 displayAreas (void)
       else
         sprintf(boardStr, "%3u", count + 1);
 
-      printString(boardStr, 7 + (4 * (count % 17)), 9 + (count / 17),
-                   windowLook.scrollfg, windowLook.scrollbg, MONO_HIGH_BLINK);
+      printString(boardStr, 7 + (4 * (count % 17)), 9 + (count / 17), windowLook.scrollfg, windowLook.scrollbg, MONO_HIGH_BLINK);
 
       ch = readKbd();
 
-      printString (boardStr, 7+(4*(count%17)), 9+(count/17),
-                   WHITE, windowLook.background, MONO_HIGH);
+      printString(boardStr, 7+(4*(count%17)), 9+(count/17), WHITE, windowLook.background, MONO_HIGH);
 
       if (ch >= '0' && ch <= '9')
       {

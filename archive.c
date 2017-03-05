@@ -921,6 +921,8 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     }
     else
     {
+      int create;
+
       strcpy(tempStr, archiveStr);
       if (destNode->point)
         extPtr = archivePtr + sprintf(archivePtr, "%08hx", destNode->point);
@@ -948,6 +950,8 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
         sprintf(extPtr, ".%clo", "fhchdd"[nodeInfo->outStatus]);
       }
 
+      create = access(archiveStr, 0);
+
       if ((tempHandle = open(archiveStr, O_RDWR | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       {
         if (semaHandle >= 0)
@@ -960,7 +964,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 
         return 1;
       }
-      logEntryf(LOG_OUTBOUND, 0, "Create/Update flow file: %s", archiveStr);
+      logEntryf(LOG_OUTBOUND, 0, "%s flow file: %s", create ? "Create" : "Update", archiveStr);
       strcpy(archiveStr, tempStr);
       memset(arcPath, 0x20, sizeof(tempStrType) - 2);
       arcPath[sizeof(tempStrType) - 2] = 0;
