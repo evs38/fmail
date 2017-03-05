@@ -1,13 +1,13 @@
 2017-03-05  2.0.0.0
-  * Release candidate 2
+  * Release
   * FConfig: 'Say Hi to the author' function in 'Miscellaneous' menu.
   * Specify 'Create' or 'Update' when logging the creating or updating of
     BSO flow files.
-  * Print 'None' instead of 'Non' in AreaManager for hudson board number
-    (if not set).
+  * FConfig: Print 'None' instead of 'Non' in AreaManager for hudson board
+    number (if not set).
 
 2017-02-27  2.0.0.0
-  * Release candidate 1
+  * Release candidate
 
 2017-02-15  1.73.17.78-Beta
   * Unconditionally use the File box path if specified.

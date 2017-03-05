@@ -1,7 +1,7 @@
 This file contains information about FMail releases since 1.60.GPL
 
 
-2017-02-06  -  2.0.0.0
+2017-03-05  -  2.0.0.0
 
   This release has the "big" version jump to 2.0, because all the three modules
   are now compiled with the MingW32 windows compiler. MingW32 is in their own
