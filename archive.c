@@ -964,7 +964,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 
         return 1;
       }
-      logEntryf(LOG_OUTBOUND, 0, "%s flow file: %s", create ? "Create" : "Update", archiveStr);
+      logEntryf(LOG_OUTBOUND, 0, "%s %s", create ? "Create" : "Update", archiveStr);
       strcpy(archiveStr, tempStr);
       memset(arcPath, 0x20, sizeof(tempStrType) - 2);
       arcPath[sizeof(tempStrType) - 2] = 0;
