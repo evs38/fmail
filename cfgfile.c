@@ -143,15 +143,15 @@ s16 openConfig(u16 fileType, headerType **header, void **buf)
       fileData[fileType].recordSize -= (MAX_FORWARDDEF - config.maxForward) * sizeof(nodeNumXType);
 
 restart:
-   strcpy(stpcpy(areaInfoPath, configPath), fileData[fileType].fileName);
+   strcpy(stpcpy(areaInfoPath, fixPath(configPath)), fileData[fileType].fileName);
 
    memset(&cfiArr[fileType].header, 0, sizeof(headerType));
    cfiArr[fileType].status = 0;
 
-  if ((cfiArr[fileType].handle = _sopen(fixPath(areaInfoPath), O_RDWR | O_BINARY | O_CREAT, SH_DENYRW, dDEFOMODE)) == -1)
+  if ((cfiArr[fileType].handle = _sopen(areaInfoPath, O_RDWR | O_BINARY | O_CREAT, SH_DENYRW, dDEFOMODE)) == -1)  // already fixPath'd
   {
 #ifdef _DEBUG
-    printf("DEBUG open failed: %s\n", areaInfoPath);
+    printf("DEBUG open failed: %s\n", areaInfoPath);  // already fixPath'd
 #endif // _DEBUG
     return 0;
   }
@@ -197,7 +197,7 @@ error:   close(cfiArr[fileType].handle);
          oldAreasFile = (fileType == CFG_ECHOAREAS || fileType == CFG_AREADEF) &&
                         cfiArr[fileType].header.recordSize < sizeof(rawEchoType)-(MAX_FORWARDDEF-MAX_FORWARDOLD)*sizeof(nodeNumXType);
 
-         strcpy(tempPath, areaInfoPath);
+         strcpy(tempPath, areaInfoPath);  // already fixPath'd
          if ( (helpPtr = strrchr(tempPath, '.')) == NULL )
             goto error;
          strcpy(helpPtr + 1, dEXTTMP);
@@ -208,7 +208,7 @@ error:   close(cfiArr[fileType].handle);
             free(cfiArr[fileType].recBuf);
             goto error;
          }
-         if ((temphandle = _sopen(fixPath(tempPath), O_RDWR | O_BINARY | O_CREAT, SH_DENYRW, dDEFOMODE)) == -1)
+         if ((temphandle = _sopen(tempPath, O_RDWR | O_BINARY | O_CREAT, SH_DENYRW, dDEFOMODE)) == -1)  // already fixPath'd
          {
             free(cfiArr[fileType].recBuf);
             cfiArr[fileType].recBuf = NULL;
@@ -230,7 +230,7 @@ error:   close(cfiArr[fileType].handle);
               free(cfiArr[fileType].recBuf);
               cfiArr[fileType].recBuf = NULL;
               close(temphandle);
-              unlink(fixPath(tempPath));
+              unlink(tempPath);  // already fixPath'd
               goto error;
             }
             if (oldAreasFile)
@@ -254,7 +254,7 @@ error:   close(cfiArr[fileType].handle);
                free(cfiArr[fileType].recBuf);
                cfiArr[fileType].recBuf = NULL;
                close(temphandle);
-               unlink(fixPath(tempPath));
+               unlink(tempPath);  // already fixPath'd
                goto error;
             }
          }
@@ -264,8 +264,8 @@ error:   close(cfiArr[fileType].handle);
          cfiArr[fileType].recBuf = NULL;
          close(temphandle);
          close(cfiArr[fileType].handle);
-         unlink(fixPath(areaInfoPath));
-         rename(fixPath(tempPath), fixPath(areaInfoPath));
+         unlink(areaInfoPath);            // already fixPath'd
+         rename(tempPath, areaInfoPath);  // already fixPath'd
          cfiArr[fileType].handle = -1;
          *header = NULL;
          *buf = NULL;

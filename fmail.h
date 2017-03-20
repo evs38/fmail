@@ -90,7 +90,9 @@ extern struct tm    timeBlock;
 extern char         funcStr[32];
 extern char         configPath[FILENAME_MAX];
 extern configType   config;
+#ifdef FMAIL
 extern const char  *smtpID;
+#endif // FMAIL
 
 //---------------------------------------------------------------------------
 typedef struct
@@ -345,7 +347,7 @@ u16 foundToUserName(const char *toUserName);
 struct bt
 {
   char       fname[FILENAME_MAX];
-  time_t     mtime;
+  time_t     mtime;                // Internal struct, so don't need time32_t
   long       size;
   struct bt *nextb;
 };

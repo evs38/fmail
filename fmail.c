@@ -23,7 +23,6 @@
 
 #ifdef __WIN32__
 #include <dir.h>      // getcwd()
-//#include <dos.h>
 #include <windows.h>
 #endif // __WIN32__
 //#include <conio.h>
@@ -69,6 +68,7 @@
 #if defined(__WIN32__) || defined(__linux__)
 #include "sendsmtp.h"
 #define dSENDMAIL
+const char *smtpID;
 #endif // __WIN32__
 
 fhandle     fmailLockHandle;
@@ -229,7 +229,6 @@ const char *semaphore[6] = {
 long        gmtOffset;
 time_t      startTime;
 struct tm   timeBlock;
-const char *smtpID;
 
 internalMsgType *message   = NULL;
 s16              diskError = 0;
@@ -1998,7 +1997,7 @@ int main(int argc, char *argv[])
   smtpID = TIDStr();
 #endif
 
-  printf("%s - The Fast Echomail Processor\n\n", VersionStr());
+  printf("%s - The Fast Echomail Processor\n", VersionStr());
   printf("Copyright (C) 1991-%s by FMail Developers - All rights reserved\n\n", __DATE__ + 7);
 
   memset(&globVars, 0, sizeof(globVarsType));
@@ -2027,7 +2026,7 @@ int main(int argc, char *argv[])
   else
     *replaceDrive = 0;
 #ifdef _DEBUG
-  printf("DEBUG replaceDrive = \"%s\"\n", replaceDrive);
+  printf("DEBUG replaceDrive = \"%s\"\n", replaceDrive);
 #endif // _DEBUG
 #endif // __linux__
 
@@ -2051,7 +2050,7 @@ int main(int argc, char *argv[])
     }
   }
 #ifdef _DEBUG
-  printf("DEBUG configPath = \"%s\"\n", configPath);
+  printf("DEBUG configPath = \"%s\"\n", configPath);
 #endif
 
   if      (argc >= 2 && (stricmp(argv[1], "A") == 0 || stricmp(argv[1], "ABOUT" ) == 0))

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,16 +21,17 @@
 //
 //---------------------------------------------------------------------------
 
+#ifdef __WIN32__
+#include <dir.h>
+#include <share.h>
+#endif // __WIN32__
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
-#include <dir.h>
-#include <dos.h>
-#include <io.h>
-#include <share.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -38,10 +39,12 @@
 #include "crc.h"
 #include "ftlog.h"
 #include "hudson.h"
+#include "hudson_shared.h"
 #include "msgradef.h"
+#include "os.h"
 #include "utils.h"
 
-
+//---------------------------------------------------------------------------
 fhandle msgHdrHandle;
 fhandle msgTxtHandle;
 fhandle msgToIdxHandle;
@@ -49,26 +52,25 @@ fhandle msgIdxHandle;
 
 fhandle lockHandle;
 
-#include "hudson_shared.c"
 //---------------------------------------------------------------------------
 void openBBSWr(void)
 {
-   if ((msgHdrHandle = open(expandNameH(dMSGHDR), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+   if ((msgHdrHandle = open(expandNameH(dMSGHDR), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)  // expandNameH does fixPath
       logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgHdrHandle, 0, SEEK_END);
 
-   if ((msgTxtHandle = open(expandNameH(dMSGTXT), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+   if ((msgTxtHandle = open(expandNameH(dMSGTXT), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)  // expandNameH does fixPath
       logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgTxtHandle, 0, SEEK_END);
 
-   if ((msgToIdxHandle = open(expandNameH(dMSGTOIDX), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+   if ((msgToIdxHandle = open(expandNameH(dMSGTOIDX), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)  // expandNameH does fixPath
       logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgToIdxHandle, 0, SEEK_END);
 
-   if ((msgIdxHandle = open(expandNameH(dMSGIDX), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+   if ((msgIdxHandle = open(expandNameH(dMSGIDX), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)  // expandNameH does fixPath
       logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgIdxHandle, 0, SEEK_END);
@@ -94,7 +96,7 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
       if (lockMB())
         return 1;
 
-      if (((msgInfoHandle = open(expandNameH(dMSGINFO), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
+      if (((msgInfoHandle = open(expandNameH(dMSGINFO), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1) ||  // expandNameH does fixPath
           (read(msgInfoHandle, &infoRec, sizeof(infoRecType)) != sizeof(infoRecType)))
         memset(&infoRec, 0, sizeof(infoRecType));
 
@@ -103,15 +105,15 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 		msgRa.TRead      = 0;
 		msgRa.NetAttr    = 0;
     msgRa.StartRec   =
-    msgTxtRecNum     = (u16)(filelength(msgTxtHandle) >> 8);
+    msgTxtRecNum     = (u16)(fileLength(msgTxtHandle) >> 8);
 		msgRa.Board      = boardNum;
-    msgHdrRecNum     = (u16)(filelength(msgHdrHandle)/sizeof(msgHdrRec));
+    msgHdrRecNum     = (u16)(fileLength(msgHdrHandle) / sizeof(msgHdrRec));
 
     if ((s16)(msgRa.MsgNum = ++infoRec.HighMsg) < 0)
 		{
 			logEntry("Highest allowed message number has been reached", LOG_ALWAYS, 0);
 			unlockMB();
-			return (1);
+			return 1;
 		}
 
 		textPtr = message->text;
@@ -123,9 +125,8 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 				textPtr += 255;
 			}
 			else
-			{
         textPtr += msgTxt.txtLength = (u16)(helpPtr - 1 - msgTxt.txtStr);
-      }
+
      if (!++msgTxtRecNum)
      {
         logEntry("Maximum message base size has been reached", LOG_ALWAYS, 0);
@@ -139,16 +140,16 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
         return 1;
      }
      msgRa.NumRecs++;
-  }
-    {
-      time_t t = time(NULL);
-      struct tm *tm = localtime(&t);  // localtime ok!
-      sprintf ((char*)&msgRa.ptLength, "\x05%02d:%02d\x08%02d-%02d-%02d"  // TODO does this need to be US date format?
-                                     , tm->tm_hour, tm->tm_min, tm->tm_mon + 1, tm->tm_mday, tm->tm_year % 100);
+   }
+   {
+     time_t t = time(NULL);
+     struct tm *tm = localtime(&t);  // localtime ok!
+     sprintf ((char*)&msgRa.ptLength, "\x05%02d:%02d\x08%02d-%02d-%02d"  // TODO does this need to be US date format?
+                                    , tm->tm_hour, tm->tm_min, tm->tm_mon + 1, tm->tm_mday, tm->tm_year % 100);
 #ifdef _DEBUG
-      logEntry("DEBUG writeBBS US time format written", LOG_DEBUG, 0);
+     logEntry("DEBUG writeBBS US time format written", LOG_DEBUG, 0);
 #endif // _DEBUG
-    }
+   }
 
       msgRa.MsgAttr = RA_LOCAL | ((message->attribute & PRIVATE) ? RA_PRIVATE : 0);
 
@@ -168,13 +169,13 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
          msgRa.DestNode = message->destNode.node;
          msgRa.Cost     = message->cost;
 
-         mailBBSHandle = _sopen(expandNameH("NETMAIL"), O_WRONLY | O_CREAT | O_APPEND | O_BINARY, SH_DENYWR, S_IREAD | S_IWRITE);
+         mailBBSHandle = _sopen(expandNameH("NETMAIL"), O_WRONLY | O_CREAT | O_APPEND | O_BINARY, SH_DENYWR, dDEFOMODE);  // expandNameH does fixPath
       }
       else
       {
          msgRa.MsgAttr |= RA_ECHO_OUT;
 
-         mailBBSHandle = _sopen(expandNameH("ECHOMAIL"), O_WRONLY | O_CREAT | O_APPEND | O_BINARY, SH_DENYWR, S_IREAD | S_IWRITE);
+         mailBBSHandle = _sopen(expandNameH("ECHOMAIL"), O_WRONLY | O_CREAT | O_APPEND | O_BINARY, SH_DENYWR, dDEFOMODE);  // expandNameH does fixPath
       }
       if (mailBBSHandle != -1)
       {
@@ -194,9 +195,9 @@ s16 writeBBS(internalMsgType *message, u16 boardNum, s16 isNetmail)
 
       if ((msgRa.sjLength) <= 56)
       {
-         msgRa.subjCrc    = crc32alpha(message->subject);
-         msgRa.wrTime     = msgRa.recTime = startTime;
-         time(&msgRa.recTime);
+         msgRa.subjCrc  = crc32alpha(message->subject);
+         msgRa.wrTime   = startTime;
+         msgRa.recTime  = time(NULL);
          msgRa.checkSum = CS_SECURITY ^ msgRa.subjCrc
                                       ^ msgRa.wrTime
                                       ^ msgRa.recTime;

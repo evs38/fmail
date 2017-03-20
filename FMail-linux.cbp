@@ -11,7 +11,7 @@
 				<Option object_output="obj/FMail/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="scan" />
+				<Option parameters="toss" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-mtune=generic" />
@@ -143,6 +143,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="msgra.h" />
+		<Unit filename="msgradef.h" />
 		<Unit filename="mtask.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -203,15 +204,6 @@
 			<code_completion />
 			<envvars set="default" />
 			<debugger />
-			<DoxyBlocks>
-				<comment_style block="2" line="1" />
-				<doxyfile_project />
-				<doxyfile_build />
-				<doxyfile_warnings />
-				<doxyfile_output />
-				<doxyfile_dot />
-				<general />
-			</DoxyBlocks>
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

@@ -39,6 +39,7 @@
 #include "imfolder.h"
 #include "minmax.h"
 #include "msgra.h"
+#include "os.h"
 #include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
@@ -83,7 +84,7 @@ char getGroupChar(s32 groupCode)
 extern configType config;
 extern char configPath[FILENAME_MAX];
 
-#include <pshpack1.h>
+#include "pshpack1.h"
 
 typedef struct
 {
@@ -321,7 +322,7 @@ typedef struct
   u8   extra[112];
 } proBoardType;
 
-#include <poppack.h>
+#include "poppack.h"
 
 #define MSGTYPE_BOTH     0 /* Private/Public */
 #define MSGTYPE_PVT      1 /* Private Only   */
@@ -426,9 +427,9 @@ void autoUpdate(void)
   if (*config.autoAreasBBSPath != 0)
   {
     time(&timer);
-    strcpy(stpcpy(tempStr, config.autoAreasBBSPath), "areas.bbs");
+    strcpy(stpcpy(tempStr, fixPath(config.autoAreasBBSPath)), "areas.bbs");
 
-    if ((textFile = fopen(tempStr, "wb")) == NULL)
+    if ((textFile = fopen(tempStr, "wb")) == NULL)  // already fixPath'd
       displayMessage("Can't open Areas.BBS for output");
     else
     {
@@ -441,7 +442,7 @@ void autoUpdate(void)
       for (count = 0; count < areaInfoCount; count++)
       {
         getRec(CFG_ECHOAREAS, count);
-        if (  areaBuf->options.active 
+        if (  areaBuf->options.active
            && (areaBuf->board || *areaBuf->msgBasePath || config.genOptions.PTAreasBBS)
            )
         {
@@ -497,31 +498,31 @@ void autoUpdate(void)
   }
   if (*config.autoGoldEdAreasPath != 0)
   {
-    strcpy(stpcpy(tempStr, config.autoGoldEdAreasPath), "areas.gld");
+    strcpy(stpcpy(tempStr, fixPath(config.autoGoldEdAreasPath)), "areas.gld");
 
-    if ((textFile = fopen(tempStr, "wb")) == NULL)
+    if ((textFile = fopen(tempStr, "wb")) == NULL)  // already fixPath'd
       displayMessage("Can't open Areas.GLD for output");
     else
     {
       if (*config.netPath)
-        fprintf(textFile, "AREADEF NETMAIL              \"Netmail area\"          0 Net FIDO %s .    (Loc)\r\n", config.netPath);
+        fprintf(textFile, "AREADEF NETMAIL              \"Netmail area\"          0 Net FIDO %s .    (Loc)\r\n", fixPath(config.netPath));
 
       if (*config.sentPath && !strcmp(config.sentPath, config.rcvdPath))
-        fprintf(textFile, "AREADEF SENT_RCVD            \"Sent/Received netmail\" 0 Net FIDO %s . (R/O Loc)\r\n", config.sentPath);
+        fprintf(textFile, "AREADEF SENT_RCVD            \"Sent/Received netmail\" 0 Net FIDO %s . (R/O Loc)\r\n", fixPath(config.sentPath));
       else
       {
         if (*config.sentPath)
-          fprintf(textFile, "AREADEF SENT_NETMAIL         \"Sent netmail\"          0 Net FIDO %s . (R/O Loc)\r\n", config.sentPath);
+          fprintf(textFile, "AREADEF SENT_NETMAIL         \"Sent netmail\"          0 Net FIDO %s . (R/O Loc)\r\n", fixPath(config.sentPath));
 
         if (*config.rcvdPath)
-          fprintf(textFile, "AREADEF RCVD_NETMAIL         \"Received netmail\"      0 Net FIDO %s . (R/O Loc)\r\n", config.rcvdPath);
+          fprintf(textFile, "AREADEF RCVD_NETMAIL         \"Received netmail\"      0 Net FIDO %s . (R/O Loc)\r\n", fixPath(config.rcvdPath));
       }
 
       if (*config.pmailPath)
-        fprintf(textFile, "AREADEF PERSONAL_MAIL        \"Personal mail\"         0 Local FIDO %s . (R/O Loc)\r\n", config.pmailPath);
+        fprintf(textFile, "AREADEF PERSONAL_MAIL        \"Personal mail\"         0 Local FIDO %s . (R/O Loc)\r\n", fixPath(config.pmailPath));
 
       if (*config.sentEchoPath)
-        fprintf(textFile, "AREADEF SENT_ECHOMAIL        \"Sent echomail\"         0 Local FIDO %s . (R/O Loc)\r\n", config.sentEchoPath);
+        fprintf(textFile, "AREADEF SENT_ECHOMAIL        \"Sent echomail\"         0 Local FIDO %s . (R/O Loc)\r\n", fixPath(config.sentEchoPath));
 
       if (config.dupBoard)
         fprintf(textFile, "AREADEF DUP_MSGS             \"Duplicate messages\"    0 Local Hudson %u . (R/O Loc)\r\n", config.dupBoard);
@@ -546,13 +547,13 @@ void autoUpdate(void)
             {
               const char *t = *config.descrAKA[0] ? config.descrAKA[0] : "Netmail Main";
               fprintf( textFile, "AREADEF NETMAIL_MAIN         \"%s\"%*c Net Hudson %u %s (Loc)\r\n"
-                     , t, 44 - strlen(t), '0', config.netmailBoard[count], nodeStrP(&config.akaList[count].nodeNum));
+                     , t, (int)(44 - strlen(t)), '0', config.netmailBoard[count], nodeStrP(&config.akaList[count].nodeNum));
             }
             else
             {
               const char *t = *config.descrAKA[count] ? config.descrAKA[count] : "Netmail AKA (use comment)";
               fprintf( textFile, "AREADEF NETMAIL_AKA_%-8u \"""%s\"%*c Net Hudson %u %s (Loc)\r\n"
-                     , count, t, 44 - strlen(t), '0', config.netmailBoard[count], nodeStrP(&config.akaList[count].nodeNum));
+                     , count, t, (int)(44 - strlen(t)), '0', config.netmailBoard[count], nodeStrP(&config.akaList[count].nodeNum));
             }
           }
         }
@@ -567,7 +568,7 @@ void autoUpdate(void)
           fprintf(textFile, "AREADEF %-20s \"%s\"%*c %s Hudson %u %s (%sLoc%s)\r\n",
                   areaBuf->areaName,
                   areaBuf->comment,
-                  44-strlen(areaBuf->comment),
+                  (int)(44 - strlen(areaBuf->comment)),
                   groupToChar(areaBuf->group),
                   areaBuf->options.local?"Local":"Echo",
                   areaBuf->board,
@@ -581,10 +582,10 @@ void autoUpdate(void)
           fprintf(textFile, "AREADEF %-20s \"%s\"%*c %s JAM %s %s (%sLoc%s)\r\n",
                   areaBuf->areaName,
                   areaBuf->comment,
-                  44-strlen(areaBuf->comment),
+                  (int)(44 - strlen(areaBuf->comment)),
                   groupToChar(areaBuf->group),
-                  areaBuf->options.local?"Local":"Echo",
-                  areaBuf->msgBasePath,
+                  areaBuf->options.local ? "Local" : "Echo",
+                  fixPath(areaBuf->msgBasePath),
                   nodeStrP(&config.akaList[areaBuf->address].nodeNum),
                   (config.bbsProgram != BBS_PROB && areaBuf->msgKindsRA == 3) ? "R/O ":"",
                   ""
@@ -637,9 +638,9 @@ void autoUpdate(void)
   }
   if (*config.autoFolderFdPath != 0)
   {
-    strcpy(stpcpy(tempStr, config.autoFolderFdPath), config.mailer == dMT_InterMail ? "imfolder.cfg" : "folder.fd");
+    strcpy(stpcpy(tempStr, fixPath(config.autoFolderFdPath)), config.mailer == dMT_InterMail ? "imfolder.cfg" : "folder.fd");
 
-    if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT| O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+    if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT| O_TRUNC | O_BINARY, dDEFOMODE)) == -1)  // already fixPath'd
     {
       if (config.mailer != dMT_InterMail)
         displayMessage("Can't open FOLDER.FD for output");
@@ -654,7 +655,7 @@ void autoUpdate(void)
         {
           memset(&folderFdRec, 0, sizeof(FOLDER));
           strcpy(folderFdRec.title, "Sent/Received netmail");
-          strcpy(folderFdRec.path,  config.sentPath);
+          strcpy(folderFdRec.path , fixPath(config.sentPath));
           folderFdRec.behave = FD_LOCAL | FD_NETMAIL | FD_READONLY | FD_EXPORT_OK;
           folderFdRec.userok = 0x03ff;
           folderFdRec.pwdcrc = -1L;
@@ -666,7 +667,7 @@ void autoUpdate(void)
           {
             memset(&folderFdRec, 0, sizeof(FOLDER));
             strcpy(folderFdRec.title, "Sent netmail");
-            strcpy(folderFdRec.path,  config.sentPath);
+            strcpy(folderFdRec.path , fixPath(config.sentPath));
             folderFdRec.behave = FD_LOCAL | FD_NETMAIL | FD_READONLY | FD_EXPORT_OK;
             folderFdRec.userok = 0x03ff;
             folderFdRec.pwdcrc = -1L;
@@ -677,7 +678,7 @@ void autoUpdate(void)
           {
             memset(&folderFdRec, 0, sizeof(FOLDER));
             strcpy(folderFdRec.title, "Received netmail");
-            strcpy(folderFdRec.path,  config.rcvdPath);
+            strcpy(folderFdRec.path , fixPath(config.rcvdPath));
             folderFdRec.behave = FD_LOCAL | FD_NETMAIL | FD_READONLY | FD_EXPORT_OK;
             folderFdRec.userok = 0x03ff;
             folderFdRec.pwdcrc = -1L;
@@ -689,7 +690,7 @@ void autoUpdate(void)
         {
           memset(&folderFdRec, 0, sizeof(FOLDER));
           strcpy(folderFdRec.title, "Personal mail");
-          strcpy(folderFdRec.path,  config.pmailPath);
+          strcpy(folderFdRec.path , fixPath(config.pmailPath));
           folderFdRec.behave = FD_LOCAL | FD_READONLY | FD_EXPORT_OK;
           folderFdRec.userok = 0x03ff;
           folderFdRec.pwdcrc = -1L;
@@ -700,7 +701,7 @@ void autoUpdate(void)
         {
           memset(&folderFdRec, 0, sizeof(FOLDER));
           strcpy(folderFdRec.title, "Sent echomail");
-          strcpy(folderFdRec.path,  config.sentEchoPath);
+          strcpy(folderFdRec.path , fixPath(config.sentEchoPath));
           folderFdRec.behave = FD_LOCAL | FD_READONLY | FD_EXPORT_OK;
           folderFdRec.userok = 0x03ff;
           folderFdRec.pwdcrc = -1L;
@@ -788,7 +789,7 @@ void autoUpdate(void)
               strncpy(folderFdRec.title, areaBuf->areaName, 40);
 
             if (*areaBuf->msgBasePath)
-              strcpy(folderFdRec.path, areaBuf->msgBasePath);
+              strcpy(folderFdRec.path, fixPath(areaBuf->msgBasePath));
             else
               folderFdRec.board  = areaBuf->board;
             folderFdRec.behave = (*areaBuf->msgBasePath ? FD_JAMAREA : FD_QUICKBBS) |
@@ -810,7 +811,7 @@ void autoUpdate(void)
           memset(&folderImRec, 0, sizeof(IMFOLDER));
           strcpy(folderImRec.title, "Sent/Received netmail");
           strcpy(folderImRec.areatag, "Sent/Received netmail");
-          strcpy(folderImRec.path,  config.sentPath);
+          strcpy(folderImRec.path, fixPath(config.sentPath));
           folderImRec.ftype  = F_MSG;
           folderImRec.behave = IM_LOCAL | IM_F_NETMAIL | IM_READONLY | IM_EXPORT_OK;
           folderImRec.userok = 0x03ff;
@@ -824,7 +825,7 @@ void autoUpdate(void)
             memset(&folderImRec, 0, sizeof(IMFOLDER));
             strcpy(folderImRec.title, "Sent netmail");
             strcpy(folderImRec.areatag, "Sent netmail");
-            strcpy(folderImRec.path,  config.sentPath);
+            strcpy(folderImRec.path, fixPath(config.sentPath));
             folderImRec.ftype  = F_MSG;
             folderImRec.behave = IM_LOCAL | IM_F_NETMAIL | IM_READONLY | IM_EXPORT_OK;
             folderImRec.userok = 0x03ff;
@@ -837,7 +838,7 @@ void autoUpdate(void)
             memset(&folderImRec, 0, sizeof(IMFOLDER));
             strcpy(folderImRec.title, "Received netmail");
             strcpy(folderImRec.areatag, "Received netmail");
-            strcpy(folderImRec.path,  config.rcvdPath);
+            strcpy(folderImRec.path, fixPath(config.rcvdPath));
             folderImRec.ftype  = F_MSG;
             folderImRec.behave = IM_LOCAL | IM_F_NETMAIL | IM_READONLY | IM_EXPORT_OK;
             folderImRec.userok = 0x03ff;
@@ -851,7 +852,7 @@ void autoUpdate(void)
           memset(&folderImRec, 0, sizeof(IMFOLDER));
           strcpy(folderImRec.title, "Personal mail");
           strcpy(folderImRec.areatag, "Personal mail");
-          strcpy(folderImRec.path,  config.pmailPath);
+          strcpy(folderImRec.path, fixPath(config.pmailPath));
           folderImRec.ftype  = F_MSG;
           folderImRec.behave = IM_LOCAL | IM_READONLY | IM_EXPORT_OK;
           folderImRec.userok = 0x03ff;
@@ -864,7 +865,7 @@ void autoUpdate(void)
           memset(&folderImRec, 0, sizeof(IMFOLDER));
           strcpy(folderImRec.title, "Sent echomail");
           strcpy(folderImRec.areatag, "Sent echomail");
-          strcpy(folderImRec.path,  config.sentEchoPath);
+          strcpy(folderImRec.path, fixPath(config.sentEchoPath));
           folderImRec.ftype  = F_MSG;
           folderImRec.behave = IM_LOCAL | IM_READONLY | IM_EXPORT_OK;
           folderImRec.userok = 0x03ff;
@@ -968,7 +969,7 @@ void autoUpdate(void)
             folderImRec.ftype  = !*areaBuf->msgBasePath ?
                                  F_HUDSON : F_JAM;
             if (*areaBuf->msgBasePath)
-              strcpy (folderImRec.path, areaBuf->msgBasePath);
+              strcpy(folderImRec.path, fixPath(areaBuf->msgBasePath));
             else
               folderImRec.board  = areaBuf->board;
             folderImRec.behave = (*areaBuf->msgBasePath?0:IM_BOARDTYPE) |
@@ -979,11 +980,11 @@ void autoUpdate(void)
             folderImRec.origin = checkMax(areaBuf->address, 19);
             folderImRec.pwdcrc = -1L;
             folderImRec.useaka = checkMax(areaBuf->address, 20);
-            write (folderHandle, &folderImRec, sizeof(IMFOLDER));
+            write(folderHandle, &folderImRec, sizeof(IMFOLDER));
           }
         }
       }
-      close (folderHandle);
+      close(folderHandle);
     }
   }
 
@@ -992,9 +993,9 @@ void autoUpdate(void)
 #ifndef GOLDBASE
     if (config.bbsProgram == BBS_TAG) /* TAG */
     {
-      strcpy(stpcpy(tempStr, config.autoRAPath), "mboards.dat");
+      strcpy(stpcpy(tempStr, fixPath(config.autoRAPath)), "mboards.dat");
 
-      if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1)  // already fixPath'd
         displayMessage("Can't open MBOARDS.DAT for output");
       else
       {
@@ -1003,7 +1004,7 @@ void autoUpdate(void)
           memset(&TAGBoardRec, 0, sizeof(MboardType));
           strcpy(TAGBoardRec.Name, "Personal mail");
           TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-          strcpy(TAGBoardRec.Path, config.pmailPath);
+          strcpy(TAGBoardRec.Path, fixPath(config.pmailPath));
           TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
           TAGBoardRec.Mstyle  = LOCALSTYLE;
           TAGBoardRec.Mtype   = FIDOFORMAT;
@@ -1015,7 +1016,7 @@ void autoUpdate(void)
           memset(&TAGBoardRec, 0, sizeof(MboardType));
           strcpy(TAGBoardRec.Name, "Sent/Received netmail");
           TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-          strcpy(TAGBoardRec.Path, config.sentPath);
+          strcpy(TAGBoardRec.Path, fixPath(config.sentPath));
           TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
           TAGBoardRec.Mstyle  = LOCALSTYLE;
           TAGBoardRec.Mtype   = FIDOFORMAT;
@@ -1029,7 +1030,7 @@ void autoUpdate(void)
             memset(&TAGBoardRec, 0, sizeof(MboardType));
             strcpy(TAGBoardRec.Name, "Sent netmail");
             TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-            strcpy(TAGBoardRec.Path, config.sentPath);
+            strcpy(TAGBoardRec.Path, fixPath(config.sentPath));
             TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
             TAGBoardRec.Mstyle  = LOCALSTYLE;
             TAGBoardRec.Mtype   = FIDOFORMAT;
@@ -1051,7 +1052,7 @@ void autoUpdate(void)
             memset(&TAGBoardRec, 0, sizeof(MboardType));
             strcpy(TAGBoardRec.Name, "Received netmail");
             TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-            strcpy(TAGBoardRec.Path, config.rcvdPath);
+            strcpy(TAGBoardRec.Path, fixPath(config.rcvdPath));
             TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
             TAGBoardRec.Mstyle  = LOCALSTYLE;
             TAGBoardRec.Mtype   = FIDOFORMAT;
@@ -1065,7 +1066,7 @@ void autoUpdate(void)
           memset(&TAGBoardRec, 0, sizeof(MboardType));
           strcpy(TAGBoardRec.Name, "Sent echomail");
           TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-          strcpy(TAGBoardRec.Path, config.sentEchoPath);
+          strcpy(TAGBoardRec.Path, fixPath(config.sentEchoPath));
           TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
           TAGBoardRec.Mstyle  = LOCALSTYLE;
           TAGBoardRec.Mtype   = FIDOFORMAT;
@@ -1078,7 +1079,7 @@ void autoUpdate(void)
           memset(&TAGBoardRec, 0, sizeof(MboardType));
           strcpy(TAGBoardRec.Name, "Duplicate messages");
           TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-          strcpy(TAGBoardRec.Path, config.sentPath);
+          strcpy(TAGBoardRec.Path, fixPath(config.sentPath));
           TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
           TAGBoardRec.Mstyle  = LOCALSTYLE;
           TAGBoardRec.Mtype   = RAFORMAT;
@@ -1092,7 +1093,7 @@ void autoUpdate(void)
           memset(&TAGBoardRec, 0, sizeof(MboardType));
           strcpy(TAGBoardRec.Name, "Bad messages");
           TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-          strcpy(TAGBoardRec.Path, config.sentPath);
+          strcpy(TAGBoardRec.Path, fixPath(config.sentPath));
           TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
           TAGBoardRec.Mstyle  = LOCALSTYLE;
           TAGBoardRec.Mtype   = RAFORMAT;
@@ -1106,7 +1107,7 @@ void autoUpdate(void)
           memset(&TAGBoardRec, 0, sizeof(MboardType));
           strcpy(TAGBoardRec.Name, "Recovered messages");
           TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-          strcpy(TAGBoardRec.Path, config.sentPath);
+          strcpy(TAGBoardRec.Path, fixPath(config.sentPath));
           TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
           TAGBoardRec.Mstyle  = LOCALSTYLE;
           TAGBoardRec.Mtype   = RAFORMAT;
@@ -1131,17 +1132,17 @@ void autoUpdate(void)
 
               if (*config.descrAKA[count])
               {
-                strcpy (TAGBoardRec.Name, config.descrAKA[count]);
+                strcpy(TAGBoardRec.Name, config.descrAKA[count]);
               }
               else
               {
                 if (count == 0)
-                  strcpy (TAGBoardRec.Name, "NETMAIL MAIN");
+                  strcpy(TAGBoardRec.Name, "NETMAIL MAIN");
                 else
-                  sprintf (TAGBoardRec.Name, "NETMAIL AKA %u", count);
+                  sprintf(TAGBoardRec.Name, "NETMAIL AKA %u", count);
               }
               TAGBoardRec.NameLen = strlen(TAGBoardRec.Name);
-              strcpy (TAGBoardRec.Path, config.bbsPath);
+              strcpy(TAGBoardRec.Path, fixPath(config.bbsPath));
               TAGBoardRec.PathLen  = strlen(TAGBoardRec.Path);
               TAGBoardRec.Mstyle   = NETMAILSTYLE;
               TAGBoardRec.Mtype    = RAFORMAT;
@@ -1160,26 +1161,27 @@ void autoUpdate(void)
               !*areaBuf->msgBasePath &&
               (areaBuf->options.export2BBS) )
           {
-            memset (&TAGBoardRec, 0, sizeof(MboardType));
+            memset(&TAGBoardRec, 0, sizeof(MboardType));
 
             if (config.genOptions.commentFFD && *areaBuf->comment)
-              strcpy (TAGBoardRec.Name, areaBuf->comment);
+              strcpy(TAGBoardRec.Name, areaBuf->comment);
             else
-              strcpy (TAGBoardRec.Name, areaBuf->areaName);
+              strcpy(TAGBoardRec.Name, areaBuf->areaName);
             TAGBoardRec.NameLen  = strlen(TAGBoardRec.Name);
-            strncpy (TAGBoardRec.EchoTag, areaBuf->areaName, 31);
+            strncpy(TAGBoardRec.EchoTag, areaBuf->areaName, 31);
             TAGBoardRec.EchoTagLen = strlen(TAGBoardRec.EchoTag);
-            strcpy (TAGBoardRec.Path, config.bbsPath);
-            TAGBoardRec.PathLen  = strlen(TAGBoardRec.Path);
-            strcpy (TAGBoardRec.OriginLine, areaBuf->originLine);
+            strcpy(TAGBoardRec.Path, fixPath(config.bbsPath));
+            TAGBoardRec.PathLen = strlen(TAGBoardRec.Path);
+            strcpy(TAGBoardRec.OriginLine, areaBuf->originLine);
             TAGBoardRec.OriginLineLen = strlen (TAGBoardRec.OriginLine);
-            strncpy (TAGBoardRec.QwkName, areaBuf->qwkName, 10);
+            strncpy(TAGBoardRec.QwkName, areaBuf->qwkName, 10);
             TAGBoardRec.QwkNameLen = min(strlen(areaBuf->qwkName),10);
             TAGBoardRec.Mstyle   = ECHOSTYLE;
             TAGBoardRec.Mtype    = RAFORMAT;
             TAGBoardRec.AccessAR = 'A';
             group = areaBuf->group;
-            while ((group>>=1) != 0) TAGBoardRec.AccessAR++;
+            while ((group>>=1) != 0)
+              TAGBoardRec.AccessAR++;
             TAGBoardRec.PostAR   = 'A';
             TAGBoardRec.RaBoard  = areaBuf->board;
             TAGBoardRec.AccessSL = areaBuf->readSecRA;
@@ -1209,7 +1211,7 @@ void autoUpdate(void)
     }
 #endif
     maxBoardNumRA = MBBOARDS;
-    for ( count = 0; count < areaInfoCount; count++ )
+    for (count = 0; count < areaInfoCount; count++)
     {
       getRec(CFG_ECHOAREAS, count);
       (*areaInfoIndex)[count] = ( (areaBuf->board == 0 &&
@@ -1223,9 +1225,9 @@ void autoUpdate(void)
     if ( config.bbsProgram == BBS_RA1X || config.bbsProgram == BBS_RA20 ||
          config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
     {
-      strcpy(stpcpy(tempStr, config.autoRAPath), "messages.ra");
+      strcpy(stpcpy(tempStr, fixPath(config.autoRAPath)), "messages.ra");
 
-      if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1)  // already fixPath'd
         displayMessage("Can't open MESSAGES.RA for output");
       else
       {
@@ -1248,9 +1250,9 @@ void autoUpdate(void)
               else
               {
                 if (count)
-                  sprintf (messageRaRec.name, "Netmail AKA %2u", count);
+                  sprintf(messageRaRec.name, "Netmail AKA %2u", count);
                 else
-                  strcpy (messageRaRec.name, "Netmail Main");
+                  strcpy(messageRaRec.name, "Netmail Main");
               }
               messageRaRec.nameLength = strlen(messageRaRec.name);
 
@@ -1273,7 +1275,7 @@ void autoUpdate(void)
             {
               if (config.genOptions.incBDRRA)
               {
-                strcpy (messageRaRec.name, "Duplicate messages");
+                strcpy(messageRaRec.name, "Duplicate messages");
                 messageRaRec.nameLength = strlen(messageRaRec.name);
                 messageRaRec.msgKinds = 3;
                 messageRaRec.readSecurity  = 32000;
@@ -1285,7 +1287,7 @@ void autoUpdate(void)
             {
               if (config.genOptions.incBDRRA)
               {
-                strcpy (messageRaRec.name, "Bad messages");
+                strcpy(messageRaRec.name, "Bad messages");
                 messageRaRec.nameLength = strlen(messageRaRec.name);
                 messageRaRec.msgKinds = 3;
                 messageRaRec.readSecurity  = 32000;
@@ -1297,7 +1299,7 @@ void autoUpdate(void)
             {
               if (config.genOptions.incBDRRA)
               {
-                strcpy (messageRaRec.name, "Recovery board");
+                strcpy(messageRaRec.name, "Recovery board");
                 messageRaRec.nameLength = strlen(messageRaRec.name);
                 messageRaRec.msgKinds = 3;
                 messageRaRec.readSecurity  = 32000;
@@ -1308,12 +1310,12 @@ void autoUpdate(void)
             else
             {
               count = 0;
-              while ( count < areaInfoCount )
+              while (count < areaInfoCount)
               {
-                if ( (*areaInfoIndex)[count] == count2 )
+                if ((*areaInfoIndex)[count] == count2)
                 {
                   getRec(CFG_ECHOAREAS, count);
-                  if ( !*areaBuf->msgBasePath )
+                  if (!*areaBuf->msgBasePath)
                     break;
                 }
                 count++;
@@ -1323,18 +1325,15 @@ void autoUpdate(void)
                    (areaBuf->options.export2BBS) )
               {
                 if (config.genOptions.commentFRA && *areaBuf->comment)
-                {
-                  strncpy (messageRaRec.name, areaBuf->comment, 40);
-                }
+                  strncpy(messageRaRec.name, areaBuf->comment, 40);
                 else
-                {
-                  strncpy (messageRaRec.name, areaBuf->areaName, 40);
-                }
+                  strncpy(messageRaRec.name, areaBuf->areaName, 40);
+
                 messageRaRec.nameLength = strlen(messageRaRec.name);
 
                 messageRaRec.typ = areaBuf->options.local?0:2;
                 messageRaRec.msgKinds = areaBuf->msgKindsRA;
-                strcpy (messageRaRec.origin, areaBuf->originLine);
+                strcpy(messageRaRec.origin, areaBuf->originLine);
                 messageRaRec.originLength = strlen(messageRaRec.origin);
 
                 messageRaRec.akaAddress    = checkMax(areaBuf->address, 9);
@@ -1350,15 +1349,15 @@ void autoUpdate(void)
                 memcpy(&messageRaRec.sysopFlags, &areaBuf->flagsSysRA, 4);
               }
             }
-            write (folderHandle, &messageRaRec, sizeof(messageRaType));
+            write(folderHandle, &messageRaRec, sizeof(messageRaType));
           }
         }
         else
         {  /* RA 2 */
-          strcpy(stpcpy(tempStr, config.autoRAPath), "messages.rdx");
+          strcpy(stpcpy(tempStr, fixPath(config.autoRAPath)), "messages.rdx");
 
           if ((config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB) &&
-              ((indexHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1))
+              ((indexHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1))  // already fixPath'd
             displayMessage("Can't open MESSAGES.RDX for output");
           else
           {
@@ -1382,7 +1381,7 @@ void autoUpdate(void)
                   if (count)
                     sprintf(messageRa2Rec.name, "Netmail AKA %2u", count);
                   else
-                    strcpy (messageRa2Rec.name, "Netmail Main");
+                    strcpy(messageRa2Rec.name, "Netmail Main");
                 }
                 messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
 
@@ -1414,7 +1413,7 @@ void autoUpdate(void)
               {
                 if (config.genOptions.incBDRRA)
                 {
-                  strcpy (messageRa2Rec.name, "Duplicate messages");
+                  strcpy(messageRa2Rec.name, "Duplicate messages");
                   messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
                   messageRa2Rec.msgKinds = 3;
                   messageRa2Rec.readSecurity  = 32000;
@@ -1426,7 +1425,7 @@ void autoUpdate(void)
               {
                 if (config.genOptions.incBDRRA)
                 {
-                  strcpy (messageRa2Rec.name, "Bad messages");
+                  strcpy(messageRa2Rec.name, "Bad messages");
                   messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
                   messageRa2Rec.msgKinds = 3;
                   messageRa2Rec.readSecurity  = 32000;
@@ -1438,7 +1437,7 @@ void autoUpdate(void)
               {
                 if (config.genOptions.incBDRRA)
                 {
-                  strcpy (messageRa2Rec.name, "Recovery board");
+                  strcpy(messageRa2Rec.name, "Recovery board");
                   messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
                   messageRa2Rec.msgKinds = 3;
                   messageRa2Rec.readSecurity  = 32000;
@@ -1464,11 +1463,11 @@ void autoUpdate(void)
                 {
                   if (config.genOptions.commentFRA && *areaBuf->comment)
                   {
-                    strncpy (messageRa2Rec.name, areaBuf->comment, 40);
+                    strncpy(messageRa2Rec.name, areaBuf->comment, 40);
                   }
                   else
                   {
-                    strncpy (messageRa2Rec.name, areaBuf->areaName, 40);
+                    strncpy(messageRa2Rec.name, areaBuf->areaName, 40);
                   }
                   messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
 
@@ -1477,10 +1476,10 @@ void autoUpdate(void)
                                       (areaBuf->options.local?0:2);
                   messageRa2Rec.netReply = areaBuf->netReplyBoardRA;
                   messageRa2Rec.msgKinds = areaBuf->msgKindsRA;
-                  strcpy (messageRa2Rec.origin, areaBuf->originLine);
+                  strcpy(messageRa2Rec.origin, areaBuf->originLine);
                   messageRa2Rec.originLength = strlen(messageRa2Rec.origin);
 
-                  if ( config.bbsProgram == BBS_ELEB )
+                  if (config.bbsProgram == BBS_ELEB)
                     messageRa2Rec.akaAddress = areaBuf->address;
                   else
                     messageRa2Rec.akaAddress = checkMax(areaBuf->address, 9);
@@ -1490,7 +1489,7 @@ void autoUpdate(void)
                   messageRa2Rec.attribute     = areaBuf->attrRA & ~BIT7;
                   if (*areaBuf->msgBasePath)
                   {
-                    strcpy (messageRa2Rec.JAMbase, areaBuf->msgBasePath);
+                    strcpy(messageRa2Rec.JAMbase, areaBuf->msgBasePath);
                     messageRa2Rec.JAMbaseLength = strlen(messageRa2Rec.JAMbase);
                     messageRa2Rec.attribute |= BIT7;
                   }
@@ -1514,12 +1513,12 @@ void autoUpdate(void)
               if (config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB)
                 messageRa2Rec.areanum = count2;
 
-              write (folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
+              write(folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
               if (config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB)
               {
                 if (*messageRa2Rec.name)
                 {
-                  temp = (u16)(tell(folderHandle)/(s32)sizeof(messageRa2Type));
+                  temp = (u16)(lseek(folderHandle, 0, SEEK_CUR) / sizeof(messageRa2Type));
                   write(indexHandle, &temp, 2);
                 }
                 else
@@ -1534,18 +1533,15 @@ void autoUpdate(void)
                      *areaBuf->msgBasePath &&
                      areaBuf->options.export2BBS) )
                 continue;
-              memset (&messageRa2Rec, 0, sizeof(messageRa2Type));
+              memset(&messageRa2Rec, 0, sizeof(messageRa2Type));
               if (config.genOptions.commentFRA && *areaBuf->comment)
-              {
-                strncpy (messageRa2Rec.name, areaBuf->comment, 40);
-              }
+                strncpy(messageRa2Rec.name, areaBuf->comment, 40);
               else
-              {
-                strncpy (messageRa2Rec.name, areaBuf->areaName, 40);
-              }
+                strncpy(messageRa2Rec.name, areaBuf->areaName, 40);
+
               messageRa2Rec.nameLength = strlen(messageRa2Rec.name);
 
-              strcpy (messageRa2Rec.JAMbase, areaBuf->msgBasePath);
+              strcpy(messageRa2Rec.JAMbase, fixPath(areaBuf->msgBasePath));
               messageRa2Rec.JAMbaseLength = strlen(messageRa2Rec.JAMbase);
 
               messageRa2Rec.typ = areaBuf->boardTypeRA ?
@@ -1553,12 +1549,13 @@ void autoUpdate(void)
                                   (areaBuf->options.local?0:2);
               messageRa2Rec.netReply = areaBuf->netReplyBoardRA;
               messageRa2Rec.msgKinds = areaBuf->msgKindsRA;
-              strcpy (messageRa2Rec.origin, areaBuf->originLine);
+              strcpy(messageRa2Rec.origin, areaBuf->originLine);
               messageRa2Rec.originLength = strlen(messageRa2Rec.origin);
-              if ( config.bbsProgram == BBS_ELEB )
+              if (config.bbsProgram == BBS_ELEB)
                 messageRa2Rec.akaAddress = areaBuf->address;
               else
                 messageRa2Rec.akaAddress = checkMax(areaBuf->address, 9);
+
               messageRa2Rec.daysKill      = areaBuf->days;
               messageRa2Rec.rcvdKill      = areaBuf->daysRcvd;
               messageRa2Rec.countKill     = areaBuf->msgs;
@@ -1578,22 +1575,21 @@ void autoUpdate(void)
               memcpy(&messageRa2Rec.writeNotFlags, &areaBuf->flagsWrNotRA , 4);
               memcpy(&messageRa2Rec.sysopFlags   , &areaBuf->flagsSysRA   , 4);
               memcpy(&messageRa2Rec.sysopNotFlags, &areaBuf->flagsSysNotRA, 4);
-              if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
-              {
+              if (config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB)
                 messageRa2Rec.areanum = count2++;
-              }
-              write (folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
-              if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
+
+              write(folderHandle, &messageRa2Rec, sizeof(messageRa2Type));
+              if (config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB)
               {
-                temp = (u16)(tell(folderHandle)/(s32)sizeof(messageRa2Type));
+                temp = (u16)(lseek(folderHandle, 0, SEEK_CUR) / sizeof(messageRa2Type));
                 write(indexHandle, &temp, 2);
               }
             }
           }
-          if ( config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB )
+          if (config.bbsProgram == BBS_RA25 || config.bbsProgram == BBS_ELEB)
             close(indexHandle);
         }
-        close (folderHandle);
+        close(folderHandle);
       }
     }
 
@@ -1601,9 +1597,9 @@ void autoUpdate(void)
     {
       memset(SBBSakaUsed, 0, MBBOARDS);
 
-      strcpy(stpcpy(tempStr, config.autoRAPath), "boards.bbs");
+      strcpy(stpcpy(tempStr, fixPath(config.autoRAPath)), "boards.bbs");
 
-      if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1)  // already fixPath'd
         displayMessage("Can't open BOARDS.BBS for output");
       else
       {
@@ -1654,9 +1650,9 @@ void autoUpdate(void)
           {
             if (config.genOptions.incBDRRA)
             {
-              strcpy (SBBSBoardRec.Name, "Duplicate msgs");
+              strcpy(SBBSBoardRec.Name, "Duplicate msgs");
               SBBSBoardRec.NameLength = strlen (SBBSBoardRec.Name);
-              strcpy (SBBSBoardRec.QwkName, "Duplicates");
+              strcpy(SBBSBoardRec.QwkName, "Duplicates");
               SBBSBoardRec.QwkNameLength = strlen (SBBSBoardRec.QwkName);
               SBBSBoardRec.Kinds = 3;
               SBBSBoardRec.Replystatus = 3;
@@ -1669,9 +1665,9 @@ void autoUpdate(void)
           {
             if (config.genOptions.incBDRRA)
             {
-              strcpy (SBBSBoardRec.Name, "Bad messages");
+              strcpy(SBBSBoardRec.Name, "Bad messages");
               SBBSBoardRec.NameLength = strlen (SBBSBoardRec.Name);
-              strcpy (SBBSBoardRec.QwkName, "Bad messages");
+              strcpy(SBBSBoardRec.QwkName, "Bad messages");
               SBBSBoardRec.QwkNameLength = strlen (SBBSBoardRec.QwkName);
               SBBSBoardRec.Kinds       = 3;
               SBBSBoardRec.Replystatus = 3;
@@ -1684,9 +1680,9 @@ void autoUpdate(void)
           {
             if (config.genOptions.incBDRRA)
             {
-              strcpy (SBBSBoardRec.Name, "Recovery board");
+              strcpy(SBBSBoardRec.Name, "Recovery board");
               SBBSBoardRec.NameLength = strlen (SBBSBoardRec.Name);
-              strcpy (SBBSBoardRec.QwkName, "Recovery");
+              strcpy(SBBSBoardRec.QwkName, "Recovery");
               SBBSBoardRec.QwkNameLength = strlen (SBBSBoardRec.QwkName);
               SBBSBoardRec.Kinds = 3;
               SBBSBoardRec.Replystatus = 3;
@@ -1698,12 +1694,12 @@ void autoUpdate(void)
           else
           {
             count = 0;
-            while ( count < areaInfoCount )
+            while (count < areaInfoCount)
             {
-              if ( (*areaInfoIndex)[count] == count2 )
+              if ((*areaInfoIndex)[count] == count2)
               {
                 getRec(CFG_ECHOAREAS, count);
-                if ( !*areaBuf->msgBasePath )
+                if (!*areaBuf->msgBasePath)
                   break;
               }
               count++;
@@ -1714,16 +1710,13 @@ void autoUpdate(void)
                 (areaBuf->options.export2BBS) )
             {
               if (config.genOptions.commentFRA && *areaBuf->comment)
-              {
-                strncpy (SBBSBoardRec.Name, areaBuf->comment, 30);
-              }
+                strncpy(SBBSBoardRec.Name, areaBuf->comment, 30);
               else
-              {
-                strncpy (SBBSBoardRec.Name, areaBuf->areaName, 30);
-              }
+                strncpy(SBBSBoardRec.Name, areaBuf->areaName, 30);
+
               SBBSBoardRec.NameLength = strlen(SBBSBoardRec.Name);
 
-              strncpy (SBBSBoardRec.QwkName, areaBuf->qwkName, 12);
+              strncpy(SBBSBoardRec.QwkName, areaBuf->qwkName, 12);
               SBBSBoardRec.QwkNameLength = strlen(areaBuf->qwkName);
 
               SBBSBoardRec.Typ     = areaBuf->options.local?0:3;
@@ -1753,9 +1746,9 @@ void autoUpdate(void)
         }
         close (folderHandle);
 
-        strcpy(stpcpy(tempStr, config.autoRAPath), "config.bbs");
+        strcpy(stpcpy(tempStr, fixPath(config.autoRAPath)), "config.bbs");
 
-        if (((folderHandle = open(tempStr, O_WRONLY | O_BINARY)) == -1) ||
+        if (((folderHandle = open(tempStr, O_WRONLY | O_BINARY)) == -1) ||  // already fixPath'd
             (lseek(folderHandle, 0x442, SEEK_SET) == -1)             ||
             (write(folderHandle, SBBSakaUsed, MBBOARDS) != MBBOARDS)           ||
             (close(folderHandle) == -1))
@@ -1765,10 +1758,11 @@ void autoUpdate(void)
 #endif
     if (config.bbsProgram == BBS_QBBS)
     {
-      strcpy(stpcpy(tempStr, config.autoRAPath), "msgcfg.dat");
+      strcpy(stpcpy(tempStr, fixPath(config.autoRAPath)), "msgcfg.dat");
 
-      if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1)  // already fixPath'd
         displayMessage("Can't open MSGCFG.DAT for output");
+
       else
       {
         for (count2 = 1; count2 <= MBBOARDS; count2++)
@@ -1843,7 +1837,7 @@ void autoUpdate(void)
             if (config.genOptions.incBDRRA)
             {
               strcpy(QBBSBoardRec.Name, "Recovery board");
-              QBBSBoardRec.NameLength = strlen (QBBSBoardRec.Name);
+              QBBSBoardRec.NameLength = strlen(QBBSBoardRec.Name);
               QBBSBoardRec.Kinds = 3;
               QBBSBoardRec.ReadSecLvl     = 32000;
               QBBSBoardRec.WriteSecLvl    = 32000;
@@ -1870,9 +1864,9 @@ void autoUpdate(void)
                 (areaBuf->options.export2BBS) )
             {
               if (config.genOptions.commentFRA && *areaBuf->comment)
-                strncpy (QBBSBoardRec.Name, areaBuf->comment, 40);
+                strncpy(QBBSBoardRec.Name, areaBuf->comment, 40);
               else
-                strncpy (QBBSBoardRec.Name, areaBuf->areaName, 40);
+                strncpy(QBBSBoardRec.Name, areaBuf->areaName, 40);
 
               QBBSBoardRec.NameLength = strlen(QBBSBoardRec.Name);
 
@@ -1884,7 +1878,7 @@ void autoUpdate(void)
               QBBSBoardRec.Group    = areaBuf->groupsQBBS;
               QBBSBoardRec.Aka      = checkMax(areaBuf->address, 10);
 
-              strncpy (QBBSBoardRec.OriginLine, areaBuf->originLine, 58);
+              strncpy(QBBSBoardRec.OriginLine, areaBuf->originLine, 58);
               QBBSBoardRec.OriginLineLength = strlen(QBBSBoardRec.OriginLine);
 
               QBBSBoardRec.AllowDelete = (areaBuf->attrRA & BIT6) ? 1:0;
@@ -1910,11 +1904,11 @@ void autoUpdate(void)
 #ifndef GOLDBASE
     if (config.bbsProgram == BBS_PROB ) /* ProBoard */
     {
-      proBoardType   proBoardRec;
+      proBoardType proBoardRec;
 
-      strcpy(stpcpy(tempStr, config.autoRAPath), "messages.pb");
+      strcpy(stpcpy(tempStr, fixPath(config.autoRAPath)), "messages.pb");
 
-      if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if ((folderHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1)  // already fixPath'd
         displayMessage ("Can't open MESSAGES.PB for output");
       else
       {
@@ -2043,7 +2037,7 @@ void autoUpdate(void)
               proBoardRec.maxMsgs     = areaBuf->msgs;
               if (*areaBuf->msgBasePath)
               {
-                strcpy(proBoardRec.path, areaBuf->msgBasePath);
+                strcpy(proBoardRec.path, fixPath(areaBuf->msgBasePath));
                 proBoardRec.msgBaseType = MSGBASE_JAM;
               }
               else
@@ -2079,7 +2073,7 @@ void autoUpdate(void)
 
             strcpy(proBoardRec.echoTag, areaBuf->areaName);
             strcpy(proBoardRec.qwkTag , areaBuf->qwkName);
-            strcpy(proBoardRec.path   , areaBuf->msgBasePath);
+            strcpy(proBoardRec.path   , fixPath(areaBuf->msgBasePath));
             strcpy(proBoardRec.origin , areaBuf->originLine);
             proBoardRec.areaNum       = count2++;
             proBoardRec.msgBaseType   = MSGBASE_JAM;

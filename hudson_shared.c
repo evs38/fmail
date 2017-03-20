@@ -31,6 +31,7 @@
 #include "msgra.h"
 
 #include "config.h"
+#include "hudson_shared.h"
 #include "lock.h"
 #include "log.h"
 #include "msgradef.h"
@@ -38,29 +39,14 @@
 #include "utils.h"
 
 //---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
 char *expandNameHudson(const char *fileName, int orgName)
 {
   static tempStrType expandStr;
 
-  strcpy(stpcpy(stpcpy(expandStr, config.bbsPath), fileName), mbSharingInternal && !orgName ? "."MBEXTB : "."MBEXTN);
+  strcpy(stpcpy(stpcpy(expandStr, fixPath(config.bbsPath)), fileName), (mbSharingInternal && !orgName) ? "."MBEXTB : "."MBEXTN);
 
   return expandStr;
 }
-//---------------------------------------------------------------------------
-#if 1
-#define expandNameH(FN)  expandNameHudson(FN, 1)
-#else
-char *expandNameH(char *fileName)
-{
-   static tempStrType expandStr;
-
-   strcpy(stpcpy(stpcpy(expandStr, config.bbsPath), fileName), "."MBEXTN);
-
-   return expandStr;
-}
-#endif
 //---------------------------------------------------------------------------
 int testMBUnlockNow(void)
 {
@@ -73,7 +59,7 @@ int testMBUnlockNow(void)
   {
     strcpy(stpcpy(tempStr, fixPath(config.bbsPath)), "mbunlock.now");
 
-    if (stat(tempStr, &st) != 0)
+    if (stat(tempStr, &st) != 0)  // already fixPath'd
       mtime = 0;
     else
     {
@@ -104,7 +90,7 @@ int lockMB(void)
 
   strcpy(stpcpy(tempStr, fixPath(config.bbsPath)), dMSGINFO"."MBEXTN);
 
-  if ((lockHandle = open(tempStr, O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)
+  if ((lockHandle = open(tempStr, O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)  // already fixPath'd
   {
     logEntryf(LOG_ALWAYS, 0, "Can't open file %s for output", tempStr);
 

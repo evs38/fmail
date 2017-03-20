@@ -21,14 +21,14 @@
 //
 //---------------------------------------------------------------------------
 
-#include <dos.h>
 #include <fcntl.h>
-#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
+#include <stdarg.h>    // va_*()
 #ifdef __WIN32__
 #include <windows.h>
 #endif
@@ -40,6 +40,7 @@
 #include "msgpkt.h"
 #include "msgra.h"
 #include "msgradef.h"
+#include "os.h"
 #include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
@@ -47,10 +48,10 @@
 //---------------------------------------------------------------------------
 extern configType config;
 
-time_t  startTime;
+//time_t  startTime;
 clock_t at;
 u16     logUsed = 0;
-char    funcStr[32] = "Undefined?";
+char    funcStr[32] = "";
 
 const char *months     = "JanFebMarAprMayJunJulAugSepOctNovDec";
 const char *dayName[7] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
@@ -62,31 +63,35 @@ char *expandName(char *fileName)
   static int tempIndex = 0;
   char *ts = tempStr[tempIndex = 1 - tempIndex];
 
-  strcpy(stpcpy(ts, config.bbsPath), fileName);
+  strcpy(stpcpy(ts, fixPath(config.bbsPath)), fileName);
 
   return ts;
 }
 //---------------------------------------------------------------------------
 void writeLogLine(fhandle logHandle, const char *s)
 {
+  unsigned int ms;
   struct tm tm;
-
 #ifdef __WIN32__
   SYSTEMTIME st;
   GetLocalTime(&st);
-  if (config.logStyle != 4)
-  {
-    tm.tm_year = st.wYear  - 1900;
-    tm.tm_mon  = st.wMonth - 1;
-    tm.tm_mday = st.wDay;
-    tm.tm_hour = st.wHour;
-    tm.tm_min  = st.wMinute;
-    tm.tm_sec  = st.wSecond;
-  }
+  tm.tm_year = st.wYear  - 1900;
+  tm.tm_mon  = st.wMonth - 1;
+  tm.tm_mday = st.wDay;
+  tm.tm_hour = st.wHour;
+  tm.tm_min  = st.wMinute;
+  tm.tm_sec  = st.wSecond;
+  ms         = st.wMilliseconds;
+#elif defined(__linux__)
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  tm = *localtime(&ts.tv_sec);
+  ms = ts.tv_nsec / 1000000;
 #else
   time_t timer = time(NULL);
   tm = *localtime(&timer);  // localtime ok!
-#endif
+  ms = 0;
+#endif // __WIN32__
 
   switch (config.logStyle)
   {
@@ -118,11 +123,9 @@ void writeLogLine(fhandle logHandle, const char *s)
               , tm.tm_sec, s
               );
       break;
-#ifdef __WIN32__
     case 4:  // FMail
-      dprintf(logHandle, "%02u:%02u:%02u.%03u  %s\n", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, s);
+      dprintf(logHandle, "%02u:%02u:%02u.%03u  %s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, ms, s);
       break;
-#endif
     default:  // FrontDoor
       dprintf(logHandle, "  %2u:%02u:%02u  %s\n", tm.tm_hour, tm.tm_min , tm.tm_sec , s);
       break;
@@ -149,18 +152,16 @@ void initLog(const char *_funcStr, s32 switches)
   if (!config.logInfo)
     return;
 
-  if ((logHandle = open(config.logName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) == -1)
+  if ((logHandle = open(fixPath(config.logName), O_WRONLY | O_CREAT | O_APPEND | O_TEXT, dDEFOMODE)) == -1)
   {
     puts("WARNING: Can't open log file\n");
     config.logInfo = 0;
   }
   else
   {
-#ifdef __WIN32__
     if (config.logStyle == 4)
       helpPtr = stpcpy(tempStr2, _funcStr);
     else
-#endif
       helpPtr = tempStr2 + sprintf(tempStr2, "%s - %s", VersionStr(), _funcStr);
 
     for (count = 0; count < 26; count++)
@@ -168,7 +169,7 @@ void initLog(const char *_funcStr, s32 switches)
        if (switches & select)
        {
           *(helpPtr++) = ' ';
-          *(helpPtr++) = '/';
+          *(helpPtr++) = '-';
           *(helpPtr++) = 'A' + count;
        }
        select <<= 1;
@@ -193,7 +194,6 @@ void initLog(const char *_funcStr, s32 switches)
         writeLogLine(logHandle, tempStr2);
         break;
       }
-#ifdef __WIN32__
       case 4:
         dprintf(logHandle
                , "\n------------  %s %04u-%02u-%02u, %s\n"
@@ -205,7 +205,6 @@ void initLog(const char *_funcStr, s32 switches)
                );
         writeLogLine(logHandle, tempStr2);
         break;
-#endif
       default:
         dprintf(logHandle
                , "\n----------  %s %04u-%02u-%02u, %s\n"
@@ -246,7 +245,7 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
   if (  (  ((config.logInfo | LOG_ALWAYS) & entryType) == 0
         && ( config.logInfo & LOG_DEBUG              ) == 0
         )
-     || (logHandle = open(config.logName, O_WRONLY | O_APPEND | O_TEXT)) == -1
+     || (logHandle = open(fixPath(config.logName), O_WRONLY | O_APPEND | O_TEXT)) == -1
      )
   {
     if (errorLevel)
@@ -270,11 +269,11 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
     close(logHandle);
     putStr(tempStr);
 
-    unlink(expandName(dMSGHDR"."dEXTTMP));
-    unlink(expandName(dMSGIDX"."dEXTTMP));
-    unlink(expandName(dMSGTOIDX"."dEXTTMP));
-    unlink(expandName(dMSGTXT"."dEXTTMP));
-    unlink(expandName(dMSGINFO"."dEXTTMP));
+    unlink(expandName(dMSGHDR"."dEXTTMP));    // already fixPath'd
+    unlink(expandName(dMSGIDX"."dEXTTMP));    // already fixPath'd
+    unlink(expandName(dMSGTOIDX"."dEXTTMP));  // already fixPath'd
+    unlink(expandName(dMSGTXT"."dEXTTMP));    // already fixPath'd
+    unlink(expandName(dMSGINFO"."dEXTTMP));   // already fixPath'd
 
     exit(errorLevel);
   }
@@ -284,6 +283,14 @@ void logEntry(char *s, u16 entryType, u16 errorLevel)
 void logActive(void)
 {
   newLine();
-  logEntryf(LOG_STATS, 0, "%s Active: %.3f sec.", funcStr, ((double)(clock() - at)) / CLK_TCK);
+  clock_t t = clock();
+  if (t >= 0)
+  {
+    double d = ((double)t) / CLOCKS_PER_SEC;
+    if (*funcStr)
+      logEntryf(LOG_STATS, 0, "%s Active: %.*f sec.", funcStr, d < .01 ? 4 : 3, d);
+    else
+      logEntryf(LOG_STATS, 0, "Active: %.*f sec.", d < .01 ? 4 : 3, d);
+  }
 }
 //---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -68,7 +68,7 @@
 #define QBBS_RET_REC   64
 #define QBBS_FREQ     128
 
-#include <pshpack1.h>
+#include "pshpack1.h"
 
 typedef struct
 {
@@ -164,7 +164,7 @@ typedef struct
   char          Subj[56];    // 72 - 16
   u32           subjCrc;
   u32           wrTime;
-  time_t        recTime;
+  time32_t      recTime;
   u32           checkSum;
 } msgHdrRec;
 
@@ -183,7 +183,7 @@ typedef struct
 } infoRecType;
 
 #endif
-#include <poppack.h>
+#include "poppack.h"
 
 void openBBSWr(void);
 void closeBBS (void);

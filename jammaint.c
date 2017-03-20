@@ -373,7 +373,9 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   JAMHDRINFO   *headerInfo;
   JAMIDXREC    *indexRec;
   JAMHDR       *headerRec;
-  const char   *mbPath = areaPtr->msgBasePath;
+  tempStrType   mbPath;
+
+  strcpy(mbPath, fixPath(areaPtr->msgBasePath));
 
 #ifdef _COMPOLD_
   int compareResult = 0;
@@ -383,17 +385,16 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
     return -1;
 #endif
 
-
   logEntryf(LOG_INBOUND | LOG_NOSCRN, 0, "Processing jam area: %s", areaPtr->areaName);
   putStr("Processing jam area: ");
   putStr(areaPtr->areaName);
   putStr("... ");
   fflush(stdout);
 
-  if (  (d.hJHR = _sopen(fixPath(expJAMname(mbPath, EXT_HDR)), O_RDWR | O_BINARY, SH_DENYRW)) == -1
-     || (d.hJDT = _sopen(fixPath(expJAMname(mbPath, EXT_TXT)), O_RDWR | O_BINARY, SH_DENYRW)) == -1
-     || (d.hJDX = _sopen(fixPath(expJAMname(mbPath, EXT_IDX)), O_RDWR | O_BINARY, SH_DENYRW)) == -1
-     || (d.hJLR = _sopen(fixPath(expJAMname(mbPath, EXT_LRD)), O_RDWR | O_BINARY, SH_DENYRW)) == -1
+  if (  (d.hJHR = _sopen(expJAMname(mbPath, EXT_HDR), O_RDWR | O_BINARY, SH_DENYRW)) == -1  // already fixPath'd
+     || (d.hJDT = _sopen(expJAMname(mbPath, EXT_TXT), O_RDWR | O_BINARY, SH_DENYRW)) == -1  // already fixPath'd
+     || (d.hJDX = _sopen(expJAMname(mbPath, EXT_IDX), O_RDWR | O_BINARY, SH_DENYRW)) == -1  // already fixPath'd
+     || (d.hJLR = _sopen(expJAMname(mbPath, EXT_LRD), O_RDWR | O_BINARY, SH_DENYRW)) == -1  // already fixPath'd
      )
   {
     CleanUp(&d);
@@ -689,10 +690,10 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 #ifdef MAKEBACKUP
     logEntry("Write backup data", LOG_DEBUG | LOG_NOSCRN, 0);
     // Write (unchanged) input buffers to backup files
-    writedata(expJAMname(mbPath, "#"BASE_EXT_LRD), d.ibJLR, sizeJLR);
-    writedata(expJAMname(mbPath, "#"BASE_EXT_IDX), d.ibJDX, sizeJDX);
-    writedata(expJAMname(mbPath, "#"BASE_EXT_TXT), d.ibJDT, sizeJDT);
-    writedata(expJAMname(mbPath, "#"BASE_EXT_HDR), d.ibJHR, sizeJHR);
+    writedata(expJAMname(mbPath, "@"BASE_EXT_LRD), d.ibJLR, sizeJLR);
+    writedata(expJAMname(mbPath, "@"BASE_EXT_IDX), d.ibJDX, sizeJDX);
+    writedata(expJAMname(mbPath, "@"BASE_EXT_TXT), d.ibJDT, sizeJDT);
+    writedata(expJAMname(mbPath, "@"BASE_EXT_HDR), d.ibJHR, sizeJHR);
 #endif
 #ifdef _COMPOLD_
     if (debug)

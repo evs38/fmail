@@ -1,0 +1,548 @@
+# depslib dependency file v1.0
+1495809716 source:/home/wilfred/Projects/FMail/addnew.c
+	<ctype.h>
+	<fcntl.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<unistd.h>
+	"fmail.h"
+	"cfgfile.h"
+	"config.h"
+	"ftools.h"
+	"ispathch.h"
+	"log.h"
+	"os.h"
+	"stpcpy.h"
+	"update.h"
+	"utils.h"
+
+1494964519 /home/wilfred/Projects/FMail/fmail.h
+	"fmstruct.h"
+	"stricmp.h"
+	<stdio.h>
+	<sys/types.h>
+
+1492017086 /home/wilfred/Projects/FMail/fmstruct.h
+	<stdint.h>
+	<time.h>
+	"pshpack1.h"
+	"poppack.h"
+
+1491248887 /home/wilfred/Projects/FMail/pshpack1.h
+
+1491248887 /home/wilfred/Projects/FMail/poppack.h
+
+1488727089 /home/wilfred/Projects/FMail/stricmp.h
+
+1488727089 /home/wilfred/Projects/FMail/cfgfile.h
+	"fmstruct.h"
+
+1488727089 /home/wilfred/Projects/FMail/config.h
+	"fmail.h"
+	"bits.h"
+
+1488727089 /home/wilfred/Projects/FMail/bits.h
+
+1488727089 /home/wilfred/Projects/FMail/ftools.h
+
+1488727089 /home/wilfred/Projects/FMail/ispathch.h
+
+1488727089 /home/wilfred/Projects/FMail/log.h
+
+1494189763 /home/wilfred/Projects/FMail/os.h
+
+1491942705 /home/wilfred/Projects/FMail/stpcpy.h
+	<string.h>
+
+1488727089 /home/wilfred/Projects/FMail/update.h
+
+1492102828 /home/wilfred/Projects/FMail/utils.h
+	"fmail.h"
+	"areainfo.h"
+	"fmstruct.h"
+
+1488727089 /home/wilfred/Projects/FMail/areainfo.h
+	"fmail.h"
+
+1493845024 source:/home/wilfred/Projects/FMail/cfgfile.c
+	<share.h>
+	<fcntl.h>
+	<stddef.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	<unistd.h>
+	"fmail.h"
+	"cfgfile.h"
+	"os.h"
+	"os_string.h"
+	"utils.h"
+
+1490720105 /home/wilfred/Projects/FMail/os_string.h
+	<ctype.h>
+
+1488727089 source:/home/wilfred/Projects/FMail/crc.c
+	<ctype.h>
+	<string.h>
+	"fmail.h"
+	"crc.h"
+
+1488727089 /home/wilfred/Projects/FMail/crc.h
+
+1496151451 source:/home/wilfred/Projects/FMail/ftlog.c
+	<fcntl.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	<unistd.h>
+	<stdarg.h>
+	<windows.h>
+	"ftlog.h"
+	"areainfo.h"
+	"dups.h"
+	"msgpkt.h"
+	"msgra.h"
+	"msgradef.h"
+	"os.h"
+	"stpcpy.h"
+	"utils.h"
+	"version.h"
+
+1488727089 /home/wilfred/Projects/FMail/ftlog.h
+	"fmstruct.h"
+
+1488727089 /home/wilfred/Projects/FMail/dups.h
+
+1490133034 /home/wilfred/Projects/FMail/msgpkt.h
+	"pshpack1.h"
+	"poppack.h"
+
+1495804574 /home/wilfred/Projects/FMail/msgra.h
+	"pshpack1.h"
+	"poppack.h"
+
+1488727089 /home/wilfred/Projects/FMail/msgradef.h
+
+1496166308 /home/wilfred/Projects/FMail/version.h
+
+1496168089 source:/home/wilfred/Projects/FMail/ftnotify.c
+	<ctype.h>
+	<fcntl.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<unistd.h>
+	"fmail.h"
+	"areainfo.h"
+	"cfgfile.h"
+	"ftools.h"
+	"ftlog.h"
+	"ftr.h"
+	"mtask.h"
+	"os.h"
+	"utils.h"
+
+1488727089 /home/wilfred/Projects/FMail/ftr.h
+
+1488727089 /home/wilfred/Projects/FMail/mtask.h
+
+1495813087 source:/home/wilfred/Projects/FMail/ftools.c
+	<dir.h>
+	<share.h>
+	<ctype.h>
+	<dirent.h>
+	<errno.h>
+	<fcntl.h>
+	<stddef.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	<unistd.h>
+	"fmail.h"
+	"ftools.h"
+	"addnew.h"
+	"areainfo.h"
+	"cfgfile.h"
+	"crc.h"
+	"ftlog.h"
+	"ftnotify.h"
+	"ftr.h"
+	"hudson.h"
+	"jam.h"
+	"jamfun.h"
+	"jammaint.h"
+	"lock.h"
+	"minmax.h"
+	"msgmsg.h"
+	"msgradef.h"
+	"mtask.h"
+	"os.h"
+	"pp_date.h"
+	"sorthb.h"
+	"spec.h"
+	"stpcpy.h"
+	"utils.h"
+	"version.h"
+
+1488727089 /home/wilfred/Projects/FMail/addnew.h
+
+1488727089 /home/wilfred/Projects/FMail/ftnotify.h
+
+1494964519 /home/wilfred/Projects/FMail/hudson.h
+	"pshpack1.h"
+	"poppack.h"
+
+1490133034 /home/wilfred/Projects/FMail/jam.h
+	"jamsys.h"
+	"pshpack1.h"
+	"poppack.h"
+
+1488727089 /home/wilfred/Projects/FMail/jamsys.h
+
+1488727089 /home/wilfred/Projects/FMail/jamfun.h
+	"jam.h"
+
+1488727089 /home/wilfred/Projects/FMail/jammaint.h
+
+1490469921 /home/wilfred/Projects/FMail/lock.h
+	<sys\locking.h>
+
+1488727089 /home/wilfred/Projects/FMail/minmax.h
+
+1490133034 /home/wilfred/Projects/FMail/msgmsg.h
+	"pshpack1.h"
+	"poppack.h"
+
+1488727089 /home/wilfred/Projects/FMail/pp_date.h
+	"SetCompileDate.h"
+
+1496095200 /home/wilfred/Projects/FMail/SetCompileDate.h
+
+1488727089 /home/wilfred/Projects/FMail/sorthb.h
+
+1488727089 /home/wilfred/Projects/FMail/spec.h
+
+1495808721 source:/home/wilfred/Projects/FMail/ftr.c
+	<ctype.h>
+	<dir.h>
+	<dirent.h>
+	<errno.h>
+	<fcntl.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	<unistd.h>
+	"fmail.h"
+	"areainfo.h"
+	"cfgfile.h"
+	"crc.h"
+	"ftools.h"
+	"ftr.h"
+	"ftlog.h"
+	"minmax.h"
+	"msgmsg.h"
+	"msgra.h"
+	"os.h"
+	"spec.h"
+	"stpcpy.h"
+	"utils.h"
+	"version.h"
+
+1494673124 source:/home/wilfred/Projects/FMail/hudson_shared.c
+	<errno.h>
+	<fcntl.h>
+	<string.h>
+	<sys/stat.h>
+	<unistd.h>
+	"fmail.h"
+	"msgra.h"
+	"config.h"
+	"hudson_shared.h"
+	"lock.h"
+	"log.h"
+	"msgradef.h"
+	"os.h"
+	"utils.h"
+
+1494673125 source:/home/wilfred/Projects/FMail/hudson.c
+	<dir.h>
+	<share.h>
+	<errno.h>
+	<fcntl.h>
+	<stdio.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	<unistd.h>
+	"fmail.h"
+	"areainfo.h"
+	"crc.h"
+	"ftlog.h"
+	"hudson.h"
+	"hudson_shared.h"
+	"msgradef.h"
+	"os.h"
+	"utils.h"
+
+1494673125 /home/wilfred/Projects/FMail/hudson_shared.h
+
+1493927856 source:/home/wilfred/Projects/FMail/impdesc.c
+	<dir.h>
+	<fcntl.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	<unistd.h>
+	"fmail.h"
+	"cfgfile.h"
+	"ftlog.h"
+	"impdesc.h"
+	"minmax.h"
+	"os.h"
+	"utils.h"
+
+1488727089 /home/wilfred/Projects/FMail/impdesc.h
+
+1426945558 source:/home/wilfred/Projects/FMail/ispathch.c
+
+1494001904 source:/home/wilfred/Projects/FMail/jamfun.c
+	<dir.h>
+	<errno.h>
+	<fcntl.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	<unistd.h>
+	"fmail.h"
+	"areainfo.h"
+	"config.h"
+	"crc.h"
+	"jam.h"
+	"jamfun.h"
+	"lock.h"
+	"log.h"
+	"minmax.h"
+	"msgpkt.h"
+	"mtask.h"
+	"os.h"
+	"os_string.h"
+	"utils.h"
+
+1495714244 source:/home/wilfred/Projects/FMail/jammaint.c
+	<errno.h>
+	<fcntl.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	<unistd.h>
+	<share.h>
+	<windows.h>
+	"fmail.h"
+	"areainfo.h"
+	"config.h"
+	"crc.h"
+	"ftools.h"
+	"jam.h"
+	"lock.h"
+	"log.h"
+	"minmax.h"
+	"nodeinfo.h"
+	"os.h"
+	"os_string.h"
+	"utils.h"
+
+1488727089 /home/wilfred/Projects/FMail/nodeinfo.h
+
+1490469921 source:/home/wilfred/Projects/FMail/lock.c
+	"lock.h"
+	<unistd.h>
+	<errno.h>
+	<stdio.h>
+	<sys\locking.h>
+	<fcntl.h>
+
+1488727089 source:/home/wilfred/Projects/FMail/mtask.c
+	<windows.h>
+	<sched.h>
+	<unistd.h>
+	"mtask.h"
+	"config.h"
+
+1491943514 source:/home/wilfred/Projects/FMail/os.c
+	"os.h"
+	"stpcpy.h"
+	<sys/file.h>
+	<sys/stat.h>
+	<sys/types.h>
+	<ctype.h>
+	<fcntl.h>
+	<stdarg.h>
+	<stdio.h>
+	<unistd.h>
+
+1491341518 source:/home/wilfred/Projects/FMail/smtp.c
+	<dir.h>
+	<winsock.h>
+	<arpa/inet.h>
+	<netdb.h>
+	<netinet/in.h>
+	<sys/socket.h>
+	<fcntl.h>
+	<libgen.h>
+	<stdio.h>
+	<stdlib.h>
+	<sys/stat.h>
+	<sys/types.h>
+	<string.h>
+	<time.h>
+	<unistd.h>
+	"fmail.h"
+	"areainfo.h"
+	"log.h"
+	"os.h"
+	"smtp.h"
+	"utils.h"
+
+1490723971 /home/wilfred/Projects/FMail/smtp.h
+
+1495805230 source:/home/wilfred/Projects/FMail/sorthb.c
+	<ctype.h>
+	<errno.h>
+	<fcntl.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<unistd.h>
+	"fmail.h"
+	"areainfo.h"
+	"crc.h"
+	"config.h"
+	"hudson_shared.h"
+	"log.h"
+	"minmax.h"
+	"msgpkt.h"
+	"msgra.h"
+	"msgradef.h"
+	"mtask.h"
+	"os.h"
+	"os_string.h"
+	"sorthb.h"
+	"utils.h"
+
+1488727089 source:/home/wilfred/Projects/FMail/spec.c
+	<ctype.h>
+	<string.h>
+	"spec.h"
+
+1488727089 source:/home/wilfred/Projects/FMail/stricmp.c
+	"stricmp.h"
+	<ctype.h>
+
+1495809716 source:/home/wilfred/Projects/FMail/update.c
+	<fcntl.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	<unistd.h>
+	"fmail.h"
+	"areainfo.h"
+	"bits.h"
+	"cfgfile.h"
+	"fdfolder.h"
+	"fs_util.h"
+	"imfolder.h"
+	"minmax.h"
+	"msgra.h"
+	"os.h"
+	"stpcpy.h"
+	"utils.h"
+	"version.h"
+	"log.h"
+	"window.h"
+	"pshpack1.h"
+	"poppack.h"
+
+1493841738 /home/wilfred/Projects/FMail/fdfolder.h
+	"pshpack1.h"
+	"poppack.h"
+
+1488727089 /home/wilfred/Projects/FMail/fs_util.h
+
+1493841765 /home/wilfred/Projects/FMail/imfolder.h
+	"pshpack1.h"
+	"poppack.h"
+
+1488727089 /home/wilfred/Projects/FMail/window.h
+	"bits.h"
+
+1496168088 source:/home/wilfred/Projects/FMail/utils.c
+	<dir.h>
+	<share.h>
+	<stdint.h>
+	<windows.h>
+	<sys/statvfs.h>
+	<sys/time.h>
+	<ctype.h>
+	<dirent.h>
+	<errno.h>
+	<fcntl.h>
+	<inttypes.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<stdlib.h>
+	<time.h>
+	<unistd.h>
+	<utime.h>
+	"utils.h"
+	"areainfo.h"
+	"log.h"
+	"msgpkt.h"
+	"spec.h"
+	"os.h"
+	"os_string.h"
+	"version.h"
+
+1492102828 source:/home/wilfred/Projects/FMail/utils2.c
+	<direct.h>
+	<ctype.h>
+	<dirent.h>
+	<stdio.h>
+	<stdarg.h>
+	<stdlib.h>
+	<string.h>
+	<sys/stat.h>
+	<time.h>
+	<unistd.h>
+	"utils.h"
+	"ispathch.h"
+	"minmax.h"
+	"os.h"
+	"os_string.h"
+	"spec.h"
+
+1490889371 source:/home/wilfred/Projects/FMail/version.c
+	"version.h"
+	"pp_date.h"
+	<stdio.h>
+	<windows.h>
+

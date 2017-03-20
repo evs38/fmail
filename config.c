@@ -23,7 +23,6 @@
 
 #ifdef __WIN32__
 #include <dir.h>
-//#include <dos.h>
 #include <share.h>
 #endif // __WIN32__
 #include <ctype.h>
@@ -105,9 +104,9 @@ void initFMail(const char *_funcStr, s32 switches)
   char       *helpPtr;
 
   strcpy(funcStr, _funcStr);
-  strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
+  strcpy(stpcpy(tempStr, fixPath(configPath)), dCFGFNAME);
 
-  if (  (configHandle = open(fixPath(tempStr), O_RDONLY | O_BINARY)) == -1
+  if (  (configHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1
      || read(configHandle, &config, sizeof(configType)) < (int)sizeof(configType)
      || close(configHandle) == -1
      )
@@ -124,13 +123,13 @@ void initFMail(const char *_funcStr, s32 switches)
     exit(4);
   }
 
-  strcpy(stpcpy(tempStr, config.bbsPath), dFMAIL_LOC);
+  strcpy(stpcpy(tempStr, fixPath(config.bbsPath)), dFMAIL_LOC);
   strcpy(tempStr2, fixPath(config.bbsPath));
   if ((helpPtr = strrchr(tempStr2, dDIRSEPC)) != NULL)  // path already fixed for linux
     *helpPtr = 0;
 
   if (  !access(tempStr2, 0)  // path already fixed for linux
-     && (fmailLockHandle = _sopen(fixPath(tempStr), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, dDEFOMODE)) == -1
+     && (fmailLockHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, dDEFOMODE)) == -1
      && errno != ENOENT  // path does not exist
      )
   {
@@ -139,7 +138,7 @@ void initFMail(const char *_funcStr, s32 switches)
     time(&time1);
     time2 = time1;
 
-    while (  (fmailLockHandle = _sopen(fixPath(tempStr), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, dDEFOMODE)) == -1
+    while (  (fmailLockHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, dDEFOMODE)) == -1
           && (!config.activTimeOut || time2 - time1 < config.activTimeOut)
           )
     {

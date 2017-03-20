@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -22,11 +22,11 @@
 //---------------------------------------------------------------------------
 
 #include <ctype.h>
-#include <string.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <io.h>
-#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -35,6 +35,7 @@
 #include "ftools.h"
 #include "ispathch.h"
 #include "log.h"
+#include "os.h"
 #include "stpcpy.h"
 #include "update.h"
 #include "utils.h"
@@ -47,6 +48,13 @@ typedef char *mpType[MAX_AREAS];
 
 static u16     areaInfoCount;
 static mpType *mbPaths;
+
+#define SetUsedArea(b) \
+{\
+  board = (b);\
+  if (board > 0 && --board < MBBOARDS)\
+    usedArea[board] = 1;\
+}
 
 //---------------------------------------------------------------------------
 const char *ANGetAreaPath(u16 i)
@@ -66,9 +74,10 @@ void addNew(s32 switches)
   u8           usedArea[MBBOARDS];
   u16          badEchoCount
              , count
-             , index;
-  u16          areasExist
-             , areasAdded;
+             , index
+             , areasExist
+             , areasAdded
+             , board;
   int          tempHandle;
   tempStrType  tempStr;
   headerType  *adefHeader
@@ -92,48 +101,46 @@ void addNew(s32 switches)
   {
     if ( getRec(CFG_AREADEF, 0) )
       memcpy(&echoDefaultsRec, adefBuf, RAWECHO_SIZE);
+
     closeConfig(CFG_AREADEF);
   }
   else
   {
-    strcpy(stpcpy(tempStr, configPath), dARDFNAME);
-    unlink(tempStr);
+    strcpy(stpcpy(tempStr, fixPath(configPath)), dARDFNAME);
+    unlink(tempStr);  // already fixPath'd
   }
-  if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
+  if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
     goto freemem2;
+
   memset(usedArea, 0, MBBOARDS);
-  if ( config.badBoard && config.badBoard < MBBOARDS)
-    usedArea[config.badBoard - 1] = 1;
-  if ( config.dupBoard && config.dupBoard < MBBOARDS)
-    usedArea[config.dupBoard - 1] = 1;
-  if ( config.recBoard && config.recBoard < MBBOARDS)
-    usedArea[config.recBoard - 1] = 1;
+
+  SetUsedArea(config.badBoard);
+  SetUsedArea(config.dupBoard);
+  SetUsedArea(config.recBoard);
+
   for (count = 0; count < MAX_NETAKAS; ++count)
-  {
-    if (config.netmailBoard[count] && config.netmailBoard[count] < MBBOARDS)
-      usedArea[config.netmailBoard[count] - 1] = 1;
-  }
+    SetUsedArea(config.netmailBoard[count]);
+
   areaInfoCount = 0;
   while (getRec(CFG_ECHOAREAS, areaInfoCount))
   {
-    if ( areaBuf->board - 1 < MBBOARDS )
-	    usedArea[areaBuf->board - 1] = 1;
-    if ( areaBuf->boardNumRA - 1 < MBBOARDS )
-	    usedArea[areaBuf->boardNumRA - 1] = 1;
-    if ( ((*areaNames)[areaInfoCount] = malloc(strlen(areaBuf->areaName) + 1)) == NULL )
+    SetUsedArea(areaBuf->board);
+    SetUsedArea(areaBuf->boardNumRA);
+
+    if (((*areaNames)[areaInfoCount] = malloc(strlen(areaBuf->areaName) + 1)) == NULL)
    	  goto freemem;
     strcpy((*areaNames)[areaInfoCount], areaBuf->areaName);
-    if ( !*areaBuf->msgBasePath )
+    if (!*areaBuf->msgBasePath)
       (*mbPaths)[areaInfoCount] = 0;
     else
     {
-      if ( ((*mbPaths)[areaInfoCount] = malloc(strlen(areaBuf->msgBasePath) + 1)) == NULL )
+      if (((*mbPaths)[areaInfoCount] = malloc(strlen(areaBuf->msgBasePath) + 1)) == NULL)
 	      goto freemem;
 	    strcpy((*mbPaths)[areaInfoCount], areaBuf->msgBasePath);
     }
     ++areaInfoCount;
   }
-  strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
+  strcpy(stpcpy(tempStr, fixPath(configPath)), dBDEFNAME);
   if ((tempHandle = open(tempStr, O_BINARY | O_RDONLY)) != -1)
   {
     badEchoCount = (read(tempHandle, badEchos, MAX_BAD_ECHOS * sizeof(badEchoType))) / sizeof(badEchoType);
@@ -143,10 +150,10 @@ void addNew(s32 switches)
       memcpy(&tempInfo, &echoDefaultsRec, RAWECHO_SIZE);
     	if (!tempInfo.group)
 	      tempInfo.group = 1;
+
       tempInfo.options.active = 1;
-      strncpy(tempInfo.areaName, badEchos[badEchoCount].badEchoName, ECHONAME_LEN-1);
-      strncpy(tempInfo.comment , badEchos[badEchoCount].badEchoName, ECHONAME_LEN-1);
-   // strupr(tempInfo.areaName);
+      strncpy(tempInfo.areaName, badEchos[badEchoCount].badEchoName, ECHONAME_LEN - 1);
+      strncpy(tempInfo.comment , badEchos[badEchoCount].badEchoName, ECHONAME_LEN - 1);
       tempInfo.forwards[0].nodeNum = badEchos[badEchoCount].srcNode;
       tempInfo.address = badEchos[badEchoCount].destAka;
       tempInfo.boardNumRA = 0;
@@ -171,10 +178,10 @@ void addNew(s32 switches)
         else // pass-through
           *tempInfo.msgBasePath = 0;
       }
+      index = 0;
 	    while (index < areaInfoCount && strcmp(tempInfo.areaName, (*areaNames)[index]) > 0)
         index++;
       if (index < areaInfoCount && !strcmp(tempInfo.areaName, (*areaNames)[index]))
-      index = 0;
       {
         ++areasExist;
         logEntryf(LOG_ALWAYS, 0, "Area %s is already present", tempInfo.areaName);
@@ -187,6 +194,7 @@ void addNew(s32 switches)
       }
       if (((*areaNames)[index] = malloc(strlen(tempInfo.areaName) + 1)) == NULL)
        goto freemem;
+
       strcpy((*areaNames)[index], tempInfo.areaName);
       if (!*tempInfo.msgBasePath)
         (*mbPaths)[index] = 0;
@@ -194,15 +202,16 @@ void addNew(s32 switches)
       {
         if (((*mbPaths)[index] = malloc(strlen(tempInfo.msgBasePath) + 1)) == NULL)
           goto freemem;
+
         strcpy((*mbPaths)[index], tempInfo.msgBasePath);
       }
       memcpy(areaBuf, &tempInfo, RAWECHO_SIZE);
       insRec(CFG_ECHOAREAS, index);
-      usedArea[areaBuf->board - 1] = 1;
+      SetUsedArea(areaBuf->board);
       ++areasAdded;
       logEntryf(LOG_ALWAYS, 0, "Adding area %s", tempInfo.areaName);
     }
-    unlink(tempStr);
+    unlink(tempStr);  // already fixPath'd
   }
 freemem:
   closeConfig(CFG_ECHOAREAS);
@@ -214,9 +223,10 @@ freemem:
   }
   if (areasAdded || areasExist)
     newLine();
+
   logEntryf(LOG_ALWAYS, 0, "Areas added: %u, areas already present: %u", areasAdded, areasExist);
-  strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
-  unlink(tempStr);
+  strcpy(stpcpy(tempStr, fixPath(configPath)), dBDEFNAME);
+  unlink(tempStr);  // already fixPath'd
 freemem2:
   free(mbPaths);
   free(areaNames);

@@ -21,25 +21,21 @@
 //
 //---------------------------------------------------------------------------
 
-#ifdef __STDIO__
-#include <conio.h>
-#else
-#include <bios.h>
-#endif
-#include <ctype.h>
+#ifdef __WIN32__
 #include <dir.h>
+#include <share.h>
+#endif // __WIN32__
+#include <ctype.h>
 #include <dirent.h>
-#include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <io.h>
-#include <share.h>
 #include <stddef.h>    // offsetof()
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -61,6 +57,7 @@
 #include "msgmsg.h"
 #include "msgradef.h"
 #include "mtask.h"
+#include "os.h"
 #include "pp_date.h"
 #include "sorthb.h"
 #include "spec.h"
@@ -71,22 +68,11 @@
 // linkfout FTools voorkomen!
 u16 echoCount;
 
-#ifdef __STDIO__
-#define keyWaiting (kbhit() ? getch() : 0)
-#else
-#define keyWaiting bioskey(1)
-#define keyRead    bioskey(0)
-#endif
-
 #define RENUM_BUFSIZE 32760 // MAX 32760
 #define DELRECNUM     (0x10000 / 8)
 #define HDR_BUFSIZE   0x1800
 #define TXT_BUFSIZE   ((HDR_BUFSIZE * sizeof(msgHdrRec)) / sizeof(msgTxtRec))  // Uses the same buffer as malloced by HDR_BUFSIZE !
 #define LRU_BUFSIZE   (HDR_BUFSIZE * 100)
-
-#ifdef __WIN32__
-const char *smtpID;
-#endif
 
 //----------------------------------------------------------------------------
 typedef struct
@@ -154,15 +140,19 @@ s32 getSwitchFT(int *argc, char *argv[], s32 mask)
   s32 result = 0;
   int count = *argc;
 
-  while (count && --count >= 1)
-    if (argv[count][0] == '/')
+  while (--count >= 1)
+    if (argv[count][0] == '-')
     {
+      int slen = strlen(argv[count]);
+      if (slen != 2)  // ignore "long" and short commandline options starting with -
+        continue;
+
       if (count != --(*argc))
       {
         puts("Switches should be last on command line");
         exit(4);
       }
-      if (strlen(argv[count]) != 2 || !(isalpha(argv[count][1])))
+      if (!isalpha(argv[count][1]))
       {
         printf("Illegal switch: %s\n", argv[count]);
         error++;
@@ -272,24 +262,24 @@ void Maint(int argc, char *argv[])
           puts("Usage:\n\n"
                "    FTools Move <old board> <new board>\n");
         else
-          puts("Usage:   FTools Maint [JAM areas][/H][/J][/Q][/C][/D][/N][/P][/R][/T][/U][/X]\n"
-               "Switches:                                                        [/B][/F][/O]\n"
-               "    /H   Process "MBNAME" base only\n"
-               "    /J   Process JAM message bases only\n"
-               "    /Q   Process only modified JAM areas\n"
-               "    /C   reCover messages in undefined boards ("MBNAME" only)\n"
-               "    /D   Delete messages using the information in the Area Manager\n"
-               "    /N   reNumber the message base ("MBNAME" only)\n"
-               "    /P   Pack (remove deleted messages) ("MBNAME" only)\n"
-               "    /R   Remove \"Re:\" from subject lines\n"
-               "    /T   Fix bad text length info in MsgHdr.BBS ("MBNAME" only)\n"
-               "    /U   Undelete all deleted messages in all boards ("MBNAME" only)\n"
-               "    /X   Delete messages with bad dates or bad board numbers ("MBNAME" only)\n\n"
+          puts("Usage:   FTools Maint [JAM areas][-H][-J][-Q][-C][-D][-N][-P][-R][-T][-U][-X]\n"
+               "Switches:                                                        [-B][-F][-O]\n"
+               "    -H   Process "MBNAME" base only\n"
+               "    -J   Process JAM message bases only\n"
+               "    -Q   Process only modified JAM areas\n"
+               "    -C   reCover messages in undefined boards ("MBNAME" only)\n"
+               "    -D   Delete messages using the information in the Area Manager\n"
+               "    -N   reNumber the message base ("MBNAME" only)\n"
+               "    -P   Pack (remove deleted messages) ("MBNAME" only)\n"
+               "    -R   Remove \"Re:\" from subject lines\n"
+               "    -T   Fix bad text length info in MsgHdr.BBS ("MBNAME" only)\n"
+               "    -U   Undelete all deleted messages in all boards ("MBNAME" only)\n"
+               "    -X   Delete messages with bad dates or bad board numbers ("MBNAME" only)\n\n"
 
-               "    /B   keep .Bak files      (only in combination with /P)\n"
-               "    /F   Force overwrite mode (only in combination with /P, "MBNAME" only)\n"
-               "    /O   Overwrite existing message base only if short of disk space\n"
-               "                              (only in combination with /P, "MBNAME" only)");
+               "    -B   keep .Bak files      (only in combination with -P)\n"
+               "    -F   Force overwrite mode (only in combination with -P, "MBNAME" only)\n"
+               "    -O   Overwrite existing message base only if short on disk space\n"
+               "                              (only in combination with -P, "MBNAME" only)");
     return;
   }
 
@@ -345,8 +335,9 @@ void Maint(int argc, char *argv[])
         initLog("Maint", switches);
       }
 
-  if (argv[2] && *argv[2] != '/')
+  if (argv[2] && *argv[2] != '-')
     switches &= ~SW_H;
+
   if (switches & SW_J)
     goto JAMonly;
 
@@ -356,7 +347,7 @@ void Maint(int argc, char *argv[])
   memset(&lastReadRec, 0, sizeof(lastReadType));
 
   helpPtr = expandName(dLASTREAD"."MBEXTN);
-  if ((lastReadHandle = open(helpPtr, O_RDONLY | O_BINARY)) == -1)
+  if ((lastReadHandle = open(helpPtr, O_RDONLY | O_BINARY)) == -1)  // already fixPath'd
     logEntryf(LOG_ALWAYS, 0, "Warning: can't open file: %s", helpPtr);
   else
   {
@@ -375,8 +366,8 @@ void Maint(int argc, char *argv[])
     }
   }
 
-  if (  (msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1
-     || (fileSize = filelength(msgTxtHandle)) == -1
+  if (  (msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1  // already fixPath'd
+     || (fileSize = fileLength(msgTxtHandle)) == 0
      || close(msgTxtHandle) == -1
      )
     logEntry("File status request error", LOG_ALWAYS, 1);
@@ -402,7 +393,7 @@ void Maint(int argc, char *argv[])
 
   // Read MSGINFO.BBS
 
-  if (((msgInfoHandle = _sopen(expandName(dMSGINFO"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
+  if (((msgInfoHandle = _sopen(expandName(dMSGINFO"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)  // already fixPath'd
       || (read(msgInfoHandle, &oldInfoRec, sizeof(infoRecType)) == -1))
     logEntry("Can't open file MsgInfo."MBEXTN " for input", LOG_ALWAYS, 1);
   close(msgInfoHandle);
@@ -422,21 +413,21 @@ void Maint(int argc, char *argv[])
   puts("Analyzing the message base...");
 #endif // _DEBUG
 
-  if ((msgHdrHandle = _sopen(expandName(dMSGHDR"."MBEXTN), O_RDWR | O_BINARY, SH_DENYRW)) == -1)
+  if ((msgHdrHandle = _sopen(expandName(dMSGHDR"."MBEXTN), O_RDWR | O_BINARY, SH_DENYRW)) == -1)  // already fixPath'd
     logEntry("Can't open MsgHdr."MBEXTN " for update", LOG_ALWAYS, 1);
 #ifdef _DEBUG
   logEntryf(LOG_DEBUG, 0, "DEBUG Opened file %s", expandName(dMSGHDR"."MBEXTN));
 #endif // _DEBUG
   if ((switches & SW_T))
   {
-    if ((msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
+    if ((msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)  // already fixPath'd
       logEntry("Can't open MsgTxt."MBEXTN " for read-only",  LOG_ALWAYS, 1);
 #ifdef _DEBUG
     logEntryf(LOG_DEBUG, 0, "DEBUG Opened file %s", expandName(dMSGTXT"."MBEXTN));
 #endif // _DEBUG
   }
 
-  oldHdrSize = (u16)(filelength(msgHdrHandle) / sizeof(msgHdrRec));
+  oldHdrSize = (u16)(fileLength(msgHdrHandle) / sizeof(msgHdrRec));
 
   if (  (linkArraySubjectCrcHigh = malloc((oldHdrSize << 1) + 1)) == NULL
      || (linkArraySubjectCrcLow  = malloc((oldHdrSize << 1) + 1)) == NULL
@@ -796,11 +787,11 @@ void Maint(int argc, char *argv[])
 
   if ((switches & SW_P) && !(switches & SW_F))
   {
-    unlink(expandName(dMSGHDR  "."dEXTBAK));
-    unlink(expandName(dMSGIDX  "."dEXTBAK));
-    unlink(expandName(dMSGTOIDX"."dEXTBAK));
-    unlink(expandName(dMSGTXT  "."dEXTBAK));
-    unlink(expandName(dMSGINFO "."dEXTBAK));
+    unlink(expandName(dMSGHDR  "."dEXTBAK));  // already fixPath'd
+    unlink(expandName(dMSGIDX  "."dEXTBAK));  // already fixPath'd
+    unlink(expandName(dMSGTOIDX"."dEXTBAK));  // already fixPath'd
+    unlink(expandName(dMSGTXT  "."dEXTBAK));  // already fixPath'd
+    unlink(expandName(dMSGINFO "."dEXTBAK));  // already fixPath'd
     if (diskFree(config.bbsPath) < (u32)(
             newHdrSize * (s32)sizeof(msgHdrRec)
           + newHdrSize * (s32)sizeof(msgToIdxRec)
@@ -828,10 +819,10 @@ void Maint(int argc, char *argv[])
 
   newMsgNum = 0;
 
-  if (  ((msgIdxHandle   = _sopen(expandName((switches & SW_F) ? dMSGIDX"."MBEXTN : dMSGIDX"."dEXTTMP)
-                                 , O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
-     || ((msgToIdxHandle = _sopen(expandName((switches & SW_F) ? dMSGTOIDX"."MBEXTN : dMSGTOIDX"."dEXTTMP)
-                                 , O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+  if (  ((msgIdxHandle   = _sopen(expandName((switches & SW_F) ? dMSGIDX"."MBEXTN : dMSGIDX"."dEXTTMP)  // already fixPath'd
+                                 , O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, dDEFOMODE)) == -1)
+     || ((msgToIdxHandle = _sopen(expandName((switches & SW_F) ? dMSGTOIDX"."MBEXTN : dMSGTOIDX"."dEXTTMP)  // already fixPath'd
+                                 , O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, dDEFOMODE)) == -1)
      )
   {
     close(msgIdxHandle);
@@ -840,15 +831,15 @@ void Maint(int argc, char *argv[])
 #ifdef _DEBUG
   logEntryf(LOG_DEBUG, 0, "DEBUG Writing %s", expandName((switches & SW_F) ? dMSGHDR"."MBEXTN : dMSGHDR"."dEXTTMP));
 #endif // _DEBUG
-  if (  (msgHdrHandle = _sopen( expandName((switches & SW_F) ? dMSGHDR"."MBEXTN : dMSGHDR"."dEXTTMP)
-                              , O_WRONLY | O_BINARY | O_CREAT, SH_DENYWR, S_IREAD | S_IWRITE)) == -1
-     || (oldHdrHandle = open(expandName(dMSGHDR"."MBEXTN), O_RDONLY | O_BINARY)) == -1
+  if (  (msgHdrHandle = _sopen( expandName((switches & SW_F) ? dMSGHDR"."MBEXTN : dMSGHDR"."dEXTTMP)  // already fixPath'd
+                              , O_WRONLY | O_BINARY | O_CREAT, SH_DENYWR, dDEFOMODE)) == -1
+     || (oldHdrHandle = open(expandName(dMSGHDR"."MBEXTN), O_RDONLY | O_BINARY)) == -1  // already fixPath'd
      )
   {
     close(msgHdrHandle);
     logEntry("Can't create purged/packed message files", LOG_ALWAYS, 1);
   }
-  oldHdrSize = (u16)(filelength(oldHdrHandle) / sizeof(msgHdrRec));
+  oldHdrSize = (u16)(fileLength(oldHdrHandle) / sizeof(msgHdrRec));
 
   linkArrIndex = 0;
   keepIdx = 0;
@@ -997,8 +988,8 @@ void Maint(int argc, char *argv[])
       write(msgToIdxHandle, msgToIdxBuf, newBufCount * sizeof(msgToIdxRec));
     }
   }
-  chsize(msgHdrHandle, tell(msgHdrHandle));
-  newHdrSize = (u16)(filelength(msgHdrHandle) / sizeof(msgHdrRec));
+  ftruncate(msgHdrHandle, lseek(msgHdrHandle, 0, SEEK_CUR));
+  newHdrSize = (u16)(fileLength(msgHdrHandle) / sizeof(msgHdrRec));
 
 #ifdef _DEBUG
   logEntry("DEBUG Closing files", LOG_DEBUG, 0);
@@ -1029,7 +1020,7 @@ void Maint(int argc, char *argv[])
         temp = renumArray[count];
     }
     helpPtr = expandName(dLASTREAD"."MBEXTN);
-    if ((lastReadHandle = _sopen(helpPtr, O_RDWR | O_BINARY, SH_DENYRW)) == -1)
+    if ((lastReadHandle = _sopen(helpPtr, O_RDWR | O_BINARY, SH_DENYRW)) == -1)  // already fixPath'd
       logEntryf(LOG_ALWAYS, 0, "Warning: can't open file: %s for update", helpPtr);
     else
     {
@@ -1049,10 +1040,10 @@ void Maint(int argc, char *argv[])
       close(lastReadHandle);
     }
 
-    if ((usersBBSHandle = open(expandName(dUSERSBBS), O_RDWR | O_BINARY)) != -1)
+    if ((usersBBSHandle = open(expandName(dUSERSBBS), O_RDWR | O_BINARY)) != -1)  // already fixPath'd
     {
 #ifdef _DEBUG
-      logEntryf(LOG_DEBUG, 0, "DEBUG Updating %s", expandName(dUSERSBBS));
+      logEntryf(LOG_DEBUG, 0, "DEBUG Updating %s", expandName(dUSERSBBS));  // already fixPath'd
 #else
       puts("Updating "dUSERSBBS"...");
 #endif // _DEBUG
@@ -1063,7 +1054,7 @@ void Maint(int argc, char *argv[])
          )
       {
         // new RA format and ProBoard format
-        if (filelength(usersBBSHandle) % 1016)
+        if (fileLength(usersBBSHandle) % 1016)
         {
           newLine();
           logEntry("Incorrect "dUSERSBBS" version, check BBS program settings!", LOG_ALWAYS, 0);
@@ -1083,7 +1074,7 @@ void Maint(int argc, char *argv[])
       else
       {
         // original QuickBBS format
-        if (filelength(usersBBSHandle) % 158)
+        if (fileLength(usersBBSHandle) % 158)
         {
           newLine();
           logEntry("Incorrect "dUSERSBBS" version, check BBS program settings!", LOG_ALWAYS, 0);
@@ -1112,15 +1103,15 @@ void Maint(int argc, char *argv[])
 #else
     puts("Writing "dMSGTXT"."MBEXTN"...");
 #endif // _DEBUG
-    if (  (msgTxtHandle = _sopen(expandName((switches & SW_F) ? dMSGTXT"."MBEXTN : dMSGTXT"."dEXTTMP)
-                                , O_WRONLY | O_BINARY | O_CREAT, SH_DENYWR, S_IREAD | S_IWRITE)) == -1
-       || (oldTxtHandle = open(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY)) == -1
+    if (  (msgTxtHandle = _sopen(expandName((switches & SW_F) ? dMSGTXT"."MBEXTN : dMSGTXT"."dEXTTMP)  // already fixPath'd
+                                , O_WRONLY | O_BINARY | O_CREAT, SH_DENYWR, dDEFOMODE)) == -1
+       || (oldTxtHandle = open(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY)) == -1  // already fixPath'd
        )
     {
       close(msgTxtHandle);
       logEntry("Can't create purged/packed message files", LOG_ALWAYS, 1);
     }
-    oldTxtSize = (u16)(filelength(oldTxtHandle) >> 8);
+    oldTxtSize = (u16)(fileLength(oldTxtHandle) >> 8);
 
     keepIdx = 0;
     keepBit = 1;
@@ -1146,8 +1137,8 @@ void Maint(int argc, char *argv[])
       if (newBufCount != 0)
         write(msgTxtHandle, msgTxtBuf, newBufCount * sizeof(msgTxtRec));
     }
-    chsize(msgTxtHandle, tell(msgTxtHandle));
-    newTxtSize = (u16)(filelength(msgTxtHandle) >> 8);
+    ftruncate(msgTxtHandle, lseek(msgTxtHandle, 0, SEEK_CUR));
+    newTxtSize = (u16)(fileLength(msgTxtHandle) >> 8);
 
     close(oldTxtHandle);
     close(msgTxtHandle);
@@ -1157,11 +1148,11 @@ void Maint(int argc, char *argv[])
   }
 
 #ifdef _DEBUG
-  logEntryf(LOG_DEBUG, 0, "DEBUG Write %s", expandName((switches & SW_F) ? dMSGINFO"."MBEXTN : dMSGINFO"."dEXTTMP));
+  logEntryf(LOG_DEBUG, 0, "DEBUG Write %s", expandName((switches & SW_F) ? dMSGINFO"."MBEXTN : dMSGINFO"."dEXTTMP));  // already fixPath'd
 #endif // _DEBUG
 
-  if (  (msgInfoHandle = _sopen( expandName((switches & SW_F) ? dMSGINFO"."MBEXTN : dMSGINFO"."dEXTTMP)
-                               , O_RDWR | O_CREAT | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
+  if (  (msgInfoHandle = _sopen( expandName((switches & SW_F) ? dMSGINFO"."MBEXTN : dMSGINFO"."dEXTTMP)  // already fixPath'd
+                               , O_RDWR | O_CREAT | O_BINARY, SH_DENYRW, dDEFOMODE)) == -1
      || write(msgInfoHandle, &infoRec, sizeof(infoRecType)) == -1
      )
     logEntry("Can't open file "dMSGINFO"."MBEXTN " for output", LOG_ALWAYS, 0);
@@ -1172,26 +1163,26 @@ void Maint(int argc, char *argv[])
   {
     if (switches & SW_B)
     {
-      rename(expandName(dMSGHDR  "."MBEXTN), expandName(dMSGHDR  "."dEXTBAK));
-      rename(expandName(dMSGIDX  "."MBEXTN), expandName(dMSGIDX  "."dEXTBAK));
-      rename(expandName(dMSGTOIDX"."MBEXTN), expandName(dMSGTOIDX"."dEXTBAK));
-      rename(expandName(dMSGTXT  "."MBEXTN), expandName(dMSGTXT  "."dEXTBAK));
-      rename(expandName(dMSGINFO "."MBEXTN), expandName(dMSGINFO "."dEXTBAK));
+      rename(expandName(dMSGHDR  "."MBEXTN), expandName(dMSGHDR  "."dEXTBAK));  // already fixPath'd
+      rename(expandName(dMSGIDX  "."MBEXTN), expandName(dMSGIDX  "."dEXTBAK));  // already fixPath'd
+      rename(expandName(dMSGTOIDX"."MBEXTN), expandName(dMSGTOIDX"."dEXTBAK));  // already fixPath'd
+      rename(expandName(dMSGTXT  "."MBEXTN), expandName(dMSGTXT  "."dEXTBAK));  // already fixPath'd
+      rename(expandName(dMSGINFO "."MBEXTN), expandName(dMSGINFO "."dEXTBAK));  // already fixPath'd
     }
     else
     {
-      unlink(expandName(dMSGHDR  "."MBEXTN));
-      unlink(expandName(dMSGIDX  "."MBEXTN));
-      unlink(expandName(dMSGTOIDX"."MBEXTN));
-      unlink(expandName(dMSGTXT  "."MBEXTN));
-      unlink(expandName(dMSGINFO "."MBEXTN));
+      unlink(expandName(dMSGHDR  "."MBEXTN));  // already fixPath'd
+      unlink(expandName(dMSGIDX  "."MBEXTN));  // already fixPath'd
+      unlink(expandName(dMSGTOIDX"."MBEXTN));  // already fixPath'd
+      unlink(expandName(dMSGTXT  "."MBEXTN));  // already fixPath'd
+      unlink(expandName(dMSGINFO "."MBEXTN));  // already fixPath'd
     }
 
-    rename(expandName(dMSGHDR  "."dEXTTMP), expandName(dMSGHDR  "."MBEXTN));
-    rename(expandName(dMSGIDX  "."dEXTTMP), expandName(dMSGIDX  "."MBEXTN));
-    rename(expandName(dMSGTOIDX"."dEXTTMP), expandName(dMSGTOIDX"."MBEXTN));
-    rename(expandName(dMSGTXT  "."dEXTTMP), expandName(dMSGTXT  "."MBEXTN));
-    rename(expandName(dMSGINFO "."dEXTTMP), expandName(dMSGINFO "."MBEXTN));
+    rename(expandName(dMSGHDR  "."dEXTTMP), expandName(dMSGHDR  "."MBEXTN));  // already fixPath'd
+    rename(expandName(dMSGIDX  "."dEXTTMP), expandName(dMSGIDX  "."MBEXTN));  // already fixPath'd
+    rename(expandName(dMSGTOIDX"."dEXTTMP), expandName(dMSGTOIDX"."MBEXTN));  // already fixPath'd
+    rename(expandName(dMSGTXT  "."dEXTTMP), expandName(dMSGTXT  "."MBEXTN));  // already fixPath'd
+    rename(expandName(dMSGINFO "."dEXTTMP), expandName(dMSGINFO "."MBEXTN));  // already fixPath'd
   }
 
   if (switches & SW_P)
@@ -1217,9 +1208,7 @@ void Maint(int argc, char *argv[])
 
 JAMonly:
 
-  if (  !(switches & (SW_H | SW_K | SW_M))
-     && (undeleteBoard == 0 || !(switches & SW_U))
-     )
+  if (!(switches & (SW_H | SW_K | SW_M)) && (undeleteBoard == 0 || !(switches & SW_U)))
   {
     u16 count2;
     u32 processed;
@@ -1235,15 +1224,14 @@ JAMonly:
       {
         returnTimeSlice(0);
         getRec(CFG_ECHOAREAS, count);
-        if (*areaBuf->msgBasePath && areaBuf->options.active
-            && (!(switches & SW_Q) || areaBuf->stat.tossedTo))
+        if (*areaBuf->msgBasePath && areaBuf->options.active && (!(switches & SW_Q) || areaBuf->stat.tossedTo))
         {
-          if (argc >= 3 && *argv[2] != '/')
+          if (argc >= 3 && *argv[2] != '-')
           {
             int cont = 0;
             count2 = 2;
             while (stricmp(argv[count2], areaBuf->areaName))
-              if (argc <= ++count2 || *argv[count2] == '/')
+              if (argc <= ++count2 || *argv[count2] == '-')
               {
                 cont = 1;
                 break;
@@ -1270,7 +1258,7 @@ JAMonly:
       }
       closeConfig(CFG_ECHOAREAS);
       count2 = 1;
-      while (++count2 < argc && *argv[count2] != '/')
+      while (++count2 < argc && *argv[count2] != '-')
         if (!(processed & (1 << (count2 - 2))))
           logEntryf(LOG_ALWAYS, 0, "%s is not a JAM area or does not exist", argv[count2]);
 
@@ -1294,9 +1282,9 @@ void Sort(int argc, char *argv[])
   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
   {
     puts("Usage:\n\n"
-         "    FTools Sort [/A]\n\n"
+         "    FTools Sort [-A]\n\n"
          "Switches:\n\n"
-         "    /A   Sort ALL messages\n"
+         "    -A   Sort ALL messages\n"
          "         WARNING: It is NOT possible to sort all messages\n"
          "         and still have correct lastread pointers!");
     return;
@@ -1310,21 +1298,22 @@ void Sort(int argc, char *argv[])
   if ((switches & SW_A) == 0)
   {
     if ((msgIdxBuf = malloc(512 * sizeof(msgIdxRec))) == NULL)
-      logEntry("Not enough free memory",     LOG_ALWAYS, 2);
+      logEntry("Not enough free memory", LOG_ALWAYS, 2);
 
-    if ((lastReadHandle = open(expandName(dLASTREAD"."MBEXTN), O_RDONLY | O_BINARY)) == -1)
-      logEntryf(LOG_ALWAYS, 0, "Warning: can't open: %s", expandName(dLASTREAD"."MBEXTN));
+    if ((lastReadHandle = open(expandName(dLASTREAD"."MBEXTN), O_RDONLY | O_BINARY)) == -1)  // already fixPath'd
+      logEntryf(LOG_ALWAYS, 0, "Warning: can't open: %s", expandName(dLASTREAD"."MBEXTN));  // already fixPath'd
     else
     {
       while (read(lastReadHandle, &lastReadRec, MBBOARDS * sizeof(u16)) == MBBOARDS * sizeof(u16))
         for (count = 0; count < MBBOARDS; count++)
           if (maxRead < lastReadRec[count])
             maxRead = lastReadRec[count];
+
       close(lastReadHandle);
     }
 
-    if ((msgIdxHandle = open(expandName(dMSGIDX"."MBEXTN), O_RDONLY | O_BINARY)) == -1)
-      logEntry("Can't open MsgIdx."MBEXTN, LOG_ALWAYS, 1);
+    if ((msgIdxHandle = open(expandName(dMSGIDX"."MBEXTN), O_RDONLY | O_BINARY)) == -1)  // already fixPath'd
+      logEntry("Can't open "dMSGIDX"."MBEXTN, LOG_ALWAYS, 1);
 
     index = 0;
     while ((msgIdxBufCount = (read(msgIdxHandle, msgIdxBuf, 512 * sizeof(msgIdxRec)) / sizeof(msgIdxRec))) != 0)
@@ -1338,6 +1327,7 @@ void Sort(int argc, char *argv[])
 
   config.mbOptions.sortNew = 1;
   config.mbOptions.updateChains = 1;
+  mbSharingInternal = 0;  // Needed to open the real files, not the backups!
   sortBBS(index, 0);
 }  // Sort()
 //----------------------------------------------------------------------------
@@ -1359,7 +1349,8 @@ void Stat(int argc, char *argv[])
 
   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
   {
-    puts("Usage:\n\n"
+    puts("Usage:\n"
+         "\n"
          "    FTools Stat\n");
     return;
   }
@@ -1371,7 +1362,7 @@ void Stat(int argc, char *argv[])
   puts("Analyzing the message base...");
 #endif // _DEBUG
 
-  if ((msgHdrHandle = _sopen(expandName(dMSGHDR"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYWR)) == -1)
+  if ((msgHdrHandle = _sopen(expandName(dMSGHDR"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYWR)) == -1)  // already fixPath'd
     logEntry("Can't open MsgHdr."MBEXTN " for reading", LOG_ALWAYS, 1);
 
   totalMsgs    = 0;
@@ -1407,8 +1398,8 @@ void Stat(int argc, char *argv[])
   close(msgHdrHandle);
   free(msgHdrBuf);
 
-  if (  (msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1
-     || (fileSize = filelength(msgTxtHandle)) == -1
+  if (  (msgTxtHandle = _sopen(expandName(dMSGTXT"."MBEXTN), O_RDONLY | O_BINARY, SH_DENYRW)) == -1  // already fixPath'd
+     || (fileSize = fileLength(msgTxtHandle)) == 0
      || close(msgTxtHandle) == -1
      )
     logEntry("File status request error", LOG_ALWAYS, 1);
@@ -1464,7 +1455,7 @@ void Post(int argc, char *argv[])
   if (argc < 4 || (argv[2][0] == '?' || argv[2][1] == '?'))
   {
     puts("Usage:\n\n"
-         "    FTools Post <file>|- <area tag> [options] [/C] [/D] [/H] [/P]\n"
+         "    FTools Post <file>|- <area tag> [options] [-C] [-D] [-H] [-P]\n"
          "\n"
          "Options with defaults:\n\n"
          "    -from    SysOp name as defined in FSetup\n"
@@ -1474,11 +1465,11 @@ void Post(int argc, char *argv[])
          "    -aka     Board dependant\n"
          "\n"
          "Switches:\n"
-         "    /C  Crash status  (netmail only)     /R  File request       (netmail only)\n"
-         "    /H  Hold status   (netmail only)     /F  File attach        (netmail only)\n"
-         "    /D  Direct status (netmail only)     /E  Erase sent file    (file attach)\n"
-         "    /K  Kill/sent     (netmail only)     /T  Truncate sent file (file attach)\n"
-         "    /P  Private status");
+         "    -C  Crash status  (netmail only)     -R  File request       (netmail only)\n"
+         "    -H  Hold status   (netmail only)     -F  File attach        (netmail only)\n"
+         "    -D  Direct status (netmail only)     -E  Erase sent file    (file attach)\n"
+         "    -K  Kill/sent     (netmail only)     -T  Truncate sent file (file attach)\n"
+         "    -P  Private status");
     return;
   }
   switches = getSwitchFT(&argc, argv, SW_C | SW_H | SW_D | SW_K | SW_P | SW_R | SW_F | SW_E | SW_T);
@@ -1493,16 +1484,17 @@ void Post(int argc, char *argv[])
 
   postBoard = 0;
   srcAka = 0;
-  if (stricmp(argv[3], "#netdir") != 0)
+  if (stricmp(argv[3], "@netdir") != 0)
     postBoard = getBoardNum(argv[3], 1, &srcAka, &areaPtr);
-  isNetmail = postBoard == 0 || memicmp(argv[3], "#net", 4) == 0;
+
+  isNetmail = postBoard == 0 || strnicmp(argv[3], "@net", 4) == 0;
 
   for (count = 4; count < argc; count++)
   {
     if (stricmp(argv[count], "-from") == 0)
     {
       if (count + 1 < argc && *argv[count + 1] != '-')
-            strncpy(message->fromUserName, argv[++count], 35);
+        strncpy(message->fromUserName, argv[++count], 35);
       else
         *message->fromUserName = 0;
     }
@@ -1510,7 +1502,7 @@ void Post(int argc, char *argv[])
       if (stricmp(argv[count], "-to") == 0)
       {
         if (count + 1 < argc && *argv[count + 1] != '-')
-            strncpy(message->toUserName, argv[++count], 35);
+          strncpy(message->toUserName, argv[++count], 35);
         else
           *message->toUserName = 0;
       }
@@ -1549,20 +1541,35 @@ void Post(int argc, char *argv[])
 
   if (switches & SW_F)
   {
+#if defined(__WIN32__)
     if ((helpPtr = _fullpath(NULL, message->subject, 72)) == NULL)
       logEntry("Can't locate file to be attached", LOG_ALWAYS, 1);
 
     strncpy(message->subject, strlwr(helpPtr), 71);
+#elif defined(__linux__)
+    if ((helpPtr = realpath(message->subject, NULL)) == NULL)  // don't need fixPath here (probably)
+      logEntry("Can't locate file to be attached", LOG_ALWAYS, 1);
+
+    strncpy(message->subject, helpPtr, 71);
+#else
+    #error "Enter code for your OS"
+#endif
     free(helpPtr);
   }
 
-  if (strcmp(argv[2], "-"))
   {
-    if ((txtHandle = open(argv[2], O_RDONLY | O_BINARY)) == -1)
-      logEntryf(LOG_ALWAYS, 1, "Can't open text file: %s", argv[2]);
+    int useStdin = strcmp(argv[2], "-") == 0;
+
+    if (useStdin)
+      txtHandle = STDIN_FILENO;
+    else
+      if ((txtHandle = open(argv[2], O_RDONLY | O_BINARY)) == -1)  // already fixPath'd
+        logEntryf(LOG_ALWAYS, 1, "Can't open text file: %s", argv[2]);
 
     read(txtHandle, message->text, TEXT_SIZE - 4096);
-    close(txtHandle);
+    if (!useStdin)
+      close(txtHandle);
+
     removeLf(message->text);
     if (!*message->subject)
       strcpy(message->subject, argv[2]);
@@ -1650,7 +1657,7 @@ void MsgM(int argc, char *argv[])
   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
   {
     puts("Usage:\n\n"
-         "    FTools MsgM [-net] [-sent] [-rcvd] [-pmail] [/N]\n"
+         "    FTools MsgM [-net] [-sent] [-rcvd] [-pmail] [-N]\n"
          "\n"
          "Options:\n\n"
          "    [-net]    Netmail directory\n"
@@ -1659,7 +1666,7 @@ void MsgM(int argc, char *argv[])
          "    [-pmail]  Personal mail directory\n"
          "\n"
          "Switches:\n\n"
-         "    /N   Renumber messages");
+         "    -N   Renumber messages");
     return;
   }
   switches = getSwitchFT(&argc, argv, SW_N);
@@ -1681,41 +1688,42 @@ void MsgM(int argc, char *argv[])
     helpPtr2 = NULL;
     if (stricmp(argv[c], "-net") == 0)
     {
-      helpPtr2 = stpcpy(tempStr2, config.netPath);
-      helpPtr3 = stpcpy(tempStr3, config.netPath);
+      helpPtr2 = stpcpy(tempStr2, fixPath(config.netPath));
+      helpPtr3 = stpcpy(tempStr3, fixPath(config.netPath));
       if (*config.semaphorePath && (config.mailer == dMT_InterMail))
       {
-        sprintf(tempStr, "%simrenum.now", config.semaphorePath);
-        if (((semaHandle = _sopen(tempStr, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
-            || (lock(semaHandle, 0, 1000) == -1))
+        strcpy(stpcpy(tempStr, fixPath(config.semaphorePath)), "imrenum.now");
+        if (  (semaHandle = _sopen(tempStr, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, dDEFOMODE)) == -1  // already fixPath'd
+           || lock(semaHandle, 0, 1000) == -1
+           )
         {
           close(semaHandle);
           helpPtr2 = NULL;
           logEntry("Can't renumber netmail directory", LOG_ALWAYS, 0);
         }
       }
-      logEntry("Processing netmail directory", LOG_ALWAYS, 0);
+      logEntryf(LOG_ALWAYS, 0, "Processing netmail directory: %s", tempStr2);
     }
     else
       if (stricmp(argv[c], "-sent") == 0)
       {
-        helpPtr2 = stpcpy(tempStr2, config.sentPath);
-        helpPtr3 = stpcpy(tempStr3, config.sentPath);
-        logEntry("Processing sent messages directory", LOG_ALWAYS, 0);
+        helpPtr2 = stpcpy(tempStr2, fixPath(config.sentPath));
+        helpPtr3 = stpcpy(tempStr3, fixPath(config.sentPath));
+        logEntryf(LOG_ALWAYS, 0, "Processing sent messages directory: %s", tempStr2);
       }
       else
         if (stricmp(argv[c], "-rcvd") == 0)
         {
-          helpPtr2 = stpcpy(tempStr2, config.rcvdPath);
-          helpPtr3 = stpcpy(tempStr3, config.rcvdPath);
-          logEntry("Processing received messages directory", LOG_ALWAYS, 0);
+          helpPtr2 = stpcpy(tempStr2, fixPath(config.rcvdPath));
+          helpPtr3 = stpcpy(tempStr3, fixPath(config.rcvdPath));
+          logEntryf(LOG_ALWAYS, 0, "Processing received messages directory: %s", tempStr2);
         }
         else
           if (stricmp(argv[c], "-pmail") == 0)
           {
-            helpPtr2 = stpcpy(tempStr2, config.pmailPath);
-            helpPtr3 = stpcpy(tempStr3, config.pmailPath);
-            logEntry("Processing personal mail directory", LOG_ALWAYS, 0);
+            helpPtr2 = stpcpy(tempStr2, fixPath(config.pmailPath));
+            helpPtr3 = stpcpy(tempStr3, fixPath(config.pmailPath));
+            logEntryf(LOG_ALWAYS, 0, "Processing personal mail directory: %s", tempStr2);
           }
           else
             logEntryf(LOG_ALWAYS, 0, "Unknown command line option: %s", argv[c]);
@@ -1726,7 +1734,7 @@ void MsgM(int argc, char *argv[])
       {
         bufCount = 0;
         *helpPtr2 = 0;
-        if ((dir = opendir(tempStr2)) != NULL)
+        if ((dir = opendir(tempStr2)) != NULL)  // already fixPath'd
         {
           while ((bufCount < 0x8ff8) && (ent = readdir(dir)) != NULL)
           {
@@ -1759,7 +1767,7 @@ void MsgM(int argc, char *argv[])
           {
             sprintf(helpPtr2, "%u.msg", msgRenumBuf[count]);
             sprintf(helpPtr3, "%u.msg", count + 1);
-            if (rename(tempStr2, tempStr3) == 0)
+            if (rename(tempStr2, tempStr3) == 0)  // already fixPath'd
             {
               printf("\r- Renumbering messages: %u "dARROW" %u", msgRenumBuf[count], count + 1);
               ddd++;
@@ -1769,7 +1777,7 @@ void MsgM(int argc, char *argv[])
           newLine();
 
         strcpy(helpPtr2, dLASTREAD);
-        if ((lastReadHandle = _sopen(tempStr2, O_RDWR | O_BINARY, SH_DENYRW)) != -1)
+        if ((lastReadHandle = _sopen(tempStr2, O_RDWR | O_BINARY, SH_DENYRW)) != -1)  // already fixPath'd
         {
           while (((signed)(newBufCount = read(lastReadHandle, &lastReadRec, 400))) > 0)
           {
@@ -1792,11 +1800,11 @@ void MsgM(int argc, char *argv[])
          )
       {
         strcpy(tempStr, semaphore[config.mailer]);
-        touch(config.semaphorePath, tempStr, "");
+        touch(config.semaphorePath, tempStr, "");  // touch does the fixPath
         if (config.mailer <= dMT_InterMail)
         {
           tempStr[1] = 'M';
-          touch(config.semaphorePath, tempStr, "");
+          touch(config.semaphorePath, tempStr, "");  // touch does the fixPath
         }
         if (config.mailer == dMT_InterMail)
         {
@@ -1812,10 +1820,13 @@ void AddNew(int argc, char *argv[])
 {
   if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
   {
-    puts("Usage:\n\n"
-         "    FTools AddNew [/A]\n\n"
-         "Switches:\n\n"
-         "    /A   AutoUpdate config files");
+    puts("Usage:\n"
+         "\n"
+         "    FTools AddNew [-A]\n"
+         "\n"
+         "Switches:\n"
+         "\n"
+         "    -A   AutoUpdate config files");
   }
   else
   {
@@ -1920,9 +1931,9 @@ void myexit(void)
     fhandle     configHandle;
     tempStrType tempStr;
 
-    strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
+    strcpy(stpcpy(tempStr, fixPath(configPath)), dCFGFNAME);
 
-    if ( (configHandle = _sopen(tempStr, O_WRONLY | O_BINARY, SH_DENYWR, S_IREAD | S_IWRITE)) == -1
+    if ( (configHandle = _sopen(tempStr, O_WRONLY | O_BINARY, SH_DENYWR, dDEFOMODE)) == -1  // already fixPath'd
        || lseek(configHandle, offsetof(configType, lastUniqueID), SEEK_SET) == -1L
        || write(configHandle, &config.lastUniqueID, sizeof(config.lastUniqueID)) < sizeof(config.lastUniqueID)
        || close(configHandle) == -1
@@ -1945,7 +1956,6 @@ int main(int argc, char *argv[])
 {
   char        *helpPtr;
   fhandle      configHandle;
-  s16          ch;
   tempStrType  tempStr2;
   tempStrType  tempStr;
   time_t       time1;
@@ -1965,43 +1975,77 @@ int main(int argc, char *argv[])
   tzset();
 #endif // __MINGW32__
 
-  time(&startTime);
+  startTime = time(NULL);
   {
     struct tm *tm = gmtime(&startTime);  // gmt ok!
     tm->tm_isdst = -1;
     gmtOffset = startTime - mktime(tm);
+#ifdef _DEBUG0
+    printf("DEBUG gmtOffset: %ld\n", gmtOffset);
+#endif // _DEBUG
   }
 #ifdef __WIN32__
   // Set default open mode:
   _fmode = O_BINARY;
-
-  smtpID = TIDStr();
 #endif // __WIN32__
 
-  printf("%s - The Fast Message Base Utility\n\n", VersionStr());
+  printf("%s - The Fast Message Base Utility\n", VersionStr());
   printf("Copyright (C) 1991-%s by FMail Developers - All rights reserved\n\n", __DATE__ + 7);
+
+#ifdef _DEBUG
+  getcwd(tempStr, dTEMPSTRLEN);
+  printf("DEBUG cwd: %s\n", tempStr);
+
+  {
+    int i;
+    for (i = 0; i < argc; i++)
+      printf("DEBUG arg %d: %s\n", i, argv[i]);
+  }
+#endif
+
+#ifdef __linux__
+  if ((helpPtr = getenv("FMAIL_REPLACE_DRIVE")) != NULL && *helpPtr != 0)
+  {
+    helpPtr = stpcpy(replaceDrive, helpPtr);
+    if (*(helpPtr - 1) != dDIRSEPC)
+    {
+      *helpPtr++ = dDIRSEPC;
+      *helpPtr   = 0;
+    }
+  }
+  else
+    *replaceDrive = 0;
+#ifdef _DEBUG
+  printf("DEBUG replaceDrive = \"%s\"\n", replaceDrive);
+#endif // _DEBUG
+#endif // __linux__
 
   if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0 || !dirExist(helpPtr))
   {
     strcpy(configPath, argv[0]);
-    if ((helpPtr = strrchr(configPath, '\\')) == NULL)
-      strcpy(configPath, ".\\");
+    if ((helpPtr = strrchr(configPath, dDIRSEPC)) == NULL)
+      strcpy(configPath, "."dDIRSEPS);
     else
       helpPtr[1] = 0;
   }
   else
   {
+    int l;
     strcpy(configPath, helpPtr);
-    if (configPath[strlen(configPath) - 1] != '\\')
-      strcat(configPath, "\\");
+    l = strlen(configPath);
+    if (l >= 1 && configPath[l - 1] != dDIRSEPC)
+    {
+      configPath[l++] = dDIRSEPC;
+      configPath[l  ] = 0;
+    }
   }
 #ifdef _DEBUG
-  printf("DEBUG configPath: %s\n", configPath);
+  printf("DEBUG configPath = \"%s\"\n", configPath);
 #endif
 
-  strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
+  strcpy(stpcpy(tempStr, fixPath(configPath)), dCFGFNAME);
 
-  if (  (configHandle = _sopen(tempStr, O_RDONLY | O_BINARY, SH_DENYWR)) == -1
+  if (  (configHandle = _sopen(tempStr, O_RDONLY | O_BINARY, SH_DENYWR)) == -1  // already fixPath'd
      || read(configHandle, &config, sizeof(configType)) < sizeof(configType)
      || close(configHandle) != 0
      )
@@ -2025,14 +2069,14 @@ int main(int argc, char *argv[])
   config.bbsProgram = BBS_QBBS;
 #endif
 
-  strcpy(stpcpy(tempStr, config.bbsPath), dFMAIL_LOC);
-  strcpy(tempStr2, config.bbsPath);
-  if ((helpPtr = strrchr(tempStr2, '\\')) != NULL)
+  strcpy(stpcpy(tempStr, fixPath(config.bbsPath)), dFMAIL_LOC);
+  strcpy(tempStr2, fixPath(config.bbsPath));
+  if ((helpPtr = strrchr(tempStr2, dDIRSEPC)) != NULL)  // path already fixed for linux
     *helpPtr = 0;
 
   if  (  !access(tempStr2, 0)
-      && (semaHndl = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYWR, S_IREAD | S_IWRITE)) == -1
-      && errno != ENOFILE
+      && (semaHndl = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYWR, dDEFOMODE)) == -1  // already fixPath'd
+      && errno != ENOENT  // path does not exist
       )
   {
     puts("Waiting for another copy of FMail, FTools or FSetup to finish...");
@@ -2040,38 +2084,23 @@ int main(int argc, char *argv[])
     time(&time1);
     time2 = time1;
 
-    ch = 0;
-    while (  (semaHndl = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
+    while (  (semaHndl = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, dDEFOMODE)) == -1  // already fixPath'd
           && (!config.activTimeOut || time2 - time1 < config.activTimeOut)
-          && (ch = (keyWaiting & 0xff)) != 27
           )
     {
-      if (ch == 0 || ch == -1)
-      {
-        time2a = time2 + 1;
-        while (time(&time2) <= time2a)
-          returnTimeSlice(1);
-      }
-#ifndef __STDIO__
-      else
-        keyRead;
-#endif
+      time2a = time2 + 1;
+      while (time(&time2) <= time2a)
+        returnTimeSlice(1);
     }
-#ifndef __STDIO__
-    if (ch != 0 && ch != -1)
-      keyRead;
-#endif
-
     if (semaHndl == -1)
     {
       puts("\nAnother copy of FMail, FTools or FSetup did not finish in time...\n\nExiting...");
-
       exit(4);
     }
   }
 
   // FIX bad RA2 update !!!!!!!!
-  if ((config.bbsProgram == BBS_RA1X) && config.genOptions._RA2)
+  if (config.bbsProgram == BBS_RA1X && config.genOptions._RA2)
   {
     config.bbsProgram = BBS_RA20;
     config.genOptions._RA2 = 0;
@@ -2116,9 +2145,9 @@ int main(int argc, char *argv[])
       if ((boardInfo[config.netmailBoard[count]].name = malloc(7)) != NULL)
       {
         if (count)
-          sprintf(boardInfo[config.netmailBoard[count]].name, "#net%u", count);
+          sprintf(boardInfo[config.netmailBoard[count]].name, "@net%u", count);
         else
-          strcpy(boardInfo[config.netmailBoard[count]].name, "#netm");
+          strcpy(boardInfo[config.netmailBoard[count]].name, "@netm");
       }
       boardInfo[config.netmailBoard[count]].aka         = count;
       boardInfo[config.netmailBoard[count]].options     = config.optionsAKA[count];
@@ -2129,47 +2158,47 @@ int main(int argc, char *argv[])
   if (config.badBoard)
   {
     boardInfo[config.badBoard].defined++;
-    boardInfo[config.badBoard].name = "#bad";
+    boardInfo[config.badBoard].name = "@bad";
   }
   if (config.dupBoard)
   {
     boardInfo[config.dupBoard].defined++;
-    boardInfo[config.dupBoard].name = "#dup";
+    boardInfo[config.dupBoard].name = "@dup";
   }
   if (config.recBoard)
   {
     boardInfo[config.recBoard].defined++;
-    boardInfo[config.recBoard].name = "#rec";
+    boardInfo[config.recBoard].name = "@rec";
   }
 
   if (argc < 2)
-    Usage();
+    Usage();  // Linux tested
 #ifndef GOLDBASE
   else if (  (stricmp(argv[1], "D") == 0) || (stricmp(argv[1], "DELETE"  ) == 0)
-          || (stricmp(argv[1], "M") == 0) || (stricmp(argv[1], "MAINT"   ) == 0)
+          || (stricmp(argv[1], "M") == 0) || (stricmp(argv[1], "MAINT"   ) == 0)  // Linux tested
           || (stricmp(argv[1], "U") == 0) || (stricmp(argv[1], "UNDELETE") == 0)
           || (stricmp(argv[1], "V") == 0) || (stricmp(argv[1], "MOVE"    ) == 0)
           )
     Maint(argc, argv);
-  else if (stricmp(argv[1], "T") == 0 || stricmp(argv[1], "SORT"  ) == 0)
+  else if (stricmp(argv[1], "T") == 0 || stricmp(argv[1], "SORT"  ) == 0)  // Linux tested
     Sort(argc, argv);
-  else if (stricmp(argv[1], "S") == 0 || stricmp(argv[1], "STAT"  ) == 0)
+  else if (stricmp(argv[1], "S") == 0 || stricmp(argv[1], "STAT"  ) == 0)  // Linux tested
     Stat(argc, argv);
 #endif  // GOLDBASE
-  else if (stricmp(argv[1], "N") == 0 || stricmp(argv[1], "NOTIFY") == 0)
+  else if (stricmp(argv[1], "N") == 0 || stricmp(argv[1], "NOTIFY") == 0)  // Linux tested
     Notify(argc, argv);
-  else if (stricmp(argv[1], "P") == 0 || stricmp(argv[1], "POST"  ) == 0)
+  else if (stricmp(argv[1], "P") == 0 || stricmp(argv[1], "POST"  ) == 0)  // Linux tested
     Post(argc, argv);
-  else if (stricmp(argv[1], "E") == 0 || stricmp(argv[1], "EXPORT") == 0)
+  else if (stricmp(argv[1], "E") == 0 || stricmp(argv[1], "EXPORT") == 0)  // Linux tested
     Export(argc, argv);
-  else if (stricmp(argv[1], "G") == 0 || stricmp(argv[1], "MSGM"  ) == 0)
+  else if (stricmp(argv[1], "G") == 0 || stricmp(argv[1], "MSGM"  ) == 0)  // Linux tested
     MsgM(argc, argv);
-  else if (stricmp(argv[1], "W") == 0 || stricmp(argv[1], "AddNew") == 0)
+  else if (stricmp(argv[1], "W") == 0 || stricmp(argv[1], "AddNew") == 0)  // Linux tested
     AddNew(argc, argv);
-  else if (stricmp(argv[1], "A") == 0 || stricmp(argv[1], "ABOUT" ) == 0)
-    About();
+  else if (stricmp(argv[1], "A") == 0 || stricmp(argv[1], "ABOUT" ) == 0)  // Linux tested
+    About();  // Linux tested
   else
-    Usage();
+    Usage();  // Linux tested
 
   return 0;
 }

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -22,17 +22,18 @@
 //---------------------------------------------------------------------------
 
 #include <ctype.h>
+#ifdef __WIN32__
 #include <dir.h>
+#endif // __WIN32__
 #include <dirent.h>
-#include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -45,6 +46,7 @@
 #include "minmax.h"
 #include "msgmsg.h"
 #include "msgra.h"
+#include "os.h"
 #include "spec.h"
 #include "stpcpy.h"
 #include "utils.h"
@@ -158,13 +160,13 @@ s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16
 
   msgMsg.attribute = message->attribute;
 
-  helpPtr = stpcpy(tempStr, config.netPath);
+  helpPtr = stpcpy(tempStr, fixPath(config.netPath));
 
   // Determine highest message
 
   highMsgNum = 0;
   strcpy(helpPtr, dLASTREAD);
-  if ((msgHandle = open(tempStr, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+  if ((msgHandle = open(tempStr, O_RDONLY | O_BINARY, dDEFOMODE)) != -1)  // already fixPath'd
   {
     if (read(msgHandle, &highMsgNum, 2) != 2)
       highMsgNum = 0;
@@ -172,7 +174,7 @@ s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16
   }
   *helpPtr = 0;
 
-  if ((dir = opendir(tempStr)) != NULL)
+  if ((dir = opendir(tempStr)) != NULL)  // already fixPath'd
   {
     while ((ent = readdir(dir)) != NULL)
       if (match_spec("*.msg", ent->d_name))
@@ -187,7 +189,7 @@ s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16
   count = 0;
   sprintf(helpPtr, "%u.msg", ++highMsgNum);
 
-  while (count < 20 && (msgHandle = open(tempStr, O_RDWR | O_CREAT | O_EXCL | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+  while (count < 20 && (msgHandle = open(tempStr, O_RDWR | O_CREAT | O_EXCL | O_TRUNC | O_BINARY, dDEFOMODE)) == -1)  // already fixPath'd
   {
     highMsgNum += count++ < 10 ? 1 : 10;
     sprintf(helpPtr, "%u.msg", highMsgNum);
@@ -349,17 +351,17 @@ void Export(int argc, char *argv[])
   if ( argc < 4 || (argv[2][0] == '?' || argv[2][1] == '?') )
   {
     puts("Usage:\n\n"
-         "    FTools Export <area name> <file name> [/D] [/F] [/T] [/S] [/X] [/P] [/K]\n\n"
+         "    FTools Export <area name> <file name> [-D] [-F] [-T] [-S] [-X] [-P] [-K]\n\n"
          "    <area tag>   Name of the area to export\n"
          "    <file name>  Name of file to export messages to\n\n"
          "Switches:\n\n"
-         "    /D           Omit 'Date' line\n"
-         "    /F           Omit 'From' line\n"
-         "    /T           Omit 'To' line\n"
-         "    /S           Omit 'Subject' line\n"
-         "    /X           Omit message text\n"
-         "    /P           Exclude private messages\n"
-         "    /K           Show kludges");
+         "    -D           Omit 'Date' line\n"
+         "    -F           Omit 'From' line\n"
+         "    -T           Omit 'To' line\n"
+         "    -S           Omit 'Subject' line\n"
+         "    -X           Omit message text\n"
+         "    -P           Exclude private messages\n"
+         "    -K           Show kludges");
     return;
   }
 
@@ -376,20 +378,20 @@ void Export(int argc, char *argv[])
   if ((msgHdrBuf = malloc(HDR_BUFSIZE*sizeof(msgHdrRec))) == NULL)
     logEntry("Not enough memory to allocate message base file buffers", LOG_ALWAYS, 2);
 
-  strcpy(stpcpy(tempStr, config.bbsPath), "msghdr."MBEXTN);
+  strcpy(stpcpy(tempStr, fixPath(config.bbsPath)), "msghdr."MBEXTN);
 
-  if ((msgHdrHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1)
+  if ((msgHdrHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1)  // already fixPath'd
     logEntry ("Can't open message base files for input", LOG_ALWAYS, 1);
 
-  strcpy(stpcpy(tempStr, config.bbsPath), "msgtxt."MBEXTN);
+  strcpy(stpcpy(tempStr, fixPath(config.bbsPath)), "msgtxt."MBEXTN);
 
-  if ((msgTxtHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1)
+  if ((msgTxtHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1)  // already fixPath'd
     logEntry("Can't open message base files for input", LOG_ALWAYS, 1);
 
-  if ((outHandle = open(argv[3], O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, S_IREAD | S_IWRITE)) == -1)
+  if ((outHandle = open(argv[3], O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, dDEFOMODE)) == -1)  // don't need fixPath
     logEntry ("Can't open output file", LOG_ALWAYS, 1);
 
-  logEntryf(LOG_ALWAYS, 0, "Exporting messages in board %u to file %s", board, strupr(argv[3]));
+  logEntryf(LOG_ALWAYS, 0, "Exporting messages in board %u to file %s", board, argv[3]);
 
   totalHdrBuf = 0;
   hdrBufCount = 0;
@@ -502,9 +504,9 @@ static s16 getNetAka(char *areaTag)
   for (count = 0; count <= MAX_NETAKAS; count++)
   {
     if (count)
-      sprintf(nameBuf, "#net%u", count);
+      sprintf(nameBuf, "@net%u", count);
     else
-      strcpy(nameBuf, "#netm");
+      strcpy(nameBuf, "@netm");
     if (stricmp(nameBuf, areaTag) == 0)
       return count;
   }
@@ -530,11 +532,11 @@ s16 getBoardNum(char *areaTag, s16 valid, u16 *aka, rawEchoType **areaPtr)
     *areaPtr = memset(&areaRec, 0, RAWECHO_SIZE);
     return config.netmailBoard[netaka];
   }
-  if (stricmp(areaTag, "#bad") == 0)
+  if (stricmp(areaTag, "@bad") == 0)
     board = config.badBoard;
-  if (stricmp(areaTag, "#dup") == 0)
+  if (stricmp(areaTag, "@dup") == 0)
     board = config.dupBoard;
-  if (stricmp(areaTag, "#rec") == 0)
+  if (stricmp(areaTag, "@rec") == 0)
     board = config.recBoard;
   if (board)
   {

@@ -123,7 +123,7 @@ int addExtension(const char *path, const char *ext)
 
   strcpy(stpcpy(newName, tp), ext);
 
-  return rename(tp, newName);
+  return rename(tp, newName);  // already fixPath'd
 }
 //---------------------------------------------------------------------------
 s16 existDir(const char *dir, const char *descr)
@@ -215,7 +215,7 @@ u32 diskFree(const char *path)
   else
   {
     getcwd(tempStr, sizeof(tempStrType));
-    chdir(path);
+    chdir(path);  // no fixPath, not linux
     getdfree(0, &dtable);
     chdir(tempStr);
   }
@@ -267,8 +267,8 @@ void touch(const char *path, const char *filename, const char *t)
   tempStrType tempStr;
   fhandle     tempHandle;
 
-  strcpy(stpcpy(tempStr, path), filename);
-  if ((tempHandle = open(fixPath(tempStr), O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, dDEFOMODE)) != -1)
+  strcpy(stpcpy(tempStr, fixPath(path)), filename);
+  if ((tempHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, dDEFOMODE)) != -1)  // already fixPath'd
   {
     write(tempHandle, t, strlen(t));
     close(tempHandle);
@@ -375,15 +375,24 @@ void Delete(const char *path, const char *wildCard)
   tempStrType    tempStr;
   char          *helpPtr;
 
-  helpPtr = stpcpy(tempStr, path);
+  helpPtr = stpcpy(tempStr, fixPath(path));
+#ifdef _DEBUG
+  logEntryf(LOG_DEBUG, 0, "DEBUG Delete-ing: %s%s", tempStr, wildCard);
+#endif // _DEBUG
 
-  if ((dir = opendir(fixPath(path))) != NULL)
+  if ((dir = opendir(tempStr)) != NULL)  // already fixPath'd
   {
     while ((ent = readdir(dir)) != NULL)
       if (match_spec(wildCard, ent->d_name))
       {
+        int rc;
         strcpy(helpPtr, ent->d_name);
-        unlink(fixPath(tempStr));
+        rc = unlink(tempStr);  // already fixPath'd
+#ifdef _DEBUG
+        logEntryf(LOG_DEBUG, 0, "DEBUG Delete: %d %s", rc, tempStr);
+#else
+        (void)rc;  // prevent compiler warning
+#endif // _DEBUG
       }
 
     closedir(dir);
@@ -397,17 +406,16 @@ s32 getSwitch(int *argc, char *argv[], s32 mask)
   s32 result = 0;
   int count = *argc;
 
-  while ( count && --count >= 1 )
+  while (--count >= 1)
   {
-    if ( argv[count][0] == '/' )
+    if (argv[count][0] == '-')
     {
-      if ( count != --(*argc) )
+      if (count != --(*argc))
       {
          puts("Switches should be last on command line");
          exit(4);
       }
-      if ((strlen(argv[count]) != 2) ||
-          (!(isalpha(argv[count][1]))))
+      if (strlen(argv[count]) != 2 || !isalpha(argv[count][1]))
       {
          printf("Illegal switch: %s\n", argv[count]);
          error++;
@@ -1497,6 +1505,14 @@ const char *TZUTCStr(void)
 
   ubias = abs(bias);
   sprintf(s, "%s%02lu%02lu", bias <= 0 ? "" : "-", ubias / 60, ubias % 60);
+
+  return s;
+#elif defined(__linux__)
+  static char s[10];
+  long bias = gmtOffset / 60;
+  long ubias = labs(bias);
+
+  sprintf(s, "%s%02ld%02ld", bias >= 0 ? "" : "-", ubias / 60, ubias % 60);
 
   return s;
 #else

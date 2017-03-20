@@ -41,6 +41,7 @@
 #include "config.h"
 #include "crc.h"
 #include "dups.h"
+#include "hudson_shared.h"
 #include "jamfun.h"
 #include "log.h"
 #include "msgmsg.h"

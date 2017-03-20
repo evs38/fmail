@@ -46,7 +46,8 @@
 #define USER_10     0x00000200L
 
 
-#include <pshpack1.h>
+#include "pshpack1.h"
+
 /*
 **  Folder structure
 **
@@ -65,5 +66,5 @@ typedef struct
 
 } FOLDER, *FOLDERPTR;
 
-#include <poppack.h>
+#include "poppack.h"
 /* end of file "folder.h" */

@@ -21,12 +21,12 @@
 //
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <io.h>
-#include <fcntl.h>
 #include <ctype.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -36,6 +36,7 @@
 #include "ftlog.h"
 #include "ftr.h"
 #include "mtask.h"
+#include "os.h"
 #include "utils.h"
 
 
@@ -77,13 +78,13 @@ s16 packValid(nodeNumType *node, char *packedNodes)
    while (helpPtr != NULL)
    {
       if ((*(u16*)helpPtr == '*') ||
-          (strchr(helpPtr,':')!=NULL))
-         strcpy (nodeTempStr,helpPtr);
+          (strchr(helpPtr, ':')!=NULL))
+         strcpy(nodeTempStr, helpPtr);
       else
       {
-         if (strchr(helpPtr,'/')!=NULL)
+         if (strchr(helpPtr, '/')!=NULL)
          {
-            if ((helpPtr2=strchr(nodeTempStr,':'))!=NULL)
+            if ((helpPtr2 = strchr(nodeTempStr, ':'))!=NULL)
                strcpy(helpPtr2 + 1, helpPtr);
             else
                logEntry("Bad node on command line", LOG_ALWAYS, 4);
@@ -92,17 +93,17 @@ s16 packValid(nodeNumType *node, char *packedNodes)
          {
             if (*(helpPtr)!='.')
             {
-               if ((helpPtr2=strchr(nodeTempStr,'/'))!=NULL)
-                  strcpy (helpPtr2+1,helpPtr);
+               if ((helpPtr2 = strchr(nodeTempStr, '/'))!=NULL)
+                  strcpy(helpPtr2 + 1, helpPtr);
                else
                   logEntry("Bad node on command line",LOG_ALWAYS,4);
             }
             else
             {
-               if ((helpPtr2=strchr(nodeTempStr,'.'))!=NULL)
-                  strcpy(helpPtr2,helpPtr);
+               if ((helpPtr2 = strchr(nodeTempStr, '.'))!=NULL)
+                  strcpy(helpPtr2, helpPtr);
                else
-                  strcat(nodeTempStr,helpPtr);
+                  strcat(nodeTempStr, helpPtr);
             }
          }
       }
@@ -162,7 +163,7 @@ void Notify(int argc, char *argv[])
    if (argc >= 3 && (argv[2][0] == '?' || argv[2][1] == '?'))
    {
       puts("Usage:\n\n"
-           "    FTools Notify [<node> [<node> ...] [/A|/N]\n\n"
+           "    FTools Notify [<node> [<node> ...] [-A|-N]\n\n"
            "    [<node>]  Node number(s) of systems to send reports to.\n"
            "              Wildcards are allowed. If omitted, * (all nodes) is assumed.\n"
            "              If wildcards are used, only qualified nodes that are marked\n"
@@ -170,8 +171,8 @@ void Notify(int argc, char *argv[])
            "\n"
            "Switches:\n"
            "\n"
-           "    /A   Send Area Status report\n"
-           "    /N   Send Node Status report");
+           "    -A   Send Area Status report\n"
+           "    -N   Send Node Status report");
 
       return;
    }
@@ -249,7 +250,7 @@ void Notify(int argc, char *argv[])
             strcpy(message->toUserName, *nodeBuf->sysopName ? nodeBuf->sysopName : "SysOp");
             strcpy(message->subject, "FMail node status report");
 
-            switch (nodeBuf->archiver)
+            switch(nodeBuf->archiver)
 #ifdef __32BIT__
             {   case 0:  strcpy(tempStr, config.arc32.programName);
                          break;
@@ -304,13 +305,13 @@ void Notify(int argc, char *argv[])
             }
             if ((helpPtr = strchr(tempStr, ' ')) != NULL)
             {
-              while (helpPtr > tempStr && *(helpPtr-1) != '\\')
+              while (helpPtr > tempStr && !isDirSep(*(helpPtr - 1)))
                 --helpPtr;
 
               strcpy(tempStr, helpPtr);
             }
             else
-              if ((helpPtr = strrchr(tempStr, '\\')) != NULL)
+              if (lastSep(helpPtr, tempStr))
                 strcpy(tempStr, helpPtr);
 
             helpPtr = message->text;

@@ -308,7 +308,6 @@ typedef struct
 #include "poppack.h"
 //---------------------------------------------------------------------------
 void  closeBBSWr      (u16);
-char *expandNameHudson(const char *fileName, int orgName);
 void  initBBS         (void);
 int   lockMB          (void);
 void  moveBadBBS      (void);

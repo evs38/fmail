@@ -2,7 +2,7 @@
 
 
 
-                            FMail 2.0
+                            FMail 2.1
 
 
 
@@ -172,9 +172,9 @@ The files are:
 
   FMAIL.CFG      General configuration file.
 
-  FMAIL.BDE      File createdby FMAIL.EXE when new areas are tossed and
-                 used by FConfig.EXE to AutoCreate those areas or used
-                 by the FTools addnew function.
+  FMAIL.BDE      File created by FMAIL.EXE when new areas are tossed
+                 and used by FConfig.EXE to AutoCreate those areas or
+                 used by the FTools addnew function.
                  After usage the file is deleted.
 
   FMAIL.DUP      Contains  the database  with signatures  of messages
@@ -2237,10 +2237,10 @@ FMail, FConfig or another copy of FTools is active.
 Everywhere below where <board> is mentioned, you may use the area
 tag of the area. In some cases it also is allowed to use the
 Hudson board number. For the netmail board of the main AKA use
-#NETM, for netmail board of for example AKA 5 use #NET5. For the
-netmail directory use #NETDIR. For the Bad messages board, the
-Recovery board and the Duplicate messages board, you can use #BAD,
-#REC and #DUP.
+@NETM, for netmail board of for example AKA 5 use @NET5. For the
+netmail directory use @NETDIR. For the Bad messages board, the
+Recovery board and the Duplicate messages board, you can use @BAD,
+@REC and @DUP.
 
 
 6.1       Maint
@@ -2331,43 +2331,43 @@ message base, enter: FTools Undelete <board number>
 
 The general syntax of the Post command is:
 
-          FTools Post [<file|-] <area tag>
-               [-from xxx] [-to xxx] [-dest xxx] [-subj xxx] [-aka
-               x]
+          FTools Post <file|-> <area tag>
+               [-from xxx] [-to xxx] [-dest xxx] [-subj xxx] [-aka x]
                [/C] [/H] [/D] [/K] [/P] [/R] [/F] [/E] [/T]
 
-<area tag> can be one of the following:
-          -    The area tag of the desired echomail area.
-          -    #netdir for the Netmail directory.
-          -    #netm for the Netmail board of your main aka.
+<file|->  File name with message body text or text is read from stdin
+          if '-' is specified. This is a change from versions before
+          2.1 where '-' meant, no message body text was used. If you
+          want an empty message body text specify '/dev/null' in linux
+          or 'NUL' in windows as file name.
 
-          -    #net1-#net31 for the Netmail boards of your akas
-               1 - 31.
+<area tag> can be one of the following:
+          - The area tag of the desired echomail area.
+          - @netdir for the Netmail directory.
+          - @netm for the Netmail board of your main aka.
+          - @net1-@net31 for the Netmail boards of your akas 1 - 31.
 
 Available options with default value which are used if the options
 is omitted:
 
           [-from xxx]    From name, default is the SysOp name as
                          defined in FConfig
-          [-to xxx]      To name, default is 'SysOp'.
+          [-to xxx]      To name, default is 'SysOp' or 'All' in an
+                         echomail area.
           [-subj xxx]    Subject line, default is the name of that
                          file that was posted.
-          [-dest xxx]    Node to send the message to (netmail
-                         only).
-          [-aka x]            The AKA that should be used as the
-                              origin address (netmail only).
-          [/C]                     Crash status (netmail only).
-          [/H]                     Hold status (netmail only).
-          [/D]                     Direct status (netmail only).
-          [/K]                     Delete message after sending
-                                   it.
-          [/P]                     Private status.
-          [/R]                     File Request (netmail only).
-          [/F]                     File attach (netmail only)
-          [/E]                     Erase sent file (file attach
-                                   only)\n"
-          [/T]                     Truncate sent file (file attach
-                                   only)\n"
+          [-dest xxx]    Node to send the message to (netmail only).
+          [-aka x]       The AKA that should be used as the
+                         origin address (netmail only).
+          [-C]           Crash status (netmail only).
+          [-H]           Hold status (netmail only).
+          [-D]           Direct status (netmail only).
+          [-K]           Delete message after sending it.
+          [-P]           Private status.
+          [-R]           File Request (netmail only).
+          [-F]           File attach (netmail only)
+          [-E]           Erase sent file (file attach only)
+          [-T]           Truncate sent file (file attach only)
 
 Two examples:
 
@@ -2380,7 +2380,7 @@ FMAIL_HELP, enter:
 To send a file EXAMPLE.TXT as a netmail message with the file
 attached to node 2:283/619, enter
 
-          FTools Post EXAMPLE.TXT #netdir -to "Folkert Wijnstra"
+          FTools Post EXAMPLE.TXT @netdir -to "Joe Sysop"
                -dest 2:283/619 /F
 
 

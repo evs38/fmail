@@ -251,14 +251,14 @@ static void processPackLine(char *line, s32 switches)
     }
     destType = DEST_NONE;
 
-    if ((helpPtr = strstr(lineBuf, " /")) != NULL)
+    if ((helpPtr = strstr(lineBuf, " -")) != NULL)
     {
       *helpPtr = 0;
       helpPtr = strtok(helpPtr + 1, " ");
       while (helpPtr != NULL)
       {
         helpPtr[1] = toupper(helpPtr[1]);
-        if (  helpPtr[0] != '/'
+        if (  helpPtr[0] != '-'
            || (helpPtr[1] != 'I' && helpPtr[1] != 'L' && helpPtr[1] != 'C' && helpPtr[1] != 'H' && helpPtr[1] != 'O')
            || helpPtr[2] != 0
            )

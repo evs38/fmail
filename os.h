@@ -64,7 +64,7 @@ const char *fixPath(const char *path);
 #elif defined(__WIN32__)
 
 #define fixPath(x)  (x)
-#define MKDIR(d)    mkdir(d)
+#define MKDIR(d)    mkdir(d)  // windows: no fixPath
 #define dDIRSEPS    "\\"
 #define dDIRSEPSa   "/"
 #define dDIRSEPC    '\\'

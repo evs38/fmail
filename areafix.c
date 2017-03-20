@@ -480,7 +480,8 @@ int areaFix(internalMsgType *message)
 
     if (  helpPtr == NULL
        || strlen(nodeInfoPtr->password) == 0
-       || stricmp(helpPtr, nodeInfoPtr->password) != 0 )
+       || stricmp(helpPtr, nodeInfoPtr->password) != 0
+       )
     {
       sprintf(tempStr, "Bad AreaMgr request from %s", nodeStr(&nodeInfoPtr->node));
       mgrLogEntry(tempStr);
@@ -714,16 +715,15 @@ int areaFix(internalMsgType *message)
               while (*helpPtr == ' ')
                 helpPtr++;
 
-              if ( strnicmp (helpPtr, "/R", 2) == 0 ||
-                   (komma && toupper(*helpPtr) == 'R') )
+              if (strnicmp(helpPtr, "/R", 2) == 0 || (komma && toupper(*helpPtr) == 'R'))
               {
-                if ( !komma )
+                if (!komma)
                   ++helpPtr;
 
                 rescanRequest++;
 
                 ++helpPtr;
-                if ( *helpPtr == '=' || *helpPtr == ':' )
+                if (*helpPtr == '=' || *helpPtr == ':')
                   rescanAll = atoi(helpPtr+1);
                 else
                   rescanAll = config.defMaxRescan ?
@@ -745,60 +745,63 @@ int areaFix(internalMsgType *message)
           }
           else
           {
-            if ((*helpPtr == '+') || (*helpPtr == '-') || (*helpPtr == '='))
+            if (*helpPtr == '+' || *helpPtr == '-' || *helpPtr == '=')
             {
-              removeArea = (*(helpPtr) == '-');
-              updateArea = (*(helpPtr++) == '=');
+              removeArea = *helpPtr == '-';
+              updateArea = *(helpPtr++) == '=';
             }
             else
               removeArea = updateArea = 0;
-            if ( updateArea )
+
+            if (updateArea)
               rescanRequest++;
 
             if ((helpPtr2 = getAreaNamePtr(helpPtr)) != NULL)
             {
               compare = 1;
               count = 0;
-              while ((count < areaFixCount) &&
-                     ((compare = stricmp(helpPtr2, (*areaFixList)[count].areaName)) > 0))
+              while (  count < areaFixCount
+                    && (compare = stricmp(helpPtr2, (*areaFixList)[count].areaName)) > 0
+                    )
               {
                 count++;
               }
-              if ((compare == 0) || (areaFixCount < MAX_AREAFIX))
+              if (compare == 0 || areaFixCount < MAX_AREAFIX)
               {
                 if (compare != 0)
                 {
-                  memmove (&(*areaFixList)[count + 1],
-                           &(*areaFixList)[count],
-                           ((areaFixCount++) - count) * sizeof(areaFixType));
+                  memmove(&(*areaFixList)[count + 1], &(*areaFixList)[count], ((areaFixCount++) - count) * sizeof(areaFixType));
                   (*areaFixList)[count].areaName = helpPtr2;
                 }
                 (*areaFixList)[count].uplink = -1;
 
-                if ( updateArea )
+                if (updateArea)
                   (*areaFixList)[count].remove = 8;
                 else
                   (*areaFixList)[count].remove = removeArea;
 
-                if ( !removeArea )
+                if (!removeArea)
                 {
                   helpPtr += strlen(helpPtr2);
 
-                  while (*helpPtr == ' ') helpPtr++;
-                  if ( (komma = (*helpPtr == ',')) != 0 )
+                  while (*helpPtr == ' ')
                     helpPtr++;
-                  while (*helpPtr == ' ') helpPtr++;
 
-                  if ( strnicmp (helpPtr, "/R", 2) == 0 ||
-                       (komma && toupper(*helpPtr) == 'R') )
+                  if ((komma = (*helpPtr == ',')) != 0)
+                    helpPtr++;
+
+                  while (*helpPtr == ' ')
+                    helpPtr++;
+
+                  if (strnicmp (helpPtr, "/R", 2) == 0 || (komma && toupper(*helpPtr) == 'R'))
                   {
-                    if ( !komma )
+                    if (!komma)
                       ++helpPtr;
 
                     rescanRequest++;
 
                     ++helpPtr;
-                    if ( *helpPtr == '=' || *helpPtr == ':' )
+                    if (*helpPtr == '=' || *helpPtr == ':')
                       (*areaFixList)[count].maxRescan = atoi(++helpPtr);
                   }
                 }
@@ -815,11 +818,7 @@ int areaFix(internalMsgType *message)
               + sprintf(message->text, "FMail AreaMgr status report for %s on %s\r", nodeStr(&nodeInfoPtr->node), nodeStr(&message->srcNode));
 
       if (remMaintPtr != NULL)
-      {
-        helpPtr = helpPtr + sprintf (helpPtr,
-                                     "Remote maintenance performed by %s\r",
-                                     nodeStr(&remMaintPtr->node));
-      }
+        helpPtr = helpPtr + sprintf(helpPtr, "Remote maintenance performed by %s\r", nodeStr(&remMaintPtr->node));
 
       for (areaCount = 0; areaCount<areaHeader->totalRecords; areaCount++)
       {
@@ -838,30 +837,23 @@ int areaFix(internalMsgType *message)
         {
           compare = 1;
           c = 0;
-          while ((c < areaFixCount) &&
-                 ((compare = stricmp (areaBuf->areaName,
-                                      (*areaFixList)[c].areaName)) > 0))
-          {
+          while (c < areaFixCount && (compare = stricmp (areaBuf->areaName, (*areaFixList)[c].areaName)) > 0)
             c++;
-          }
+
           if (compare != 0)
           {
-            memmove (&(*areaFixList)[c+1],
-                     &(*areaFixList)[c],
-                     (areaFixCount - c) * sizeof(areaFixType));
+            memmove(&(*areaFixList)[c + 1], &(*areaFixList)[c], (areaFixCount - c) * sizeof(areaFixType));
             (*areaFixList)[c].areaName  = getAreaNamePtr(areaBuf->areaName);
             (*areaFixList)[c].uplink    = -1;
             (*areaFixList)[c].maxRescan = -1;
-            (*areaFixList)[c].remove    = allType-1;
+            (*areaFixList)[c].remove    = allType - 1;
             areaFixCount++;
           }
         }
         c = 0;
-        while ((c < MAX_AREAFIX) && (c < areaCount) &&
-               (getGroupCode(areaBuf->group) >= (*areaSortList)[c].groupChar))
-        {
+        while (c < MAX_AREAFIX && c < areaCount && getGroupCode(areaBuf->group) >= (*areaSortList)[c].groupChar)
           c++;
-        }
+
         if (c < MAX_AREAFIX)
         {
           memmove(&(*areaSortList)[c+1], &(*areaSortList)[c], sizeof(areaSortType)*(min(areaCount, MAX_AREAFIX) - c));
@@ -873,8 +865,7 @@ int areaFix(internalMsgType *message)
       areaSortListIndex = 0;
       bufCount = MAX_DISPLAY;
 
-      while ((areaSortListIndex < min(areaCount,MAX_AREAFIX)) &&
-             getRec(CFG_ECHOAREAS,(*areaSortList)[areaSortListIndex++].index))
+      while (areaSortListIndex < min(areaCount, MAX_AREAFIX) && getRec(CFG_ECHOAREAS, (*areaSortList)[areaSortListIndex++].index))
       {
         areaBuf->areaName[ECHONAME_LEN-1] = 0;
         areaBuf->comment[COMMENT_LEN-1] = 0;
@@ -891,37 +882,26 @@ int areaFix(internalMsgType *message)
              &&  areaBuf->options.allowAreafix
              )
           {
-            /* found */
-            if ( (*areaFixList)[count].remove )
+            // found
+            if ((*areaFixList)[count].remove)
             {
               c = 0;
-              while (c < MAX_FORWARD &&
-                     (memcmp(&(areaBuf->forwards[c].nodeNum),
-                             &nodeInfoPtr->node,
-                             sizeof(nodeNumType)) != 0))
-              {
+              while (c < MAX_FORWARD && memcmp(&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node, sizeof(nodeNumType)) != 0)
                 c++;
-              }
+
               if (c < MAX_FORWARD)
               {
-                if ( areaBuf->forwards[c].flags.readOnly ||
-                     areaBuf->forwards[c].flags.writeOnly )
-                {
+                if (areaBuf->forwards[c].flags.readOnly || areaBuf->forwards[c].flags.writeOnly)
                   (*areaFixList)[count].remove = 7; // new in 1.41
-                }
                 else
                 {
-                  memcpy (&(areaBuf->forwards[c]),
-                          &(areaBuf->forwards[c+1]),
-                          (MAX_FORWARD-1 - c ) * sizeof(nodeNumXType));
-                  memset (&(areaBuf->forwards[MAX_FORWARD-1]), 0,
-                          sizeof(nodeNumXType));
+                  memmove(&(areaBuf->forwards[c]), &(areaBuf->forwards[c + 1]), ((MAX_FORWARD - 1) - c) * sizeof(nodeNumXType));
+                  memset(&(areaBuf->forwards[MAX_FORWARD - 1]), 0, sizeof(nodeNumXType));
                   (*areaFixList)[count].remove = 4;
                 }
               }
               else
-                (*areaFixList)[count].remove =
-                  (areaBuf->group & nodeInfoPtr->groups) ? 5 : 6;
+                (*areaFixList)[count].remove = (areaBuf->group & nodeInfoPtr->groups) ? 5 : 6;
             }
             else
             {
@@ -938,19 +918,13 @@ int areaFix(internalMsgType *message)
                        (nodeInfoPtr->node.net == areaBuf->forwards[c].nodeNum.net) &&
                        (nodeInfoPtr->node.node == areaBuf->forwards[c].nodeNum.node) &&
                        (nodeInfoPtr->node.point > areaBuf->forwards[c].nodeNum.point))))
-              {
                 c++;
-              }
-              if ((c < MAX_FORWARD) &&
-                  (memcmp (&nodeInfoPtr->node,
-                           &(areaBuf->forwards[c].nodeNum),
-                           sizeof(nodeNumType)) != 0))
+
+              if (c < MAX_FORWARD && memcmp(&nodeInfoPtr->node, &(areaBuf->forwards[c].nodeNum), sizeof(nodeNumType)) != 0)
               {
                 if (areaBuf->group & nodeInfoPtr->groups)
                 {
-                  memmove (&(areaBuf->forwards[c+1]),
-                           &(areaBuf->forwards[c]),
-                           (MAX_FORWARD-1 - c) * sizeof(nodeNumXType));
+                  memmove(&(areaBuf->forwards[c + 1]), &(areaBuf->forwards[c]), (MAX_FORWARD - 1 - c) * sizeof(nodeNumXType));
                   memset(&(areaBuf->forwards[c]), 0, sizeof(nodeNumXType));
                   areaBuf->forwards[c].nodeNum = nodeInfoPtr->node;
                   (*areaFixList)[count].remove = 2;
@@ -961,27 +935,18 @@ int areaFix(internalMsgType *message)
               else
                 (*areaFixList)[count].remove = 3;
             }
-            if (((*areaFixList)[count].remove == 2) ||
-                ((*areaFixList)[count].remove == 4))
-            {
-              putRec(CFG_ECHOAREAS,(*areaSortList)[areaSortListIndex-1].index);
-            }
+            if ((*areaFixList)[count].remove == 2 || (*areaFixList)[count].remove == 4)
+              putRec(CFG_ECHOAREAS, (*areaSortList)[areaSortListIndex-1].index);
           }
           else
-          {
-            (*areaFixList)[count].remove =
-              areaBuf->options.allowAreafix ? 6 : 7;
-          }
+            (*areaFixList)[count].remove = areaBuf->options.allowAreafix ? 6 : 7;
         }
         if (areaBuf->options.active && !areaBuf->options.local)
         {
           c = 0;
-          while ((c < MAX_FORWARD) &&
-                 (memcmp (&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node,
-                          sizeof(nodeNumType)) != 0))
-          {
+          while (c < MAX_FORWARD && memcmp(&(areaBuf->forwards[c].nodeNum), &nodeInfoPtr->node, sizeof(nodeNumType)) != 0)
             c++;
-          }
+
           if (c < MAX_FORWARD)
           {
             activeAreasCount++;

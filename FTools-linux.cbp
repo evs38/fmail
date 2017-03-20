@@ -3,28 +3,28 @@
 	<FileVersion major="1" minor="6" />
 	<Project>
 		<Option title="FTools" />
-		<Option platforms="Windows;" />
+		<Option platforms="Unix;" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option platforms="Windows;" />
-				<Option output="bin/Debug/FToolsW32" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Debug/ftools" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/FTools/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="maint /H /D /N /O /P " />
+				<Option parameters='Post - FIDOTEST -subj &quot;FMail auto post test&quot;' />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-mtune=generic" />
 					<Add option="-D_DEBUG" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
-				<Option platforms="Windows;" />
-				<Option output="bin/Release/FToolsW32" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Release/ftools" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/FTools/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-mtune=generic" />
 					<Add option="-O2" />
 				</Compiler>
 				<Linker>
@@ -32,8 +32,7 @@
 				</Linker>
 			</Target>
 			<Target title="Native">
-				<Option platforms="Windows;" />
-				<Option output="bin/Native/FToolsW32" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Native/ftools" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/FTools/Native/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -49,22 +48,13 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add option="-m32" />
-			<Add option="-mtune=generic" />
 			<Add option="-DFTOOLS" />
 			<Add option="-D__32BIT__" />
 			<Add option="-D__STDIO__" />
 		</Compiler>
-		<Linker>
-			<Add option="-m32" />
-			<Add library="c:/Program Files/CodeBlocks/MinGW/lib/libversion.a" />
-			<Add library="c:/Program Files/CodeBlocks/MinGW/lib/libwsock32.a" />
-			<Add library="C:/Program Files/CodeBlocks/MinGW/lib/CRT_noglob.o" />
-		</Linker>
-		<Unit filename="FToolsW32.rc">
-			<Option compilerVar="WINDRES" />
-			<Option weight="60" />
-		</Unit>
+		<ExtraCommands>
+			<Add before='touch -d &quot;&quot; SetCompileDate.h' />
+		</ExtraCommands>
 		<Unit filename="SetCompileDate.h" />
 		<Unit filename="addnew.c">
 			<Option compilerVar="CC" />
@@ -106,20 +96,23 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hudson.h" />
-		<Unit filename="imfolder.h" />
-		<Unit filename="impdesc.c">
+		<Unit filename="hudson_shared.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="hudson_shared.h" />
+		<Unit filename="imfolder.h" />
 		<Unit filename="ispathch.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="ispathch.h" />
+		<Unit filename="jam.h" />
 		<Unit filename="jamfun.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="jammaint.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="jammaint.h" />
 		<Unit filename="lock.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -133,10 +126,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="mtask.h" />
-		<Unit filename="pp_date.h" />
-		<Unit filename="smtp.c">
+		<Unit filename="os.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="os.h" />
+		<Unit filename="os_string.h" />
+		<Unit filename="poppack.h" />
+		<Unit filename="pp_date.h" />
+		<Unit filename="pshpack1.h" />
 		<Unit filename="sorthb.c">
 			<Option compilerVar="CC" />
 		</Unit>

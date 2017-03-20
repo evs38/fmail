@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,9 +21,6 @@
 //
 //---------------------------------------------------------------------------
 
-#ifdef __WIN32__
-//#include <dos.h>
-#endif // __WIN32__
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -38,10 +35,11 @@
 #include "areainfo.h"
 #include "crc.h"
 #include "config.h"
+#include "hudson_shared.h"  // expandNameHudson()
 #include "log.h"
 #include "minmax.h"
 #include "msgpkt.h"
-#include "msgra.h"    // expandName()
+#include "msgra.h"
 #include "msgradef.h"
 #include "mtask.h"
 #include "os.h"
@@ -98,9 +96,9 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
   const u16      HDR_BUFSIZE = 248;
 
-   if ((msgHdrHandle = open(fixPath(expandNameHudson(dMSGHDR, 0)), O_RDONLY | O_BINARY)) == -1)
+   if ((msgHdrHandle = open(expandNameHudson(dMSGHDR, 0), O_RDONLY | O_BINARY)) == -1)  // already fixPath'd
    {
-      puts("Can't open "dMSGHDR"."MBEXTN" for update.");
+      logEntryf(LOG_ALWAYS, 0, "Can't open %s for update", expandNameHudson(dMSGHDR, 0));
       return;
    }
    if (config.mbOptions.sortNew && (fileLength(msgHdrHandle) > diskFree(config.bbsPath)))
@@ -129,8 +127,9 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
    if (config.mbOptions.sortNew)
    {
-      if (((sli_bsTimeStampHi = (u16*)calloc(newTotalMsgBBS, 2)) == NULL) ||
-          ((sli_bsTimeStampLo = (u16*)calloc(newTotalMsgBBS, 2)) == NULL))
+      if (  (sli_bsTimeStampHi = (u16*)calloc(newTotalMsgBBS, 2)) == NULL
+         || (sli_bsTimeStampLo = (u16*)calloc(newTotalMsgBBS, 2)) == NULL
+         )
       {
          close (msgHdrHandle);
          logEntry("Not enough memory to sort the "MBNAME" message base", LOG_ALWAYS, 0);
@@ -172,7 +171,6 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       if (bufCount == HDR_BUFSIZE)
       {
 //       printf("%3u%%\b\b\b\b", (u16)((s32) 100 * count / newTotalMsgBBS));
-
          read(msgHdrHandle, msgHdrBuf, HDR_BUFSIZE * sizeof(msgHdrRec));
          bufCount = 0;
       }
@@ -314,13 +312,10 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
          while (p != 0xffff)
          {
             q = sli_prevReply[sli_recNum[p]];
-            code = ((s32)sli_subjectCrcHi[sli_recNum[p]] << 16) |
-                          sli_subjectCrcLo[sli_recNum[p]];
-            while ((q != 0xffff) && (code != (((s32)sli_subjectCrcHi[sli_recNum[q]] << 16) |
-                                                     sli_subjectCrcLo[sli_recNum[q]])))
-            {
+            code =                          ((s32)sli_subjectCrcHi[sli_recNum[p]] << 16) | sli_subjectCrcLo[sli_recNum[p]];
+            while (q != 0xffff && (code != (((s32)sli_subjectCrcHi[sli_recNum[q]] << 16) | sli_subjectCrcLo[sli_recNum[q]])))
                q = sli_prevReply[sli_recNum[q]];
-            }
+
             temp = sli_recNum[p];
             p = sli_prevReply[sli_recNum[p]];
             if (q != 0xffff)
@@ -339,22 +334,24 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
    {
       putStr("Writing "dMSGHDR"."MBEXTN" and index files... ");
 
-      if (  ((msgIdxHandle   = open(fixPath(expandNameHudson(dMSGIDX  , 0)), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1)
-         || ((msgToIdxHandle = open(fixPath(expandNameHudson(dMSGTOIDX, 0)), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1)
+      if (  ((msgIdxHandle   = open(expandNameHudson(dMSGIDX  , 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1)  // already fixPath'd
+         || ((msgToIdxHandle = open(expandNameHudson(dMSGTOIDX, 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1)  // already fixPath'd
          )
       {
-         close(msgIdxHandle);
+         if (msgIdxHandle != -1)
+           close(msgIdxHandle);
+
          putchar('\n');
          logEntry("Can't create sorted/linked message files", LOG_ALWAYS, 0);
          goto exit1;
       }
-      strcpy(tempStr1, expandNameHudson(dMSGHDR, 0));
-      strcpy(stpcpy(tempStr2, config.bbsPath), dMSGHDR".ZZZ");
-      strcpy(stpcpy(tempStr3, config.bbsPath), dMSGHDR".!!!");
+      strcpy(tempStr1, expandNameHudson(dMSGHDR, 0));  // already fixPath'd
+      strcpy(stpcpy(tempStr2, fixPath(config.bbsPath)), dMSGHDR".ZZZ");
+      strcpy(stpcpy(tempStr3, fixPath(config.bbsPath)), dMSGHDR".!!!");
 
-      if ((unlink(fixPath(tempStr2)) == -1 && errno != ENOENT) ||
-          ((msgHdrHandle = open(fixPath(tempStr3), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1) ||
-          ((oldHdrHandle = open(fixPath(tempStr1), O_RDONLY | O_BINARY)) == -1))
+      if ((unlink(tempStr2) == -1 && errno != ENOENT) ||  // already fixPath'd
+          ((msgHdrHandle = open(tempStr3, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1) ||  // already fixPath'd
+          ((oldHdrHandle = open(tempStr1, O_RDONLY | O_BINARY)) == -1))                                   // already fixPath'd
       {
          close(msgHdrHandle);
          newLine();
@@ -383,6 +380,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
                   bufCount = HDR_BUFSIZE;
                else
                   bufCount = origTotalMsgBBS - count;
+
                read(oldHdrHandle, msgHdrBuf, bufCount * sizeof(msgHdrRec));
             }
             while (bufCount < HDR_BUFSIZE && count + bufCount < newTotalMsgBBS)
@@ -410,10 +408,9 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
          }
          else
          if (msgHdrBuf[bufCount].MsgAttr & RA_RECEIVED)
-            memcpy (&(msgToIdxBuf[bufCount]), "\x0c* Received *", 13);
+            memcpy(&(msgToIdxBuf[bufCount]), "\x0c* Received *", 13);
          else
-            memcpy (&(msgToIdxBuf[bufCount]),
-                    &(msgHdrBuf[bufCount].wtLength), sizeof(msgToIdxRec));
+            memcpy(&(msgToIdxBuf[bufCount]), &(msgHdrBuf[bufCount].wtLength), sizeof(msgToIdxRec));
 
          bufCount++;
       }
@@ -433,9 +430,9 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
       if (temp)
       {
-         rename(fixPath(tempStr1), fixPath(tempStr2));
-         rename(fixPath(tempStr3), fixPath(tempStr1));
-         unlink(fixPath(tempStr2));
+         rename(tempStr1, tempStr2);  // already fixPath'd
+         rename(tempStr3, tempStr1);  // already fixPath'd
+         unlink(tempStr2);            // already fixPath'd
       }
 #ifdef FMAIL
       logEntry("New messages have been sorted", LOG_MSGBASE, 0);
@@ -449,8 +446,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
       strcpy(tempStr1, expandNameHudson(dMSGHDR, 0));
 
-      if (  ((msgHdrHandle = open(fixPath(tempStr1), O_WRONLY | O_BINARY | O_CREAT, dDEFOMODE)) == -1)
-         || ((oldHdrHandle = open(fixPath(tempStr1), O_RDONLY | O_BINARY)) == -1)
+      if (  ((msgHdrHandle = open(tempStr1, O_WRONLY | O_BINARY | O_CREAT, dDEFOMODE)) == -1)  // already fixPath'd
+         || ((oldHdrHandle = open(tempStr1, O_RDONLY | O_BINARY)) == -1)                       // already fixPath'd
          )
       {
          close(msgHdrHandle);

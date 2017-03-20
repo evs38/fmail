@@ -159,7 +159,7 @@ void initLog(s32 switches)
       if (switches & select)
       {
         *(helpPtr++) = ' ';
-        *(helpPtr++) = '/';
+        *(helpPtr++) = '-';
         *(helpPtr++) = 'A' + count;
       }
       select <<= 1;

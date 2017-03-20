@@ -21,14 +21,18 @@
 //
 //---------------------------------------------------------------------------
 
+#if 0
+
+#ifdef __WIN32__
 #include <dir.h>
+#endif // __WIN32__
 #include <fcntl.h>
-#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -36,10 +40,10 @@
 #include "ftlog.h"
 #include "impdesc.h"
 #include "minmax.h"
+#include "os.h"
+#include "utils.h"
 
 //---------------------------------------------------------------------------
-char *findCLiStr (char *s1, char *s2);
-
 s16 importNAInfo(char *fileName)
 {
    fhandle      NAHandle;
@@ -49,17 +53,17 @@ s16 importNAInfo(char *fileName)
    headerType	 *areaHeader;
    rawEchoType *areaBuf;
    char        *buf;
-   u16          bufsize;
+   size_t       bufsize;
    char        *helpPtr
              , *helpPtr2;
 
-   if ((NAHandle = open(fileName, O_RDONLY | O_BINARY)) == -1)
+   if ((NAHandle = open(fixPath(fileName), O_RDONLY | O_BINARY)) == -1)
       logEntry("Can't find file", LOG_ALWAYS, 4);
 
-   if ((buf = malloc(bufsize = min((u16)filelength(NAHandle)+1, 0xFFF0))) == NULL)
+   if ((buf = malloc(bufsize = min(fileLength(NAHandle) + 1, 0xFFF0U))) == NULL)
       logEntry("Not enough memory", LOG_ALWAYS, 2);
 
-   if (read(NAHandle, buf, bufsize-1) != bufsize-1)
+   if (read(NAHandle, buf, bufsize - 1) != bufsize - 1)
    {
       free(buf);
       logEntry("Can't read file", LOG_ALWAYS, 2);
@@ -105,3 +109,5 @@ s16 importNAInfo(char *fileName)
 
    return 0;
 }
+//---------------------------------------------------------------------------
+#endif

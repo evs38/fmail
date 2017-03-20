@@ -78,7 +78,7 @@
 #define F_JAM       4
 #define F_PASSTHRU  5
 
-#include <pshpack1.h>
+#include "pshpack1.h"
 
 /*
 **  Folder structure
@@ -124,7 +124,7 @@ typedef struct
 //    }
 //    OLDFOLDER, far *OLDFOLDERPTR;
 
-#include <poppack.h>
+#include "poppack.h"
 
 /* end of file "folder.h" */
 
