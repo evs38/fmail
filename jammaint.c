@@ -21,20 +21,22 @@
 //
 //---------------------------------------------------------------------------
 
-#include <conio.h>
-#include <dos.h>
+//#include <conio.h>
+//#include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <io.h>
-#include <share.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 #ifdef _DEBUG
+#ifdef __WIN32__
 #include <dir.h>      // mkdir
+#include <share.h>
 #include <windows.h>  // CopyFile DeleteFile MoveFile
+#endif // __WIN32__
 #if 0
 #define _COMPOLD_
 #endif
@@ -51,7 +53,8 @@
 #include "log.h"
 #include "minmax.h"
 #include "nodeinfo.h"
-#include "stpcpy.h"
+#include "os.h"
+#include "os_string.h"
 #include "utils.h"
 
 extern configType config;
@@ -188,7 +191,7 @@ int writefile(fhandle h, char *obuf, int os, char *buf, int s)
 
   if (  0 != lseek(h, 0, SEEK_SET)
      || (s >  0 && s != write(h, buf, s))
-     || (s < os && 0 != chsize(h, s))
+     || (s < os && 0 != ftruncate(h, s))
      )
   {
     logEntryf(LOG_ALWAYS, 2, "*** Problem writing JAM base file (your fucked!) [%s]", strError(errno));

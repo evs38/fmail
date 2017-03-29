@@ -21,20 +21,24 @@
 //
 //---------------------------------------------------------------------------
 
-#include <fcntl.h>
-#include <io.h>
+#ifdef __WIN32__
 #include <share.h>
+#endif // __WIN32__
+#include <fcntl.h>
 #include <stddef.h>
 #include <stdio.h>    // SEEK_SET for mingw
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
 #include "cfgfile.h"
-#include "stpcpy.h"
+#include "os.h"
+#include "os_string.h"
+#include "utils.h"
 
 // set to non-zero value if automatic conversion is desired
 u16  allowConversion = 0;
@@ -152,7 +156,7 @@ restart:
     return 0;
   }
 
-   if (filelength(cfiArr[fileType].handle) == 0)
+   if (fileLength(cfiArr[fileType].handle) == 0)
    {
       strcpy((char*)cfiArr[fileType].header.versionString, fileData[fileType].revString);
       cfiArr[fileType].header.revNumber    = fileData[fileType].revNumber;
@@ -160,7 +164,8 @@ restart:
       cfiArr[fileType].header.recordSize   = fileData[fileType].recordSize;
       cfiArr[fileType].header.dataType     = fileData[fileType].dataType;
       cfiArr[fileType].header.totalRecords = 0;
-      cfiArr[fileType].header.lastModified = time(&cfiArr[fileType].header.creationDate);
+      cfiArr[fileType].header.lastModified =
+      cfiArr[fileType].header.creationDate = time(NULL);
 
       write(cfiArr[fileType].handle, &cfiArr[fileType].header, sizeof(headerType));
    }
@@ -215,7 +220,7 @@ error:   close(cfiArr[fileType].handle);
          cfiArr[fileType].header.headerSize   = sizeof(headerType);
          cfiArr[fileType].header.recordSize   = fileData[fileType].recordSize;
          cfiArr[fileType].header.dataType     = fileData[fileType].dataType;
-         time(&cfiArr[fileType].header.lastModified);
+         cfiArr[fileType].header.lastModified = time(NULL);
          write(temphandle, &cfiArr[fileType].header, sizeof(headerType));
          for ( count = 0; count < cfiArr[fileType].header.totalRecords; count++ )
          {
@@ -364,7 +369,7 @@ s16 insRec(u16 fileType, s16 index)
   if (lseek(cfiArr[fileType].handle, 0, SEEK_SET) == -1)
     return 0;
 
-  time(&cfiArr[fileType].header.lastModified);
+  cfiArr[fileType].header.lastModified = time(NULL);
   if (write(cfiArr[fileType].handle, &cfiArr[fileType].header, cfiArr[fileType].header.headerSize) != cfiArr[fileType].header.headerSize)
     return 0;
 
@@ -395,13 +400,13 @@ s16 delRec(u16 fileType, s16 index)
       return 0;
 
   }
-  chsize( cfiArr[fileType].handle, cfiArr[fileType].header.headerSize
+  ftruncate( cfiArr[fileType].handle, cfiArr[fileType].header.headerSize
         + cfiArr[fileType].header.recordSize*(s32)--cfiArr[fileType].header.totalRecords);
 
   if (lseek(cfiArr[fileType].handle, 0, SEEK_SET) == -1)
     return 0;
 
-  time(&cfiArr[fileType].header.lastModified);
+  cfiArr[fileType].header.lastModified = time(NULL);
   write(cfiArr[fileType].handle, &cfiArr[fileType].header, cfiArr[fileType].header.headerSize);
 
   cfiArr[fileType].status = 1;
@@ -426,9 +431,9 @@ s16 closeConfig(u16 fileType)
      && lseek(cfiArr[fileType].handle, 0, SEEK_SET) != -1
      )
   {
-    time(&cfiArr[fileType].header.lastModified);
+    cfiArr[fileType].header.lastModified = time(NULL);
     write(cfiArr[fileType].handle, &cfiArr[fileType].header, cfiArr[fileType].header.headerSize);
-    chsize( cfiArr[fileType].handle, cfiArr[fileType].header.headerSize
+    ftruncate( cfiArr[fileType].handle, cfiArr[fileType].header.headerSize
           + cfiArr[fileType].header.recordSize * (s32)cfiArr[fileType].header.totalRecords);
   }
   close(cfiArr[fileType].handle);

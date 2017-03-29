@@ -63,7 +63,7 @@ extern "C" {
 #define HEADERSIGNATURE "JAM"
 
 
-#include <pshpack1.h>
+#include "pshpack1.h"
 
 /*
 **  Header file information block, stored first in all .JHR files
@@ -208,7 +208,7 @@ typedef struct
     }
     JAMLREAD, _JAMDATA * JAMLREADptr;
 
-#include <poppack.h>
+#include "poppack.h"
 
 #endif /* __JAM_H__ */
 

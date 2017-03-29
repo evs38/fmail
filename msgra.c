@@ -21,16 +21,18 @@
 //
 //---------------------------------------------------------------------------
 
+#ifdef __WIN32__
 #include <dir.h>
-#include <dos.h>
+//#include <dos.h>
+#endif // __WIN32__
 #include <errno.h>
 #include <fcntl.h>
-#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -236,10 +238,10 @@ s16 multiUpdate(void)
       }
 
 #ifndef GOLDBASE
-      if (filelength(srcTxtHandle) + filelength(destTxtHandle) >= 0x1000000L)
+      if (fileLength(srcTxtHandle) + fileLength(destTxtHandle) >= 0x1000000L)
       {
          logEntry("Maximum message base size has been reached (text size)", LOG_ALWAYS, 0);
-         logEntryf(LOG_ALWAYS, 0, "- new txt size: %lu, orig txt size: %lu", filelength(srcTxtHandle), filelength(destTxtHandle));
+         logEntryf(LOG_ALWAYS, 0, "- new txt size: %lu, orig txt size: %lu", fileLength(srcTxtHandle), fileLength(destTxtHandle));
          close(destTxtHandle);
          close(destToIdxHandle);
          close(destIdxHandle);
@@ -251,11 +253,11 @@ s16 multiUpdate(void)
          newLine();
          return 1;
       }
-      msgHdrOffset = (u16)(filelength(destHdrHandle) / sizeof(msgHdrRec));
-      msgTxtOffset = (u16)(filelength(destTxtHandle) >> 8);
+      msgHdrOffset = (u16)(fileLength(destHdrHandle) / sizeof(msgHdrRec));
+      msgTxtOffset = (u16)(fileLength(destTxtHandle) >> 8);
 #else
-      msgHdrOffset = filelength(destHdrHandle) / sizeof(msgHdrRec);
-      msgTxtOffset = filelength(destTxtHandle) >> 8;
+      msgHdrOffset = fileLength(destHdrHandle) / sizeof(msgHdrRec);
+      msgTxtOffset = fileLength(destTxtHandle) >> 8;
 #endif
       if ((txtBuf = (msgTxtRec*)malloc(TXT_BUFSIZE * 256)) == NULL)
       {
@@ -280,7 +282,7 @@ s16 multiUpdate(void)
              (write(destTxtHandle, txtBuf, recsRead << 8) != (recsRead << 8)))
          {
             free(txtBuf);
-            chsize(destTxtHandle, ((u32)msgTxtOffset) << 8);
+            ftruncate(destTxtHandle, ((u32)msgTxtOffset) << 8);
             close(destTxtHandle);
             close(destToIdxHandle);
             close(destIdxHandle);
@@ -308,7 +310,7 @@ s16 multiUpdate(void)
          if (toIdxBuf != NULL)
             free (toIdxBuf);
 
-         chsize (destTxtHandle, ((u32)msgTxtOffset) << 8);
+         ftruncate (destTxtHandle, ((u32)msgTxtOffset) << 8);
 
          close(destTxtHandle);
          close(destToIdxHandle);
@@ -347,10 +349,10 @@ s16 multiUpdate(void)
             free(hdrBuf);
             free(idxBuf);
             free(toIdxBuf);
-            chsize(destIdxHandle,   msgHdrOffset*(u32)sizeof(msgIdxRec));
-            chsize(destToIdxHandle, msgHdrOffset*(u32)sizeof(msgToIdxRec));
-            chsize(destHdrHandle,   msgHdrOffset*(u32)sizeof(msgHdrRec));
-            chsize(destTxtHandle,   ((u32)msgTxtOffset) << 8);
+            ftruncate(destIdxHandle,   msgHdrOffset*(u32)sizeof(msgIdxRec));
+            ftruncate(destToIdxHandle, msgHdrOffset*(u32)sizeof(msgToIdxRec));
+            ftruncate(destHdrHandle,   msgHdrOffset*(u32)sizeof(msgHdrRec));
+            ftruncate(destTxtHandle,   ((u32)msgTxtOffset) << 8);
             close(destTxtHandle);
             close(destToIdxHandle);
             close(destIdxHandle);
@@ -371,10 +373,10 @@ s16 multiUpdate(void)
             free(hdrBuf);
             free(idxBuf);
             free(toIdxBuf);
-            chsize(destIdxHandle,   msgHdrOffset*(u32)sizeof(msgIdxRec));
-            chsize(destToIdxHandle, msgHdrOffset*(u32)sizeof(msgToIdxRec));
-            chsize(destHdrHandle,   msgHdrOffset*(u32)sizeof(msgHdrRec));
-            chsize(destTxtHandle,   ((u32)msgTxtOffset) << 8);
+            ftruncate(destIdxHandle,   msgHdrOffset*(u32)sizeof(msgIdxRec));
+            ftruncate(destToIdxHandle, msgHdrOffset*(u32)sizeof(msgToIdxRec));
+            ftruncate(destHdrHandle,   msgHdrOffset*(u32)sizeof(msgHdrRec));
+            ftruncate(destTxtHandle,   ((u32)msgTxtOffset) << 8);
             close(destTxtHandle);
             close(destToIdxHandle);
             close(destIdxHandle);
@@ -477,8 +479,8 @@ void openBBSWr(u16 orgName)
    raHdrRecValid = filelength (msgHdrHandle) / sizeof(msgHdrRec);
    raTxtRecValid = msgTxtRecNum = filelength(msgTxtHandle) >> 8;
 #else
-   raHdrRecValid = (u16)(filelength (msgHdrHandle) / sizeof(msgHdrRec));
-   raTxtRecValid = msgTxtRecNum = (u16)(filelength(msgTxtHandle) >> 8);
+   raHdrRecValid = (u16)(fileLength(msgHdrHandle) / sizeof(msgHdrRec));
+   raTxtRecValid = msgTxtRecNum = (u16)(fileLength(msgTxtHandle) >> 8);
 #endif
 
    hdrBufCount = 0;
@@ -486,15 +488,13 @@ void openBBSWr(u16 orgName)
 }
 //---------------------------------------------------------------------------
 #ifdef GOLDBASE
-static s16 writeText (char *msgText, char *seenBy, char *path, u16 skip,
-                      u32 *startRec, u16 *numRecs)
+static s16 writeText (char *msgText, char *seenBy, char *path, u16 skip, u32 *startRec, u16 *numRecs)
 #else
-static s16 writeText (char *msgText, char *seenBy, char *path, u16 skip,
-                      u16 *startRec, u16 *numRecs)
+static s16 writeText (char *msgText, char *seenBy, char *path, u16 skip, u16 *startRec, u16 *numRecs)
 #endif
 {
-   char *textPtr,
-        *helpPtr;
+   char *textPtr
+      , *helpPtr;
 
    // Skip AREA tag
    if (skip && (strncmp (msgText, "AREA:", 5) == 0))
@@ -745,8 +745,8 @@ void validate2BBS(u16 orgName)
    raTxtRecValid = filelength(msgTxtHandle) >> 8;
    raHdrRecValid = filelength(msgHdrHandle) / sizeof(msgHdrRec);
 #else
-   raTxtRecValid = (u16)(filelength(msgTxtHandle) >> 8);
-   raHdrRecValid = (u16)(filelength(msgHdrHandle) / sizeof(msgHdrRec));
+   raTxtRecValid = (u16)(fileLength(msgTxtHandle) >> 8);
+   raHdrRecValid = (u16)(fileLength(msgHdrHandle) / sizeof(msgHdrRec));
 #endif
 
    if ( globVars.mbCount > globVars.mbCountV )
@@ -1012,22 +1012,22 @@ deleteMsg:
 void closeBBSWr(u16 orgName)
 {
    lseek (msgHdrHandle, 0, SEEK_SET);
-   chsize(msgHdrHandle, raHdrRecValid*(u32)sizeof(msgHdrRec));
+   ftruncate(msgHdrHandle, raHdrRecValid*(u32)sizeof(msgHdrRec));
    close (msgHdrHandle);
    free  (msgHdrBuf);
 
    lseek (msgToIdxHandle, 0, SEEK_SET);
-   chsize(msgToIdxHandle, raHdrRecValid*(u32)sizeof(msgToIdxRec));
+   ftruncate(msgToIdxHandle, raHdrRecValid*(u32)sizeof(msgToIdxRec));
    close (msgToIdxHandle);
    free  (msgToIdxBuf);
 
    lseek (msgIdxHandle, 0, SEEK_SET);
-   chsize(msgIdxHandle, raHdrRecValid*(u32)sizeof(msgIdxRec));
+   ftruncate(msgIdxHandle, raHdrRecValid*(u32)sizeof(msgIdxRec));
    close (msgIdxHandle);
    free  (msgIdxBuf);
 
    lseek (msgTxtHandle, 0, SEEK_SET);
-   chsize(msgTxtHandle, ((u32)raTxtRecValid) << 8);
+   ftruncate(msgTxtHandle, ((u32)raTxtRecValid) << 8);
    close (msgTxtHandle);
    free  (msgTxtBuf);
 
@@ -1063,7 +1063,7 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
    {
       if (temp != 0)
 #ifdef _DEBUG
-        logEntryf(LOG_ALWAYS, 0, "Can't read "dMSGHDR"."MBEXTN", index=%u, filelength=%ld, sizeof-record=%u, read=%d, error=%s", index, filelength(msgHdrHandle), sizeof(msgHdrRec), temp, strError(errno));
+        logEntryf(LOG_ALWAYS, 0, "Can't read "dMSGHDR"."MBEXTN", index=%u, filelength=%ld, sizeof-record=%u, read=%d, error=%s", index, fileLength(msgHdrHandle), sizeof(msgHdrRec), temp, strError(errno));
 #else
         logEntryf(LOG_ALWAYS, 0, "Can't read "dMSGHDR"."MBEXTN" [%s]", strError(errno));
 #endif

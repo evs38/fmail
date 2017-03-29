@@ -22,12 +22,12 @@
 //---------------------------------------------------------------------------
 
 #include <fcntl.h>
-#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -81,7 +81,6 @@ char getGroupChar(s32 groupCode)
 #endif  // FSETUP
 
 extern configType config;
-//extern windowLookType windowLook;
 extern char configPath[FILENAME_MAX];
 
 #include <pshpack1.h>
@@ -141,9 +140,9 @@ typedef struct
 
 /*---------------------------------------------------------------------------*/
 
-typedef int8_t   Byte;
-typedef int8_t   Boolean;
-typedef u16      Word;
+typedef int8_t Byte;
+typedef int8_t Boolean;
+typedef u16    Word;
 
 typedef struct      /* Fidonet Style Address (23 Bytes) */
 {
@@ -352,13 +351,12 @@ static char *nodeStrP(nodeNumType *nodeNum)
 
   tempPtr = nodeNameStr[nodeStrIndex = !nodeStrIndex];
   if (nodeNum->zone != 0)
-  {
-    tempPtr += sprintf (tempPtr, "%u:", nodeNum->zone);
-  }
-  sprintf (tempPtr, "%u/%u.%u", nodeNum->net, nodeNum->node, nodeNum->point);
-  return (nodeNameStr[nodeStrIndex]);
-}
+    tempPtr += sprintf(tempPtr, "%u:", nodeNum->zone);
 
+  sprintf(tempPtr, "%u/%u.%u", nodeNum->net, nodeNum->node, nodeNum->point);
+
+  return nodeNameStr[nodeStrIndex];
+}
 
 #ifndef GOLDBASE
 static u32 bitSwap(const u8 *b)
@@ -373,13 +371,10 @@ static u32 bitSwap(const u8 *b)
 }
 #endif
 
-
 #define checkMax(v,max) ((v)>(max)?0:(v))
-
 
 typedef u16   aiType[MAX_AREAS];
 typedef char *anType[MAX_AREAS];
-
 
 void autoUpdate(void)
 {
@@ -417,9 +412,10 @@ void autoUpdate(void)
   u16              temp;
 #endif
 
-  if ( (areaInfoIndex = malloc(sizeof(aiType))) == NULL )
+  if ((areaInfoIndex = malloc(sizeof(aiType))) == NULL)
     return;
-  if ( !openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf) )
+
+  if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void*)&areaBuf))
   {
     displayMessage("Could not open Area File for AutoExport");
     free(areaInfoIndex);
@@ -429,41 +425,33 @@ void autoUpdate(void)
 
   if (*config.autoAreasBBSPath != 0)
   {
-    time (&timer);
-
+    time(&timer);
     strcpy(stpcpy(tempStr, config.autoAreasBBSPath), "areas.bbs");
 
-    if ((textFile = fopen(tempStr, "wt")) == NULL)
+    if ((textFile = fopen(tempStr, "wb")) == NULL)
       displayMessage("Can't open Areas.BBS for output");
     else
     {
       if (config.akaList[0].nodeNum.zone != 0)
         fprintf(textFile, "%s ! ", nodeStr(&config.akaList[0].nodeNum));
 
-      fprintf(textFile, "%s\n", config.sysopName);
-      fprintf(textFile, "; Created by %s - %s", VersionStr(), ctime(&timer));
+      fprintf(textFile, "%s\r\n", config.sysopName);
+      fprintf(textFile, "; Created by %s - %s\r\n", VersionStr(), isoFmtTime(timer));
 
       for (count = 0; count < areaInfoCount; count++)
       {
         getRec(CFG_ECHOAREAS, count);
-        if (areaBuf->options.active &&
-            (areaBuf->board || *areaBuf->msgBasePath ||
-             config.genOptions.PTAreasBBS))
+        if (  areaBuf->options.active 
+           && (areaBuf->board || *areaBuf->msgBasePath || config.genOptions.PTAreasBBS)
+           )
         {
           if (*areaBuf->msgBasePath)
-          {
-            fprintf (textFile, "!%-29s %-19s ", areaBuf->msgBasePath,
-                     areaBuf->areaName);
-          }
+            fprintf(textFile, "!%-29s %-19s ", areaBuf->msgBasePath, areaBuf->areaName);
           else if (areaBuf->board)
-          {
-            fprintf (textFile, "%03u %-19s ", areaBuf->board,
-                     areaBuf->areaName);
-          }
+            fprintf(textFile, "%03u %-19s ", areaBuf->board, areaBuf->areaName);
           else
-          {
-            fprintf (textFile, "P   %-19s ", areaBuf->areaName);
-          }
+            fprintf(textFile, "P   %-19s ", areaBuf->areaName);
+
           if (!areaBuf->options.local)
           {
             lastZone = 0;
@@ -478,25 +466,17 @@ void autoUpdate(void)
               if (lastZone == areaBuf->forwards[count2].nodeNum.zone)
               {
                 if (lastNet != areaBuf->forwards[count2].nodeNum.net)
-                {
-                  helpPtr = strchr (tempStr, ':') + 1;
-                }
+                  helpPtr = strchr(tempStr, ':') + 1;
                 else
                 {
                   if (lastNode != areaBuf->forwards[count2].nodeNum.node)
-                  {
-                    helpPtr = strchr (tempStr, '/') + 1;
-                  }
+                    helpPtr = strchr(tempStr, '/') + 1;
                   else
                   {
                     if (areaBuf->forwards[count2].nodeNum.point == 0)
-                    {
-                      helpPtr = strchr (tempStr, 0);
-                    }
+                      helpPtr = strchr(tempStr, 0);
                     else
-                    {
-                      helpPtr = strchr (tempStr, '.');
-                    }
+                      helpPtr = strchr(tempStr, '.');
                   }
                 }
               }
@@ -509,100 +489,69 @@ void autoUpdate(void)
               count2++;
             }
           }
-          fprintf (textFile, "\n");
+          fprintf(textFile, "\r\n");
         }
       }
-      fclose (textFile);
+      fclose(textFile);
     }
   }
   if (*config.autoGoldEdAreasPath != 0)
   {
     strcpy(stpcpy(tempStr, config.autoGoldEdAreasPath), "areas.gld");
 
-    if ((textFile = fopen(tempStr, "wt")) == NULL)
-    {
-      displayMessage ("Can't open Areas.GLD for output");
-    }
+    if ((textFile = fopen(tempStr, "wb")) == NULL)
+      displayMessage("Can't open Areas.GLD for output");
     else
     {
       if (*config.netPath)
-      {
-        fprintf (textFile, "AREADEF NETMAIL              \x22Netmail area\x22          0 Net FIDO %s .    (Loc)\n",
-                 config.netPath);
-      }
+        fprintf(textFile, "AREADEF NETMAIL              \"Netmail area\"          0 Net FIDO %s .    (Loc)\r\n", config.netPath);
 
-      if (*config.sentPath &&
-          !strcmp (config.sentPath, config.rcvdPath))
-      {
-        fprintf (textFile, "AREADEF SENT_RCVD            \x22Sent/Received netmail\x22 0 Net FIDO %s . (R/O Loc)\n",
-                 config.sentPath);
-      }
+      if (*config.sentPath && !strcmp(config.sentPath, config.rcvdPath))
+        fprintf(textFile, "AREADEF SENT_RCVD            \"Sent/Received netmail\" 0 Net FIDO %s . (R/O Loc)\r\n", config.sentPath);
       else
       {
         if (*config.sentPath)
-        {
-          fprintf (textFile, "AREADEF SENT_NETMAIL         \x22Sent netmail\x22          0 Net FIDO %s . (R/O Loc)\n",
-                   config.sentPath);
-        }
+          fprintf(textFile, "AREADEF SENT_NETMAIL         \"Sent netmail\"          0 Net FIDO %s . (R/O Loc)\r\n", config.sentPath);
+
         if (*config.rcvdPath)
-        {
-          fprintf (textFile, "AREADEF RCVD_NETMAIL         \x22Received netmail\x22      0 Net FIDO %s . (R/O Loc)\n",
-                   config.rcvdPath);
-        }
+          fprintf(textFile, "AREADEF RCVD_NETMAIL         \"Received netmail\"      0 Net FIDO %s . (R/O Loc)\r\n", config.rcvdPath);
       }
 
       if (*config.pmailPath)
-      {
-        fprintf (textFile, "AREADEF PERSONAL_MAIL        \x22Personal mail\x22         0 Local FIDO %s . (R/O Loc)\n",
-                 config.pmailPath);
-      }
+        fprintf(textFile, "AREADEF PERSONAL_MAIL        \"Personal mail\"         0 Local FIDO %s . (R/O Loc)\r\n", config.pmailPath);
 
       if (*config.sentEchoPath)
-      {
-        fprintf (textFile, "AREADEF SENT_ECHOMAIL        \x22Sent echomail\x22         0 Local FIDO %s . (R/O Loc)\n",
-                 config.sentEchoPath);
-      }
+        fprintf(textFile, "AREADEF SENT_ECHOMAIL        \"Sent echomail\"         0 Local FIDO %s . (R/O Loc)\r\n", config.sentEchoPath);
 
       if (config.dupBoard)
-      {
-        fprintf (textFile, "AREADEF DUP_MSGS             \x22""Duplicate messages\x22    0 Local Hudson %u . (R/O Loc)\n",
-                 config.dupBoard);
-      }
+        fprintf(textFile, "AREADEF DUP_MSGS             \"Duplicate messages\"    0 Local Hudson %u . (R/O Loc)\r\n", config.dupBoard);
 
       if (config.badBoard)
-      {
-        fprintf (textFile, "AREADEF BAD_MSGS             \x22""Bad messages\x22          0 Local Hudson %u . (R/O Loc)\n",
-                 config.badBoard);
-      }
+        fprintf(textFile, "AREADEF BAD_MSGS             \"Bad messages\"          0 Local Hudson %u . (R/O Loc)\r\n", config.badBoard);
 
       if (config.recBoard)
-      {
-        fprintf (textFile, "AREADEF RECOVERY_BOARD       \x22Recovery board\x22        0 Local Hudson %u . (R/O Loc)\n",
-                 config.recBoard);
-      }
+        fprintf(textFile, "AREADEF RECOVERY_BOARD       \"Recovery board\"        0 Local Hudson %u . (R/O Loc)\r\n", config.recBoard);
 
       for (count = 0; count < MAX_NETAKAS; count++)
       {
         if (config.netmailBoard[count])
         {
           count2 = 0;
-          while ((count2 < count) &&
-                 (config.netmailBoard[count] != config.netmailBoard[count2]))
-          {
+          while (count2 < count && config.netmailBoard[count] != config.netmailBoard[count2])
             count2++;
-          }
+
           if (count == count2)
           {
             if (count == 0)
             {
               const char *t = *config.descrAKA[0] ? config.descrAKA[0] : "Netmail Main";
-              fprintf( textFile, "AREADEF NETMAIL_MAIN         \x22%s\x22%*c Net Hudson %u %s (Loc)\n"
+              fprintf( textFile, "AREADEF NETMAIL_MAIN         \"%s\"%*c Net Hudson %u %s (Loc)\r\n"
                      , t, 44 - strlen(t), '0', config.netmailBoard[count], nodeStrP(&config.akaList[count].nodeNum));
             }
             else
             {
               const char *t = *config.descrAKA[count] ? config.descrAKA[count] : "Netmail AKA (use comment)";
-              fprintf( textFile, "AREADEF NETMAIL_AKA_%-8u \x22""%s\x22%*c Net Hudson %u %s (Loc)\n"
+              fprintf( textFile, "AREADEF NETMAIL_AKA_%-8u \"""%s\"%*c Net Hudson %u %s (Loc)\r\n"
                      , count, t, 44 - strlen(t), '0', config.netmailBoard[count], nodeStrP(&config.akaList[count].nodeNum));
             }
           }
@@ -615,34 +564,34 @@ void autoUpdate(void)
         if (areaBuf->options.active && areaBuf->board &&
             !*areaBuf->msgBasePath)
         {
-          fprintf (textFile, "AREADEF %-20s \x22%s\x22%*c %s Hudson %u %s (%sLoc%s)\n",
-                   areaBuf->areaName,
-                   areaBuf->comment,
-                   44-strlen(areaBuf->comment),
-                   groupToChar(areaBuf->group),
-                   areaBuf->options.local?"Local":"Echo",
-                   areaBuf->board,
-                   nodeStrP(&config.akaList[areaBuf->address].nodeNum),
-                   (config.bbsProgram != BBS_PROB && areaBuf->msgKindsRA == 3) ? "R/O ":"",
-                   "");
+          fprintf(textFile, "AREADEF %-20s \"%s\"%*c %s Hudson %u %s (%sLoc%s)\r\n",
+                  areaBuf->areaName,
+                  areaBuf->comment,
+                  44-strlen(areaBuf->comment),
+                  groupToChar(areaBuf->group),
+                  areaBuf->options.local?"Local":"Echo",
+                  areaBuf->board,
+                  nodeStrP(&config.akaList[areaBuf->address].nodeNum),
+                  (config.bbsProgram != BBS_PROB && areaBuf->msgKindsRA == 3) ? "R/O ":"",
+                  ""
+                 );
         }
-        if (areaBuf->options.active &&
-            /*                (areaBuf->msgBaseType == 1) && */
-            (*areaBuf->msgBasePath))
+        if (areaBuf->options.active && *areaBuf->msgBasePath)
         {
-          fprintf (textFile, "AREADEF %-20s \x22%s\x22%*c %s JAM %s %s (%sLoc%s)\n",
-                   areaBuf->areaName,
-                   areaBuf->comment,
-                   44-strlen(areaBuf->comment),
-                   groupToChar(areaBuf->group),
-                   areaBuf->options.local?"Local":"Echo",
-                   areaBuf->msgBasePath,
-                   nodeStrP(&config.akaList[areaBuf->address].nodeNum),
-                   (config.bbsProgram != BBS_PROB && areaBuf->msgKindsRA == 3) ? "R/O ":"",
-                   "");
+          fprintf(textFile, "AREADEF %-20s \"%s\"%*c %s JAM %s %s (%sLoc%s)\r\n",
+                  areaBuf->areaName,
+                  areaBuf->comment,
+                  44-strlen(areaBuf->comment),
+                  groupToChar(areaBuf->group),
+                  areaBuf->options.local?"Local":"Echo",
+                  areaBuf->msgBasePath,
+                  nodeStrP(&config.akaList[areaBuf->address].nodeNum),
+                  (config.bbsProgram != BBS_PROB && areaBuf->msgKindsRA == 3) ? "R/O ":"",
+                  ""
+                 );
         }
       }
-      fclose (textFile);
+      fclose(textFile);
     }
   }
 

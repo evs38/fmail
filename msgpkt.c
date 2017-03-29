@@ -21,18 +21,20 @@
 //
 //---------------------------------------------------------------------------
 
-#include <ctype.h>
+#ifdef __WIN32__
 #include <dir.h>
-#include <dos.h>
+//#include <dos.h>
+#include <share.h>
+#endif // __WIN32__
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <io.h>
-#include <share.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -43,14 +45,15 @@
 #include "msgpkt.h"
 #include "mtask.h"
 #include "nodeinfo.h"
-#include "stpcpy.h"
+#include "os.h"
+#include "os_string.h"
 #include "utils.h"
 #include "version.h"
 
 //---------------------------------------------------------------------------
 const u16 PKT_BUFSIZE = 32000;
 
-#include <pshpack1.h>
+#include "pshpack1.h"
 
 typedef struct
 {
@@ -63,7 +66,7 @@ typedef struct
   u16 cost;
 } pmHdrType;
 
-#include <poppack.h>
+#include "poppack.h"
 
 u16 inBuf
   , startBuf
@@ -681,7 +684,7 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
 #endif
   char      *pktBufStart;
   char      *psbStart;
-  udef       pktBufLen;
+  int        pktBufLen;
 
   RemoveNetKludge(message->text, "\1INTL");
   RemoveNetKludge(message->text, "\1FMPT");
@@ -769,7 +772,7 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
 #endif // ADDPATH
 
       pktBufStart = helpPtr - sizeof(pmHdrType);
-      pktBufLen   = (udef)strchr(message->text, 0) - (udef)pktBufStart + 1;
+      pktBufLen   = (int)(strchr(message->text, 0) - pktBufStart + 1);
 
       ((pmHdrType*)pktBufStart)->two       = 2;
       ((pmHdrType*)pktBufStart)->srcNode   = nodeFileInfo[count]->srcNode.node;
@@ -780,7 +783,7 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
       ((pmHdrType*)pktBufStart)->attribute = message->attribute;
       ((pmHdrType*)pktBufStart)->cost      = message->cost;
 
-      if (write(pktHandle, pktBufStart, pktBufLen) != (int)pktBufLen )
+      if (write(pktHandle, pktBufStart, pktBufLen) != pktBufLen )
       {
         puts("Cannot write to PKT file.");
         return 1;
@@ -788,7 +791,7 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
 
       nodeFileInfo[count]->totalMsgs++;
 
-      if (config.maxPktSize != 0 && filelength(pktHandle) >= config.maxPktSize * (s32)1000)
+      if (config.maxPktSize != 0 && fileLength(pktHandle) >= config.maxPktSize * (s32)1000)
       {
         if (write(pktHandle, &zero, 2) != 2)
         {
@@ -846,11 +849,13 @@ s16 validateEchoPktWr(void)
    for (count = 0; count < forwNodeCount; count++)
    {
       tempLen[count] = -1;
-      if ((*nodeFileInfo[count]->pktFileName != 0) &&
-          (nodeFileInfo[count]->pktHandle != 0))
+      if ( *nodeFileInfo[count]->pktFileName != 0
+         && nodeFileInfo[count]->pktHandle   != 0
+         )
       {
-         if (((tempLen[count] = filelength(nodeFileInfo[count]->pktHandle)) == -1) ||
-             (close(nodeFileInfo[count]->pktHandle) == -1))
+         if (  (tempLen[count] = fileLength(nodeFileInfo[count]->pktHandle)) == 0
+            || close(nodeFileInfo[count]->pktHandle) == -1
+            )
          {
             logEntry("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
             return 1;
@@ -866,7 +871,7 @@ s16 validateEchoPktWr(void)
                if (tempLen[count] == -1)
          {
             if (((tempHandle = open(nodeFileInfo[count]->pktFileName, O_RDONLY | O_BINARY)) == -1) ||
-                ((tempLen[count] = filelength(tempHandle)) == -1) ||
+                ((tempLen[count] = fileLength(tempHandle)) == 0) ||
                 (close(tempHandle) == -1))
             {
                logEntry("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
@@ -938,7 +943,7 @@ s16 closeEchoPktWr(void)
       {
          if (((pktHandle = _sopen(nodeFileInfo[count]->pktFileName, O_WRONLY | O_BINARY, SH_DENYRW)) == -1) ||
              (lseek(pktHandle, 0, SEEK_SET) == -1) ||
-             (chsize(pktHandle, nodeFileInfo[count]->bytesValid) == -1) ||
+             (ftruncate(pktHandle, nodeFileInfo[count]->bytesValid) == -1) ||
              (lseek(pktHandle, 0, SEEK_END) == -1) ||
              (write(pktHandle, &zero, 2) != 2) ||
              (close(pktHandle) == -1))
@@ -1064,7 +1069,7 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
    len = strlen(message->text) + 1;
    error |= (write(pktHandle, message->text, len) != len);
 
-   if ((tempLen = filelength(pktHandle)) == -1)
+   if ((tempLen = fileLength(pktHandle)) == 0)
    {
       close(pktHandle);
       logEntry("ERROR: Cannot determine length of file", LOG_ALWAYS, 0);
@@ -1127,7 +1132,7 @@ s16 closeNetPktWr(nodeFileRecType *nfInfo)
 
       if (((pktHandle = _sopen(nfInfo->pktFileName, O_WRONLY | O_BINARY, SH_DENYRW)) == -1) ||
             (lseek(pktHandle, 0, SEEK_SET) == -1) ||
-            (chsize(pktHandle, nfInfo->bytesValid) == -1) ||
+            (ftruncate(pktHandle, nfInfo->bytesValid) == -1) ||
             (lseek(pktHandle, 0, SEEK_END) == -1) ||
             (write(pktHandle, &zero, 2) != 2) ||
             (close(pktHandle) == -1))

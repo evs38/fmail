@@ -21,18 +21,22 @@
 //
 //---------------------------------------------------------------------------
 
-#include <ctype.h>
+#ifdef __WIN32__
 #include <dir.h>
-#include <dirent.h>
-#include <dos.h>
-#include <fcntl.h>
-#include <io.h>
+//#include <dos.h>
 #include <share.h>
+#endif // __WIN32__
+#include <ctype.h>
+#include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <libgen.h>   // dirname() basename()
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -41,11 +45,11 @@
 #include "log.h"
 #include "minmax.h"
 #include "msgmsg.h"
-//#include "msgpkt.h"  // for openP
 #include "nodeinfo.h"
+#include "os.h"
+#include "os_string.h"
 #include "ping.h"
 #include "spec.h"
-#include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
 
@@ -224,10 +228,6 @@ void initMsg(s16 noAreaFix)
   tempStrType    fileNameStr
                , tempStr
                , textStr;
-  char           drive[_MAX_DRIVE];
-  char           dirStr[_MAX_DIR];
-  char           name[_MAX_FNAME];
-  char           ext[_MAX_EXT];
   fhandle        msgMsgHandle;
   fhandle        tempHandle;
   s32            arcSize;
@@ -334,9 +334,7 @@ void initMsg(s16 noAreaFix)
                       arcSize = 0;
                       if ((tempHandle = open(msgMsg.subject, O_RDONLY | O_BINARY)) != -1)
                       {
-                        if ((arcSize = filelength(tempHandle)) == -1)
-                          arcSize = 0;
-                        else
+                        if ((arcSize = fileLength(tempHandle)) > 0)
                         {
                           for (temp = 0; temp < nodeCount ; temp++)
                             if (!memcmp(&nodeInfo[temp]->node, &destNode, sizeof(nodeNumType)))
@@ -347,34 +345,51 @@ void initMsg(s16 noAreaFix)
                         }
                         close(tempHandle);
                       }
-                      _splitpath(msgMsg.subject, drive, dirStr, name, ext);
-                      if (isdigit(ext[3] || isalpha(ext[3] && config.mailOptions.extNames))
-                         && (  config.maxBundleSize == 0
-                            || (arcSize >> 10) < config.maxBundleSize
-  // necessary for prevention of truncation of mailbundles: (config.mailer == dMT_DBridge)
-                            || config.mailer == dMT_DBridge
-                            || toupper(ext[3]) == (int)(config.mailOptions.extNames ? 'Z' : '9')
-                            )
-                         )
                       {
-                        strcpy(stpcpy(tempStr, drive), dirStr);
+                        static char *eExt = "\0\0\0\0";
+                        char *dirc
+                           , *basec
+                           , *bname
+                           , *dname
+                           , *ext;
 
-                        // are the first two letters of the extension correct?
-                        for (count = 0; (count < 7) && strnicmp(dayName[count], ext + 1, 2) != 0; count++)
-                        {}
-                        if ( (!config.mailOptions.dailyMail || count == timeBlock.tm_wday)
-                             && count != 7 && (stricmp(tempStr, config.outPath) == 0))
+                        dirc  = strdup(msgMsg.subject);
+                        basec = strdup(msgMsg.subject);
+                        dname = dirname(dirc);
+                        bname = basename(basec);
+                        if ((ext = strrchr(bname, '.')) == NULL)
+                          ext = eExt;
+
+                        if (isdigit(ext[3] || isalpha(ext[3] && config.mailOptions.extNames))
+                           && (  config.maxBundleSize == 0
+                              || (arcSize >> 10) < config.maxBundleSize
+                              // necessary for prevention of truncation of mailbundles:
+                              || config.mailer == dMT_DBridge
+                              || toupper(ext[3]) == (int)(config.mailOptions.extNames ? 'Z' : '9')
+                              )
+                           )
                         {
-                          strcpy(stpcpy(fAttInfo[fAttCount].fileName, name), ext);
+                          strcpy(stpcpy(tempStr, dname), dDIRSEPS);
 
-                          if (  fileSize(fileNameStr) != 0
-                             && strlen(fAttInfo[fAttCount].fileName) == 12
-                             )
+                          // are the first two letters of the extension correct?
+                          for (count = 0; (count < 7) && strnicmp(dayName[count], ext + 1, 2) != 0; count++)
+                          {}
+                          if ( (!config.mailOptions.dailyMail || count == timeBlock.tm_wday)
+                               && count != 7 && (stricmp(tempStr, config.outPath) == 0))
                           {
-                            fAttInfo[fAttCount].origNode   = origNode;
-                            fAttInfo[fAttCount++].destNode = destNode;
+                            strcpy(fAttInfo[fAttCount].fileName, bname);
+
+                            if (  fileSize(fileNameStr) != 0
+                               && strlen(fAttInfo[fAttCount].fileName) == 12
+                               )
+                            {
+                              fAttInfo[fAttCount].origNode   = origNode;
+                              fAttInfo[fAttCount++].destNode = destNode;
+                            }
                           }
                         }
+                        free(dirc);
+                        free(basec);
                       }
                     }
                     else
@@ -617,7 +632,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
     return -1;
   }
 
-  if (  (filelength(msgMsgHandle) > (long)(sizeof(msgMsgType) + TEXT_SIZE))
+  if (  (fileLength(msgMsgHandle) > (long)(sizeof(msgMsgType) + TEXT_SIZE))
      || read(msgMsgHandle, &msgMsg, sizeof(msgMsgType)) != (int)sizeof(msgMsgType)
      )
   {

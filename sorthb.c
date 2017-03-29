@@ -21,15 +21,17 @@
 //
 //---------------------------------------------------------------------------
 
+#ifdef __WIN32__
+//#include <dos.h>
+#endif // __WIN32__
 #include <ctype.h>
-#include <dos.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -42,8 +44,9 @@
 #include "msgra.h"    // expandName()
 #include "msgradef.h"
 #include "mtask.h"
+#include "os.h"
+#include "os_string.h"
 #include "sorthb.h"
-#include "stpcpy.h"
 #include "utils.h"
 
 
@@ -419,7 +422,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       write(msgIdxHandle  , msgIdxBuf  , bufCount * sizeof(msgIdxRec  ));
       write(msgToIdxHandle, msgToIdxBuf, bufCount * sizeof(msgToIdxRec));
 
-      temp = (filelength(oldHdrHandle) == filelength(msgHdrHandle));
+      temp = (fileLength(oldHdrHandle) == fileLength(msgHdrHandle));
 
       close(oldHdrHandle);
       close(msgHdrHandle);

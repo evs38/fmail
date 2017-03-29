@@ -21,8 +21,10 @@
 //
 //---------------------------------------------------------------------------
 
-#include <ctype.h>
+#ifdef __WIN32__
 #include <direct.h>  // chdir() _chdrive()
+#endif // __WIN32__
+#include <ctype.h>
 #include <dirent.h>
 #include <stdio.h>
 #include <stdarg.h>  // va_start()
@@ -30,11 +32,13 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>  // chdir()
 
 #include "utils.h"
 
 #include "ispathch.h"
 #include "minmax.h"
+#include "os_string.h"
 #include "spec.h"
 
 extern configType config;

@@ -21,21 +21,22 @@
 //
 //---------------------------------------------------------------------------
 
-#include <conio.h>
-#include <ctype.h>
+#ifdef __WIN32__
 #include <dir.h>      // getcwd()
+//#include <dos.h>
+#include <windows.h>
+#endif // __WIN32__
+//#include <conio.h>
+#include <ctype.h>
 #include <dirent.h>   // opendir()
-#include <dos.h>
+#include <errno.h>
 #include <fcntl.h>
-#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-#ifdef __WIN32__
-#include <windows.h>
-#endif
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -54,12 +55,13 @@
 #include "msgpkt.h"
 #include "msgra.h"
 #include "nodeinfo.h"
+#include "os.h"
 #include "pack.h"
 #include "ping.h"
 #include "pp_date.h"
 #include "sorthb.h"
 #include "spec.h"
-#include "stpcpy.h"
+#include "os_string.h"
 #include "utils.h"
 #include "version.h"
 
@@ -217,10 +219,6 @@ u16      cdecl _openfd[TABLE_SIZE] = {0x2001, 0x2002, 0x2002, 0xa004,
 #endif
 #endif
 
-#if defined __WIN32__ && !defined __DPMI32__
-const char *smtpID;
-#endif
-
 globVarsType globVars;
 
 const char *dayName[7]   = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
@@ -233,10 +231,10 @@ const char *semaphore[6] = {
                            , "mdrescan.now"
                            , "xmrescan.flg"
                            };
-
-long       gmtOffset;
-time_t     startTime;
-struct tm  timeBlock;
+long        gmtOffset;
+time_t      startTime;
+struct tm   timeBlock;
+const char *smtpID;
 
 internalMsgType *message   = NULL;
 s16              diskError = 0;
@@ -1132,12 +1130,12 @@ void Toss(int argc, char *argv[])
 
   if (globVars.echoCountV || globVars.dupCountV || globVars.badCountV)
   {
-    if (*config.tossedAreasList && (tempHandle = open(config.tossedAreasList, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
+    if (*config.tossedAreasList && (tempHandle = open(config.tossedAreasList, O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
       for (count = 0; count < echoCount; count++)
         if (echoAreaList[count].msgCountV)
-          dprintf(tempHandle, "%s\n", echoAreaList[count].areaName);
+          dprintf(tempHandle, "%s\r\n", echoAreaList[count].areaName);
 
-    if (*config.summaryLogName && (tempHandle = open( config.summaryLogName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
+    if (*config.summaryLogName && (tempHandle = open(config.summaryLogName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
     {
       logEntry("Writing toss summary", LOG_DEBUG, 0);
       dprintf(tempHandle, "\n----------  %s %4u-%02u-%02u %02u:%02u:%02u, %s - Toss Summary\n\n"
@@ -1463,7 +1461,7 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
 void Scan(int argc, char *argv[])
 {
   s32            switches;
-  s16            count;
+  int            count;
   s16            boardNum;
   s16            diskErrorT;
   s16            infoBad;
@@ -1532,7 +1530,7 @@ void Scan(int argc, char *argv[])
         if ((tempHandle = open(tempStr, O_RDONLY | O_TEXT)) != -1)
         {
           memset(tempStr, 0, sizeof(tempStrType));
-          if ((count = read(tempHandle, tempStr, sizeof(tempStrType)-1)) != -1)
+          if ((count = read(tempHandle, tempStr, sizeof(tempStrType) - 1)) != -1)
           {
             tempStr[count] = 0;
             while (*tempStr)
@@ -1541,6 +1539,7 @@ void Scan(int argc, char *argv[])
               {
                 msgNum = atol(helpPtr);
                 *(helpPtr++) = 0;
+                // todo: make this a binary search!
                 count = 0;
                 while (count < echoCount
                       && (  echoAreaList[count].JAMdirPtr == NULL
@@ -1549,7 +1548,7 @@ void Scan(int argc, char *argv[])
                       )
                   count++;
 
-                if (count != echoCount && !echoAreaList[count].options._reserved)
+                if (count < echoCount && !echoAreaList[count].options._reserved)
                 {
                   if ((msgNum = jam_scan(count, msgNum, 1, message)) == 0)
                   {
@@ -1574,13 +1573,15 @@ void Scan(int argc, char *argv[])
                 }
                 if ((helpPtr = strchr(helpPtr, '\n')) != NULL)
                 {
-                  helpPtr = stpcpy(tempStr, helpPtr + 1);
-                  count = (u16)(sizeof(tempStrType) + tempStr - helpPtr);
-                  if ((count = read(tempHandle, helpPtr, count - 1)) == -1)
-                    *tempStr = 0;
-                  else
+                  count = strlen(++helpPtr);
+                  memmove(tempStr, helpPtr, count + 1);
+                  helpPtr = tempStr + count;
+                  count = sizeof(tempStrType) - count;
+                  if ((count = read(tempHandle, helpPtr, count - 1)) >= 0)
                     helpPtr[count] = 0;
                 }
+                else
+                  *tempStr = 0;
               }
               else
                 *tempStr = 0;
@@ -2017,16 +2018,16 @@ int main(int argc, char *argv[])
   if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0 || !dirExist(helpPtr))
   {
     strcpy(configPath, argv[0]);
-    if ((helpPtr = strrchr(configPath, '\\')) == NULL)
-      strcpy(configPath, ".\\");
+    if ((helpPtr = strrchr(configPath, dDIRSEPC)) == NULL)
+      strcpy(configPath, "."dDIRSEPS);
     else
       helpPtr[1] = 0;
   }
   else
   {
     strcpy(configPath, helpPtr);
-    if (configPath[strlen(configPath) - 1] != '\\')
-      strcat(configPath, "\\");
+    if (configPath[strlen(configPath) - 1] != dDIRSEPC)
+      strcat(configPath, dDIRSEPS);
   }
 #ifdef _DEBUG
   printf("DEBUG configPath: %s\n", configPath);

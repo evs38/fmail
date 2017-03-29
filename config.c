@@ -21,47 +21,30 @@
 //
 //---------------------------------------------------------------------------
 
-#ifdef __STDIO__
-#include <conio.h>
-#else
-#include <bios.h>
-#endif
-#include <ctype.h>
+#ifdef __WIN32__
 #include <dir.h>
-#include <dos.h>
+//#include <dos.h>
+#include <share.h>
+#endif // __WIN32__
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <io.h>
-#include <share.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-
-#if defined _Windows && !defined __DPMI16__
-#define _far
-#define far
-#endif
-
-#ifdef __FMAILX__
-unsigned long _far _pascal GlobalDosAlloc(unsigned long);
-unsigned int  _far _pascal GlobalDosFree(unsigned long);
-#ifdef __DPMI32__
-extern unsigned _cdecl _psp;
-#define MK_FP(seg,ofs) ((void *)((long)(seg)<<16) + (ofs))
-#endif
-#endif
+#include <unistd.h>
 
 #include "config.h"
 
 #include "areainfo.h"
 #include "crc.h"
 #include "log.h"
-//#include "msgpkt.h" // for openP
 #include "mtask.h"
-#include "stpcpy.h"
+#include "os.h"
+#include "os_string.h"
 #include "utils.h"
 
 extern fhandle fmailLockHandle;
@@ -84,10 +67,6 @@ extern psRecType *pathArray;
 extern psRecType *tinyPathArray;
 
 fhandle fmLockHandle;
-
-#ifdef __STDIO__
-#define keyWaiting (kbhit() ? getch() : 0)
-#endif
 
 //---------------------------------------------------------------------------
 s16 getNetmailBoard(nodeNumType *akaNode)
@@ -117,7 +96,6 @@ s16 isNetmailBoard(u16 board)
 //---------------------------------------------------------------------------
 void initFMail(const char *_funcStr, s32 switches)
 {
-  s16         ch;
   fhandle     configHandle;
   time_t      time1
             , time2
@@ -153,7 +131,7 @@ void initFMail(const char *_funcStr, s32 switches)
 
   if (  !access(tempStr2, 0)
      && (fmailLockHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
-     && errno != ENOFILE
+     && errno != ENOENT  // path does not exist
      )
   {
     puts("Waiting for another copy of FMail, FTools or FSetup to finish...");
@@ -163,24 +141,12 @@ void initFMail(const char *_funcStr, s32 switches)
 
     while (  (fmailLockHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
           && (!config.activTimeOut || time2 - time1 < config.activTimeOut)
-          && (ch = (keyWaiting & 0xff)) != 27
           )
     {
-      if (ch == 0 || ch == -1)
-      {
-        time2a = time2 + 1;
-        while (time(&time2) <= time2a)
-          returnTimeSlice(1);
-      }
-#ifndef __STDIO__
-      else
-        keyRead;
-#endif
+      time2a = time2 + 1;
+      while (time(&time2) <= time2a)
+        returnTimeSlice(1);
     }
-#ifndef __STDIO__
-    if (ch != 0 && ch != -1)
-      keyRead;
-#endif
     if (fmailLockHandle == -1)
     {
       puts("\nAnother copy of FMail, FTools or FSetup did not finish in time...\n\nExiting...");
@@ -234,7 +200,12 @@ void initFMail(const char *_funcStr, s32 switches)
   initLog(switches);
 
 #ifdef _DEBUG
+#ifdef __WIN32__
   logEntryf(LOG_DEBUG, 0, "DEBUG gmtOffset=%ld daylight=%d timezone=%ld tzname=%s-%s", gmtOffset, _daylight, _timezone, _tzname[0], _tzname[1]);
+#endif
+#ifdef __linux__
+  logEntryf(LOG_DEBUG, 0, "DEBUG gmtOffset=%ld daylight=%d timezone=%ld tzname=%s-%s", gmtOffset, daylight, timezone, tzname[0], tzname[1]);
+#endif
 #endif
 
   if (  NULL == (message       = (internalMsgType *)malloc(INTMSG_SIZE                          ))

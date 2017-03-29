@@ -87,8 +87,8 @@ int         ChDir          (const char *path);
 const char *_searchpath    (const char *filename);
 int         existPattern   (const char *path, const char *pattern);
 int         isFile         (const char *path);
-u32         fileLength     (int handle);
-long        fileSize       (const char *filename);
+off_t       fileLength     (int handle);
+off_t       fileSize       (const char *filename);
 void        Delete         (const char *path, const char *wildCard);
 void        touch          (const char *path, const char *filename, const char *t);
 #ifndef __linux__

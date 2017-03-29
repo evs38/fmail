@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="FMail" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/fmail" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/FMail/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="TOSS" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-mtune=generic" />
+					<Add option="-D_DEBUG" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/fmail" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/FMail/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-mtune=generic" />
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+			<Target title="Native">
+				<Option output="bin/Native/fmail" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/FMail/Native/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="toss" />
+				<Compiler>
+					<Add option="-march=native" />
+					<Add option="-Ofast" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-DFMAIL" />
+			<Add option="-D__32BIT__" />
+			<Add option="-D__STDIO__" />
+		</Compiler>
+		<Unit filename="SetCompileDate.h" />
+		<Unit filename="archive.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="archive.h" />
+		<Unit filename="areafix.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="areafix.h" />
+		<Unit filename="areainfo.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="areainfo.h" />
+		<Unit filename="bclfun.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="bclfun.h" />
+		<Unit filename="cfgfile.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cfgfile.h" />
+		<Unit filename="config.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="config.h" />
+		<Unit filename="copyFile.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="copyFile.h" />
+		<Unit filename="crc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="crc.h" />
+		<Unit filename="dups.h" />
+		<Unit filename="dups32.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fmail.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fmail.h" />
+		<Unit filename="fmstruct.h" />
+		<Unit filename="ftools.h" />
+		<Unit filename="ftscprod.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ftscprod.h" />
+		<Unit filename="ispathch.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ispathch.h" />
+		<Unit filename="jam.h" />
+		<Unit filename="jamfun.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="jamfun.h" />
+		<Unit filename="jammaint.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="jammaint.h" />
+		<Unit filename="jamscan.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="jamsys.h" />
+		<Unit filename="lock.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="lock.h" />
+		<Unit filename="log.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="log.h" />
+		<Unit filename="minmax.h" />
+		<Unit filename="msgmsg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="msgmsg.h" />
+		<Unit filename="msgpkt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="msgpkt.h" />
+		<Unit filename="msgra.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="msgra.h" />
+		<Unit filename="mtask.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mtask.h" />
+		<Unit filename="nodeinfo.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="nodeinfo.h" />
+		<Unit filename="os.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="os.h" />
+		<Unit filename="os_string.h" />
+		<Unit filename="pack.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="pack.h" />
+		<Unit filename="ping.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ping.h" />
+		<Unit filename="poppack.h" />
+		<Unit filename="pp_date.h" />
+		<Unit filename="pshpack1.h" />
+		<Unit filename="sendsmtp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="sendsmtp.h" />
+		<Unit filename="smtp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="smtp.h" />
+		<Unit filename="sorthb.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="sorthb.h" />
+		<Unit filename="spawno.h" />
+		<Unit filename="spec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="spec.h" />
+		<Unit filename="stpcpy.h" />
+		<Unit filename="stricmp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stricmp.h" />
+		<Unit filename="utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="utils.h" />
+		<Unit filename="utils2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="version.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="version.h" />
+		<Extensions>
+			<code_completion />
+			<envvars set="default" />
+			<debugger />
+			<DoxyBlocks>
+				<comment_style block="2" line="1" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

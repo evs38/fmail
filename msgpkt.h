@@ -23,7 +23,7 @@
 //
 //---------------------------------------------------------------------------
 
-#include <pshpack1.h>
+#include "pshpack1.h"
 
 typedef struct
 {
@@ -100,7 +100,7 @@ typedef struct
 //               * Field only guaranteed accurate in a type 2.2 header
 //---------------------------------------------------------------------------
 
-#include <poppack.h>
+#include "poppack.h"
 
 void  initPkt          (void);
 void  deInitPkt        (void);

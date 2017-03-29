@@ -41,17 +41,16 @@
 
 // **** Modify the type definitions below if necessary for your compiler ****
 
-#define fhandle int
-#define u8      uint8_t
-#define uchar   unsigned char
-#define u16     uint16_t
-#define s16     int16_t
-#define u32     uint32_t
-#define s32     int32_t
-#define udef    unsigned int
-//#define sdef  signed int
+#define fhandle  int
+#define u8       uint8_t
+#define uchar    unsigned char
+#define u16      uint16_t
+#define s16      int16_t
+#define u32      uint32_t
+#define s32      int32_t
+#define time32_t int32_t
 #ifdef __CANUSE64BIT
-#define u64     uint64_t
+#define u64      uint64_t
 #endif
 
 //#define MAXU16 0xFFFF
@@ -60,7 +59,7 @@
 
 // ********** General structures **********
 
-#include <pshpack1.h>
+#include "pshpack1.h"
 
 typedef struct
 {
@@ -108,14 +107,14 @@ typedef struct
 
 typedef struct
 {
-  char   versionString[32]; /* Always starts with 'FMail' */
-  u16    revNumber;         /* Is now 0x0100 */
-  u16    dataType;          /* See #defines above */
-  u16    headerSize;
-  time_t creationDate;
-  time_t lastModified;
-  u16    totalRecords;
-  u16    recordSize;
+  char     versionString[32]; /* Always starts with 'FMail' */
+  u16      revNumber;         /* Is now 0x0100 */
+  u16      dataType;          /* See #defines above */
+  u16      headerSize;
+  time32_t creationDate;
+  time32_t lastModified;
+  u16      totalRecords;
+  u16      recordSize;
 } headerType;
 
 
@@ -339,7 +338,7 @@ typedef struct
 {
   u8              versionMajor;
   u8              versionMinor;
-  time_t          creationDate;
+  time32_t        creationDate;
   u32             key_NotUsed;
   u32             reservedKey_NotUsed;
   u32             relKey1_NotUsed;
@@ -721,7 +720,7 @@ typedef struct
   s16          destAka;
 } badEchoType;
 
-#include <poppack.h>
+#include "poppack.h"
 
 //---------------------------------------------------------------------------
 #endif  // fmstructH

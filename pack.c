@@ -20,17 +20,19 @@
 //
 //---------------------------------------------------------------------------
 
-#include <ctype.h>
+#ifdef __WIN32__
 #include <dir.h>
-#include <dirent.h>    // opendir()
-#include <dos.h>
-#include <fcntl.h>
-#include <io.h>
+//#include <dos.h>
 #include <share.h>
+#endif // __WIN32__
+#include <ctype.h>
+#include <dirent.h>    // opendir()
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -42,7 +44,8 @@
 #include "msgpkt.h"
 #include "nodeinfo.h"
 #include "spec.h"
-#include "stpcpy.h"
+#include "os.h"
+#include "os_string.h"
 #include "utils.h"
 
 

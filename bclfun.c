@@ -21,15 +21,17 @@
 //
 //---------------------------------------------------------------------------
 
+#ifdef __WIN32__
+#include <share.h>
+#endif // __WIN32__
 #include <dirent.h>
 #include <fcntl.h>
-#include <io.h>
-#include <share.h>
 #include <stdio.h>
 #include <stdlib.h>   // calloc()
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -43,8 +45,9 @@
 #include "msgpkt.h"
 #include "mtask.h"
 #include "nodeinfo.h"
+#include "os.h"
+#include "os_string.h"
 #include "spec.h"
-#include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
 

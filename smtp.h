@@ -23,10 +23,7 @@
 //
 //---------------------------------------------------------------------------
 
-extern const char *smtpID;
-
 int sendMessage(char *SMTPServerName, char *mailfrom, char *mailto, internalMsgType *message, char *attach);
-
 int closeConnection(void);
 
 //---------------------------------------------------------------------------

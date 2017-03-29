@@ -90,6 +90,7 @@ extern struct tm    timeBlock;
 extern char         funcStr[32];
 extern char         configPath[FILENAME_MAX];
 extern configType   config;
+extern const char  *smtpID;
 
 //---------------------------------------------------------------------------
 typedef struct

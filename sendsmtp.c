@@ -20,54 +20,68 @@
 //
 //---------------------------------------------------------------------------
 
+#ifdef __WIN32__
+#include <dir.h>
+//#include <dos.h>
+#include <share.h>
+#endif // __WIN32__
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <dir.h>
 #include <dirent.h>
-#include <dos.h>
-#include <io.h>
 #include <fcntl.h>
-#include <share.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
-#include "msgmsg.h"
+
 #include "config.h"
-#include "nodeinfo.h"
 #include "areainfo.h"
-#include "utils.h"
+#include "msgmsg.h"
+#include "nodeinfo.h"
+#include "os.h"
+#include "os_string.h"
 #include "smtp.h"
 #include "spec.h"
-#include "stpcpy.h"
-
-#if 0
-void _RTLENTRY _EXPFUNC tzset2(void);
-#endif
+#include "utils.h"
 
 //---------------------------------------------------------------------------
 static int make_send_msg(u16 xu, char *attachName, u16 msg_tfs, u16 msg_kfs)
 {
-  char        *fileName;
+  char        *fileName
+            , *tp1
+            , *tp2;
   int          handle;
-  s32          xs;
+  int          xs;
   tempStrType  txtName;
 
   strcpy(message->fromUserName, config.sysopName);
   strcpy(message->toUserName, nodeInfo[xu]->sysopName);
   strcpy(message->subject, "Mail attach");
   strcpy(stpcpy(txtName, configPath), "email.txt");
-  if ( (handle = open(txtName, O_RDONLY | O_TEXT)) != -1 )
+  tp1 = tp2 = message->text;
+  if ((handle = open(txtName, O_RDONLY | O_BINARY)) != -1)
   {
-    if ( (xs = read(handle, message->text, TEXT_SIZE - 1)) != - 1)
-      message->text[xs] = 0;
+    if ( (xs = read(handle, tp1, TEXT_SIZE - 1)) != - 1)
+    {
+      tp1[xs] = 0;
+      // filter out ms line endings
+      while (*tp1)
+      {
+        if (*tp1 == '\r' && *(tp1 + 1) == '\n')
+          tp1++;
+        *tp2++ = *tp1++; 
+      }
+      *tp2 = *tp1;  // copy terminating 0
+    }
     else
-      message->text[0] = 0;
+      *tp1 = 0;
     close(handle);
   }
   else
-    message->text[0] = 0;
+    *tp1 = 0;
+
   if (!sendMessage(config.smtpServer, config.emailAddress, nodeInfo[xu]->email, message, attachName))
   {
     if (firstFile(attachName, &fileName))
@@ -192,13 +206,13 @@ static int sendsmtp_bink(void)
     if (nodeInfo[xu]->node.zone != config.akaList[0].nodeNum.zone)
     {
       archiveDirPtr += sprintf(archiveDirPtr - 1, ".%03hx", nodeInfo[xu]->node.zone);
-      mkdir(archiveStr);
+      MKDIR(archiveStr);
       strcpy(archiveDirPtr - 1, "\\");
     }
     if (nodeInfo[xu]->node.point)
     {
       archiveDirPtr += sprintf(archiveDirPtr, "%04hx%04hx.pnt", nodeInfo[xu]->node.net, nodeInfo[xu]->node.node);
-      mkdir(archiveStr);
+      MKDIR(archiveStr);
       strcpy(archiveDirPtr++, "\\");
     }
     if (nodeInfo[xu]->node.point)

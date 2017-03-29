@@ -20,20 +20,25 @@
 //
 // ----------------------------------------------------------------------------
 
+#ifdef __WIN32__
 #include <dir.h>
-#include <dirent.h>    // opendir()
-#include <dos.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <io.h>
-#include <process.h>
+//#include <dos.h>
 #include <process.h>
 #include <share.h>
+#endif // __WIN32__
+#ifdef __linux__
+#include <sys/types.h>  // wait()
+#include <sys/wait.h>   // wait()
+#endif // __linux__
+#include <dirent.h>     // opendir()
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>     // access() fork()
 
 #include "fmail.h"
 
@@ -47,8 +52,9 @@
 #include "msgmsg.h"
 #include "msgpkt.h"
 #include "nodeinfo.h"
+#include "os.h"
 #include "spec.h"
-#include "stpcpy.h"
+#include "os_string.h"
 #include "utils.h"
 
 #define MAX_PARSIZE 256
@@ -139,9 +145,9 @@ static u8 archiveType(char *fullFileName)
   return 0xFF;
 }
 // ----------------------------------------------------------------------------
-static s16 execute(const char *arcType, const char *program, const char *parameters, const char *archiveName, char *pktName, const char *privPath)
+static int execute(const char *arcType, const char *program, const char *parameters, const char *archiveName, char *pktName, const char *privPath)
 {
-  s16         dosExitCode = -1;
+  int         dosExitCode;
   char        tempStr[MAX_PARSIZE];
   tempStrType tempPath;
   char       *helpPtr;
@@ -204,48 +210,44 @@ static s16 execute(const char *arcType, const char *program, const char *paramet
   printf("<-- %s Start -->\n", arcType);
   fflush(stdout);
 
-#ifndef __NOSPAWNL__
-// for Win16 compile
-  if (dosExitCode == -1)
+#if   defined(__WIN32__)
+  dosExitCode = spawnl(P_WAIT, program, program, parameters, NULL);
+#elif defined(__linux__)
+  dosExitCode = fork();
+
+  switch (dosExitCode)
   {
-    dosExitCode = spawnl(P_WAIT, program, program, parameters, NULL);
-    // flush();
+    case -1:
+      break;
+    case 0:  // this is the code the child runs
+    {
+      execlp(program, program, parameters, NULL);
+      // execlp returns, so there must be an error!
+      exit(EXIT_FAILURE);
+    }
+    default:  // this is the code the parent runs
+    {
+      int status;
+      dosExitCode = wait(&status);
+      break;
+    }
   }
+#else
+  dosExitCode = -1;
+  errno = ENOEXEC;
 #endif
-  printf("<-- %s End [%.2f] -->\n", arcType, ((double)(clock() - ct)) / CLK_TCK);
+  // flush();
+
+  printf("<-- %s End [%.2f] -->\n", arcType, ((double)(clock() - ct)) / CLOCKS_PER_SEC);
   // flush();
   if (dosExitCode == -1)
   {
-    sprintf(tempStr, "Cannot execute %s utility: ", arcType);
-    switch (errno)
-    {
-      case E2BIG:
-        strcat(tempStr, "Arg list too big");
-        break;
-
-      case EINVAL:
-        strcat(tempStr, "Invalid argument");
-        break;
-
-      case ENOENT:
-        strcat(tempStr, "Path or file name not found");
-        break;
-
-      case ENOEXEC:
-        strcat(tempStr, "Exec format error");
-        break;
-
-      case ENOMEM:
-        strcat(tempStr, "Not enough memory");
-        break;
-    }
-    logEntry(tempStr, LOG_ALWAYS, 0);
+    logEntryf(LOG_ALWAYS, 0, "Cannot execute %s utility: %s", arcType, strError(errno));
     return 1;
   }
   if (dosExitCode != 0)
   {
-    sprintf(tempStr, "Archiving utility for %s method reported errorlevel %u", arcType, dosExitCode);
-    logEntry(tempStr, LOG_ALWAYS, 0);
+    logEntryf(LOG_ALWAYS, 0, "Archiving utility for %s method reported errorlevel %u", arcType, dosExitCode);
     return 1;
   }
   return 0;
@@ -584,13 +586,13 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
         if (destNode->zone != config.akaList[0].nodeNum.zone)
         {
           archivePtr += sprintf(archivePtr - 1, ".%03hx", destNode->zone);
-          mkdir(semaName);
+          MKDIR(semaName);
           *(archivePtr - 1) = '\\';
         }
         if (destNode->point)
         {
           archivePtr += sprintf(archivePtr, "%04hx%04hx.pnt", destNode->net, destNode->node);
-          mkdir(semaName);
+          MKDIR(semaName);
           sprintf(archivePtr, "\\%08hx.bsy", destNode->point);
         }
         else
@@ -610,14 +612,14 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     {
       // Set specific BINK paths extensions for out of zone destinations
       archivePtr += sprintf(archivePtr - 1, ".%03hx", destNode->zone);
-      mkdir(archiveStr);
+      MKDIR(archiveStr);
       strcpy(archivePtr - 1, "\\");
     }
     if (destNode->point)
     {
       // Set specific BINK paths extensions for point destinations
       archivePtr += sprintf(archivePtr, "%04hx%04hx.pnt", destNode->net, destNode->node);
-      mkdir(archiveStr);
+      MKDIR(archiveStr);
       strcpy(archivePtr++, "\\");
     }
   }
@@ -889,8 +891,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     arcSize = 0;
     if ((tempHandle = open(archiveStr, O_RDONLY | O_BINARY)) != -1)
     {
-      if ((arcSize = filelength(tempHandle)) == -1)
-        arcSize = 0;
+      arcSize = fileLength(tempHandle);
       close(tempHandle);
     }
   }

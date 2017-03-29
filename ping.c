@@ -31,7 +31,7 @@
 #include "config.h"
 #include "log.h"
 #include "msgmsg.h"
-#include "stpcpy.h"
+#include "os_string.h"
 #include "utils.h"
 
 #ifdef _DEBUG

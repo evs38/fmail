@@ -21,15 +21,17 @@
 //
 //---------------------------------------------------------------------------
 
+#ifdef __WIN32__
 #include <dir.h>
+#endif // __WIN32__
 #include <errno.h>
 #include <fcntl.h>
-#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -43,7 +45,8 @@
 #include "minmax.h"
 #include "msgpkt.h"
 #include "mtask.h"
-#include "stpcpy.h"
+#include "os.h"
+#include "os_string.h"
 #include "utils.h"
 
 
@@ -142,7 +145,7 @@ static fhandle jam_idxhandle = -1;
 static fhandle jam_hdrhandle = -1;
 static fhandle jam_txthandle = -1;
 static fhandle jam_lrdhandle = -1;
-static udef    jam_baseopen = 0;
+static u32     jam_baseopen = 0;
 static char    jam_basename[MB_PATH_LEN];
 #define        JAMCODE     1
 
@@ -249,7 +252,7 @@ u16 jam_initmsghdrrec(JAMHDR *jam_msghdrrec, internalMsgType *message, u16 local
   jam_msghdrrec->DateProcessed = ti + gmtOffset;
   jam_msghdrrec->Attribute = (local ? (MSG_LOCAL|MSG_TYPEECHO) : MSG_TYPEECHO)
                            | ((message->attribute & PRIVATE) ? MSG_PRIVATE : 0);
-  jam_msghdrrec->MsgNum = filelength(jam_idxhandle) / sizeof(JAMIDXREC) + 1;
+  jam_msghdrrec->MsgNum = fileLength(jam_idxhandle) / sizeof(JAMIDXREC) + 1;
   jam_msghdrrec->PasswordCRC = -1L;
 
   return 1;
@@ -314,7 +317,7 @@ u16 jam_getsubfields(u32 jam_code, char *jam_subfields, u32 jam_subfieldlen, int
 {
   u16  loID;
 //u16  hiID;
-  udef index;
+  u32  index;
   u32  datlen;
   tempStrType tempStr;
 
@@ -323,33 +326,33 @@ u16 jam_getsubfields(u32 jam_code, char *jam_subfields, u32 jam_subfieldlen, int
   index = 0;
   while (index + 8 < jam_subfieldlen)
   {
-    loID = *(u16*)(jam_subfields+index);
+    loID = *(u16*)(jam_subfields + index);
     index += 2;
 //  hiID = *(u16*)(jam_subfields+index);
     index += 2;
-    datlen = *(u32*)(jam_subfields+index);
+    datlen = *(u32*)(jam_subfields + index);
     index += 4;
 
     if (datlen < _JAM_MAXSUBLEN && index + datlen <= jam_subfieldlen)
       switch (loID)
       {
         case JAMSFLD_OADDRESS :
-                                strncpy(tempStr, jam_subfields + index, (udef)datlen);
-                                tempStr[(udef)datlen] = 0;
+                                strncpy(tempStr, jam_subfields + index, (size_t)datlen);
+                                tempStr[datlen] = 0;
                                 sscanf(tempStr, "%hu:%hu/%hu.%hu", &message->srcNode.zone, &message->srcNode.net, &message->srcNode.node, &message->srcNode.point);
                                 break;
         case JAMSFLD_DADDRESS :
-                                strncpy(tempStr, jam_subfields + index, (udef)datlen);
-                                tempStr[(udef)datlen] = 0;
+                                strncpy(tempStr, jam_subfields + index, (size_t)datlen);
+                                tempStr[datlen] = 0;
                                 sscanf(tempStr, "%hu:%hu/%hu.%hu", &message->destNode.zone, &message->destNode.net, &message->destNode.node, &message->destNode.point);
                                 break;
         case JAMSFLD_SENDERNAME :
-                                strncpy(message->fromUserName, jam_subfields + index, min((udef)datlen, sizeof(message->fromUserName) - 1));
-                                message->fromUserName[(udef)datlen] = 0;
+                                strncpy(message->fromUserName, jam_subfields + index, min(datlen, sizeof(message->fromUserName) - 1));
+                                message->fromUserName[datlen] = 0;
                                 break;
         case JAMSFLD_RECVRNAME :
-                                strncpy(message->toUserName, jam_subfields + index, min((udef)datlen, sizeof(message->toUserName) - 1));
-                                message->toUserName[(udef)datlen] = 0;
+                                strncpy(message->toUserName, jam_subfields + index, min(datlen, sizeof(message->toUserName) - 1));
+                                message->toUserName[datlen] = 0;
                                 break;
         case JAMSFLD_MSGID :
                                 strcpy( stpncpy( stpcpy( tempStr
@@ -366,8 +369,8 @@ u16 jam_getsubfields(u32 jam_code, char *jam_subfields, u32 jam_subfieldlen, int
                                 insertLine(message->text, tempStr);
                                 break;
         case JAMSFLD_SUBJECT :
-                                strncpy(message->subject, jam_subfields + index, min((udef)datlen, sizeof(message->subject) - 1));
-                                message->subject[(udef)datlen] = 0;
+                                strncpy(message->subject, jam_subfields + index, min(datlen, sizeof(message->subject) - 1));
+                                message->subject[datlen] = 0;
                                 break;
         case JAMSFLD_PID :
                                 strcpy( stpncpy( stpcpy( tempStr
@@ -412,7 +415,7 @@ u16 jam_getsubfields(u32 jam_code, char *jam_subfields, u32 jam_subfieldlen, int
 //#define JAMSFLD_TZUTCINFO   2004
 //#define JAMSFLD_UNKNOWN     0xffff
       }
-      index += (udef)datlen;
+      index += datlen;
   }
   return 1;
 }
@@ -445,14 +448,15 @@ u16 jam_fields[21] =
 
 u16 jam_makesubfields(u32 jam_code, char *jam_subfields, u32 *jam_subfieldLen,
                       JAMHDR *jam_msghdrrec, internalMsgType *message)
-{  u16   loID;
-//      u16   hiID;
-        udef  count;
-        udef    again;
+{
+        u16    loID;
+//      u16    hiID;
+        int    count;
+        u16    again;
         char  *helpPtr1
             , *helpPtr2;
-        udef  stlen;
-        char  tempStr[_JAM_MAXSUBLEN];
+        size_t stlen;
+        char   tempStr[_JAM_MAXSUBLEN];
 
         (void)jam_code;
 
@@ -559,7 +563,7 @@ u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_su
     logEntry("Subfields too big", LOG_ALWAYS, 0);
     return 0;
   }
-  if (read(jam_hdrhandle, jam_subfields, (udef)jam_hdrrec->SubfieldLen) != (int)jam_hdrrec->SubfieldLen)
+  if (read(jam_hdrhandle, jam_subfields, (size_t)jam_hdrrec->SubfieldLen) != (int)jam_hdrrec->SubfieldLen)
     return 0;
   if (message != NULL)
   {
@@ -618,7 +622,7 @@ u16 jam_newhdr(u32 jam_code, u32 *jam_hdrOffset, JAMHDR *jam_hdrrec, char *jam_s
   if (write(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR))
     return 0;
 
-  if (write(jam_hdrhandle, jam_subfields, (udef)jam_hdrrec->SubfieldLen) != (int)jam_hdrrec->SubfieldLen)
+  if (write(jam_hdrhandle, jam_subfields, (size_t)jam_hdrrec->SubfieldLen) != (int)jam_hdrrec->SubfieldLen)
     return 0;
 
   return 1;
@@ -635,7 +639,7 @@ u16 jam_gettxt(u32 jam_code, u32 jam_txtoffset, u32 jam_txtlen, char *txt)
     return 0;
 
 // !!!!!!!!!!
-  if (read(jam_txthandle, txt, (udef)jam_txtlen) != (int)jam_txtlen)
+  if (read(jam_txthandle, txt, (size_t)jam_txtlen) != (int)jam_txtlen)
     return 0;
 
   return 1;

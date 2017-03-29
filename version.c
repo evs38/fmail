@@ -19,7 +19,7 @@
 //
 //----------------------------------------------------------------------------
 
-#if 0
+#if 1
   #define BETA
 #endif
 
@@ -27,7 +27,7 @@
 #pragma message ("*** Warning! Compiling BETA version in NON-DEBUG mode!?")
 #endif
 
-#include "Version.h"
+#include "version.h"
 
 #include "pp_date.h"
 
@@ -40,7 +40,9 @@
   #define PTYPE "-W32"
   #define P386
 #elif defined P386
-  #define PTYPE "/386"
+  #define PTYPE "-386"
+#elif defined(__linux__)
+  #define PTYPE "-lnx"
 #else
   #define PTYPE ""
 #endif
@@ -54,11 +56,7 @@
 #endif
 
 #if   defined(FSETUP)
- #ifdef __32BIT__
   #define TOOL "FConfig"
- #else
-  #define TOOL "FSetup"
- #endif
 #elif defined(FTOOLS)
   #define TOOL "FTools"
 #else // FMAIL
@@ -96,7 +94,7 @@ const char *Version(void)
 #ifdef BETA
     sprintf(version, "%s-B%04d%02d%02d", VERSTR, YEAR, MONTH + 1, DAY);
 #else
-    sprintf(version, "%s", VERSTR);
+    strcpy(version, VERSTR);
 #endif
   return version;
 }

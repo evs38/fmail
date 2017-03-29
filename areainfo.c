@@ -21,12 +21,14 @@
 //
 //---------------------------------------------------------------------------
 
-#include <dos.h>
+#ifdef __WIN32__
+//#include <dos.h>
+#endif // __WIN32__
 #include <fcntl.h>
-#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -38,6 +40,7 @@
 #include "minmax.h"
 #include "msgmsg.h"
 #include "nodeinfo.h"
+#include "os_string.h"
 #include "time.h"
 #include "utils.h"
 #include "version.h"

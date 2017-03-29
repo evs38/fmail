@@ -32,7 +32,7 @@
 
 extern s16 messagesMoved;
 
-#include <pshpack1.h>
+#include "pshpack1.h"
 //---------------------------------------------------------------------------
 typedef struct
 {
@@ -75,7 +75,7 @@ typedef struct
 
 } fAttInfoType;
 
-#include <poppack.h>
+#include "poppack.h"
 //---------------------------------------------------------------------------
 void initMsg      (s16 noAreaFix);
 u16  getFlags     (char *text);

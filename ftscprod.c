@@ -21,16 +21,19 @@
 //
 //---------------------------------------------------------------------------
 
+#include <errno.h>
 #include <fcntl.h>    // open(); O_flags
 #include <stdio.h>    // sprintf()
 #include <stdlib.h>   // malloc
 #include <string.h>   // strerror()
+#include <unistd.h>
 
 #include "fmail.h"
 
 #include "ftscprod.h"
 #include "log.h"
-#include "stpcpy.h"
+#include "os.h"
+#include "os_string.h"
 #include "utils.h"
 
 #define dTBLSIZE  600
@@ -376,7 +379,7 @@ void GetTable(void)
     if ((f = open(fn, O_RDONLY | O_BINARY)) >= 0)
     {
       char *buf;
-      u32 fl = fileLength(f);
+      off_t fl = fileLength(f);
 
 #ifdef _DEBUG0
       logEntry("DEBUG GetTable opened", LOG_DEBUG, 0);

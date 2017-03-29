@@ -21,15 +21,17 @@
 //
 //---------------------------------------------------------------------------
 
+#ifdef __WIN32__
+//#include <dos.h>
+#endif // __WIN32__
 #include <ctype.h>
-#include <dos.h>
 #include <fcntl.h>
-#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "areafix.h"
 
@@ -45,8 +47,9 @@
 #include "msgpkt.h"
 #include "msgra.h"
 #include "nodeinfo.h"
+#include "os.h"
+#include "os_string.h"
 #include "pack.h"
-#include "stpcpy.h"
 #include "utils.h"
 #include "version.h"
 
@@ -407,7 +410,7 @@ int areaFix(internalMsgType *message)
   rawEchoType     rawEchoInfo2
                , *areaBuf
                , *adefBuf;
-  udef            komma;
+  int             komma;
   char           *tag
                , *descr;
 

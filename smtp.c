@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -21,63 +21,91 @@
 //
 //---------------------------------------------------------------------------
 
-
+#ifdef __WIN32__
 #include <dir.h>
-#include <fcntl.h>
-#include <io.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <time.h>
 #include <winsock.h>
+#endif // __WIN32__
+
+#ifdef __linux__
+#include <arpa/inet.h>
+#include <netdb.h>       // gethostbyname() getservbyname()
+#include <netinet/in.h>
+#include <sys/socket.h>
+
+typedef int SOCKET;
+typedef int BOOL;
+typedef unsigned int UINT;
+typedef struct sockaddr_in SOCKADDR_IN;
+typedef struct sockaddr SOCKADDR;
+typedef struct hostent HOSTENT;
+typedef struct servent SERVENT;
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+#ifndef TRUE
+#define TRUE 1
+#endif
+//#define INADDR_ANY	   ((u_long)0)
+#define SOCKET_ERROR   (-1)
+#define INVALID_SOCKET (-1)
+#endif // __linux__
+
+#include <fcntl.h>
+#include <libgen.h>
+#include <stdio.h>
+#include <stdlib.h>    // free()
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string.h>    // basename() strdup()
+#include <time.h>
+#include <unistd.h>
 
 #include "fmail.h"
 
 #include "areainfo.h"
 #include "log.h"
+#include "os.h"
 #include "smtp.h"
 #include "utils.h"
 
 
 // ALGEMENE VARIABELEN ========================================================
 
-
 static SOCKET	     ws;
 static const char *sPartBoundary = "~---~fmAIL_bOUNDARY~---~";
 static int         connOpen;
 
-
-
 // BUFFERFUNCTIES =============================================================
-
 
 #define         BUFFERSIZE 8192
 
 static  char    sbuffer[BUFFERSIZE + 1];
 static  int     sbufcount, sbuferror;
 
-
+//---------------------------------------------------------------------------
 static void initsbuf(void)
 {
-   sbufcount = sbuferror = 0;
+  sbufcount = sbuferror = 0;
 }
-
-
+//---------------------------------------------------------------------------
 static int flushsbuf(void)
 {
-   if ( !sbufcount )
-      return 0;
-   if ( send(ws, sbuffer, sbufcount, 0) == SOCKET_ERROR )
-   {
-      logEntry("Error sending data", LOG_ALWAYS, 0);
-      sbufcount = 0;
-      return 1;
-   }
+  if (!sbufcount)
+    return 0;
 
-   sbufcount = 0;
-   return sbuferror;
+  if (send(ws, sbuffer, sbufcount, 0) == SOCKET_ERROR)
+  {
+    logEntry("Error sending data", LOG_ALWAYS, 0);
+    sbufcount = 0;
+    return 1;
+  }
+
+  sbufcount = 0;
+
+  return sbuferror;
 }
-
-
+//---------------------------------------------------------------------------
 static void addsbuf(const char *data)
 {
   int len;
@@ -88,11 +116,9 @@ static void addsbuf(const char *data)
   strcpy(sbuffer + sbufcount, data);
   sbufcount += len;
 }
-
-
+//---------------------------------------------------------------------------
 
 // RESPONECONTROLE ============================================================
-
 
 #define GENERIC_SUCCESS  0
 #define CONNECT_SUCCESS  1
@@ -102,6 +128,7 @@ static void addsbuf(const char *data)
 #define LAST_RESPONSE    4
 // Do not add entries past this one
 
+//---------------------------------------------------------------------------
 // Note: the order of the entries is important.
 //       They must be synchronized with eResponse entries.
 static int response_code[4] =
@@ -124,7 +151,7 @@ static const char *response_text[4] =
 
 static  char    response_buf[RESPONSE_BUFFER_SIZE];
 
-
+//---------------------------------------------------------------------------
 static BOOL getresponse(UINT response_expected)
 {
    char buf[4];
@@ -145,11 +172,9 @@ static BOOL getresponse(UINT response_expected)
    }
    return TRUE;
 }
-
-
+//---------------------------------------------------------------------------
 
 // MIME FUNCTIES ==============================================================
-
 
 // The 7-bit alphabet used to encode binary information
 char sBase64Alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -160,8 +185,7 @@ int  nMask[] = { 0, 1, 3, 7, 15, 31, 63, 127, 255 };
 static  char    szInput[BYTES_TO_READ];
 static	int	nInputSize, nBitsRemaining;
 static	int	lBitStorage;
-
-
+//---------------------------------------------------------------------------
 int read_bits(int nNumBits, int *pBitsRead, int *lp)
 {
    long lScratch;
@@ -184,8 +208,7 @@ int read_bits(int nNumBits, int *pBitsRead, int *lp)
    }
    return (int)lScratch & nMask[nNumBits];
 }
-
-
+//---------------------------------------------------------------------------
 static void encode(char *szEncoding, int nSize)
 {
    char	*helpPtr;
@@ -219,42 +242,46 @@ static void encode(char *szEncoding, int nSize)
    *helpPtr = 0;
    addsbuf(sbuf);
 }
-
-
+//---------------------------------------------------------------------------
 static void appendMIMEfile(char *fname)
 {
-   int	handle;
-   int  nBytesRead;
-   char szFName[_MAX_FNAME]
-      , szExt  [_MAX_EXT  ];
-   char szBuffer[BYTES_TO_READ + 1];
-   tempStrType sbuf;
+  int	 handle;
+  int  nBytesRead;
+  char *fnamec
+     , *bname;
+  char szBuffer[BYTES_TO_READ + 1];
+  tempStrType sbuf;
 
-   if (!fname || !*fname)
-      return;
-   if ((handle = open(fname, O_RDONLY | O_BINARY)) == -1)
-      return;
-   _splitpath(fname, NULL, NULL, szFName, szExt);
-   sprintf(sbuf, "--%s\r\n", sPartBoundary);
-   addsbuf(sbuf);
-   sprintf(sbuf, "Content-Type: application/octet-stream; name=%s%s\r\n", szFName, szExt);
-   addsbuf(sbuf);
-   sprintf(sbuf, "Content-Transfer-Encoding: base64\r\n");
-   addsbuf(sbuf);
-   sprintf(sbuf, "Content-Disposition: attachment; filename=%s%s\r\n\r\n", szFName, szExt );
-   addsbuf(sbuf);
+  if (!fname || !*fname)
+    return;
 
-   do
-   {  nBytesRead = read(handle, szBuffer, BYTES_TO_READ);
-      szBuffer[nBytesRead] = 0;     // Terminate the string
-      encode(szBuffer, nBytesRead);
-      addsbuf("\r\n");
-   } while(nBytesRead == BYTES_TO_READ);
-   addsbuf("\r\n");
+  if ((handle = open(fname, O_RDONLY | O_BINARY)) == -1)
+    return;
+  fnamec = strdup(fname);
+  bname  = basename(fnamec);
+  sprintf(sbuf, "--%s\r\n", sPartBoundary);
+  addsbuf(sbuf);
+  sprintf(sbuf, "Content-Type: application/octet-stream; name=%s\r\n", bname);
+  addsbuf(sbuf);
+  sprintf(sbuf, "Content-Transfer-Encoding: base64\r\n");
+  addsbuf(sbuf);
+  sprintf(sbuf, "Content-Disposition: attachment; filename=%s\r\n\r\n", bname);
+  addsbuf(sbuf);
+  free(fnamec);
 
-   close(handle);
+  do
+  {
+    nBytesRead = read(handle, szBuffer, BYTES_TO_READ);
+    szBuffer[nBytesRead] = 0;     // Terminate the string
+    encode(szBuffer, nBytesRead);
+    addsbuf("\r\n");
+  } while(nBytesRead == BYTES_TO_READ);
+
+  addsbuf("\r\n");
+
+  close(handle);
 }
-
+//---------------------------------------------------------------------------
 
 // TEKST FILE FUNCTIE =========================================================
 
@@ -303,29 +330,32 @@ static void appendtext(char *txt)
    addsbuf(txt + startpos);
    addsbuf("\r\n");
 }
-
-
+//---------------------------------------------------------------------------
 
 // MESSAGE FUNCTIES ===========================================================
 
-static  WSADATA wsdata;
 
 static  const char *weekday[ 7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 static  const char *month  [12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
+//---------------------------------------------------------------------------
 static int openConnection(char *SMTPServerName)
 {
    tempStrType  hostnamebuf, buf;
-   SOCKADDR_IN  sockaddrL, sockaddrR;
+   SOCKADDR_IN  sockaddrL
+              , sockaddrR;
    HOSTENT   	 *hostent;
    SERVENT     *servent;
 
+#ifdef __WIN32__
+   WSADATA wsdata;
    if ( WSAStartup(2, &wsdata) )
    {
       logEntry("WinSock startup error", LOG_ALWAYS, 0);
       return 1;
    }
-   if ( (ws = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET )
+#endif
+   if ((ws = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
    {
       logEntry("Socket initialization error", LOG_ALWAYS, 0);
       return 1;
@@ -334,7 +364,7 @@ static int openConnection(char *SMTPServerName)
    sockaddrL.sin_family = AF_INET;
    sockaddrL.sin_port = 0;
    sockaddrL.sin_addr.s_addr = INADDR_ANY;
-   if ( bind(ws, (SOCKADDR *)&sockaddrL, sizeof(sockaddrL)) )
+   if (bind(ws, (SOCKADDR *)&sockaddrL, sizeof(sockaddrL)))
    {
       logEntry("Socket bind error", LOG_ALWAYS, 0);
       goto einde;
@@ -350,34 +380,37 @@ static int openConnection(char *SMTPServerName)
       goto einde;
    }
 
-   logEntryf(LOG_ALWAYS, 0, "Connecting to %s (%u.%u.%u.%u) on port %u (SMTP)",
-                           SMTPServerName,
-                           (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b1,
-                           (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b2,
-                           (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b3,
-                           (int)((struct in_addr*)(hostent->h_addr_list[0]))->S_un.S_un_b.s_b4,
-                           (int)(((servent->s_port & 0xFF) << 8) + ((servent->s_port & 0xFF00) >> 8)));
+   logEntryf(LOG_ALWAYS, 0, "Connecting to %s (%s) on port %u (SMTP)"
+                          , SMTPServerName
+                          , inet_ntoa(*(struct in_addr*)(hostent->h_addr_list[0]))
+                          , (int)(((servent->s_port & 0xFF) << 8) + ((servent->s_port & 0xFF00) >> 8))
+            );
 
    memset(&sockaddrR, 0, sizeof(sockaddrR));
    sockaddrR.sin_family = AF_INET;
    sockaddrR.sin_port = servent->s_port;
-   memcpy((char FAR *)&(sockaddrR.sin_addr), hostent->h_addr_list[0], hostent->h_length);
-   if ( connect(ws, (SOCKADDR *)&sockaddrR, sizeof(sockaddrR)) )
+   memcpy((char *)&(sockaddrR.sin_addr), hostent->h_addr_list[0], hostent->h_length);
+   if (connect(ws, (SOCKADDR *)&sockaddrR, sizeof(sockaddrR)))
    {
       logEntry("Can't connect to host", LOG_ALWAYS, 0);
       goto einde;
    }
-   if( !getresponse(CONNECT_SUCCESS) )
+   if(!getresponse(CONNECT_SUCCESS))
    {
       logEntry("Can't connect to host", LOG_ALWAYS, 0);
       goto einde;
    }
-   if ( gethostname(hostnamebuf, sizeof(tempStrType)) )
+   if (gethostname(hostnamebuf, sizeof(tempStrType)))
    {
       logEntry("Can't get local host name", LOG_ALWAYS, 0);
 einde:
+#ifdef __linux__
+      close(ws);
+#endif // __linux__
+#ifdef __WIN32__
       closesocket(ws);
       WSACleanup();
+#endif // __WIN32__
       return 1;
    }
    sprintf(buf, "HELO %s\r\n", hostnamebuf);
@@ -393,7 +426,7 @@ einde:
    }
    return 0;
 }
-
+//---------------------------------------------------------------------------
 int sendMessage(char *SMTPServerName, char *mailfrom, char *mailto, internalMsgType *message, char *attach)
 {
    char        *fileName;
@@ -458,7 +491,7 @@ int sendMessage(char *SMTPServerName, char *mailfrom, char *mailto, internalMsgT
    tms = gmtime(&timer);  // gmt ok!
    sprintf(sbuf, "Date: %s, %02u %s %u %02u:%02u:%02u GMT\r\n",
 		 weekday[tms->tm_wday], tms->tm_mday,
-                 month[tms->tm_mon], tms->tm_year+1900,
+                 month[tms->tm_mon], tms->tm_year + 1900,
 		 tms->tm_hour, tms->tm_min, tms->tm_sec);
    addsbuf(sbuf);
    if ( *message->fromUserName )
@@ -504,13 +537,12 @@ int sendMessage(char *SMTPServerName, char *mailfrom, char *mailto, internalMsgT
 einde1:
    return error;
 }
-
-
+//---------------------------------------------------------------------------
 int closeConnection(void)
 {
    int error;
 
-   if ( !connOpen )
+   if (!connOpen)
       return 1;
 
    error = 0;
@@ -529,10 +561,15 @@ int closeConnection(void)
 einde1:
    connOpen = 0;
    shutdown(ws, 2);
+#ifdef __linux__
+   close(ws);
+#endif // __linux__
+#ifdef __WIN32__
    closesocket(ws);
+   WSACleanup();
+#endif // __WIN32__
    logEntry("SMTP connection closed", LOG_ALWAYS, 0);
    newLine();
-   WSACleanup();
    return error;
 }
-
+//---------------------------------------------------------------------------

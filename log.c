@@ -21,17 +21,20 @@
 //
 //---------------------------------------------------------------------------
 
-#include <dos.h>
+#ifdef __WIN32__
+//#include <dos.h>
+#include <windows.h>
+#endif
+#ifdef __linux__
+#include <stdarg.h>
+#endif // __linux__
 #include <fcntl.h>
-#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-#ifdef __WIN32__
-#include <windows.h>
-#endif
+#include <unistd.h>
 
 #include "fmail.h"
 
@@ -39,7 +42,8 @@
 #include "dups.h"
 #include "log.h"
 #include "msgpkt.h"
-#include "stpcpy.h"
+#include "os.h"
+#include "os_string.h"
 #include "utils.h"
 #include "version.h"
 
@@ -320,6 +324,6 @@ void mgrLogEntry(const char *s)
 void logActive(void)
 {
   newLine();
-  logEntryf(LOG_STATS, 0, "%s Active: %.3f sec.", funcStr, ((double)(clock() - at)) / CLK_TCK);
+  logEntryf(LOG_STATS, 0, "%s Active: %.3f sec.", funcStr, ((double)(clock() - at)) / CLOCKS_PER_SEC);
 }
 //---------------------------------------------------------------------------

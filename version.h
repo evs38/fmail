@@ -21,9 +21,9 @@
 //
 //----------------------------------------------------------------------------
 
-#define VERNUM       "1.73"
-#define SERIAL_MAJOR  1
-#define SERIAL_MINOR  73
+#define VERNUM       "2.1.0.1"
+#define SERIAL_MAJOR  2
+#define SERIAL_MINOR  1
 
 extern const char *TOOLSTR;
 
@@ -39,4 +39,3 @@ const char *VersionString(void);
 
 //----------------------------------------------------------------------------
 #endif  // versionH
-

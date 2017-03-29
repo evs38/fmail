@@ -1,5 +1,5 @@
-#ifndef stpcpyH
-#define stpcpyH
+#ifndef os_stringH
+#define os_stringH
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2016 Wilfred van Velzen
@@ -22,8 +22,11 @@
 //
 //---------------------------------------------------------------------------
 
-#ifdef __MINGW32__
+#ifdef __linux__
+#include <ctype.h>  // toupper() tolower()
+#endif // __linux__
 
+#ifdef __MINGW32__
 static inline char *stpcpy(char *dst, const char *src)
 {
   while ((*dst = *src))
@@ -31,7 +34,6 @@ static inline char *stpcpy(char *dst, const char *src)
 
   return dst;
 }
-
 #endif
 //---------------------------------------------------------------------------
 #ifndef __linux__
@@ -47,6 +49,28 @@ __inline static char *stpncpy(char *dst, const char *src, int n)
 
   return dst;
 }
-//---------------------------------------------------------------------------
 #endif // __linux__
-#endif  // stpcpyH
+//---------------------------------------------------------------------------
+#ifdef __linux__
+__inline static char *strupr(char *s)
+{
+  char *p;
+
+  for (p = s; *p; ++p)
+    *p = toupper(*p);
+
+  return s;
+}
+//---------------------------------------------------------------------------
+__inline static char *strlwr(char *s)
+{
+  char *p;
+
+  for (p = s; *p; ++p)
+    *p = tolower(*p);
+
+  return s;
+}
+#endif // __linux__
+//---------------------------------------------------------------------------
+#endif  // os_stringH

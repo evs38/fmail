@@ -23,7 +23,7 @@
 //
 //---------------------------------------------------------------------------
 
-#include <pshpack1.h>
+#include "pshpack1.h"
 
 #define BCLH_ISLIST   0x00000001L  // File is complete list
 #define BCLH_ISUPDATE 0x00000002L  // File contains update/diff information
@@ -54,7 +54,7 @@ typedef struct
 extern bcl_header_type bcl_header;
 // extern bcl_type bcl;
 
-#include <poppack.h>
+#include "poppack.h"
 
 //---------------------------------------------------------------------------
 int  openBCL (uplinkReqType *uplinkReq);

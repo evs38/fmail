@@ -21,25 +21,30 @@
 //
 //---------------------------------------------------------------------------
 
-#include <ctype.h>
+#if defined(__WIN32__)
 #include <dir.h>     // getcwd()
-#include <dirent.h>
-#include <dos.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <io.h>
+//#include <dos.h>
 #include <share.h>
 #include <stdint.h>
+#include <windows.h>
+#endif
+#ifdef __linux__
+#include <inttypes.h>
+#include <sys/statvfs.h>
+#include <sys/time.h>
+#endif // __linux__
+#include <ctype.h>
+#include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>   // getenv()
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <utime.h>
-#if defined(__WIN32__)
-#include <windows.h>
-#endif
 
 #include "utils.h"
 
@@ -47,7 +52,8 @@
 #include "log.h"
 #include "msgpkt.h"  // for openP
 #include "spec.h"
-#include "stpcpy.h"
+#include "os.h"
+#include "os_string.h"
 #include "version.h"
 
 psRecType *seenByArray   = NULL;
@@ -196,7 +202,12 @@ const char *_searchpath(const char *filename)
 
   // Pathname contains the relative path of the found file.  Convert
   // it to an absolute path.
+#ifdef __WIN32__
   if ((temp = _fullpath(NULL, pathbuf, FILENAME_MAX)) != NULL)
+#endif // __WIN32__
+#ifdef __linux__
+  if ((temp = realpath(pathbuf, NULL)) != NULL)
+#endif // __linux__
   {
     strcpy(pathbuf, temp);
     free(temp);
@@ -205,7 +216,7 @@ const char *_searchpath(const char *filename)
   return (pathbuf[0] == '\0' ? NULL : pathbuf);
 }
 //---------------------------------------------------------------------------
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__linux__)
 const char *fmtU64(u64 u)
 {
   static tempStrType tempStr;
@@ -214,11 +225,11 @@ const char *fmtU64(u64 u)
 #define dMBC (100ui64 * 1024 * 1024)
 #define dGBC (100ui64 * 1024 * 1024 * 1024)
 #define dLLFMT "%Lu"
-#elif defined(__MINGW32__)
+#elif defined(__MINGW32__) || defined(__linux__)
 #define dKBC (100ull * 1024)
 #define dMBC (100ull * 1024 * 1024)
 #define dGBC (100ull * 1024 * 1024 * 1024)
-#define dLLFMT "%I64u"
+#define dLLFMT "%"PRIu64
 #endif
 
   if (u >= dKBC)
@@ -241,18 +252,24 @@ const char *fmtU64(u64 u)
 //---------------------------------------------------------------------------
 u64 diskFree64(const char *path)
 {
+#if defined(__linux__)
+  struct statvfs sfs;
+
+  if (statvfs(path, &sfs) == 0)
+    return (u64)sfs.f_bsize * (u64)sfs.f_bavail;
+#elif defined(__WIN32__)
   ULARGE_INTEGER ul;
 
   if (GetDiskFreeSpaceEx(path, &ul, NULL, NULL))
     return ul.QuadPart;
-
+#endif
   return 0;
 }
 #endif
 //---------------------------------------------------------------------------
 u32 diskFree(const char *path)
 {
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__linux__)
   u64 ul = diskFree64(path);
 
   if (ul > (uint64_t)UINT32_MAX)
@@ -305,13 +322,14 @@ u32 diskFree(const char *path)
 #endif
 }
 //---------------------------------------------------------------------------
-u32 fileLength(int handle)
+off_t fileLength(int handle)
 {
-  long fl = filelength(handle);
-  if (fl < 0)
-    return 0;
+  struct stat st;
 
-  return (u32)fl;
+  if (fstat(handle, &st) == 0)
+    return st.st_size;
+
+  return 0;
 }
 //---------------------------------------------------------------------------
 off_t fileSize(const char *filename)
@@ -330,7 +348,7 @@ void touch(const char *path, const char *filename, const char *t)
   fhandle     tempHandle;
 
   strcpy(stpcpy(tempStr, path), filename);
-  if ((tempHandle = open(tempStr, O_RDWR | O_CREAT | O_TRUNC | O_TEXT, S_IREAD | S_IWRITE)) != -1)
+  if ((tempHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, S_IREAD | S_IWRITE)) != -1)
   {
     write(tempHandle, t, strlen(t));
     close(tempHandle);
@@ -1364,7 +1382,7 @@ void setViaStr(char *buf, const char *preStr, u16 aka)
                  , preStr, getAkaStr(aka, 1)
                  , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
                  , tm->tm_hour, tm->tm_min, tm->tm_sec
-                 , tv.tv_usec / 1000
+                 , (unsigned int)(tv.tv_usec / 1000)
                  , TOOLSTR, funcStr, Version()
              );
 #else
@@ -1406,67 +1424,6 @@ void addVia(char *msgText, u16 aka, int isNetmail)
   }
 }
 #endif
-//---------------------------------------------------------------------------
-// const char *makeName(char *path, char *name)
-// {
-//   static tempStrType tempStr;
-//   char  *helpPtr;
-//   udef   len;
-//   u16    count;
-
-//   helpPtr = stpcpy(tempStr, path);
-//   strcpy(helpPtr, name);
-
-//   if (fileSys(path))
-//     return tempStr;
-
-//   len = strlen(name);
-//   name = helpPtr;
-//   if (len > 8)
-//   {
-//     helpPtr[8] = 0;
-//     len = 8;
-//   }
-//   while ((helpPtr = strchr(helpPtr, '.')) != NULL)
-//   {
-//     strcpy(helpPtr, helpPtr + 1);
-//     len--;
-//   }
-
-//   helpPtr = strchr(tempStr, 0);
-//   count = 0;
-//   while (  count < echoCount
-//         && (  echoAreaList[count].JAMdirPtr == NULL
-//            || stricmp(tempStr, echoAreaList[count].JAMdirPtr) != 0
-//            )
-//         )
-//     count++;
-
-//   if (count < echoCount)
-//   {
-//     if ( len >= 8 )
-//       --helpPtr;
-//     if ( len >= 7 )
-//       --helpPtr;
-
-//     if (*helpPtr == '\\' || *(helpPtr + 1) == '\\')
-//       return "";
-
-//     *helpPtr = '`';
-//     *(helpPtr + 1) = '0';
-//     strcpy(helpPtr + 2, ".*");
-//     do
-//     {
-//       if ((*(helpPtr + 1))++ == '9')
-//         return "";
-//     }
-//     while (existPattern(path, name));
-//     helpPtr += 2;
-//   }
-//   *helpPtr = 0;
-
-//   return tempStr;
-// }
 //---------------------------------------------------------------------------
 long fmseek(int handle, long offset, int fromwhere, int code)
 {

@@ -22,9 +22,9 @@
 //---------------------------------------------------------------------------
 
 #include <ctype.h>
-#include <dos.h>
+//#include <dos.h>
 #include <fcntl.h>
-#include <io.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +36,9 @@
 #include "crc.h"
 #include "dups.h"
 #include "log.h"
-#include "stpcpy.h"
+#include "minmax.h"
+#include "os.h"
+#include "os_string.h"
 #include "time.h"
 #include "utils.h"
 
@@ -47,7 +49,7 @@ static s16 dupOpened  = 0;
 static u32 *dupBuffer = NULL;
 static u32 nextDupOld[256];
 
-#include <pshpack1.h>
+#include "pshpack1.h"
 
 typedef struct
 {
@@ -60,7 +62,7 @@ typedef struct
   u32  nextDup[256];
 } dupHdrStruct;
 
-#include <poppack.h>
+#include "poppack.h"
 
 static dupHdrStruct dupHdr;
 
@@ -105,7 +107,7 @@ void openDup(void)
 
    if (  (dupHandle = open(tempPath, O_RDONLY | O_BINARY)) == -1
       || read(dupHandle, &dupHdr, sizeof(dupHdrStruct)) != sizeof(dupHdrStruct)
-      || filelength(dupHandle) != (long)dupHdr.totalSize
+      || fileLength(dupHandle) != (long)dupHdr.totalSize
       )
    {
       if (dupHandle != -1)

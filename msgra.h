@@ -25,7 +25,7 @@
 
 #define CS_SECURITY 0xc6cad720L
 
-#include <pshpack1.h>
+#include "pshpack1.h"
 
 typedef struct
 {
@@ -303,7 +303,7 @@ typedef struct
 
 #endif
 
-#include <poppack.h>
+#include "poppack.h"
 //---------------------------------------------------------------------------
 void  closeBBSWr      (u16);
 char *expandNameHudson(const char *fileName, int orgName);
