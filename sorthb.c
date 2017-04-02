@@ -98,7 +98,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
   const u16      HDR_BUFSIZE = 248;
 
-   if ((msgHdrHandle = open(expandNameHudson(dMSGHDR, 0), O_RDONLY | O_BINARY)) == -1)
+   if ((msgHdrHandle = open(fixPath(expandNameHudson(dMSGHDR, 0)), O_RDONLY | O_BINARY)) == -1)
    {
       puts("Can't open "dMSGHDR"."MBEXTN" for update.");
       return;
@@ -339,8 +339,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
    {
       putStr("Writing "dMSGHDR"."MBEXTN" and index files... ");
 
-      if (  ((msgIdxHandle   = open(expandNameHudson(dMSGIDX  , 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
-         || ((msgToIdxHandle = open(expandNameHudson(dMSGTOIDX, 0), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if (  ((msgIdxHandle   = open(fixPath(expandNameHudson(dMSGIDX  , 0)), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+         || ((msgToIdxHandle = open(fixPath(expandNameHudson(dMSGTOIDX, 0)), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
          )
       {
          close(msgIdxHandle);
@@ -352,9 +352,9 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       strcpy(stpcpy(tempStr2, config.bbsPath), dMSGHDR".ZZZ");
       strcpy(stpcpy(tempStr3, config.bbsPath), dMSGHDR".!!!");
 
-      if (((unlink(tempStr2) == -1) && (errno != ENOENT)) ||
-          ((msgHdrHandle = open(tempStr3, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
-          ((oldHdrHandle = open(tempStr1, O_RDONLY | O_BINARY)) == -1))
+      if ((unlink(fixPath(tempStr2)) == -1 && errno != ENOENT) ||
+          ((msgHdrHandle = open(fixPath(tempStr3), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
+          ((oldHdrHandle = open(fixPath(tempStr1), O_RDONLY | O_BINARY)) == -1))
       {
          close(msgHdrHandle);
          newLine();
@@ -433,9 +433,9 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
       if (temp)
       {
-         rename(tempStr1, tempStr2);
-         rename(tempStr3, tempStr1);
-         unlink(tempStr2);
+         rename(fixPath(tempStr1), fixPath(tempStr2));
+         rename(fixPath(tempStr3), fixPath(tempStr1));
+         unlink(fixPath(tempStr2));
       }
 #ifdef FMAIL
       logEntry("New messages have been sorted", LOG_MSGBASE, 0);
@@ -449,8 +449,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
       strcpy(tempStr1, expandNameHudson(dMSGHDR, 0));
 
-      if (  ((msgHdrHandle = open(tempStr1, O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1)
-         || ((oldHdrHandle = open(tempStr1, O_RDONLY | O_BINARY)) == -1)
+      if (  ((msgHdrHandle = open(fixPath(tempStr1), O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1)
+         || ((oldHdrHandle = open(fixPath(tempStr1), O_RDONLY | O_BINARY)) == -1)
          )
       {
          close(msgHdrHandle);

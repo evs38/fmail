@@ -138,10 +138,9 @@ static s16 checkForward(const char *areaName, nodeInfoType *nodeInfoPtr)
         else
         {
           strcpy(stpcpy(fileStr, configPath), config.uplinkReq[count].fileName);
-          if ((textHandle = open(fileStr, O_RDONLY | O_BINARY)) == -1)
+          if ((textHandle = open(fixPath(fileStr), O_RDONLY | O_BINARY)) == -1)
           {
-            sprintf(fileStr, "Uplink areas file %s not found in FMail system dir",
-                    config.uplinkReq[count].fileName);
+            sprintf(fileStr, "Uplink areas file %s not found in FMail system dir", config.uplinkReq[count].fileName);
             mgrLogEntry(fileStr);
           }
           else
@@ -1162,14 +1161,15 @@ int areaFix(internalMsgType *message)
           strcpy(tempStr, "UNKNOWN");
           break;
       }
-      if ( (helpPtr2 = strchr(tempStr, ' ')) != NULL )
+      if ((helpPtr2 = strchr(tempStr, ' ')) != NULL)
       {
-        while ( helpPtr2 > tempStr && *(helpPtr2-1) != '\\' )
+        while (helpPtr2 > tempStr && !isDirSep(*(helpPtr2 - 1)))
           --helpPtr2;
         strcpy(tempStr, helpPtr2);
       }
-      else if ( (helpPtr2 = strrchr(tempStr, '\\')) != NULL )
+      else if (lastSep(helpPtr2, tempStr))
         strcpy(tempStr, helpPtr2);
+
       *(helpPtr++) = '\r';
       helpPtr2 = helpPtr;
       helpPtr += sprintf(helpPtr, "Compression : %s%s", tempStr, archiver == 1 ? " (new setting)" : "");
@@ -1230,7 +1230,7 @@ int areaFix(internalMsgType *message)
 Send:
   strcpy(stpcpy(tempStr, configPath), "areamgr.txt");
 
-  if ((helpHandle = open(tempStr, O_RDONLY | O_BINARY, 0)) != -1)
+  if ((helpHandle = open(fixPath(tempStr), O_RDONLY | O_BINARY, 0)) != -1)
   {
     bytesRead = read(helpHandle, helpPtr, 0x7FFF);
     close(helpHandle);
@@ -1393,18 +1393,18 @@ Send:
     if (msgNum1)
     {
       sprintf(tempStr, "%s%u.msg", config.netPath, msgNum1);
-      msgHandle1 = open(tempStr, O_WRONLY | O_BINARY | O_APPEND, 0);
+      msgHandle1 = open(fixPath(tempStr), O_WRONLY | O_BINARY | O_APPEND, 0);
     }
     if (msgNum2)
     {
       sprintf(tempStr, "%s%u.msg", config.netPath, msgNum2);
-      msgHandle2 = open(tempStr, O_WRONLY | O_BINARY | O_APPEND, 0);
+      msgHandle2 = open(fixPath(tempStr), O_WRONLY | O_BINARY | O_APPEND, 0);
     }
 
     strcpy(stpcpy(tempStr, config.bbsPath), "areamgr."dEXTTMP);
     if (nodeInfoPtr->options.allowRescan)
     {
-      if ((helpHandle = open(tempStr, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
+      if ((helpHandle = open(fixPath(tempStr), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
       {
         if (  write(helpHandle, areaFixList, areaFixCount * sizeof(areaFixType))
            == (int)(areaFixCount * sizeof(areaFixType))
@@ -1424,11 +1424,11 @@ Send:
         }
         close(helpHandle);
       }
-      unlink(tempStr);
+      unlink(fixPath(tempStr));
     }
     else
     {
-      unlink(tempStr);
+      unlink(fixPath(tempStr));
       sprintf(tempStr, "Node %s is not allowed to rescan the message base.", nodeStr(&nodeInfoPtr->node));
       mgrLogEntry(tempStr);
       strcat(tempStr, "\r");
@@ -1448,7 +1448,7 @@ Send:
   {
     strcpy(stpcpy(tempStr, configPath), "areamgr.hlp");
 
-    if ((helpHandle = open(tempStr, O_RDONLY | O_BINARY, 0)) != -1)
+    if ((helpHandle = open(fixPath(tempStr), O_RDONLY | O_BINARY, 0)) != -1)
     {
       bytesRead = read(helpHandle, message->text, DEF_TEXT_SIZE - 0x1000);  // Er moeten nog wat kludges aan kunnen worden toegevoegd
       close (helpHandle);

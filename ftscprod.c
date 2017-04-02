@@ -376,7 +376,7 @@ void GetTable(void)
     else
       fn = config.ftscProdFile;
 
-    if ((f = open(fn, O_RDONLY | O_BINARY)) >= 0)
+    if ((f = open(fixPath(fn), O_RDONLY | O_BINARY)) >= 0)
     {
       char *buf;
       off_t fl = fileLength(f);

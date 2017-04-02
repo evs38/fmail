@@ -38,6 +38,7 @@
 
 #include "ispathch.h"
 #include "minmax.h"
+#include "os.h"
 #include "os_string.h"
 #include "spec.h"
 
@@ -215,12 +216,12 @@ int ChDir(const char *path)
         return -1;
   }
 #endif
-  return chdir(path);
+  return chdir(fixPath(path));
 }
 //---------------------------------------------------------------------------
 int dirExist(const char *dir)
 {
-  DIR *d = opendir(dir);
+  DIR *d = opendir(fixPath(dir));
   if (d)
   {
     closedir(d);
@@ -232,7 +233,7 @@ int dirExist(const char *dir)
 //---------------------------------------------------------------------------
 int dirIsEmpty(const char *dirname)
 {
-  DIR *dir = opendir(dirname);
+  DIR *dir = opendir(fixPath(dirname));
   struct dirent *de;
 
   if (dir == NULL)
@@ -262,7 +263,7 @@ int existPattern(const char *path, const char *pattern)
   DIR           *dir;
   struct dirent *ent = NULL;
 
-  if ((dir = opendir(path)) != NULL)
+  if ((dir = opendir(fixPath(path))) != NULL)
   {
     while ((ent = readdir(dir)) != NULL)
       if (match_spec(pattern, ent->d_name))
@@ -278,8 +279,34 @@ int isFile(const char *path)
 {
   struct stat st;
 
-  return stat(path, &st) == 0 && S_ISREG(st.st_mode);
+  return stat(fixPath(path), &st) == 0 && S_ISREG(st.st_mode);
 }
+//---------------------------------------------------------------------------
+#ifdef __linux__
+#define dFIXPATHBUFFERS 3
+const char *fixPath(const char *path)
+{
+  static char nPath[dFIXPATHBUFFERS][FILENAME_MAX];
+  static int  c = -1;
+  char *p;
+
+  if (++c >= dFIXPATHBUFFERS)
+    c = 0;
+
+  p = nPath[c];
+
+  do
+  {
+    if (*path == dDIRSEPCa)
+      *p++ = dDIRSEPC;
+    else
+      *p++ = *path;
+  }
+  while (*path++ != 0);
+
+  return nPath[c];
+}
+#endif // __linux__
 //---------------------------------------------------------------------------
 #ifndef __linux__
 int dprintf(int fd, const char *format, ...)

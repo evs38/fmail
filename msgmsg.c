@@ -89,7 +89,7 @@ void moveMsg(char *msgName, char *destDir)
 
     if (highMsgNum == 0)
     {
-      if ((dir = opendir(destDir)) != NULL)
+      if ((dir = opendir(fixPath(destDir))) != NULL)
       {
         while ((ent = readdir(dir)) != NULL)
           if (match_spec("*.msg", ent->d_name))
@@ -129,7 +129,7 @@ static void removeTrunc(char *path)
   logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG removeTrunc: %s", path);
 #endif
 
-  if ((dir = opendir(path)) != NULL)
+  if ((dir = opendir(fixPath(path))) != NULL)
   {
     fileNamePtr = stpcpy(fileNameStr, path);
 
@@ -145,7 +145,7 @@ static void removeTrunc(char *path)
 
         strcpy(fileNamePtr, ent->d_name);
 
-        if (access(fileNameStr, 6) == 0)  // File is writable
+        if (access(fixPath(fileNameStr), 6) == 0)  // File is writable
         {
           if (config.mailer == dMT_DBridge)
           {
@@ -160,13 +160,13 @@ static void removeTrunc(char *path)
             if (fileSize(fileNameStr) == 0 || count2 == fAttCount)
             {
               logEntryf(LOG_DEBUG, 0, "Removing: %s", fileNameStr);
-              unlink(fileNameStr);
+              unlink(fixPath(fileNameStr));
             }
           }
           else
           {
             if (count2 == fAttCount)
-              close(open(fileNameStr, O_RDWR | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE));
+              close(open(fixPath(fileNameStr), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE));
           }
         }
       }
@@ -186,7 +186,7 @@ static void subRemTrunc(char *path)
 
   removeTrunc(path);
 
-  if ((dir = opendir(path)) != NULL)
+  if ((dir = opendir(fixPath(path))) != NULL)
   {
     fPtr = stpcpy(fStr, path);
     while ((ent = readdir(dir)) != NULL)
@@ -197,11 +197,11 @@ static void subRemTrunc(char *path)
       helpPtr = stpcpy(fPtr, ent->d_name);
       if (dirExist(fStr))
       {
-        *helpPtr++ = '\\';
+        *helpPtr++ = dDIRSEPC;
         *helpPtr-- = 0;
         removeTrunc(fStr);
         *helpPtr = 0;
-        rmdir(fStr);
+        rmdir(fixPath(fStr));
       }
     }
     closedir(dir);
@@ -247,7 +247,7 @@ void initMsg(s16 noAreaFix)
 
   fPtr = stpcpy(fileNameStr, config.netPath);
 
-  if ((dir = opendir(config.netPath)) != NULL)
+  if ((dir = opendir(fixPath(config.netPath))) != NULL)
   {
     while ((ent = readdir(dir)) != NULL)
     {
@@ -260,7 +260,7 @@ void initMsg(s16 noAreaFix)
       {
         sprintf(fPtr, "%u.msg", msgNum);
 
-        if ((msgMsgHandle = open(fileNameStr, O_RDONLY | O_BINARY)) != -1)
+        if ((msgMsgHandle = open(fixPath(fileNameStr), O_RDONLY | O_BINARY)) != -1)
         {
           if (read(msgMsgHandle, &msgMsg, sizeof(msgMsgType)) != sizeof(msgMsgType))
             close(msgMsgHandle);
@@ -274,7 +274,7 @@ void initMsg(s16 noAreaFix)
                && !(msgMsg.attribute & (LOCAL | IN_TRANSIT | RET_REC_REQ | IS_RET_REC | AUDIT_REQ))
                && count < 255
                && emptyText(textStr)
-               && !unlink(fileNameStr)
+               && !unlink(fixPath(fileNameStr))
                )
             {
               logEntryf(LOG_SENTRCVD, 0, "Killing empty netmail message #%u, from: %s to: %s", msgNum, msgMsg.fromUserName, msgMsg.toUserName);
@@ -293,10 +293,11 @@ void initMsg(s16 noAreaFix)
                   if (config.mailOptions.killBadFAtt &&
                       (msgMsg.attribute & FILE_ATT) &&
                       (strcmp(msgMsg.fromUserName, "ARCmail") == 0) &&
-                      access(msgMsg.subject, 0) &&
+                      access(fixPath(msgMsg.subject), 0) &&
                       (count < 255) &&
                       emptyText(textStr) &&
-                      !unlink(fileNameStr))
+                      !unlink(fixPath(fileNameStr))
+                     )
                   {
                     logEntryf(LOG_SENTRCVD, 0, "Attached file not found, killing ARCmail message #%u", msgNum);
                     messagesMoved = 1;
@@ -332,7 +333,7 @@ void initMsg(s16 noAreaFix)
                        )
                     {
                       arcSize = 0;
-                      if ((tempHandle = open(msgMsg.subject, O_RDONLY | O_BINARY)) != -1)
+                      if ((tempHandle = open(fixPath(msgMsg.subject), O_RDONLY | O_BINARY)) != -1)
                       {
                         if ((arcSize = fileLength(tempHandle)) > 0)
                         {
@@ -447,7 +448,7 @@ void initMsg(s16 noAreaFix)
           else
           {
             sprintf(fPtr, "%u.msg", aFixMsgNum[count]);
-            unlink(fileNameStr);
+            unlink(fixPath(fileNameStr));
           }
           validateMsg();
         }
@@ -476,7 +477,7 @@ void initMsg(s16 noAreaFix)
             if (config.pingOptions.deletePingRequests)
             {
               sprintf(fPtr, "%u.msg", pingMsgNum[count]);
-              unlink(fileNameStr);
+              unlink(fixPath(fileNameStr));
               logEntryf(LOG_ALWAYS, 0, "Delete PING request message: %s", fileNameStr);
             }
             else
@@ -498,10 +499,10 @@ void initMsg(s16 noAreaFix)
     *--helpPtr = 0;  // remove trailing '\'
 
     // Split dir and file
-    if ((fPtr = strrchr(dirStr, '\\')) == NULL)
+    if (!lastSep(fPtr, dirStr))
     {
       strcpy(tempStr, dirStr);
-      strcpy(dirStr, ".\\");
+      strcpy(dirStr, "."dDIRSEPS);
     }
     else
     {
@@ -520,7 +521,7 @@ void initMsg(s16 noAreaFix)
 
     subRemTrunc(config.outPath);
 
-    if ((dir = opendir(dirStr)) != 0)
+    if ((dir = opendir(fixPath(dirStr))) != 0)
     {
       while ((ent = readdir(dir)) != NULL)
       {
@@ -539,7 +540,7 @@ void initMsg(s16 noAreaFix)
            )
           continue;
 
-        sprintf(fileNameStr, "%s%s\\", dirStr, dn);
+        sprintf(fileNameStr, "%s%s"dDIRSEPS, dirStr, dn);
         subRemTrunc(fileNameStr);
       }
       closedir(dir);
@@ -593,7 +594,7 @@ s16 attribMsg(u16 attribute, s32 msgNum)
 
   sprintf(tempStr1, "%s%u.msg", config.netPath, msgNum);
 
-  if (((msgMsgHandle = open(tempStr1, O_WRONLY | O_BINARY)) == -1) ||
+  if (((msgMsgHandle = open(fixPath(tempStr1), O_WRONLY | O_BINARY)) == -1) ||
       (lseek(msgMsgHandle, sizeof(msgMsgType)-4, SEEK_SET) == -1) ||
       (write(msgMsgHandle, &attribute, 2) != 2))
   {
@@ -626,7 +627,7 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
 
   sprintf(tempStr, "%s%u.msg", config.netPath, msgNum);
 
-  if ((msgMsgHandle = _sopen(tempStr, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
+  if ((msgMsgHandle = _sopen(fixPath(tempStr), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
   {
     logEntryf(LOG_ALWAYS, 0, "Can't open file %s", tempStr);
     return -1;
@@ -764,7 +765,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
   strcpy(msgMsg.fromUserName, message->fromUserName);
   strcpy(msgMsg.toUserName, message->toUserName);
 
-  if ((message->attribute & FILE_ATT) && strchr(message->subject, '\\') == NULL)
+  if ((message->attribute & FILE_ATT) && !contSep(message->subject))
   {
     helpPtr = strchr(strcpy(tempFName, message->subject), ' ');
     if (helpPtr != NULL)
@@ -829,7 +830,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 
   highMsgNum = 0;
   strcpy(helpPtr, dLASTREAD);
-  if (valid && ((msgHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1))
+  if (valid && ((msgHandle = open(fixPath(tempStr), O_RDONLY | O_BINARY)) != -1))
   {
     if (read(msgHandle, &highMsgNum, 2) != 2)
       highMsgNum = 0;
@@ -837,7 +838,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     close(msgHandle);
   }
   *helpPtr = 0;
-  if ((dir = opendir(tempStr)) != NULL)
+  if ((dir = opendir(fixPath(tempStr))) != NULL)
   {
     strcpy(helpPtr, valid ? "*.msg" : "*."MBEXTB );
 
@@ -867,7 +868,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     sprintf(helpPtr, valid ? "%u.msg" : "%u."MBEXTB, ++highMsgNum);
 
     while (  count < 20
-          && -1 == (msgHandle = open(tempStr, O_WRONLY | O_CREAT | O_EXCL | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE))
+          && -1 == (msgHandle = open(fixPath(tempStr), O_WRONLY | O_CREAT | O_EXCL | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE))
           )
     {
       highMsgNum += count++ < 10 ? 1 : 10;
@@ -898,7 +899,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 #endif
 
     if (valid == 2)
-      chmod(tempStr, S_IREAD);
+      chmod(fixPath(tempStr), S_IREAD);
 
     switch (msgType)
     {
@@ -974,7 +975,7 @@ void validateMsg(void)
 
       // Determine highest message
       highMsgNum = 0;
-      if ((dir = opendir(tempStr1)) != NULL)
+      if ((dir = opendir(fixPath(tempStr1))) != NULL)
       {
         while ((ent = readdir(dir)) != NULL)
           if (match_spec("*.msg", ent->d_name))
@@ -997,7 +998,7 @@ void validateMsg(void)
               highMsgNum += count < 10 ? 1 : 10;
               sprintf(helpPtr2, "%u.msg", highMsgNum);
             }
-            while (count++ < 20 && rename(tempStr1, tempStr2));
+            while (count++ < 20 && rename(fixPath(tempStr1), fixPath(tempStr2)));
           }
 
         closedir(dir);

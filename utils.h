@@ -69,13 +69,20 @@
 extern u32 lastID;
 
 //---------------------------------------------------------------------------
+#if   defined(__linux__)
+const char *fixPath        (const char *path);
+#elif defined(__WIN32__)
+#define     fixPath(x)     (x)
+#else
+  #error "Define a fixPath function for your platform!"
+#endif
 #ifdef __CANUSE64BIT
 const char *fmtU64         (u64 u);
 u64         diskFree64     (const char *path);
 #endif
 u32         diskFree       (const char *path);
 #if defined(__WIN32__) || defined(__linux__)
-#define     moveFile(a,b) rename(a,b)
+#define     moveFile(a,b)  rename(fixPath(a), fixPath(b))
 #else
 int         moveFile       (const char *oldName, const char *newName);
 #endif
@@ -84,7 +91,6 @@ int         dirExist       (const char *dir);
 int         dirIsEmpty     (const char *dir);
 s16         existDir       (const char *dir, const char *descr);
 int         ChDir          (const char *path);
-const char *_searchpath    (const char *filename);
 int         existPattern   (const char *path, const char *pattern);
 int         isFile         (const char *path);
 off_t       fileLength     (int handle);

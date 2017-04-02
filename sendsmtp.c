@@ -61,7 +61,7 @@ static int make_send_msg(u16 xu, char *attachName, u16 msg_tfs, u16 msg_kfs)
   strcpy(message->subject, "Mail attach");
   strcpy(stpcpy(txtName, configPath), "email.txt");
   tp1 = tp2 = message->text;
-  if ((handle = open(txtName, O_RDONLY | O_BINARY)) != -1)
+  if ((handle = open(fixPath(txtName), O_RDONLY | O_BINARY)) != -1)
   {
     if ( (xs = read(handle, tp1, TEXT_SIZE - 1)) != - 1)
     {
@@ -71,7 +71,7 @@ static int make_send_msg(u16 xu, char *attachName, u16 msg_tfs, u16 msg_kfs)
       {
         if (*tp1 == '\r' && *(tp1 + 1) == '\n')
           tp1++;
-        *tp2++ = *tp1++; 
+        *tp2++ = *tp1++;
       }
       *tp2 = *tp1;  // copy terminating 0
     }
@@ -88,11 +88,11 @@ static int make_send_msg(u16 xu, char *attachName, u16 msg_tfs, u16 msg_kfs)
     {
       do
       {
-        if (msg_tfs && (handle = _sopen(fileName, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) != -1)
+        if (msg_tfs && (handle = _sopen(fixPath(fileName), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) != -1)
           close(handle);
         else
           if (msg_kfs)
-            unlink(fileName);
+            unlink(fixPath(fileName));
       }
       while (nextFile(&fileName));
     }
@@ -121,7 +121,7 @@ static int sendsmtp_msg(void)
 
   fnsPtr = stpcpy(fileNameStr, config.netPath);
 
-  if ((dir = opendir(config.netPath)) != NULL)
+  if ((dir = opendir(fixPath(config.netPath))) != NULL)
   {
     while ((ent = readdir(dir)) != NULL)
     {
@@ -168,7 +168,7 @@ static int sendsmtp_msg(void)
         if (make_send_msg(xu, attachName, msg_tfs, msg_kfs))
         {
           if (msg_killsent)
-            unlink(fileNameStr);
+            unlink(fixPath(fileNameStr));
           else
           {
             attribMsg(message->attribute|SENT, msgNum);
@@ -207,20 +207,20 @@ static int sendsmtp_bink(void)
     {
       archiveDirPtr += sprintf(archiveDirPtr - 1, ".%03hx", nodeInfo[xu]->node.zone);
       MKDIR(archiveStr);
-      strcpy(archiveDirPtr - 1, "\\");
+      strcpy(archiveDirPtr - 1, dDIRSEPS);
     }
     if (nodeInfo[xu]->node.point)
     {
       archiveDirPtr += sprintf(archiveDirPtr, "%04hx%04hx.pnt", nodeInfo[xu]->node.net, nodeInfo[xu]->node.node);
       MKDIR(archiveStr);
-      strcpy(archiveDirPtr++, "\\");
+      strcpy(archiveDirPtr++, dDIRSEPS);
     }
     if (nodeInfo[xu]->node.point)
       sprintf(archiveFile, "%08hx.?lo", nodeInfo[xu]->node.point);
     else
       sprintf(archiveFile, "%04hx%04hx.?lo", nodeInfo[xu]->node.net, nodeInfo[xu]->node.node);
 
-    if ((dir = opendir(archiveStr)) != NULL)
+    if ((dir = opendir(fixPath(archiveStr))) != NULL)
     {
       while ((ent = readdir(dir)) != NULL)
       {
@@ -228,7 +228,7 @@ static int sendsmtp_bink(void)
           continue;
 
         strcpy(archiveDirPtr, ent->d_name);
-        if ((tempHandle = open(archiveStr, O_RDWR | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+        if ((tempHandle = open(fixPath(archiveStr), O_RDWR | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) == -1)
           continue;
 
         memset(tempStr, 0, sizeof(tempStr) - 1);
@@ -254,7 +254,7 @@ static int sendsmtp_bink(void)
           helpPtr = strchr(tempStr, 0);
         }
         close(tempHandle);
-        unlink(archiveStr);
+        unlink(fixPath(archiveStr));
       }
     }
     closedir(dir);

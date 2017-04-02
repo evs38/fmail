@@ -114,7 +114,7 @@ s16 openPktRd(char *pktName, s16 secure)
    globVars.packetDestAka = 0;
    globVars.remoteProdCode = 0x0104;
 
-   if ((pktHandle = _sopen(pktName, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
+   if ((pktHandle = _sopen(fixPath(pktName), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
    {
       logEntryf(LOG_ALWAYS, 0, "Error opening packet file: %s", pktName);
 
@@ -573,7 +573,7 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
 
    sprintf (nfInfoRec->pktFileName, "%s%08x.tmp", config.outPath, uniqueID());
 
-   if ((pktHandle = _sopen(nfInfoRec->pktFileName, O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+   if ((pktHandle = _sopen(fixPath(nfInfoRec->pktFileName), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
    {
       nfInfoRec->pktHandle    = 0;
       *nfInfoRec->pktFileName = 0;
@@ -620,7 +620,7 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
    if (write(pktHandle, &msgPktHdr, 58) != 58)
    {
       close(pktHandle);
-      unlink(nfInfoRec->pktFileName);
+      unlink(fixPath(nfInfoRec->pktFileName));
       nfInfoRec->pktHandle    = 0;
       *nfInfoRec->pktFileName = 0;
       return -1;
@@ -719,7 +719,7 @@ s16 writeEchoPkt(internalMsgType *message, areaOptionsType areaOptions, echoToNo
            openPktWr(nodeFileInfo[count]);
         else
         {
-          if ((nodeFileInfo[count]->pktHandle = _sopen(nodeFileInfo[count]->pktFileName, O_WRONLY | O_BINARY, SH_DENYRW)) != -1)
+          if ((nodeFileInfo[count]->pktHandle = _sopen(fixPath(nodeFileInfo[count]->pktFileName), O_WRONLY | O_BINARY, SH_DENYRW)) != -1)
             lseek(nodeFileInfo[count]->pktHandle, 0, SEEK_END);
           else
             nodeFileInfo[count]->pktHandle = 0;
@@ -870,7 +870,7 @@ s16 validateEchoPktWr(void)
       {
                if (tempLen[count] == -1)
          {
-            if (((tempHandle = open(nodeFileInfo[count]->pktFileName, O_RDONLY | O_BINARY)) == -1) ||
+            if (((tempHandle = open(fixPath(nodeFileInfo[count]->pktFileName), O_RDONLY | O_BINARY)) == -1) ||
                 ((tempLen[count] = fileLength(tempHandle)) == 0) ||
                 (close(tempHandle) == -1))
             {
@@ -891,7 +891,7 @@ s16 validateEchoPktWr(void)
          strcpy(tempStr, fnPtr->fileName);
          strcpy(fnPtr->fileName + strlen(tempStr) - 3, "QQQ");
 
-         rename(tempStr, fnPtr->fileName);
+         rename(fixPath(tempStr), fixPath(fnPtr->fileName));
          fnPtr->valid = 1;
          fnPtr = (fnRecType*)fnPtr->nextRec;
       }
@@ -931,7 +931,7 @@ s16 closeEchoPktWr(void)
          }
          if (nodeFileInfo[count]->bytesValid == 0)
          {
-            unlink (nodeFileInfo[count]->pktFileName);
+            unlink(fixPath(nodeFileInfo[count]->pktFileName));
             *nodeFileInfo[count]->pktFileName = 0;
          }
       }
@@ -941,7 +941,7 @@ s16 closeEchoPktWr(void)
    {
       if (*nodeFileInfo[count]->pktFileName != 0)
       {
-         if (((pktHandle = _sopen(nodeFileInfo[count]->pktFileName, O_WRONLY | O_BINARY, SH_DENYRW)) == -1) ||
+         if (((pktHandle = _sopen(fixPath(nodeFileInfo[count]->pktFileName), O_WRONLY | O_BINARY, SH_DENYRW)) == -1) ||
              (lseek(pktHandle, 0, SEEK_SET) == -1) ||
              (ftruncate(pktHandle, nodeFileInfo[count]->bytesValid) == -1) ||
              (lseek(pktHandle, 0, SEEK_END) == -1) ||
@@ -977,7 +977,7 @@ s16 closeEchoPktWr(void)
             newLine();
          }
          else
-            unlink(fnPtr->fileName);
+            unlink(fixPath(fnPtr->fileName));
 
          free(fnPtr);
       }
@@ -991,7 +991,7 @@ s16 closeEchoPktWr(void)
             newLine();
          }
          else
-            unlink(nodeFileInfo[count]->pktFileName);
+            unlink(fixPath(nodeFileInfo[count]->pktFileName));
 
          *nodeFileInfo[count]->pktFileName = 0;
       }
@@ -1019,7 +1019,7 @@ s16 writeNetPktValid(internalMsgType *message, nodeFileRecType *nfInfo)
       }
       else
       {
-         if ((nfInfo->pktHandle = _sopen(nfInfo->pktFileName, O_WRONLY | O_BINARY, SH_DENYRW)) == -1)
+         if ((nfInfo->pktHandle = _sopen(fixPath(nfInfo->pktFileName), O_WRONLY | O_BINARY, SH_DENYRW)) == -1)
          {
             nfInfo->pktHandle = 0;
             logEntry("Cannot open netmail PKT file", LOG_ALWAYS, 0);
@@ -1125,12 +1125,12 @@ s16 closeNetPktWr(nodeFileRecType *nfInfo)
    {
       if (nfInfo->bytesValid == 0)
       {
-         unlink(nfInfo->pktFileName);
+         unlink(fixPath(nfInfo->pktFileName));
          *nfInfo->pktFileName = 0;
          return (0);
       }
 
-      if (((pktHandle = _sopen(nfInfo->pktFileName, O_WRONLY | O_BINARY, SH_DENYRW)) == -1) ||
+      if (((pktHandle = _sopen(fixPath(nfInfo->pktFileName), O_WRONLY | O_BINARY, SH_DENYRW)) == -1) ||
             (lseek(pktHandle, 0, SEEK_SET) == -1) ||
             (ftruncate(pktHandle, nfInfo->bytesValid) == -1) ||
             (lseek(pktHandle, 0, SEEK_END) == -1) ||

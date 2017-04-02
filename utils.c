@@ -71,16 +71,16 @@ int moveFile(const char *oldName, const char *newName)
   size_t  count
         , size;
 
-  if (rename(oldName, newName))
+  if (rename(fixPath(oldName), fixPath(newName)))
   {
 #ifdef __BORLANDC__
     if (errno != ENOTSAM)
       return -1;
 #endif
-    if ((h1 = _sopen(oldName, O_RDONLY | O_BINARY, SH_DENYRW, 0)) == -1)
+    if ((h1 = _sopen(fixPath(oldName), O_RDONLY | O_BINARY, SH_DENYRW, 0)) == -1)
       return -1;
 
-    if ((h2 = _sopen(newName, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+    if ((h2 = _sopen(fixPath(newName), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
     {
       close(h1);
       return -1;
@@ -111,7 +111,7 @@ int moveFile(const char *oldName, const char *newName)
     close(h1);
     close(h2);
     free(buf);
-    unlink(oldName);
+    unlink(fixPath(oldName));
   }
   return 0;
 }
@@ -123,7 +123,7 @@ int addExtension(const char *path, const char *ext)
 
   strcpy(stpcpy(newName, path), ext);
 
-  return rename(path, newName);
+  return rename(fixPath(path), fixPath(newName));
 }
 //---------------------------------------------------------------------------
 s16 existDir(const char *dir, const char *descr)
@@ -131,89 +131,9 @@ s16 existDir(const char *dir, const char *descr)
   if (dirExist(dir))
     return 1;
 
-  logEntryf(LOG_ALWAYS, 0, "The %s [%s] directory does not exist", descr, dir);
+  logEntryf(LOG_ALWAYS, 0, "The %s [%s] directory does not exist", descr, fixPath(dir));
 
   return 0;
-}
-//---------------------------------------------------------------------------
-// Usage           char *searchpath(const char *filename);
-//
-// Description     searchpath searches for the file 'filename' in the
-//                 current directory, and then in the list of semicolon-
-//                 separated directories specifed by the "PATH" environment variable.
-//
-// Return value    A pointer to the filename string if the file is successfully
-//                 found; this string is stored in a static array that is
-//                 overwritten with each call.  NULL is returned if the
-//                 file is not found.
-//
-static char pathbuf[FILENAME_MAX];
-
-const char *_searchpath(const char *filename)
-{
-  const char *ipath;
-  char c;
-  int  len;
-  char *temp;
-
-  // If the environment variable isn't defined, at least try
-  // the current directory.
-  if ((ipath = getenv("PATH")) == NULL)
-    ipath = "";
-
-  // Try the current directory, then all directories in the
-  // string ipath.
-  if (getcwd(pathbuf, FILENAME_MAX) == NULL)
-    len = 0;
-  else
-    len = strlen(pathbuf);
-
-  for (;;)
-  {
-    // The next directory to try is already in pathname, and its
-    // length is in len.  If it doesn't end in a slash, and isn't
-    // blank, append a slash.
-
-    //pathbuf[len] = '\0';
-
-    if (len != 0 && (c = pathbuf[len - 1]) != '\\' && c != '/')
-      pathbuf[len++] = '\\';
-
-    // Append the filename to the directory name, then break
-    // if the file exists.
-    strcpy(pathbuf + len, filename);
-    if (access(pathbuf, 0) == 0)
-      break;
-
-    // Try the next directory in the ipath string.
-
-    if (*ipath == '\0')           // end of the variable
-      return NULL;
-
-    for (len = 0; *ipath != ';' && *ipath != '\0'; ipath++)
-    {
-      // Strip off any quotes around this individual path dir
-      if (*ipath != '\"')
-        pathbuf[len++] = *ipath;  // copy next directory
-    }
-    if (*ipath != '\0')
-      ipath++;                    // skip over semicolon
-  }
-
-  // Pathname contains the relative path of the found file.  Convert
-  // it to an absolute path.
-#ifdef __WIN32__
-  if ((temp = _fullpath(NULL, pathbuf, FILENAME_MAX)) != NULL)
-#endif // __WIN32__
-#ifdef __linux__
-  if ((temp = realpath(pathbuf, NULL)) != NULL)
-#endif // __linux__
-  {
-    strcpy(pathbuf, temp);
-    free(temp);
-  }
-
-  return (pathbuf[0] == '\0' ? NULL : pathbuf);
 }
 //---------------------------------------------------------------------------
 #if defined(__WIN32__) || defined(__linux__)
@@ -255,7 +175,7 @@ u64 diskFree64(const char *path)
 #if defined(__linux__)
   struct statvfs sfs;
 
-  if (statvfs(path, &sfs) == 0)
+  if (statvfs(fixPath(path), &sfs) == 0)
     return (u64)sfs.f_bsize * (u64)sfs.f_bavail;
 #elif defined(__WIN32__)
   ULARGE_INTEGER ul;
@@ -285,7 +205,7 @@ u32 diskFree(const char *path)
 #endif
 
   helpPtr = (strchr(path, 0) - 1);
-  if (*helpPtr == '\\')
+  if (isDirSep(*helpPtr))
     *helpPtr = 0;
   else
     helpPtr = NULL;
@@ -301,7 +221,7 @@ u32 diskFree(const char *path)
   }
 
   if (helpPtr != NULL)
-    *helpPtr = '\\';
+    *helpPtr = dDIRSEPC;
 
   if (dtable.df_sclus == (unsigned)-1)
     return UINT32_MAX;
@@ -336,7 +256,7 @@ off_t fileSize(const char *filename)
 {
   struct stat st;
 
-  if (stat(filename, &st) == 0)
+  if (stat(fixPath(filename), &st) == 0)
     return st.st_size;
 
   return -1;
@@ -348,7 +268,7 @@ void touch(const char *path, const char *filename, const char *t)
   fhandle     tempHandle;
 
   strcpy(stpcpy(tempStr, path), filename);
-  if ((tempHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, S_IREAD | S_IWRITE)) != -1)
+  if ((tempHandle = open(fixPath(tempStr), O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, S_IREAD | S_IWRITE)) != -1)
   {
     write(tempHandle, t, strlen(t));
     close(tempHandle);
@@ -457,13 +377,13 @@ void Delete(const char *path, const char *wildCard)
 
   helpPtr = stpcpy(tempStr, path);
 
-  if ((dir = opendir(path)) != NULL)
+  if ((dir = opendir(fixPath(path))) != NULL)
   {
     while ((ent = readdir(dir)) != NULL)
       if (match_spec(wildCard, ent->d_name))
       {
         strcpy(helpPtr, ent->d_name);
-        unlink(tempStr);
+        unlink(fixPath(tempStr));
       }
 
     closedir(dir);
@@ -1442,35 +1362,12 @@ const char *makeFullPath(const char *deflt, const char *override, const char *na
   char  *helpPtr;
 
   helpPtr = stpcpy(tempStr, (override && *override) ? override : deflt);
-  if (*(helpPtr - 1) != '\\')
-    *helpPtr++ = '\\';
+  if (!isDirSep(*(helpPtr - 1)))
+    *helpPtr++ = dDIRSEPC;
+
   strcpy(helpPtr, name);
 
   return tempStr;
-}
-//---------------------------------------------------------------------------
-char *normalize_nd(char *name)
-{
-  static u16 index;
-  static     tempStrType tempStr[2];
-  char      *helpPtr;
-
-  strcpy(tempStr[index], name);
-  while ((helpPtr = strchr(tempStr[index], '/')) != NULL)
-    *helpPtr = '\\';
-
-  if (memcmp(tempStr[index], "\\\\", 2) == 0)
-  {
-    if (  (helpPtr = strchr(tempStr[index] + 2, '\\')) != NULL
-       && (helpPtr = strchr(helpPtr + 1, '\\')) != NULL
-       )
-      strcpy(tempStr[index], helpPtr);
-  }
-  else
-    if (tempStr[index][1] == ':')
-      strcpy(tempStr[index], tempStr[index] + 2);
-
-  return tempStr[index++];
 }
 //---------------------------------------------------------------------------
 u16 getKludge(char *txt, const char *kludge, char *subfield, u16 bufsize)

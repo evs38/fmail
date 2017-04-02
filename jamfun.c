@@ -159,26 +159,26 @@ u32 jam_open(char *msgBaseName, JAMHDRINFO **jam_hdrinfo)
    strcpy(jam_basename, msgBaseName);
    helpptr = stpcpy(tempstr, msgBaseName);
    strcpy(helpptr, EXT_HDRFILE);
-   if ((jam_hdrhandle = open(tempstr, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1 )
+   if ((jam_hdrhandle = open(fixPath(tempstr), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1 )
    {
 //    logEntry("jam_open 1", LOG_ALWAYS, 0);
       return 0;
    }
    strcpy(helpptr, EXT_LRDFILE);
-   if ( (jam_lrdhandle = open(tempstr, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1 )
+   if ( (jam_lrdhandle = open(fixPath(tempstr), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1 )
    {  close(jam_hdrhandle);
 //    logEntry("jam_open 2", LOG_ALWAYS, 0);
       return 0;
    }
    strcpy(helpptr, EXT_TXTFILE);
-   if ((jam_txthandle = open(tempstr, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1)
+   if ((jam_txthandle = open(fixPath(tempstr), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1)
    {  close(jam_lrdhandle);
       close(jam_hdrhandle);
 //    logEntry("jam_open 3", LOG_ALWAYS, 0);
       return 0;
    }
    strcpy(helpptr, EXT_IDXFILE);
-   if ((jam_idxhandle = open(tempstr, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1)
+   if ((jam_idxhandle = open(fixPath(tempstr), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1)
    {
       close(jam_txthandle);
       close(jam_lrdhandle);
@@ -762,7 +762,7 @@ u32 jam_writemsg(char *msgbasename, internalMsgType *message, u16 local)
     tempStrType tempStr;
 
     strcpy(stpcpy(tempStr, config.bbsPath), dECHOMAIL_JAM);
-    if ((fd = open(tempStr, O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+    if ((fd = open(fixPath(tempStr), O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
     {
       dprintf(fd, "%s %u\r\n", msgbasename, msgNum);
       close(fd);

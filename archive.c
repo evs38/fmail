@@ -69,18 +69,18 @@ extern u16 fAttCount;
 extern const char *months;
 
 // ----------------------------------------------------------------------------
-static s16 checkExist(char *entry, char *prog, char *par)
+static int splitCmdArgs(const char *entry, char *prog, char *par)
 {
   const char *helpPtr;
+  tempStrType tstr;
 
-  if (  (helpPtr = strtok(entry, " ")) == NULL
-     || (access(helpPtr, 4) != 0 && (helpPtr = _searchpath(helpPtr)) == NULL)
+  strcpy(tstr, entry);
+
+  if (  (helpPtr = strtok(tstr, " ")) == NULL
      || strnicmp(helpPtr, config.inPath, strlen(config.inPath)) == 0
      )
-  {
-    logEntryf(LOG_ALWAYS, 0, "%s not found", entry);
     return -1;
-  }
+
   strcpy(prog, helpPtr);
   if ((helpPtr = strtok(NULL, "")) == NULL)
     *par = 0;
@@ -96,7 +96,7 @@ static u8 archiveType(char *fullFileName)
   s16 byteCount;
   unsigned char data[29];
 
-  if ((arcHandle = _sopen(fullFileName, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
+  if ((arcHandle = _sopen(fixPath(fullFileName), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
     return 0xFE;
 
   byteCount = read(arcHandle, data, 29);
@@ -163,12 +163,12 @@ static int execute(const char *arcType, const char *program, const char *paramet
       return 1;
     }
     strcpy(tempStr,                      helpPtr + 2);
-    strcpy(stpcpy(helpPtr, archiveName), tempStr);
+    strcpy(stpcpy(helpPtr, fixPath(archiveName)), tempStr);
   }
   if ((helpPtr = strstr(parameters, "\%f")) != NULL)
   {
     if ((len = strlen(pktName)) != 0)
-      if (pktName[len - 1] == '\\')
+      if (isDirSep(pktName[len - 1]))
         pktName[len - 1] = 0;
     do
     {
@@ -178,7 +178,7 @@ static int execute(const char *arcType, const char *program, const char *paramet
         return 1;
       }
       strcpy(tempStr,                  helpPtr + 2);
-      strcpy(stpcpy(helpPtr, pktName), tempStr);
+      strcpy(stpcpy(helpPtr, fixPath(pktName)), tempStr);
     }
     while ((helpPtr = strstr(parameters, "\%f")) != NULL);
   }
@@ -187,7 +187,7 @@ static int execute(const char *arcType, const char *program, const char *paramet
   {
     strcpy(tempPath, privPath);
     if ((len = strlen(tempPath)) != 0)
-      if (tempPath[len - 1] == '\\')
+      if (isDirSep(tempPath[len - 1]))
         tempPath[len - 1] = 0;
     do
     {
@@ -197,13 +197,13 @@ static int execute(const char *arcType, const char *program, const char *paramet
         return 1;
       }
       strcpy(tempStr, helpPtr + 2);
-      strcpy(stpcpy(helpPtr, tempPath), tempStr);
+      strcpy(stpcpy(helpPtr, fixPath(tempPath)), tempStr);
     }
     while ((helpPtr = strstr(parameters, "\%p")) != NULL);
   }
 
   if (len == 0)
-    sprintf(strchr(parameters, 0),  " %s %s", archiveName, pktName);
+    sprintf(strchr(parameters, 0),  " %s %s", fixPath(archiveName), fixPath(pktName));
 
   logEntryf(LOG_EXEC | LOG_NOSCRN, 0, "Executing %s %s", program, parameters);
 
@@ -211,7 +211,7 @@ static int execute(const char *arcType, const char *program, const char *paramet
   fflush(stdout);
 
 #if   defined(__WIN32__)
-  dosExitCode = spawnl(P_WAIT, program, program, parameters, NULL);
+  dosExitCode = spawnlp(P_WAIT, program, program, parameters, NULL);
 #elif defined(__linux__)
   dosExitCode = fork();
 
@@ -223,6 +223,7 @@ static int execute(const char *arcType, const char *program, const char *paramet
     {
       execlp(program, program, parameters, NULL);
       // execlp returns, so there must be an error!
+      logEntryf(LOG_ALWAYS, 0, "Cannot execute %s utility: %s", arcType, strError(errno));
       exit(EXIT_FAILURE);
     }
     default:  // this is the code the parent runs
@@ -256,21 +257,24 @@ static int execute(const char *arcType, const char *program, const char *paramet
 static void outboundBackup(const char *path)
 {
   tempStrType bakPath;
-  const char *helpPtr;
+  const char *p1
+           , *p2;
 
   if (path == NULL || *path == 0 || *config.outBakPath == 0)
     return;
 
-  if ((helpPtr = strrchr(path, '\\')) == NULL)
-    helpPtr = path;
-  else
-    helpPtr++;
+  p1 = fixPath(path);
 
-  strcpy(stpcpy(bakPath, config.outBakPath), helpPtr);
-  if (copyFile(path, bakPath, 0))
-    logEntryf(LOG_OUTBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup %s -> %s", path, bakPath);
+  if ((p2 = strrchr(p1, dDIRSEPC)) == NULL)
+    p2 = p1;
   else
-    logEntryf(LOG_OUTBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup Failed! %s -> %s", path, bakPath);
+    p2++;
+
+  strcpy(stpcpy(bakPath, fixPath(config.outBakPath)), p2);
+  if (copyFile(p1, bakPath, 0))
+    logEntryf(LOG_OUTBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup %s -> %s", p1, bakPath);
+  else
+    logEntryf(LOG_OUTBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup Failed! %s -> %s", p1, bakPath);
 }
 // ----------------------------------------------------------------------------
 void unpackArc(const struct bt *bp)
@@ -382,20 +386,18 @@ void unpackArc(const struct bt *bp)
     strcpy(arcPath, config.GUS32.programName);
     extPtr = (char*)"gus";
   }
-  if (checkExist(arcPath, pathStr, parStr))
+  if (splitCmdArgs(arcPath, pathStr, parStr))
   {
-    logEntryf(LOG_ALWAYS, 0, "Archive decompression program for %s method not found", extPtr);
+    logEntryf(LOG_ALWAYS, 0, "Archive decompression program for %s not configured", extPtr);
     return;
   }
   strcpy(unpackPathStr, config.inPath);  // pktPath
 
   // preprocessor
   if (*config.preUnarc32.programName)
-  {
-    strcpy(tempStr, config.preUnarc32.programName);
-    if (!checkExist(tempStr, procStr1, procStr2))
+    if (!splitCmdArgs(config.preUnarc32.programName, procStr1, procStr2))
       execute("Pre-Unpack", procStr1, procStr2, fullFileName, unpackPathStr,  NULL);
-  }
+
   if (arcType == 4)  // ZOO
   {
     if ((temp = strlen(unpackPathStr)) > 3)
@@ -424,7 +426,7 @@ void unpackArc(const struct bt *bp)
   if (arcType == 4)  // ZOO
   {
     if (strlen(unpackPathStr) > 3)
-      strcat(unpackPathStr, "\\");
+      strcat(unpackPathStr, dDIRSEPS);
 
     ChDir(dirStr);
   }
@@ -433,11 +435,8 @@ void unpackArc(const struct bt *bp)
 
   // postprocessor
   if (*config.postUnarc32.programName)
-  {
-    strcpy(tempStr, config.postUnarc32.programName);
-    if (!checkExist(tempStr, procStr1, procStr2))
+    if (!splitCmdArgs(config.postUnarc32.programName, procStr1, procStr2))
       execute("Post-Unpack", procStr1, procStr2, fullFileName, unpackPathStr, NULL);
-  }
 
   if (!existPattern(config.inPath, "*.pkt") && !existPattern(config.inPath, "*.bcl"))
   {
@@ -445,13 +444,13 @@ void unpackArc(const struct bt *bp)
     newLine();
     return;
   }
-  unlink(fullFileName);
+  unlink(fixPath(fullFileName));
 }
 // ----------------------------------------------------------------------------
 s16 handleNoCompress(const char *pktName, const char *qqqName, nodeNumType *destNode)
 {
   logEntryf(LOG_ALWAYS, 0, "Node %s is on line: cannot compress mail", nodeStr(destNode));
-  rename(pktName, qqqName);
+  rename(fixPath(pktName), fixPath(qqqName));
   newLine();
 
   return 1;
@@ -507,7 +506,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   {
     // Write uncompressed pkt files directly to configured 'pkt outputpath'
     strcpy(pktName, nodeInfo->pktOutPath);
-    if ((helpPtr = strrchr(qqqName, '\\')) == NULL)
+    if (!lastSep(helpPtr, qqqName))
       return 1;
 
     strcat(pktName, helpPtr + 1);
@@ -517,7 +516,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
       // If moving didn't succeed, rename to 'exto' extension. Don't care about the result
       helpPtr = stpcpy(pktName, qqqName);
       strcpy(helpPtr - 3, exto);
-      rename(qqqName, pktName);
+      rename(fixPath(qqqName), fixPath(pktName));
 
       return 1;
     }
@@ -528,7 +527,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   // Rename pkt file to correct extension
   helpPtr = stpcpy(pktName, qqqName);
   strcpy(helpPtr - 3, extn);
-  if (rename(qqqName, pktName) != 0)
+  if (rename(fixPath(qqqName), fixPath(pktName)) != 0)
     return 1;
 
   strcpy(qqqName + strlen(qqqName) - 3,  exto);
@@ -546,7 +545,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
   {
     helpPtr = stpcpy(semaName, config.semaphorePath);
     count = sprintf(helpPtr, "%08x.`FM", crc32(nodeStr(destNode))) - 2;
-    unlink(semaName);
+    unlink(fixPath(semaName));
     *(u16 *)(helpPtr + count) = '*';
     if (existPattern(config.semaphorePath, helpPtr))
       return handleNoCompress(pktName, qqqName, destNode);
@@ -554,7 +553,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     if (config.mailOptions.createSema)
     {
       strcpy(helpPtr + count, "FM");
-      if ((semaHandle = open(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
+      if ((semaHandle = open(fixPath(semaName), O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
         return handleNoCompress(pktName, qqqName, destNode);
     }
   }
@@ -567,7 +566,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
       helpPtr = strrchr(semaName, '.');
       *helpPtr = *(helpPtr - 1);
       *(helpPtr - 1) = '.';
-      unlink(semaName);
+      unlink(fixPath(semaName));
       *(u16 *)(helpPtr + 1) = '*';
       if (existPattern(config.semaphorePath, helpPtr2))
         return handleNoCompress(pktName, qqqName, destNode);
@@ -575,7 +574,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
       if (config.mailOptions.createSema)
       {
         strcpy(helpPtr + 1, "FM");
-        if ((semaHandle = open(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
+        if ((semaHandle = open(fixPath(semaName), O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
           return handleNoCompress(pktName, qqqName, destNode);
       }
     }
@@ -587,19 +586,19 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
         {
           archivePtr += sprintf(archivePtr - 1, ".%03hx", destNode->zone);
           MKDIR(semaName);
-          *(archivePtr - 1) = '\\';
+          *(archivePtr - 1) = dDIRSEPC;
         }
         if (destNode->point)
         {
           archivePtr += sprintf(archivePtr, "%04hx%04hx.pnt", destNode->net, destNode->node);
           MKDIR(semaName);
-          sprintf(archivePtr, "\\%08hx.bsy", destNode->point);
+          sprintf(archivePtr, dDIRSEPS"%08hx.bsy", destNode->point);
         }
         else
           sprintf(archivePtr, "%04hx%04hx.bsy", destNode->net, destNode->node);
 
         // Don't use config.mailOptions.createSema! FTS-5005 specifies it needs to be set
-        if ((semaHandle = open(semaName, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
+        if ((semaHandle = open(fixPath(semaName), O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0664)) == -1)
           return handleNoCompress(pktName, qqqName, destNode);
       }
   }
@@ -613,14 +612,14 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
       // Set specific BINK paths extensions for out of zone destinations
       archivePtr += sprintf(archivePtr - 1, ".%03hx", destNode->zone);
       MKDIR(archiveStr);
-      strcpy(archivePtr - 1, "\\");
+      strcpy(archivePtr - 1, dDIRSEPS);
     }
     if (destNode->point)
     {
       // Set specific BINK paths extensions for point destinations
       archivePtr += sprintf(archivePtr, "%04hx%04hx.pnt", destNode->net, destNode->node);
       MKDIR(archiveStr);
-      strcpy(archivePtr++, "\\");
+      strcpy(archivePtr++, dDIRSEPS);
     }
   }
 
@@ -683,8 +682,8 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
       okArc = 0;
 
       *(archivePtr - 1) = 0;
-      dir = opendir(archiveStr);
-      *(archivePtr - 1) = '\\';
+      dir = opendir(fixPath(archiveStr));
+      *(archivePtr - 1) = dDIRSEPC;
       if (dir != NULL)
       {
         while ((ent = readdir(dir)) != NULL)
@@ -708,7 +707,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
                   || (config.mailOptions.extNames && ep3 == 'Z')
                   )
                )
-              unlink(archiveStr);
+              unlink(fixPath(archiveStr));
 
             extPtr[3] = '?';  // Needed for match_spec()
           }
@@ -813,33 +812,30 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
         if (semaHandle >= 0)
         {
           close(semaHandle);
-          unlink(semaName);
+          unlink(fixPath(semaName));
         }
-        rename(pktName, qqqName);
+        rename(fixPath(pktName), fixPath(qqqName));
         newLine();
         return 1;
     }
 
-    if (!*arcPath || checkExist(arcPath, pathStr, parStr))
+    if (!*arcPath || splitCmdArgs(arcPath, pathStr, parStr))
     {
-      if (!*arcPath)
-        logEntryf(LOG_ALWAYS, 0, "Archive compression program for %s method not defined", cPtr);
-      else
-        logEntryf(LOG_ALWAYS, 0, "Archive compression program for %s method not found"  , cPtr);
+      logEntryf(LOG_ALWAYS, 0, "Archive compression program for %s method not defined", cPtr);
 
       if (semaHandle >= 0)
       {
         close(semaHandle);
-        unlink(semaName);
+        unlink(fixPath(semaName));
       }
-      rename(pktName, qqqName);
+      rename(fixPath(pktName), fixPath(qqqName));
       newLine();
       return 1;
     }
   }
   else  // No archiver used
   {
-    if ((helpPtr = strrchr(pktName, '\\')) == NULL)
+    if (!lastSep(helpPtr, pktName))
       return 1;
 
     strcpy(archivePtr, helpPtr + 1);
@@ -849,11 +845,8 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
 
   // preprocessor
   if (*config.preArc32.programName)
-  {
-    strcpy(tempStr, config.preArc32.programName);
-    if (!checkExist(tempStr, procStr1, procStr2))
+    if (!splitCmdArgs(config.preArc32.programName, procStr1, procStr2))
       execute("Pre-Pack", procStr1, procStr2, archiveStr, pktName, nodeInfo->pktOutPath);
-  }
 
   okArc = 1;
   if (nodeInfo->archiver != 0xFF)
@@ -871,25 +864,22 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     if (semaHandle >= 0)
     {
       close(semaHandle);
-      unlink(semaName);
+      unlink(fixPath(semaName));
     }
-    rename(pktName, qqqName);
+    rename(fixPath(pktName), fixPath(qqqName));
     newLine();
     return 1;
   }
 
   // postprocessor
   if (*config.postArc32.programName)
-  {
-    strcpy(tempStr, config.postArc32.programName);
-    if (!checkExist(tempStr, procStr1, procStr2))
+    if (!splitCmdArgs(config.postArc32.programName, procStr1, procStr2))
       execute("Post-Pack",  procStr1, procStr2, archiveStr, pktName,  nodeInfo->pktOutPath);
-  }
 
   if (nodeInfo->archiver != 0xFF)
   {
     arcSize = 0;
-    if ((tempHandle = open(archiveStr, O_RDONLY | O_BINARY)) != -1)
+    if ((tempHandle = open(fixPath(archiveStr), O_RDONLY | O_BINARY)) != -1)
     {
       arcSize = fileLength(tempHandle);
       close(tempHandle);
@@ -912,9 +902,9 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
         if (semaHandle >= 0)
         {
           close(semaHandle);
-          unlink(semaName);
+          unlink(fixPath(semaName));
         }
-        rename(pktName, qqqName);
+        rename(fixPath(pktName), fixPath(qqqName));
         newLine();
 
         return 1;
@@ -933,7 +923,7 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
       strcpy(extPtr, ".?lo");
 
       ent = NULL;
-      if ((dir = opendir(config.outPath)) != NULL)
+      if ((dir = opendir(fixPath(config.outPath))) != NULL)
       {
         while ((ent = readdir(dir)) != NULL)
           if (match_spec(archivePtr, ent->d_name))
@@ -951,16 +941,16 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
         sprintf(extPtr, ".%clo", "fhchdd"[nodeInfo->outStatus]);
       }
 
-      create = access(archiveStr, 0);
+      create = access(fixPath(archiveStr), 0);
 
-      if ((tempHandle = open(archiveStr, O_RDWR | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if ((tempHandle = open(fixPath(archiveStr), O_RDWR | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) == -1)
       {
         if (semaHandle >= 0)
         {
           close(semaHandle);
-          unlink(semaName);
+          unlink(fixPath(semaName));
         }
-        rename(pktName, qqqName);
+        rename(fixPath(pktName), fixPath(qqqName));
         newLine();
 
         return 1;
@@ -1000,13 +990,13 @@ s16 packArc(char *qqqName, nodeNumType *srcNode, nodeNumType *destNode, nodeInfo
     }
   }
   if (nodeInfo->archiver != 0xFF)
-    unlink(pktName);
+    unlink(fixPath(pktName));
 
   // Close and Delete semaphore file
   if (semaHandle >= 0)
   {
     close(semaHandle);
-    unlink(semaName);
+    unlink(fixPath(semaName));
   }
   // flush();
   return 0;
@@ -1032,7 +1022,7 @@ void retryArc(void)
   strcpy(tempStr, config.outPath);
   strcat(tempStr, "*.qqq");
 
-  if ((dir = opendir(config.outPath)) != NULL)
+  if ((dir = opendir(fixPath(config.outPath))) != NULL)
   {
     while ((ent = readdir(dir)) != NULL)
       if (match_spec("*.qqq", ent->d_name))
@@ -1045,7 +1035,7 @@ void retryArc(void)
 
         strcpy(stpcpy(tempStr, config.outPath), ent->d_name);
 
-        if ( (pktHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1
+        if ( (pktHandle = open(fixPath(tempStr), O_RDONLY | O_BINARY)) != -1
            && read(pktHandle, &msgPktHdr, sizeof(pktHdrType)) == (int)sizeof(pktHdrType)
            && close(pktHandle) != -1
            )

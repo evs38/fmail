@@ -107,7 +107,7 @@ void initFMail(const char *_funcStr, s32 switches)
   strcpy(funcStr, _funcStr);
   strcpy(stpcpy(tempStr, configPath), dCFGFNAME);
 
-  if (  (configHandle = open(tempStr, O_RDONLY | O_BINARY)) == -1
+  if (  (configHandle = open(fixPath(tempStr), O_RDONLY | O_BINARY)) == -1
      || read(configHandle, &config, sizeof(configType)) < (int)sizeof(configType)
      || close(configHandle) == -1
      )
@@ -125,12 +125,12 @@ void initFMail(const char *_funcStr, s32 switches)
   }
 
   strcpy(stpcpy(tempStr, config.bbsPath), dFMAIL_LOC);
-  strcpy(tempStr2, config.bbsPath);
-  if ((helpPtr = strrchr(tempStr2, '\\')) != NULL)
+  strcpy(tempStr2, fixPath(config.bbsPath));
+  if ((helpPtr = strrchr(tempStr2, dDIRSEPC)) != NULL)  // path already fixed for linux
     *helpPtr = 0;
 
-  if (  !access(tempStr2, 0)
-     && (fmailLockHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
+  if (  !access(tempStr2, 0)  // path already fixed for linux
+     && (fmailLockHandle = _sopen(fixPath(tempStr), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
      && errno != ENOENT  // path does not exist
      )
   {
@@ -139,7 +139,7 @@ void initFMail(const char *_funcStr, s32 switches)
     time(&time1);
     time2 = time1;
 
-    while (  (fmailLockHandle = _sopen(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
+    while (  (fmailLockHandle = _sopen(fixPath(tempStr), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
           && (!config.activTimeOut || time2 - time1 < config.activTimeOut)
           )
     {
@@ -229,7 +229,7 @@ void deinitFMail(void)
 
   strcpy(stpcpy(configFileStr, configPath), dCFGFNAME);
 
-  if (  (configHandle = open(configFileStr, O_WRONLY | O_BINARY)) == -1
+  if (  (configHandle = open(fixPath(configFileStr), O_WRONLY | O_BINARY)) == -1
      || lseek(configHandle, offsetof(configType, uplinkReq), SEEK_SET) == -1L
      || write(configHandle, &config.uplinkReq, sizeof(uplinkReqType)*MAX_UPLREQ) < (int)sizeof(uplinkReqType)*MAX_UPLREQ
      || lseek(configHandle, offsetof(configType, lastUniqueID), SEEK_SET) == -1L

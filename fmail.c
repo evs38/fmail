@@ -66,22 +66,17 @@
 #include "version.h"
 
 //---------------------------------------------------------------------------
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__linux__)
 #include "sendsmtp.h"
 #define dSENDMAIL
 #endif // __WIN32__
 
-fhandle fmailLockHandle;
-
-u16 status;
-
-badEchoType  badEchos[MAX_BAD_ECHOS];
-u16     badEchoCount = 0;
-#ifdef __FMAILX__
-char programPath[128];
-#endif
-char configPath[FILENAME_MAX];
-s16  _mb_upderr = 0;
+fhandle     fmailLockHandle;
+u16         status;
+badEchoType badEchos[MAX_BAD_ECHOS];
+u16         badEchoCount = 0;
+char        configPath[FILENAME_MAX];
+s16         _mb_upderr = 0;
 
 #ifndef __32BIT__
 #ifdef __BORLANDC__
@@ -446,14 +441,14 @@ void unlinkOrBackup(const char *path)
     char *p;
     int count = 0;
 
-    if ((helpPtr = strrchr(path, '\\')) == NULL)
+    if (!lastSep(helpPtr, path))
       helpPtr = path;
     else
       helpPtr++;
 
     p = stpcpy(stpcpy(bakPath, config.inBakPath), helpPtr);
 
-    while (access(bakPath, 0) == 0 && count < 100)
+    while (access(fixPath(bakPath), 0) == 0 && count < 100)
       sprintf(p, "~%02d", count++);
 
     if (count < 100 && moveFile(path, bakPath) == 0)
@@ -463,7 +458,7 @@ void unlinkOrBackup(const char *path)
       logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup Failed! %s -> %s", path, bakPath);
       // try renaming in the same dir
       strcpy(stpcpy(bakPath, path), ".backup_failed");
-      if (rename(path, bakPath) == 0)
+      if (rename(fixPath(path), fixPath(bakPath)) == 0)
         logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Renamed: %s -> %s", path, bakPath);
       else
       {
@@ -477,7 +472,7 @@ void unlinkOrBackup(const char *path)
 
   if (doUnlink)
   {
-    if (unlink(path) == 0)
+    if (unlink(fixPath(path)) == 0)
       logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Deleted: %s", path);
     else
       logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Delete Failed! %s", path);
@@ -516,16 +511,16 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
     }
 #endif
 
-    if ((dir = opendir(dirStr)) != NULL)
+    if ((dir = opendir(fixPath(dirStr))) != NULL)
     {
       while ((ent = readdir(dir)) != NULL && !diskError && !mailBomb)
       {
         if (!match_spec("*.pkt", ent->d_name))
           continue;
 
-        strcpy(stpcpy(pktStr, dirStr), ent->d_name);
+        strcpy(stpcpy(pktStr, fixPath(dirStr)), ent->d_name);
 
-        if (access(pktStr, 06) != 0)  // Check for read and write access
+        if (access(pktStr, 06) != 0)  // Check for read and write access; path already fixed for linux
         {
           logEntryf(LOG_ALWAYS, 2, "Not sufficient access rights on: %s (\"%s\")", pktStr, strError(errno));
           continue;
@@ -915,7 +910,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
           if (mailBomb)
           {
             strcpy(stpcpy(tempStr, pktStr), ".mailbomb");
-            rename(pktStr, tempStr);
+            rename(fixPath(pktStr), fixPath(tempStr));
             unlinkOrBackup(pktStr);
             logEntryf(LOG_ALWAYS, 0, "Max # net msgs per packet exceeded in packet from %s", nodeStr(&globVars.packetSrcNode));
             logEntryf(LOG_ALWAYS, 0, "Packet %s has been renamed to %s", pktStr, tempStr);
@@ -998,7 +993,7 @@ void Toss(int argc, char *argv[])
   openDup();
 
   strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
-  if ((tempHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1)
+  if ((tempHandle = open(fixPath(tempStr), O_RDONLY | O_BINARY)) != -1)
   {
     badEchoCount = read(tempHandle, badEchos, MAX_BAD_ECHOS * sizeof(badEchoType)) / sizeof(badEchoType);
     close(tempHandle);
@@ -1026,7 +1021,7 @@ void Toss(int argc, char *argv[])
     diskError = processPkt(1, (u16)(switches & SW_A));
 
     bundlePtr = NULL;
-    if ((dir = opendir(config.inPath)) != NULL)
+    if ((dir = opendir(fixPath(config.inPath))) != NULL)
     {
       while ((ent = readdir(dir)) != NULL && !diskError && !mailBomb)
       {
@@ -1041,7 +1036,7 @@ void Toss(int argc, char *argv[])
 
           strcpy(stpcpy(tempStr, config.inPath), ent->d_name);
 
-          if (  stat(tempStr, &st) != 0
+          if (  stat(fixPath(tempStr), &st) != 0
              || (st.st_mode & (S_IWRITE | S_IREAD)) != (S_IWRITE | S_IREAD))
           {
             logEntryf(LOG_ALWAYS, 2, "Not sufficient rights on: %s", tempStr);
@@ -1098,7 +1093,7 @@ void Toss(int argc, char *argv[])
   if (badEchoCount)
   {
     strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
-    if ((tempHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+    if ((tempHandle = open(fixPath(tempStr), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) != -1)
     {
       write(tempHandle, badEchos, badEchoCount * sizeof(badEchoType));
       close(tempHandle);
@@ -1130,12 +1125,12 @@ void Toss(int argc, char *argv[])
 
   if (globVars.echoCountV || globVars.dupCountV || globVars.badCountV)
   {
-    if (*config.tossedAreasList && (tempHandle = open(config.tossedAreasList, O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+    if (*config.tossedAreasList && (tempHandle = open(fixPath(config.tossedAreasList), O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
       for (count = 0; count < echoCount; count++)
         if (echoAreaList[count].msgCountV)
           dprintf(tempHandle, "%s\r\n", echoAreaList[count].areaName);
 
-    if (*config.summaryLogName && (tempHandle = open(config.summaryLogName, O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
+    if (*config.summaryLogName && (tempHandle = open(fixPath(config.summaryLogName), O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
     {
       logEntry("Writing toss summary", LOG_DEBUG, 0);
       dprintf(tempHandle, "\n----------  %s %4u-%02u-%02u %02u:%02u:%02u, %s - Toss Summary\n\n"
@@ -1527,7 +1522,7 @@ void Scan(int argc, char *argv[])
       if (!config.mbOptions.scanAlways && !(switches & SW_S))
       {
         strcpy(stpcpy(tempStr, config.bbsPath), dECHOMAIL_JAM);
-        if ((tempHandle = open(tempStr, O_RDONLY | O_TEXT)) != -1)
+        if ((tempHandle = open(fixPath(tempStr), O_RDONLY | O_TEXT)) != -1)
         {
           memset(tempStr, 0, sizeof(tempStrType));
           if ((count = read(tempHandle, tempStr, sizeof(tempStrType) - 1)) != -1)
@@ -1634,16 +1629,16 @@ void Scan(int argc, char *argv[])
       }
       if (!diskError)
       {
-        strcpy(stpcpy(tempStr, config.bbsPath), dECHOMAIL_JAM);
+        strcpy(stpcpy(tempStr, fixPath(config.bbsPath)), dECHOMAIL_JAM);
 #ifdef _DEBUG0
         logEntryf(LOG_DEBUG, 0, "DEBUG access: %s", tempStr);
 #endif // _DEBUG
-        if (0 == access(tempStr, 02))
+        if (0 == access(tempStr, 02))  // Path already fixed for linux
         {
 #ifdef _DEBUG0
           logEntryf(LOG_DEBUG, 0, "DEBUG unlink: %s", tempStr);
 #endif // _DEBUG
-          if (0 == unlink(tempStr))
+          if (0 == unlink(tempStr))  // Path already fixed for linux
           {
 #ifdef _DEBUG0
             logEntryf(LOG_DEBUG, 0, "DEBUG unlinked: %s", tempStr);
@@ -1689,7 +1684,7 @@ void Scan(int argc, char *argv[])
         {
           strcpy(tempStr, makeFullPath(config.bbsPath, getenv("QUICK"), !count ? "echomail."MBEXTN : "netmail."MBEXTN));
 
-          if ((tempHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1)
+          if ((tempHandle = open(fixPath(tempStr), O_RDONLY | O_BINARY)) != -1)
           {
 #ifndef GOLDBASE
             while ((read(tempHandle, &index, 2) == 2)
@@ -1721,7 +1716,7 @@ void Scan(int argc, char *argv[])
             }
             close(tempHandle);
             if (!diskError)
-              unlink (tempStr);
+              unlink(fixPath(tempStr));
           }
         }
       }
@@ -1807,7 +1802,7 @@ void Import(int argc, char *argv[])
 
   count = 0;
 
-  if ((dir = opendir(config.netPath)) != NULL)
+  if ((dir = opendir(fixPath(config.netPath))) != NULL)
   {
     while ((ent = readdir(dir)) != NULL)
     {
@@ -1838,8 +1833,9 @@ void Import(int argc, char *argv[])
            )
         {
           if (  (message->attribute & FILE_ATT)
-             &&  strchr(message->subject,'\\') == NULL
-             && (strlen(message->subject) + strlen(config.inPath) < 72))
+             && !contSep(message->subject)
+             && (strlen(message->subject) + strlen(config.inPath) < 72)
+             )
           {
             strcpy(stpcpy(tempStr, config.inPath), message->subject);
             strcpy(message->subject, tempStr);
@@ -1854,7 +1850,7 @@ void Import(int argc, char *argv[])
             else
             {
               strcpy(stpcpy(tempStr, config.netPath), ent->d_name);
-              if (unlink(tempStr) == 0 && !diskError)
+              if (unlink(fixPath(tempStr)) == 0 && !diskError)
               {
                 if (validate1BBS())
                   diskError = DERR_VAL;
@@ -2025,9 +2021,14 @@ int main(int argc, char *argv[])
   }
   else
   {
+    int l;
     strcpy(configPath, helpPtr);
-    if (configPath[strlen(configPath) - 1] != dDIRSEPC)
-      strcat(configPath, dDIRSEPS);
+    l = strlen(configPath);
+    if (l > 1 && configPath[l - 1] != dDIRSEPC)
+    {
+      configPath[l++] = dDIRSEPC;
+      configPath[l  ] = 0;
+    }
   }
 #ifdef _DEBUG
   printf("DEBUG configPath: %s\n", configPath);

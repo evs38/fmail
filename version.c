@@ -36,15 +36,20 @@
 #include <windows.h>
 #endif
 
-#ifdef __WIN32__
-  #define PTYPE "-W32"
-  #define P386
-#elif defined P386
-  #define PTYPE "-386"
-#elif defined(__linux__)
-  #define PTYPE "-lnx"
+#if defined(__i386__)
+  #define ARCH "32"
+#elif defined(__x86_64__)
+  #define ARCH "64"
 #else
-  #define PTYPE ""
+  #define ARCH ""
+#endif
+
+#ifdef __WIN32__
+  #define PTYPE "-W"ARCH
+#elif defined(__linux__)
+  #define PTYPE "-lnx"ARCH
+#else
+  #define PTYPE "-"ARCH
 #endif
 
 #ifdef GOLDBASE

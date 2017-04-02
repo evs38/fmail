@@ -27,9 +27,11 @@
 #define	SH_DENYRW  0x10	/* Deny read/write */
 #define	SH_DENYWR  0x20	/* Deny write */
 #define	SH_DENYRD  0x30	/* Deny read */
-#define MKDIR(d)   mkdir(d, 0777)
+#define MKDIR(d)   mkdir(fixPath(d), 0777)
 #define dDIRSEPS   "/"
+#define dDIRSEPSa  "\\"
 #define dDIRSEPC   '/'
+#define dDIRSEPCa  '\\'
 
 int eof(int fd);
 int _sopen(const char *pathname, int flags, int shflags, ... /* mode_t mode */);
@@ -40,12 +42,18 @@ int _sopen(const char *pathname, int flags, int shflags, ... /* mode_t mode */);
 
 #define MKDIR(d)  mkdir(d)
 #define dDIRSEPS  "\\"
+#define dDIRSEPSa "/"
 #define dDIRSEPC  '\\'
+#define dDIRSEPCa '/'
 
 #endif // __WIN32__
 // ----------------------------------------------------------------------------
 #if !(defined(dDIRSEPS) && defined(dDIRSEPC))
-#error "Define dDIRSEP for your OS!"
+#error "Define dDIRSEPxx for your OS!"
 #endif // dDIRSEP
+// ----------------------------------------------------------------------------
+#define isDirSep(c)    ((c) == dDIRSEPC || (c) == dDIRSEPCa)
+#define lastSep(p, pa) (((p) = strrchr((pa), dDIRSEPC)) != NULL || ((p) = strrchr((pa), dDIRSEPCa)) != NULL)
+#define contSep(pa)    (strpbrk((pa), dDIRSEPS dDIRSEPSa) != NULL)
 // ----------------------------------------------------------------------------
 #endif // osH

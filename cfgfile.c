@@ -148,7 +148,7 @@ restart:
    memset(&cfiArr[fileType].header, 0, sizeof(headerType));
    cfiArr[fileType].status = 0;
 
-  if ((cfiArr[fileType].handle = _sopen(areaInfoPath, O_RDWR | O_BINARY | O_CREAT, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+  if ((cfiArr[fileType].handle = _sopen(fixPath(areaInfoPath), O_RDWR | O_BINARY | O_CREAT, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
   {
 #ifdef _DEBUG
     printf("DEBUG open failed: %s\n", areaInfoPath);
@@ -208,7 +208,7 @@ error:   close(cfiArr[fileType].handle);
             free(cfiArr[fileType].recBuf);
             goto error;
          }
-         if ((temphandle = _sopen(tempPath, O_RDWR | O_BINARY | O_CREAT, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+         if ((temphandle = _sopen(fixPath(tempPath), O_RDWR | O_BINARY | O_CREAT, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
          {
             free(cfiArr[fileType].recBuf);
             cfiArr[fileType].recBuf = NULL;
@@ -230,7 +230,7 @@ error:   close(cfiArr[fileType].handle);
               free(cfiArr[fileType].recBuf);
               cfiArr[fileType].recBuf = NULL;
               close(temphandle);
-              unlink(tempPath);
+              unlink(fixPath(tempPath));
               goto error;
             }
             if (oldAreasFile)
@@ -254,7 +254,7 @@ error:   close(cfiArr[fileType].handle);
                free(cfiArr[fileType].recBuf);
                cfiArr[fileType].recBuf = NULL;
                close(temphandle);
-               unlink(tempPath);
+               unlink(fixPath(tempPath));
                goto error;
             }
          }
@@ -264,8 +264,8 @@ error:   close(cfiArr[fileType].handle);
          cfiArr[fileType].recBuf = NULL;
          close(temphandle);
          close(cfiArr[fileType].handle);
-         unlink(areaInfoPath);
-         rename(tempPath, areaInfoPath);
+         unlink(fixPath(areaInfoPath));
+         rename(fixPath(tempPath), fixPath(areaInfoPath));
          cfiArr[fileType].handle = -1;
          *header = NULL;
          *buf = NULL;

@@ -337,7 +337,7 @@ s16 pack(s16 argc, char *argv[], s32 switches)
 
   strcpy(stpcpy(tempStr, configPath), dPCKFNAME);
 
-  if ((fileHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1)
+  if ((fileHandle = open(fixPath(tempStr), O_RDONLY | O_BINARY)) != -1)
   {
     if ((read(fileHandle, pack, sizeof(packType)) != (int)sizeof(packType)) ||
         (close(fileHandle) == -1))
@@ -348,7 +348,7 @@ s16 pack(s16 argc, char *argv[], s32 switches)
 
   netIndex = 0;
 
-  if ((dir = opendir(config.netPath)) != NULL)
+  if ((dir = opendir(fixPath(config.netPath))) != NULL)
   {
     while ((ent = readdir(dir)) != NULL)
     {
@@ -512,10 +512,10 @@ s16 pack(s16 argc, char *argv[], s32 switches)
           {
             sprintf(tempStr, "%s%u.msg", config.netPath, msgNum);
 
-            if ((fileHandle = _sopen(tempStr, O_RDWR | O_BINARY, SH_DENYRW)) != -1)
+            if ((fileHandle = _sopen(fixPath(tempStr), O_RDWR | O_BINARY, SH_DENYRW)) != -1)
             {
               close(fileHandle);
-              fileHandle = unlink(tempStr);
+              fileHandle = unlink(fixPath(tempStr));
             }
           }
           if (fileHandle == -1)

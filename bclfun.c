@@ -71,7 +71,7 @@ int openBcl(const char *fname, bcl_header_type *bh, nodeNumType *nodeNum)
 {
   int hndl;
 
-  if ( (hndl = _sopen(fname, O_RDONLY | O_BINARY, SH_DENYRW)) == -1
+  if ( (hndl = _sopen(fixPath(fname), O_RDONLY | O_BINARY, SH_DENYRW)) == -1
      || read(hndl, bh, sizeof(bcl_header_type)) != sizeof(bcl_header_type)
      )
   {
@@ -159,7 +159,7 @@ void LogFileDetails(const char *fname, const char *txt)
   tempStrType tempStr;
   struct tm *tm;
 
-  if (  0 == stat(fname, &statbuf)
+  if (  0 == stat(fixPath(fname), &statbuf)
      && (tm = localtime(&statbuf.st_mtime)) != NULL
      )
     sprintf(tempStr, "%s %s %lu, %04d-%02d-%02d %02d:%02d:%02d", txt, fname, statbuf.st_size
@@ -415,7 +415,7 @@ int process_bcl(char *fileName)
     if (*uplink->fileName)
     {
       LogFileDetails(oldFile , "Replaces:");
-      unlink(oldFile);
+      unlink(fixPath(oldFile));
     }
     LogFileDetails(newFile, "Saved as:");
     strcpy(uplink->fileName, newFileName);
@@ -436,7 +436,7 @@ int ScanNewBCL(void)
   logEntry("DEBUG Scan for received BCL files", LOG_DEBUG, 0);
 #endif
 
-  if ((dir = opendir(config.inPath)) != NULL)
+  if ((dir = opendir(fixPath(config.inPath))) != NULL)
   {
     while ((ent = readdir(dir)) != NULL)
       if (match_spec("*.bcl", ent->d_name))
@@ -486,7 +486,7 @@ void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInf
     return;
 
   sprintf(tempStr, "%s%08x."dEXTTMP, config.outPath, uniqueID());
-  if ((helpHandle = open(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
+  if ((helpHandle = open(fixPath(tempStr), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
   {
     logEntryf(LOG_ALWAYS, 0, "Creating BCL file for node %s: %s", nodeStr(destNode), tempStr);
 

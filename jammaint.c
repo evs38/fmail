@@ -33,7 +33,6 @@
 #include <unistd.h>
 #ifdef _DEBUG
 #ifdef __WIN32__
-#include <dir.h>      // mkdir
 #include <share.h>
 #include <windows.h>  // CopyFile DeleteFile MoveFile
 #endif // __WIN32__
@@ -176,7 +175,7 @@ int InitBuf(u32 **buf, u32 size)
 void writedata(const char *fn, const char *data, size_t n)
 {
   fhandle h;
-  if ((h = _sopen(fn, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE, 1)) != -1)
+  if ((h = _sopen(fixPath(fn), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE, 1)) != -1)
   {
     if (n > 0)
       write(h, data, n);
@@ -241,7 +240,7 @@ int compareFileToBuf(const char *fname, const char *buf, u32 size)
   fhandle h;
   int rv = -1;
 
-  if ((h = open(fname, O_RDONLY | O_BINARY)) != -1)
+  if ((h = open(fixPath(fname), O_RDONLY | O_BINARY)) != -1)
   {
     struct stat s;
 
@@ -378,7 +377,7 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
 
 #ifdef _COMPOLD_
   int compareResult = 0;
-  int debug = access(expJAMname(mbPath, "no_debug"), 0);
+  int debug = access(fixPath(expJAMname(mbPath, "no_debug")), 0);
 
   if (debug && JAMmaintOld(areaPtr, switches, name))
     return -1;
@@ -391,10 +390,10 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
   putStr("... ");
   fflush(stdout);
 
-  if (  (d.hJHR = _sopen(expJAMname(mbPath, EXT_HDR), O_RDWR | O_BINARY, SH_DENYRW)) == -1
-     || (d.hJDT = _sopen(expJAMname(mbPath, EXT_TXT), O_RDWR | O_BINARY, SH_DENYRW)) == -1
-     || (d.hJDX = _sopen(expJAMname(mbPath, EXT_IDX), O_RDWR | O_BINARY, SH_DENYRW)) == -1
-     || (d.hJLR = _sopen(expJAMname(mbPath, EXT_LRD), O_RDWR | O_BINARY, SH_DENYRW)) == -1
+  if (  (d.hJHR = _sopen(fixPath(expJAMname(mbPath, EXT_HDR)), O_RDWR | O_BINARY, SH_DENYRW)) == -1
+     || (d.hJDT = _sopen(fixPath(expJAMname(mbPath, EXT_TXT)), O_RDWR | O_BINARY, SH_DENYRW)) == -1
+     || (d.hJDX = _sopen(fixPath(expJAMname(mbPath, EXT_IDX)), O_RDWR | O_BINARY, SH_DENYRW)) == -1
+     || (d.hJLR = _sopen(fixPath(expJAMname(mbPath, EXT_LRD)), O_RDWR | O_BINARY, SH_DENYRW)) == -1
      )
   {
     CleanUp(&d);
@@ -735,16 +734,16 @@ s16 JAMmaint(rawEchoType *areaPtr, s32 switches, const char *name, s32 *spaceSav
       // Must be done after cleanup. Files need to be closed
       logEntry("DEBUG Create trace files", LOG_DEBUG, 0);
       sprintf(tempStr, "%s-%d", mbPath, startTime);
-      if (0 == mkdir(tempStr))
+      if (0 == MKDIR(tempStr))
       {
         tempStrType nmbp;
-        const char *an = strrchr(mbPath, '\\');
+        const char *an = strrchr(mbPath, dDIRSEPC);
         if (an != NULL)
           an++;
         else
           an = mbPath;
 
-        strcpy(stpcpy(stpcpy(nmbp, tempStr), "\\"), an);
+        strcpy(stpcpy(stpcpy(nmbp, tempStr), dDIRSEPS), an);
 
         CopyFile(expJAMname(mbPath, EXT_HDR), expJAMname(nmbp, EXT_HDR), 0);
         CopyFile(expJAMname(mbPath, EXT_IDX), expJAMname(nmbp, EXT_IDX), 0);
@@ -829,31 +828,31 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
   memset(msgidBuf, 0, MSGIDNUM * 4);
   memset(replyBuf, 0, MSGIDNUM * 4);
 
-   if ((JHRhandle = _sopen(expJAMname(areaPtr->msgBasePath, EXT_HDR), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
+   if ((JHRhandle = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_HDR)), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
      goto jamx;
 
-   if ((JDThandle = _sopen(expJAMname(areaPtr->msgBasePath, EXT_TXT), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
+   if ((JDThandle = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_TXT)), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
    {
      fsclose(JHRhandle);
      goto jamx;
    }
-   if ((JDXhandle = _sopen(expJAMname(areaPtr->msgBasePath, EXT_IDX), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
+   if ((JDXhandle = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_IDX)), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
    {
       fsclose(JDThandle);
       fsclose(JHRhandle);
       goto jamx;
    }
 
-   JLRhandle = _sopen(expJAMname(areaPtr->msgBasePath, EXT_LRD), O_RDONLY | O_BINARY, SH_DENYRW);
+   JLRhandle = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_LRD)), O_RDONLY | O_BINARY, SH_DENYRW);
 
-   if ((JHRhandleNew = _sopen(expJAMname(areaPtr->msgBasePath, EXT_OLD_HDR),  O_RDWR | O_CREAT | O_TRUNC |O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+   if ((JHRhandleNew = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_OLD_HDR)),  O_RDWR | O_CREAT | O_TRUNC |O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
    {  fsclose(JLRhandle);
       fsclose(JDXhandle);
       fsclose(JDThandle);
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ((JDThandleNew = _sopen(expJAMname(areaPtr->msgBasePath, EXT_OLD_TXT), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+   if ((JDThandleNew = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_OLD_TXT)), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
    {  fsclose(JHRhandleNew);
       fsclose(JLRhandle);
       fsclose(JDXhandle);
@@ -861,7 +860,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ((JDXhandleNew = _sopen(expJAMname(areaPtr->msgBasePath, EXT_OLD_IDX), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+   if ((JDXhandleNew = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_OLD_IDX)), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
    {  fsclose(JDThandleNew);
       fsclose(JHRhandleNew);
       fsclose(JLRhandle);
@@ -870,7 +869,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ((JLRhandleNew = _sopen(expJAMname(areaPtr->msgBasePath, EXT_OLD_LRD), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+   if ((JLRhandleNew = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_OLD_LRD)), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
    {  fsclose(JDXhandleNew);
       fsclose(JDThandleNew);
       fsclose(JHRhandleNew);

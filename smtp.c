@@ -255,7 +255,7 @@ static void appendMIMEfile(char *fname)
   if (!fname || !*fname)
     return;
 
-  if ((handle = open(fname, O_RDONLY | O_BINARY)) == -1)
+  if ((handle = open(fixPath(fname), O_RDONLY | O_BINARY)) == -1)
     return;
   fnamec = strdup(fname);
   bname  = basename(fnamec);
