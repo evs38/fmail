@@ -91,6 +91,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="config.h" />
+		<Unit filename="copyFile.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="copyFile.h" />
 		<Unit filename="crc.c">
 			<Option compilerVar="CC" />
@@ -156,6 +159,11 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="nodeinfo.h" />
+		<Unit filename="os.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="os.h" />
+		<Unit filename="os_string.h" />
 		<Unit filename="pack.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -164,7 +172,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="ping.h" />
+		<Unit filename="poppack.h" />
 		<Unit filename="pp_date.h" />
+		<Unit filename="pshpack1.h" />
 		<Unit filename="sendsmtp.c">
 			<Option compilerVar="CC" />
 		</Unit>

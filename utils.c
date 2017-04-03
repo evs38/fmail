@@ -29,7 +29,6 @@
 #include <windows.h>
 #endif
 #ifdef __linux__
-#include <inttypes.h>
 #include <sys/statvfs.h>
 #include <sys/time.h>
 #endif // __linux__
@@ -37,12 +36,13 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>   // getenv()
 #include <string.h>
 #include <sys/stat.h>
-#include <time.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 #include <utime.h>
 

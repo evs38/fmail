@@ -2024,7 +2024,7 @@ int main(int argc, char *argv[])
     int l;
     strcpy(configPath, helpPtr);
     l = strlen(configPath);
-    if (l > 1 && configPath[l - 1] != dDIRSEPC)
+    if (l >= 1 && configPath[l - 1] != dDIRSEPC)
     {
       configPath[l++] = dDIRSEPC;
       configPath[l  ] = 0;
