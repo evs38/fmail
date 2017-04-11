@@ -421,7 +421,7 @@ int process_bcl(char *fileName)
     strcpy(uplink->fileName, newFileName);
   }
   else
-    logEntryf(LOG_ALWAYS, 0, "* Error moving %s -> %s", recFile, newFile);
+    logEntryf(LOG_ALWAYS, 0, "* Error moving %s -> %s", fixPath(recFile), fixPath(newFile));
 
   return 1;
 }
@@ -485,8 +485,8 @@ void send_bcl(nodeNumType *srcNode, nodeNumType *destNode, nodeInfoType *nodeInf
   if (!openConfig(CFG_ECHOAREAS, &areaHeader, (void**)&areaBuf))
     return;
 
-  sprintf(tempStr, "%s%08x."dEXTTMP, config.outPath, uniqueID());
-  if ((helpHandle = open(fixPath(tempStr), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
+  sprintf(tempStr, "%s%08x."dEXTTMP, fixPath(config.outPath), uniqueID());
+  if ((helpHandle = open(tempStr, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, dDEFOMODE)) != -1)  // tempStr already fixed
   {
     logEntryf(LOG_ALWAYS, 0, "Creating BCL file for node %s: %s", nodeStr(destNode), tempStr);
 

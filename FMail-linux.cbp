@@ -3,6 +3,7 @@
 	<FileVersion major="1" minor="6" />
 	<Project>
 		<Option title="FMail" />
+		<Option platforms="Unix;" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
@@ -10,7 +11,7 @@
 				<Option object_output="obj/FMail/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="TOSS" />
+				<Option parameters="scan" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-mtune=generic" />
@@ -51,6 +52,9 @@
 			<Add option="-D__32BIT__" />
 			<Add option="-D__STDIO__" />
 		</Compiler>
+		<ExtraCommands>
+			<Add before='touch -d &quot;&quot; SetCompileDate.h' />
+		</ExtraCommands>
 		<Unit filename="SetCompileDate.h" />
 		<Unit filename="archive.c">
 			<Option compilerVar="CC" />
@@ -98,6 +102,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="ftscprod.h" />
+		<Unit filename="hudson_shared.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="ispathch.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -172,7 +179,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="sorthb.h" />
-		<Unit filename="spawno.h" />
 		<Unit filename="spec.c">
 			<Option compilerVar="CC" />
 		</Unit>

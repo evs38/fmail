@@ -23,7 +23,6 @@
 
 #if defined(__WIN32__)
 #include <dir.h>     // getcwd()
-//#include <dos.h>
 #include <share.h>
 #include <stdint.h>
 #include <windows.h>
@@ -80,7 +79,7 @@ int moveFile(const char *oldName, const char *newName)
     if ((h1 = _sopen(fixPath(oldName), O_RDONLY | O_BINARY, SH_DENYRW, 0)) == -1)
       return -1;
 
-    if ((h2 = _sopen(fixPath(newName), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+    if ((h2 = _sopen(fixPath(newName), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, dDEFOMODE)) == -1)
     {
       close(h1);
       return -1;
@@ -120,10 +119,11 @@ int moveFile(const char *oldName, const char *newName)
 int addExtension(const char *path, const char *ext)
 {
   tempStrType newName;
+  const char *tp = fixPath(path);
 
-  strcpy(stpcpy(newName, path), ext);
+  strcpy(stpcpy(newName, tp), ext);
 
-  return rename(fixPath(path), fixPath(newName));
+  return rename(tp, newName);
 }
 //---------------------------------------------------------------------------
 s16 existDir(const char *dir, const char *descr)
@@ -229,7 +229,7 @@ u32 diskFree(const char *path)
   dfs = (u64)dtable.df_avail * (u64)dtable.df_bsec * (u64)dtable.df_sclus;
 
 #ifdef _DEBUG
-  logEntryf(LOG_DEBUG, 0, "DEBUG Disk %s free: %s", path, fmtU64(dfs));
+  logEntryf(LOG_DEBUG, 0, "DEBUG Disk %s free: %s", fixPath(path), fmtU64(dfs));
 #endif
 
   if (dfs > (uint64_t)UINT32_MAX)
@@ -268,7 +268,7 @@ void touch(const char *path, const char *filename, const char *t)
   fhandle     tempHandle;
 
   strcpy(stpcpy(tempStr, path), filename);
-  if ((tempHandle = open(fixPath(tempStr), O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, S_IREAD | S_IWRITE)) != -1)
+  if ((tempHandle = open(fixPath(tempStr), O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, dDEFOMODE)) != -1)
   {
     write(tempHandle, t, strlen(t));
     close(tempHandle);
@@ -1287,11 +1287,11 @@ void setViaStr(char *buf, const char *preStr, u16 aka)
              , st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 #endif
 #elif defined(__linux__)
-    struct timeval tv;
+    struct timespec ts;
     struct tm *tm;
 
-    if (  0 != gettimeofday(&tv, NULL)
-       || NULL == (tm = gmtime(&tv.tv_sec))  // gmt ok!
+    if (  0 != clock_gettime(CLOCK_REALTIME, &ts)
+       || NULL == (tm = gmtime(&ts.tv_sec))  // gmt ok!
        )
       sprintf(buf, "%s %s @00000000.000000 %s(%s) %s\r"
                  , preStr, getAkaStr(aka, 1)
@@ -1302,7 +1302,7 @@ void setViaStr(char *buf, const char *preStr, u16 aka)
                  , preStr, getAkaStr(aka, 1)
                  , tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday
                  , tm->tm_hour, tm->tm_min, tm->tm_sec
-                 , (unsigned int)(tv.tv_usec / 1000)
+                 , (unsigned int)(ts.tv_nsec / 1000000)
                  , TOOLSTR, funcStr, Version()
              );
 #else

@@ -165,7 +165,7 @@ static BOOL getresponse(UINT response_expected)
    strncpy(buf, response_buf, 3);
    buf[3] = 0;
    sscanf(buf, "%d", &response);
-   if ( response != response_code[response_expected] )
+   if (response != response_code[response_expected])
    {
       logEntryf(LOG_ALWAYS, 0, "Expected %d, received %d: %s", response_code[response_expected], response, response_text[response_expected]);
       return FALSE;

@@ -1,4 +1,4 @@
-// ----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 //  Copyright (C) 2017  Wilfred van Velzen
 //
 //
@@ -17,20 +17,27 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-// ----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 #include "os.h"
 
+//----------------------------------------------------------------------------
 #ifdef __linux__
 
-// ----------------------------------------------------------------------------
+#include "stpcpy.h"
+
 #include <sys/file.h>   // flock()
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <ctype.h>      // isalpha
 #include <fcntl.h>
 #include <stdarg.h>
+#include <stdio.h>      // FILENAME_MAX
 #include <unistd.h>
 
-// ----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+char replaceDrive[FILENAME_MAX];
+
+//----------------------------------------------------------------------------
 int eof(int fd)
 {
   off_t endPosn
@@ -50,7 +57,7 @@ int eof(int fd)
 
   return curPosn >= endPosn;
 }
-// ----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 int _sopen(const char *pathname, int flags, int shflags, ... /* mode_t mode */)
 {
   int fd;
@@ -76,5 +83,40 @@ int _sopen(const char *pathname, int flags, int shflags, ... /* mode_t mode */)
 
   return fd;
 }
-// ----------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+#define dFIXPATHBUFFERS  8
+const char *fixPath(const char *path)
+{
+  static char nPath[dFIXPATHBUFFERS][FILENAME_MAX];
+  static int  c = -1;
+  char *p;
+
+  if (path == NULL)
+    return "";
+
+  if (++c >= dFIXPATHBUFFERS)
+    c = 0;
+
+  p = nPath[c];
+
+  if (isalpha(*path) && path[1] == ':' && *replaceDrive)
+  {
+    path += 2;
+    p = stpcpy(p, replaceDrive);
+    if (isDirSep(*path))
+      path++;
+  }
+
+  do
+  {
+    if (*path == dDIRSEPCa)
+      *p++ = dDIRSEPC;
+    else
+      *p++ = *path;
+  }
+  while (*path++ != 0);
+
+  return nPath[c];
+}
+//----------------------------------------------------------------------------
 #endif // __linux__

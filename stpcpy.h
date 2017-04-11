@@ -34,7 +34,9 @@ static inline char *stpcpy(char *dst, const char *src)
 
 #endif
 //---------------------------------------------------------------------------
-#ifndef __linux__
+#ifdef __linux__
+#include <string.h>
+#else
 #ifdef __BORLANDC__
 #pragma warn -8060
 #pragma warn -8027

@@ -282,32 +282,6 @@ int isFile(const char *path)
   return stat(fixPath(path), &st) == 0 && S_ISREG(st.st_mode);
 }
 //---------------------------------------------------------------------------
-#ifdef __linux__
-#define dFIXPATHBUFFERS 3
-const char *fixPath(const char *path)
-{
-  static char nPath[dFIXPATHBUFFERS][FILENAME_MAX];
-  static int  c = -1;
-  char *p;
-
-  if (++c >= dFIXPATHBUFFERS)
-    c = 0;
-
-  p = nPath[c];
-
-  do
-  {
-    if (*path == dDIRSEPCa)
-      *p++ = dDIRSEPC;
-    else
-      *p++ = *path;
-  }
-  while (*path++ != 0);
-
-  return nPath[c];
-}
-#endif // __linux__
-//---------------------------------------------------------------------------
 #ifndef __linux__
 int dprintf(int fd, const char *format, ...)
 {

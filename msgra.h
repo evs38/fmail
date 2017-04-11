@@ -25,6 +25,8 @@
 
 #define CS_SECURITY 0xc6cad720L
 
+extern fhandle lockHandle;
+
 #include "pshpack1.h"
 
 typedef struct

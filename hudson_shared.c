@@ -20,10 +20,24 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------
+#include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include "fmail.h"
+
+#include "msgra.h"
+
 #include "config.h"
 #include "lock.h"
+#include "log.h"
+#include "msgradef.h"
 #include "os.h"
-#include "stpcpy.h"
+#include "utils.h"
+
+//---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
 char *expandNameHudson(const char *fileName, int orgName)
@@ -57,7 +71,7 @@ int testMBUnlockNow(void)
 
   if (mbSharingInternal)
   {
-    strcpy(stpcpy(tempStr, config.bbsPath), "MBUNLOCK.NOW");
+    strcpy(stpcpy(tempStr, fixPath(config.bbsPath)), "mbunlock.now");
 
     if (stat(tempStr, &st) != 0)
       mtime = 0;
@@ -76,8 +90,8 @@ void setMBUnlockNow(void)
 
   if (mbSharingInternal)
   {
-    strcpy(stpcpy(tempStr, config.bbsPath), "MBUNLOCK.NOW");
-    close(open(tempStr, O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE));
+    strcpy(stpcpy(tempStr, fixPath(config.bbsPath)), "mbunlock.now");
+    close(open(tempStr, O_RDWR | O_CREAT | O_BINARY, dDEFOMODE));
     testMBUnlockNow();
   }
 }
@@ -88,11 +102,11 @@ int lockMB(void)
   time_t      time1
             , time2;
 
-  strcpy(stpcpy(tempStr, config.bbsPath), "MSGINFO."MBEXTN);
+  strcpy(stpcpy(tempStr, fixPath(config.bbsPath)), dMSGINFO"."MBEXTN);
 
-  if ((lockHandle = open(tempStr, O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+  if ((lockHandle = open(tempStr, O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)
   {
-    logEntry("Can't open file MsgInfo."MBEXTN" for output", LOG_ALWAYS, 0);
+    logEntryf(LOG_ALWAYS, 0, "Can't open file %s for output", tempStr);
 
     return 1;
   }

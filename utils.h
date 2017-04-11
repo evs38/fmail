@@ -69,13 +69,6 @@
 extern u32 lastID;
 
 //---------------------------------------------------------------------------
-#if   defined(__linux__)
-const char *fixPath        (const char *path);
-#elif defined(__WIN32__)
-#define     fixPath(x)     (x)
-#else
-  #error "Define a fixPath function for your platform!"
-#endif
 #ifdef __CANUSE64BIT
 const char *fmtU64         (u64 u);
 u64         diskFree64     (const char *path);

@@ -101,10 +101,10 @@ void moveMsg(char *msgName, char *destDir)
         closedir(dir);
       }
     }
-    sprintf(tempStr, "%s%u.msg", destDir, (u32)++highMsgNum);
+    sprintf(tempStr, "%s%u.msg", fixPath(destDir), (u32)++highMsgNum);
     if (!moveFile(msgName, tempStr))
     {
-      logEntryf(LOG_SENTRCVD, 0, "Moving %s to %s", msgName, tempStr);
+      logEntryf(LOG_SENTRCVD, 0, "Moving %s to %s", fixPath(msgName), tempStr);
       messagesMoved = 1;
     }
     if (destDir == config.sentPath)
@@ -126,12 +126,12 @@ static void removeTrunc(char *path)
                , pattern;
 
 #ifdef _DEBUG0
-  logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG removeTrunc: %s", path);
+  logEntryf(LOG_DEBUG | LOG_NOSCRN, 0, "DEBUG removeTrunc: %s", fixPath(path));
 #endif
 
   if ((dir = opendir(fixPath(path))) != NULL)
   {
-    fileNamePtr = stpcpy(fileNameStr, path);
+    fileNamePtr = stpcpy(fileNameStr, fixPath(path));
 
     for (count = 0; count < 7; count++)
     {
@@ -145,7 +145,7 @@ static void removeTrunc(char *path)
 
         strcpy(fileNamePtr, ent->d_name);
 
-        if (access(fixPath(fileNameStr), 6) == 0)  // File is writable
+        if (access(fileNameStr, 6) == 0)  // File is writable; fileNameStr already fixed
         {
           if (config.mailer == dMT_DBridge)
           {
@@ -160,13 +160,13 @@ static void removeTrunc(char *path)
             if (fileSize(fileNameStr) == 0 || count2 == fAttCount)
             {
               logEntryf(LOG_DEBUG, 0, "Removing: %s", fileNameStr);
-              unlink(fixPath(fileNameStr));
+              unlink(fileNameStr);  // fileNameStr already fixed
             }
           }
           else
           {
             if (count2 == fAttCount)
-              close(open(fixPath(fileNameStr), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE));
+              close(open(fileNameStr, O_RDWR | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE));  // fileNameStr already fixed
           }
         }
       }
@@ -245,9 +245,9 @@ void initMsg(s16 noAreaFix)
 
   memset(fAttInfo, 0, sizeof(fAttInfo));
 
-  fPtr = stpcpy(fileNameStr, config.netPath);
+  fPtr = stpcpy(fileNameStr, fixPath(config.netPath));
 
-  if ((dir = opendir(fixPath(config.netPath))) != NULL)
+  if ((dir = opendir(fileNameStr)) != NULL)
   {
     while ((ent = readdir(dir)) != NULL)
     {
@@ -260,7 +260,7 @@ void initMsg(s16 noAreaFix)
       {
         sprintf(fPtr, "%u.msg", msgNum);
 
-        if ((msgMsgHandle = open(fixPath(fileNameStr), O_RDONLY | O_BINARY)) != -1)
+        if ((msgMsgHandle = open(fileNameStr, O_RDONLY | O_BINARY)) != -1)
         {
           if (read(msgMsgHandle, &msgMsg, sizeof(msgMsgType)) != sizeof(msgMsgType))
             close(msgMsgHandle);
@@ -274,7 +274,7 @@ void initMsg(s16 noAreaFix)
                && !(msgMsg.attribute & (LOCAL | IN_TRANSIT | RET_REC_REQ | IS_RET_REC | AUDIT_REQ))
                && count < 255
                && emptyText(textStr)
-               && !unlink(fixPath(fileNameStr))
+               && !unlink(fileNameStr)
                )
             {
               logEntryf(LOG_SENTRCVD, 0, "Killing empty netmail message #%u, from: %s to: %s", msgNum, msgMsg.fromUserName, msgMsg.toUserName);
@@ -296,7 +296,7 @@ void initMsg(s16 noAreaFix)
                       access(fixPath(msgMsg.subject), 0) &&
                       (count < 255) &&
                       emptyText(textStr) &&
-                      !unlink(fixPath(fileNameStr))
+                      !unlink(fileNameStr)
                      )
                   {
                     logEntryf(LOG_SENTRCVD, 0, "Attached file not found, killing ARCmail message #%u", msgNum);
@@ -448,7 +448,7 @@ void initMsg(s16 noAreaFix)
           else
           {
             sprintf(fPtr, "%u.msg", aFixMsgNum[count]);
-            unlink(fixPath(fileNameStr));
+            unlink(fileNameStr);
           }
           validateMsg();
         }
@@ -477,7 +477,7 @@ void initMsg(s16 noAreaFix)
             if (config.pingOptions.deletePingRequests)
             {
               sprintf(fPtr, "%u.msg", pingMsgNum[count]);
-              unlink(fixPath(fileNameStr));
+              unlink(fileNameStr);
               logEntryf(LOG_ALWAYS, 0, "Delete PING request message: %s", fileNameStr);
             }
             else
@@ -495,7 +495,7 @@ void initMsg(s16 noAreaFix)
     tempStrType dirStr;
     int bl;
 
-    helpPtr = stpcpy(dirStr, config.outPath);
+    helpPtr = stpcpy(dirStr, fixPath(config.outPath));
     *--helpPtr = 0;  // remove trailing '\'
 
     // Split dir and file
@@ -521,7 +521,7 @@ void initMsg(s16 noAreaFix)
 
     subRemTrunc(config.outPath);
 
-    if ((dir = opendir(fixPath(dirStr))) != 0)
+    if ((dir = opendir(dirStr)) != 0)  // dirStr already fixed
     {
       while ((ent = readdir(dir)) != NULL)
       {
@@ -592,9 +592,9 @@ s16 attribMsg(u16 attribute, s32 msgNum)
   tempStrType tempStr1;
   fhandle     msgMsgHandle;
 
-  sprintf(tempStr1, "%s%u.msg", config.netPath, msgNum);
+  sprintf(tempStr1, "%s%u.msg", fixPath(config.netPath), msgNum);
 
-  if (((msgMsgHandle = open(fixPath(tempStr1), O_WRONLY | O_BINARY)) == -1) ||
+  if (((msgMsgHandle = open(tempStr1, O_WRONLY | O_BINARY)) == -1) ||
       (lseek(msgMsgHandle, sizeof(msgMsgType)-4, SEEK_SET) == -1) ||
       (write(msgMsgHandle, &attribute, 2) != 2))
   {
@@ -614,7 +614,6 @@ s16 attribMsg(u16 attribute, s32 msgNum)
   return 0;
 }
 //---------------------------------------------------------------------------
-
 s16 readMsg(internalMsgType *message, s32 msgNum)
 {
   tempStrType tempStr;
@@ -625,9 +624,9 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
 
   memset(message, 0, INTMSG_SIZE);
 
-  sprintf(tempStr, "%s%u.msg", config.netPath, msgNum);
+  sprintf(tempStr, "%s%u.msg", fixPath(config.netPath), msgNum);
 
-  if ((msgMsgHandle = _sopen(fixPath(tempStr), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
+  if ((msgMsgHandle = _sopen(tempStr, O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
   {
     logEntryf(LOG_ALWAYS, 0, "Can't open file %s", tempStr);
     return -1;
@@ -811,15 +810,15 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
   switch (msgType)
   {
     case NETMSG:
-      helpPtr = stpcpy(tempStr, config.netPath);
+      helpPtr = stpcpy(tempStr, fixPath(config.netPath));
       break;
 
     case PERMSG:
-      helpPtr = stpcpy(tempStr, config.pmailPath);
+      helpPtr = stpcpy(tempStr, fixPath(config.pmailPath));
       break;
 
     case SECHOMSG:
-      helpPtr = stpcpy(tempStr, config.sentEchoPath);
+      helpPtr = stpcpy(tempStr, fixPath(config.sentEchoPath));
       break;
 
     default:
@@ -830,7 +829,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 
   highMsgNum = 0;
   strcpy(helpPtr, dLASTREAD);
-  if (valid && ((msgHandle = open(fixPath(tempStr), O_RDONLY | O_BINARY)) != -1))
+  if (valid && ((msgHandle = open(tempStr, O_RDONLY | O_BINARY)) != -1))
   {
     if (read(msgHandle, &highMsgNum, 2) != 2)
       highMsgNum = 0;
@@ -838,7 +837,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     close(msgHandle);
   }
   *helpPtr = 0;
-  if ((dir = opendir(fixPath(tempStr))) != NULL)
+  if ((dir = opendir(tempStr)) != NULL)
   {
     strcpy(helpPtr, valid ? "*.msg" : "*."MBEXTB );
 
@@ -858,7 +857,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     if (xu)
     {
       if (strlen(config.inPath) + strlen(fnPtr[xu - 1]) < 72)
-        strcpy(stpcpy(msgMsg.subject, config.inPath), fnPtr[xu - 1]);
+        strcpy(stpcpy(msgMsg.subject, fixPath(config.inPath)), fnPtr[xu - 1]);
       else
         strcpy(msgMsg.subject, fnPtr[xu - 1]);
     }
@@ -868,7 +867,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
     sprintf(helpPtr, valid ? "%u.msg" : "%u."MBEXTB, ++highMsgNum);
 
     while (  count < 20
-          && -1 == (msgHandle = open(fixPath(tempStr), O_WRONLY | O_CREAT | O_EXCL | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE))
+          && -1 == (msgHandle = open(tempStr, O_WRONLY | O_CREAT | O_EXCL | O_TRUNC | O_BINARY, dDEFOMODE))
           )
     {
       highMsgNum += count++ < 10 ? 1 : 10;
@@ -899,7 +898,13 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 #endif
 
     if (valid == 2)
-      chmod(fixPath(tempStr), S_IREAD);
+#if defined(__linux__)
+      chmod(tempStr, S_IRUSR | S_IRGRP);
+#elif defined(__WIN32__)
+      chmod(tempStr, S_IREAD);
+#else
+  #error "Set open mode for your system"
+#endif
 
     switch (msgType)
     {

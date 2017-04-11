@@ -126,9 +126,13 @@ typedef struct
 
 } psRecType;
 
-//typedef psRecType psType[];
 
-#define dTEMPSTRLEN  (FILENAME_MAX + 64)  // Groter dan FILENAME_MAX (wordt ook voor paden gebruikt)
+// Groter of gelijk aan FILENAME_MAX (wordt ook voor paden gebruikt)
+#ifdef __linux__
+#define dTEMPSTRLEN   FILENAME_MAX        // On linux FILENAME_MAX == 4096
+#else
+#define dTEMPSTRLEN  (FILENAME_MAX + 64)  // On WIN32 FILENAME_MAX == 260
+#endif
 typedef char tempStrType[dTEMPSTRLEN];
 
 typedef struct

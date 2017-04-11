@@ -175,7 +175,7 @@ int InitBuf(u32 **buf, u32 size)
 void writedata(const char *fn, const char *data, size_t n)
 {
   fhandle h;
-  if ((h = _sopen(fixPath(fn), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE, 1)) != -1)
+  if ((h = _sopen(fixPath(fn), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, dDEFOMODE, 1)) != -1)
   {
     if (n > 0)
       write(h, data, n);
@@ -232,7 +232,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name);
 void logComb(const char *fs, const char *ds)
 {
   newLine();
-  logEntryf(LOG_DEBUG, 0, fs, ds);
+  logEntryf(LOG_DEBUG, 0, fs, fixPath(ds));
 }
 //---------------------------------------------------------------------------
 int compareFileToBuf(const char *fname, const char *buf, u32 size)
@@ -845,14 +845,14 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
 
    JLRhandle = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_LRD)), O_RDONLY | O_BINARY, SH_DENYRW);
 
-   if ((JHRhandleNew = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_OLD_HDR)),  O_RDWR | O_CREAT | O_TRUNC |O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+   if ((JHRhandleNew = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_OLD_HDR)),  O_RDWR | O_CREAT | O_TRUNC |O_BINARY, SH_DENYRW, dDEFOMODE)) == -1)
    {  fsclose(JLRhandle);
       fsclose(JDXhandle);
       fsclose(JDThandle);
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ((JDThandleNew = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_OLD_TXT)), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+   if ((JDThandleNew = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_OLD_TXT)), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, dDEFOMODE)) == -1)
    {  fsclose(JHRhandleNew);
       fsclose(JLRhandle);
       fsclose(JDXhandle);
@@ -860,7 +860,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ((JDXhandleNew = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_OLD_IDX)), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+   if ((JDXhandleNew = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_OLD_IDX)), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, dDEFOMODE)) == -1)
    {  fsclose(JDThandleNew);
       fsclose(JHRhandleNew);
       fsclose(JLRhandle);
@@ -869,7 +869,7 @@ s16 JAMmaintOld(rawEchoType *areaPtr, s32 switches, const char *name)
       fsclose(JHRhandle);
       goto jamx;
    }
-   if ((JLRhandleNew = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_OLD_LRD)), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+   if ((JLRhandleNew = _sopen(fixPath(expJAMname(areaPtr->msgBasePath, EXT_OLD_LRD)), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, dDEFOMODE)) == -1)
    {  fsclose(JDXhandleNew);
       fsclose(JDThandleNew);
       fsclose(JHRhandleNew);

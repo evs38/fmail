@@ -367,7 +367,7 @@ void GetTable(void)
     char *fn;
     int f;
 
-    if (NULL == strpbrk(config.ftscProdFile, ":\\/"))  // configuration filename doesn't contain path chars
+    if (NULL == strpbrk(config.ftscProdFile, ":"dDIRSEPS dDIRSEPSa))  // configuration filename doesn't contain path chars
     {
       // Look for ftscprod file in default configPath
       strcpy(stpcpy(fname, configPath), config.ftscProdFile);
@@ -435,16 +435,16 @@ void GetTable(void)
             ++pbuf;
         }
         tbl = fileTbl;
-        logEntryf(LOG_ALWAYS, 0, "Using ftscprod file: %s", fn);
+        logEntryf(LOG_ALWAYS, 0, "Using ftscprod file: %s", fixPath(fn));
       }
       else
-        logEntryf(LOG_ALWAYS, 0, "Problem reading ftscprod file: %s [%s]", config.ftscProdFile, strError(errno));
+        logEntryf(LOG_ALWAYS, 0, "Problem reading ftscprod file: %s [%s]", fixPath(config.ftscProdFile), strError(errno));
 
       close(f);
       free(buf);
     }
     else
-      logEntryf(LOG_ALWAYS, 0, "Problem opening ftscprod file: %s [%s]", config.ftscProdFile, strError(errno));
+      logEntryf(LOG_ALWAYS, 0, "Problem opening ftscprod file: %s [%s]", fixPath(config.ftscProdFile), strError(errno));
   }
   if (NULL == tbl)
   {

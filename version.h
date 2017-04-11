@@ -21,7 +21,7 @@
 //
 //----------------------------------------------------------------------------
 
-#define VERNUM       "2.1.0.1"
+#define VERNUM       "2.1.0.4"
 #define SERIAL_MAJOR  2
 #define SERIAL_MINOR  1
 

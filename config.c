@@ -130,7 +130,7 @@ void initFMail(const char *_funcStr, s32 switches)
     *helpPtr = 0;
 
   if (  !access(tempStr2, 0)  // path already fixed for linux
-     && (fmailLockHandle = _sopen(fixPath(tempStr), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
+     && (fmailLockHandle = _sopen(fixPath(tempStr), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, dDEFOMODE)) == -1
      && errno != ENOENT  // path does not exist
      )
   {
@@ -139,7 +139,7 @@ void initFMail(const char *_funcStr, s32 switches)
     time(&time1);
     time2 = time1;
 
-    while (  (fmailLockHandle = _sopen(fixPath(tempStr), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, S_IREAD | S_IWRITE)) == -1
+    while (  (fmailLockHandle = _sopen(fixPath(tempStr), O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, SH_DENYRW, dDEFOMODE)) == -1
           && (!config.activTimeOut || time2 - time1 < config.activTimeOut)
           )
     {
@@ -154,20 +154,17 @@ void initFMail(const char *_funcStr, s32 switches)
     }
   }
 
-  if (config.akaList[0].nodeNum.zone == 0)
-  {
-    puts("Main nodenumber not defined in FSetup!");
-    exit(4);
-  }
+  initLog(switches);
 
-  if ((*config.netPath == 0) ||
-    (*config.bbsPath == 0) ||
-    (*config.inPath  == 0) ||
-    (*config.outPath == 0))
-  {
-    puts("Not all required subdirectories are defined in FSetup!");
-    exit(4);
-  }
+  if (config.akaList[0].nodeNum.zone == 0)
+    logEntry("Main nodenumber not defined in FSetup!", LOG_ALWAYS, 4);
+
+  if (  *config.netPath == 0
+     || *config.bbsPath == 0
+     || *config.inPath  == 0
+     || *config.outPath == 0
+     )
+    logEntry("Not all required subdirectories are defined in FSetup!", LOG_ALWAYS, 4);
 
   if (  (existDir(config.netPath, "netmail"     ) == 0)
      || (existDir(config.bbsPath, "message base") == 0)
@@ -177,10 +174,7 @@ void initFMail(const char *_funcStr, s32 switches)
      || (*config.sentEchoPath        && existDir(config.sentEchoPath       , "sent echomail") == 0)
      || (*config.autoGoldEdAreasPath && existDir(config.autoGoldEdAreasPath, "AREAS.GLD"    ) == 0)
      )
-  {
-    puts("Please enter the required subdirectories first!");
-    exit(4);
-  }
+    logEntry("Please enter the required subdirectories first!", LOG_ALWAYS, 4);
 
   if (config.maxForward < 64)
     config.maxForward = 64;
@@ -196,14 +190,10 @@ void initFMail(const char *_funcStr, s32 switches)
 #ifdef GOLDBASE
   config.bbsProgram = BBS_QBBS;
 #endif
-
-  initLog(switches);
-
 #ifdef _DEBUG
-#ifdef __WIN32__
+#if   defined(__WIN32__)
   logEntryf(LOG_DEBUG, 0, "DEBUG gmtOffset=%ld daylight=%d timezone=%ld tzname=%s-%s", gmtOffset, _daylight, _timezone, _tzname[0], _tzname[1]);
-#endif
-#ifdef __linux__
+#elif defined(__linux__)
   logEntryf(LOG_DEBUG, 0, "DEBUG gmtOffset=%ld daylight=%d timezone=%ld tzname=%s-%s", gmtOffset, daylight, timezone, tzname[0], tzname[1]);
 #endif
 #endif
@@ -227,9 +217,9 @@ void deinitFMail(void)
   fhandle     configHandle;
   tempStrType configFileStr;
 
-  strcpy(stpcpy(configFileStr, configPath), dCFGFNAME);
+  strcpy(stpcpy(configFileStr, fixPath(configPath)), dCFGFNAME);
 
-  if (  (configHandle = open(fixPath(configFileStr), O_WRONLY | O_BINARY)) == -1
+  if (  (configHandle = open(configFileStr, O_WRONLY | O_BINARY)) == -1  // configFileStr already fixed
      || lseek(configHandle, offsetof(configType, uplinkReq), SEEK_SET) == -1L
      || write(configHandle, &config.uplinkReq, sizeof(uplinkReqType)*MAX_UPLREQ) < (int)sizeof(uplinkReqType)*MAX_UPLREQ
      || lseek(configHandle, offsetof(configType, lastUniqueID), SEEK_SET) == -1L

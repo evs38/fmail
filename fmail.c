@@ -430,8 +430,9 @@ void tossBad(internalMsgType *message, const char *badStr)
 void unlinkOrBackup(const char *path)
 {
   int doUnlink = 0;
+  const char *tp = fixPath(path);
 
-  if (path == NULL || *path == 0)
+  if (tp == NULL || *tp == 0)
     return;
 
   if (*config.inBakPath)
@@ -441,28 +442,28 @@ void unlinkOrBackup(const char *path)
     char *p;
     int count = 0;
 
-    if (!lastSep(helpPtr, path))
-      helpPtr = path;
+    if (!lastSep(helpPtr, tp))
+      helpPtr = tp;
     else
       helpPtr++;
 
-    p = stpcpy(stpcpy(bakPath, config.inBakPath), helpPtr);
+    p = stpcpy(stpcpy(bakPath, fixPath(config.inBakPath)), helpPtr);
 
-    while (access(fixPath(bakPath), 0) == 0 && count < 100)
+    while (access(bakPath, 0) == 0 && count < 100)  // bakPath already fixed
       sprintf(p, "~%02d", count++);
 
     if (count < 100 && moveFile(path, bakPath) == 0)
-      logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Moved to backup: %s -> %s", path, bakPath);
+      logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Moved to backup: %s -> %s", tp, bakPath);   // bakPath already fixed
     else
     {
-      logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup Failed! %s -> %s", path, bakPath);
+      logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Backup Failed! %s -> %s", tp, bakPath);  // bakPath already fixed
       // try renaming in the same dir
-      strcpy(stpcpy(bakPath, path), ".backup_failed");
-      if (rename(fixPath(path), fixPath(bakPath)) == 0)
-        logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Renamed: %s -> %s", path, bakPath);
+      strcpy(stpcpy(bakPath, tp), ".backup_failed");
+      if (rename(tp, bakPath) == 0)   // bakPath already fixed
+        logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Renamed: %s -> %s", tp, bakPath);  // bakPath already fixed
       else
       {
-        logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Rename Failed! %s -> %s", path, bakPath);
+        logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Rename Failed! %s -> %s", tp, bakPath);  // bakPath already fixed
         doUnlink = 1;
       }
     }
@@ -472,10 +473,10 @@ void unlinkOrBackup(const char *path)
 
   if (doUnlink)
   {
-    if (unlink(fixPath(path)) == 0)
-      logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Deleted: %s", path);
+    if (unlink(tp) == 0)
+      logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Deleted: %s", tp);
     else
-      logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Delete Failed! %s", path);
+      logEntryf(LOG_INBOUND | LOG_PACK | LOG_PKTINFO, 0, "Delete Failed! %s", tp);
   }
 }
 //---------------------------------------------------------------------------
@@ -484,9 +485,9 @@ time_t oldMsgTime = 0;
 static s16 processPkt(u16 secure, s16 noAreaFix)
 {
   tempStrType        pktStr
-                   , tempStr;
+                   , tempStr
+                   , dirStr;
   char              *helpPtr;
-  char              *dirStr;
   echoToNodeType     tempEchoToNode;
   s16                echoToNodeCount
                    , areaIndex
@@ -502,7 +503,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
 
   do
   {
-    dirStr = secure ? config.securePath : config.inPath;
+    strcpy(dirStr, secure ? fixPath(config.securePath) : fixPath(config.inPath));
 #ifdef _DEBUG
     {
       tempStrType cwd;
@@ -511,14 +512,14 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
     }
 #endif
 
-    if ((dir = opendir(fixPath(dirStr))) != NULL)
+    if ((dir = opendir(dirStr)) != NULL)  // dirStr already fixed
     {
       while ((ent = readdir(dir)) != NULL && !diskError && !mailBomb)
       {
         if (!match_spec("*.pkt", ent->d_name))
           continue;
 
-        strcpy(stpcpy(pktStr, fixPath(dirStr)), ent->d_name);
+        strcpy(stpcpy(pktStr, dirStr), ent->d_name);
 
         if (access(pktStr, 06) != 0)  // Check for read and write access; path already fixed for linux
         {
@@ -891,7 +892,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
                   if (!jam_writemsg(echoAreaList[areaIndex].JAMdirPtr, message, 0))
                   {
                     newLine();
-                    logEntry("Can't write JAM message", LOG_ALWAYS, 0);
+                    logEntryf(LOG_ALWAYS, 0, "Can't write JAM message to: %s", fixPath(echoAreaList[areaIndex].JAMdirPtr));
                     diskError = DERR_WRJECHO;
                     break;
                   }
@@ -910,7 +911,7 @@ static s16 processPkt(u16 secure, s16 noAreaFix)
           if (mailBomb)
           {
             strcpy(stpcpy(tempStr, pktStr), ".mailbomb");
-            rename(fixPath(pktStr), fixPath(tempStr));
+            rename(pktStr, tempStr);  // pktStr already fixed
             unlinkOrBackup(pktStr);
             logEntryf(LOG_ALWAYS, 0, "Max # net msgs per packet exceeded in packet from %s", nodeStr(&globVars.packetSrcNode));
             logEntryf(LOG_ALWAYS, 0, "Packet %s has been renamed to %s", pktStr, tempStr);
@@ -1034,10 +1035,12 @@ void Toss(int argc, char *argv[])
           if (!match_spec(pattern, ent->d_name))
             continue;
 
-          strcpy(stpcpy(tempStr, config.inPath), ent->d_name);
+          strcpy(stpcpy(tempStr, fixPath(config.inPath)), ent->d_name);
 
-          if (  stat(fixPath(tempStr), &st) != 0
-             || (st.st_mode & (S_IWRITE | S_IREAD)) != (S_IWRITE | S_IREAD))
+          if (  access(tempStr, R_OK | W_OK) != 0  // May the current user read and write the file
+             || stat(tempStr, &st) != 0
+             || !S_ISREG(st.st_mode)               // Is it a regular file
+             )
           {
             logEntryf(LOG_ALWAYS, 2, "Not sufficient rights on: %s", tempStr);
             continue;
@@ -1092,8 +1095,8 @@ void Toss(int argc, char *argv[])
 
   if (badEchoCount)
   {
-    strcpy(stpcpy(tempStr, configPath), dBDEFNAME);
-    if ((tempHandle = open(fixPath(tempStr), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+    strcpy(stpcpy(tempStr, fixPath(configPath)), dBDEFNAME);
+    if ((tempHandle = open(tempStr, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) != -1)
     {
       write(tempHandle, badEchos, badEchoCount * sizeof(badEchoType));
       close(tempHandle);
@@ -1125,12 +1128,12 @@ void Toss(int argc, char *argv[])
 
   if (globVars.echoCountV || globVars.dupCountV || globVars.badCountV)
   {
-    if (*config.tossedAreasList && (tempHandle = open(fixPath(config.tossedAreasList), O_WRONLY | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) != -1)
+    if (*config.tossedAreasList && (tempHandle = open(fixPath(config.tossedAreasList), O_WRONLY | O_CREAT | O_APPEND | O_BINARY, dDEFOMODE)) != -1)
       for (count = 0; count < echoCount; count++)
         if (echoAreaList[count].msgCountV)
           dprintf(tempHandle, "%s\r\n", echoAreaList[count].areaName);
 
-    if (*config.summaryLogName && (tempHandle = open(fixPath(config.summaryLogName), O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
+    if (*config.summaryLogName && (tempHandle = open(fixPath(config.summaryLogName), O_WRONLY | O_CREAT | O_APPEND | O_TEXT, dDEFOMODE)) != -1)
     {
       logEntry("Writing toss summary", LOG_DEBUG, 0);
       dprintf(tempHandle, "\n----------  %s %4u-%02u-%02u %02u:%02u:%02u, %s - Toss Summary\n\n"
@@ -2011,6 +2014,23 @@ int main(int argc, char *argv[])
   }
 #endif
 
+#ifdef __linux__
+  if ((helpPtr = getenv("FMAIL_REPLACE_DRIVE")) != NULL && *helpPtr != 0)
+  {
+    helpPtr = stpcpy(replaceDrive, helpPtr);
+    if (*(helpPtr - 1) != dDIRSEPC)
+    {
+      *helpPtr++ = dDIRSEPC;
+      *helpPtr   = 0;
+    }
+  }
+  else
+    *replaceDrive = 0;
+#ifdef _DEBUG
+  printf("DEBUG replaceDrive = \"%s\"\n", replaceDrive);
+#endif // _DEBUG
+#endif // __linux__
+
   if ((helpPtr = getenv("FMAIL")) == NULL || *helpPtr == 0 || !dirExist(helpPtr))
   {
     strcpy(configPath, argv[0]);
@@ -2031,7 +2051,7 @@ int main(int argc, char *argv[])
     }
   }
 #ifdef _DEBUG
-  printf("DEBUG configPath: %s\n", configPath);
+  printf("DEBUG configPath = \"%s\"\n", configPath);
 #endif
 
   if      (argc >= 2 && (stricmp(argv[1], "A") == 0 || stricmp(argv[1], "ABOUT" ) == 0))

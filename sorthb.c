@@ -339,8 +339,8 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
    {
       putStr("Writing "dMSGHDR"."MBEXTN" and index files... ");
 
-      if (  ((msgIdxHandle   = open(fixPath(expandNameHudson(dMSGIDX  , 0)), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
-         || ((msgToIdxHandle = open(fixPath(expandNameHudson(dMSGTOIDX, 0)), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if (  ((msgIdxHandle   = open(fixPath(expandNameHudson(dMSGIDX  , 0)), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1)
+         || ((msgToIdxHandle = open(fixPath(expandNameHudson(dMSGTOIDX, 0)), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1)
          )
       {
          close(msgIdxHandle);
@@ -353,7 +353,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
       strcpy(stpcpy(tempStr3, config.bbsPath), dMSGHDR".!!!");
 
       if ((unlink(fixPath(tempStr2)) == -1 && errno != ENOENT) ||
-          ((msgHdrHandle = open(fixPath(tempStr3), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
+          ((msgHdrHandle = open(fixPath(tempStr3), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1) ||
           ((oldHdrHandle = open(fixPath(tempStr1), O_RDONLY | O_BINARY)) == -1))
       {
          close(msgHdrHandle);
@@ -449,7 +449,7 @@ void sortBBS(u16 origTotalMsgBBS, s16 mbSharing)
 
       strcpy(tempStr1, expandNameHudson(dMSGHDR, 0));
 
-      if (  ((msgHdrHandle = open(fixPath(tempStr1), O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE)) == -1)
+      if (  ((msgHdrHandle = open(fixPath(tempStr1), O_WRONLY | O_BINARY | O_CREAT, dDEFOMODE)) == -1)
          || ((oldHdrHandle = open(fixPath(tempStr1), O_RDONLY | O_BINARY)) == -1)
          )
       {

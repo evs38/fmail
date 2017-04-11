@@ -1388,7 +1388,7 @@ Send:
     fhandle msgHandle1 = -1
           , msgHandle2 = -1;
 #ifdef _DEBUG0
-    logEntryf(LOG_DEBUG, 0, "DEBUG Rescan AreaFix start %s %lu.msg %lu.msg", config.netPath, msgNum1, msgNum2);
+    logEntryf(LOG_DEBUG, 0, "DEBUG Rescan AreaFix start %s %lu.msg %lu.msg", fixPath(config.netPath), msgNum1, msgNum2);
 #endif
     if (msgNum1)
     {
@@ -1404,7 +1404,7 @@ Send:
     strcpy(stpcpy(tempStr, config.bbsPath), "areamgr."dEXTTMP);
     if (nodeInfoPtr->options.allowRescan)
     {
-      if ((helpHandle = open(fixPath(tempStr), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) != -1)
+      if ((helpHandle = open(fixPath(tempStr), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, dDEFOMODE)) != -1)
       {
         if (  write(helpHandle, areaFixList, areaFixCount * sizeof(areaFixType))
            == (int)(areaFixCount * sizeof(areaFixType))

@@ -254,7 +254,7 @@ void closeDup(void)
 
   strcpy(stpcpy(tempPath, configPath), dFMAIL32_DUP);
 
-  if (  (dupHandle = open(fixPath(tempPath), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE)) == -1
+  if (  (dupHandle = open(fixPath(tempPath), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, dDEFOMODE)) == -1
      || write(dupHandle, &dupHdr, sizeof(dupHdrStruct)) != sizeof(dupHdrStruct)
      || write(dupHandle, dupBuffer, dupHdr.kRecs * DUP_LEVEL * 4096) != (int)(DUP_LEVEL * dupHdr.kRecs * 4096)
      || close(dupHandle) == -1

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007         Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015  Wilfred van Velzen
+//  Copyright (C) 2007 - 2017  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #ifdef __WIN32__
-//#include <dos.h>
 #include <windows.h>
 #endif
 #ifdef __linux__
@@ -52,32 +51,38 @@ extern configType config;
 extern char      *dayName[7];
 extern char      *months;
 
-clock_t           at;
+//clock_t           at;
 
 u16               mgrLogUsed = 0;
 //---------------------------------------------------------------------------
 static void writeLogLine(fhandle logHandle, const char *s)
 {
-#ifndef __WIN32__
-  time_t    timer;
-#endif // __WIN32__
+#if    defined(__linux__)
+  struct timespec ts;
+#elif !defined(__WIN32__)
+  time_t timer;
+#endif
+  unsigned int ms;
   struct tm tm;
 
-#ifdef __WIN32__
+#if defined(__WIN32__)
   SYSTEMTIME st;
   GetLocalTime(&st);
-  if (config.logStyle != 4)
-  {
-    tm.tm_year = st.wYear  - 1900;
-    tm.tm_mon  = st.wMonth - 1;
-    tm.tm_mday = st.wDay;
-    tm.tm_hour = st.wHour;
-    tm.tm_min  = st.wMinute;
-    tm.tm_sec  = st.wSecond;
-  }
-#else // __WIN32__
+  tm.tm_year = st.wYear  - 1900;
+  tm.tm_mon  = st.wMonth - 1;
+  tm.tm_mday = st.wDay;
+  tm.tm_hour = st.wHour;
+  tm.tm_min  = st.wMinute;
+  tm.tm_sec  = st.wSecond;
+  ms         = st.wMilliseconds;
+#elif defined(__linux__)
+  clock_gettime(CLOCK_REALTIME, &ts);
+  tm = *localtime(&ts.tv_sec);
+  ms = ts.tv_nsec / 1000000;
+#else
   time(&timer);
   tm = *localtime(&timer);
+  ms = 0;
 #endif // __WIN32__
 
   switch (config.logStyle)
@@ -110,12 +115,10 @@ static void writeLogLine(fhandle logHandle, const char *s)
              , tm.tm_sec
              );
       break;
-#ifdef __WIN32__
     case 4:  // FMail
-      dprintf(logHandle, "%02u:%02u:%02u.%03u  ", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+      dprintf(logHandle, "%02u:%02u:%02u.%03u  ", tm.tm_hour, tm.tm_min, tm.tm_sec, ms);
       break;
-#endif
-    default:  // FrontDoor
+    default: // FrontDoor
       dprintf(logHandle, "  %2u:%02u:%02u  ", tm.tm_hour, tm.tm_min, tm.tm_sec);
       break;
   }
@@ -131,7 +134,7 @@ void initLog(s32 switches)
   s32         select = 1;
   char       *helpPtr;
 
-  at = clock();
+  //at = clock();
 
   if (!*config.logName)
     config.logInfo = 0;
@@ -139,18 +142,16 @@ void initLog(s32 switches)
   if (!config.logInfo)
     return;
 
-  if ((logHandle = open(fixPath(config.logName), O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) == -1)
+  if ((logHandle = open(fixPath(config.logName), O_WRONLY | O_CREAT | O_APPEND | O_TEXT, dDEFOMODE)) == -1)
   {
     puts("WARNING: Can't open log file\n");
     config.logInfo = 0;
   }
   else
   {
-#ifdef __WIN32__
     if (config.logStyle == 4)
       helpPtr = stpcpy(tempStr, funcStr);
     else
-#endif
       helpPtr = tempStr + sprintf(tempStr, "%s - %s", VersionStr(), funcStr);
 
     for (count = 0; count < 26; count++)
@@ -183,7 +184,6 @@ void initLog(s32 switches)
         writeLogLine(logHandle, tempStr);
         break;
       }
-#ifdef __WIN32__
       case 4:
         dprintf(logHandle, "\n------------  %s %04u-%02u-%02u, %s\n"
                          , dayName[timeBlock.tm_wday]
@@ -194,7 +194,6 @@ void initLog(s32 switches)
                );
         writeLogLine(logHandle, tempStr);
         break;
-#endif
       default:
         dprintf(logHandle, "\n----------  %s %04u-%02u-%02u, %s\n"
                          , dayName[timeBlock.tm_wday]
@@ -252,7 +251,7 @@ void logEntry(const char *s, u16 entryType, u16 errorLevel)
     return;
   }
 
-  if ((logHandle = open(fixPath(config.logName), O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1)
+  if ((logHandle = open(fixPath(config.logName), O_WRONLY | O_CREAT | O_APPEND | O_TEXT, dDEFOMODE)) != -1)
     writeLogLine(logHandle, s);
 
   if (errorLevel)
@@ -283,16 +282,12 @@ void mgrLogEntry(const char *s)
 
   if ((*config.areaMgrLogName) && (!(mgrLogUsed++)) &&
       stricmp(config.logName, config.areaMgrLogName) &&
-      ((logHandle = open(fixPath(config.areaMgrLogName), O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1))
+      ((logHandle = open(fixPath(config.areaMgrLogName), O_WRONLY | O_CREAT | O_APPEND | O_TEXT, dDEFOMODE)) != -1))
   {
     if (config.logStyle == 0 || config.logStyle == 4)
     {
       dprintf(logHandle, "\n----------%s  %s %04u-%02u-%02u, %s - AreaMgr\n"
-#ifdef __WIN32__
                        , config.logStyle ? "--" : ""
-#else
-                       , ""
-#endif
                        , dayName[timeBlock.tm_wday]
                        , timeBlock.tm_year + 1900
                        , timeBlock.tm_mon + 1
@@ -314,7 +309,7 @@ void mgrLogEntry(const char *s)
   }
 
   if (((logHandle = open( fixPath(*config.areaMgrLogName ? config.areaMgrLogName : config.logName)
-                        , O_WRONLY | O_CREAT | O_APPEND | O_TEXT, S_IREAD | S_IWRITE)) != -1))
+                        , O_WRONLY | O_CREAT | O_APPEND | O_TEXT, dDEFOMODE)) != -1))
   {
     writeLogLine(logHandle, s);
     close(logHandle);
@@ -324,6 +319,11 @@ void mgrLogEntry(const char *s)
 void logActive(void)
 {
   newLine();
-  logEntryf(LOG_STATS, 0, "%s Active: %.3f sec.", funcStr, ((double)(clock() - at)) / CLOCKS_PER_SEC);
+  clock_t t = clock();
+  if (t >= 0)
+  {
+    double d = ((double)t) / CLOCKS_PER_SEC;
+    logEntryf(LOG_STATS, 0, "%s Active: %.*f sec.", funcStr, d < .01 ? 4 : 3, d);
+  }
 }
 //---------------------------------------------------------------------------

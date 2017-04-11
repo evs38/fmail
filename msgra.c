@@ -23,7 +23,6 @@
 
 #ifdef __WIN32__
 #include <dir.h>
-//#include <dos.h>
 #endif // __WIN32__
 #include <errno.h>
 #include <fcntl.h>
@@ -48,6 +47,7 @@
 #include "msgpkt.h"
 #include "msgradef.h"
 #include "mtask.h"
+#include "os.h"
 #include "utils.h"
 
 const u16 HDR_BUFSIZE = 104;
@@ -70,8 +70,8 @@ fhandle         msgHdrHandle;
 fhandle         msgTxtHandle;
 fhandle         msgToIdxHandle;
 fhandle         msgIdxHandle;
-static fhandle  lockHandle;
-infoRecType	infoRec;
+fhandle         lockHandle;
+infoRecType	    infoRec;
 infoRecType     infoRecValid;
 u16             hdrBufCount;
 u16             txtBufCount;
@@ -99,7 +99,7 @@ static void readMsgInfo (u16);
 static void writeMsgInfo(u16);
 
 
-#include "hudson_shared.c"
+//#include "hudson_shared.c"
 //---------------------------------------------------------------------------
 void initBBS(void)
 {
@@ -169,7 +169,7 @@ s16 multiUpdate(void)
 
       msgNumOffset = newInfoRec.HighMsg;
 
-      if ((srcHdrHandle = open(fixPath(expandNameHudson(dMSGHDR, 0)), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if ((srcHdrHandle = open(fixPath(expandNameHudson(dMSGHDR, 0)), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)
       {
          unlockMB();
          logEntry("Can't update the message base files", LOG_ALWAYS, 0);
@@ -177,7 +177,7 @@ s16 multiUpdate(void)
          return 1;
       }
 
-      if ((srcTxtHandle = open(fixPath(expandNameHudson(dMSGTXT, 0)), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if ((srcTxtHandle = open(fixPath(expandNameHudson(dMSGTXT, 0)), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)
       {
          close(srcHdrHandle);
          unlockMB();
@@ -189,7 +189,7 @@ s16 multiUpdate(void)
       helpPtr = stpcpy(tempStr, config.bbsPath);
 
       strcpy(helpPtr, dMSGHDR"."MBEXTN);
-      if ((destHdrHandle = open(fixPath(tempStr), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if ((destHdrHandle = open(fixPath(tempStr), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)
       {
          close(srcTxtHandle);
          close(srcHdrHandle);
@@ -200,7 +200,7 @@ s16 multiUpdate(void)
       }
 
       strcpy(helpPtr, dMSGIDX"."MBEXTN);
-      if ((destIdxHandle = open(fixPath(tempStr), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if ((destIdxHandle = open(fixPath(tempStr), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)
       {
          close(destHdrHandle);
          close(srcTxtHandle);
@@ -211,7 +211,7 @@ s16 multiUpdate(void)
          return 1;
       }
       strcpy(helpPtr, dMSGTOIDX"."MBEXTN);
-      if ((destToIdxHandle = open(fixPath(tempStr), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if ((destToIdxHandle = open(fixPath(tempStr), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)
       {
          close(destIdxHandle);
          close(destHdrHandle);
@@ -224,7 +224,7 @@ s16 multiUpdate(void)
       }
 
       strcpy(helpPtr, dMSGTXT"."MBEXTN);
-      if ((destTxtHandle = open(fixPath(tempStr), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+      if ((destTxtHandle = open(fixPath(tempStr), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)
       {
          close(destToIdxHandle);
          close(destIdxHandle);
@@ -424,7 +424,7 @@ static void readMsgInfo(u16 orgName)
 {
    fhandle msgInfoHandle;
 
-   if (((msgInfoHandle = open(fixPath(expandNameHudson(dMSGINFO, orgName)), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1) ||
+   if (((msgInfoHandle = open(fixPath(expandNameHudson(dMSGINFO, orgName)), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1) ||
         read (msgInfoHandle, &infoRec, sizeof(infoRecType)) != sizeof(infoRecType) )
       memset (&infoRec, 0, sizeof(infoRecType));
 
@@ -437,7 +437,7 @@ static void writeMsgInfo(u16 orgName)
 {
   fhandle msgInfoHandle;
 
-  if (  (msgInfoHandle = open(fixPath(expandNameHudson(dMSGINFO, orgName)), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1
+  if (  (msgInfoHandle = open(fixPath(expandNameHudson(dMSGINFO, orgName)), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1
      || write(msgInfoHandle, &infoRecValid, sizeof(infoRecType)) == -1
      )
     logEntry("Can't open file "dMSGINFO"."MBEXTN" for output", LOG_ALWAYS, 1);
@@ -455,22 +455,22 @@ void openBBSWr(u16 orgName)
        ((msgTxtBuf   = (msgTxtRec  *)malloc(TXT_BUFSIZE * 256)) == NULL))
       logEntry("Not enough memory to allocate message base file buffers", LOG_ALWAYS, 2);
 
-   if ((msgHdrHandle = open(fixPath(expandNameHudson(dMSGHDR, orgName)), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+   if ((msgHdrHandle = open(fixPath(expandNameHudson(dMSGHDR, orgName)), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)
       logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgHdrHandle, 0, SEEK_END);
 
-   if ((msgTxtHandle = open(fixPath(expandNameHudson(dMSGTXT, orgName)), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+   if ((msgTxtHandle = open(fixPath(expandNameHudson(dMSGTXT, orgName)), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)
       logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgTxtHandle, 0, SEEK_END);
 
-   if ((msgToIdxHandle = open(fixPath(expandNameHudson(dMSGTOIDX, orgName)), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+   if ((msgToIdxHandle = open(fixPath(expandNameHudson(dMSGTOIDX, orgName)), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)
       logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgToIdxHandle, 0, SEEK_END);
 
-   if ((msgIdxHandle = open(fixPath(expandNameHudson(dMSGIDX, orgName)), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+   if ((msgIdxHandle = open(fixPath(expandNameHudson(dMSGIDX, orgName)), O_RDWR | O_CREAT | O_BINARY, dDEFOMODE)) == -1)
       logEntry("Can't open message base files for output", LOG_ALWAYS, 1);
 
    lseek(msgIdxHandle, 0, SEEK_END);
@@ -903,7 +903,7 @@ static s16 processMsg(u16 areaIndex)
          if (!jam_writemsg(echoAreaList[areaIndex].JAMdirPtr, message, 0))
          {
            newLine();
-           logEntry("Can't write JAM message", LOG_ALWAYS, 0);
+           logEntryf(LOG_ALWAYS, 0, "Can't write JAM message to: %s", fixPath(echoAreaList[areaIndex].JAMdirPtr));
            diskError = DERR_WRJECHO;
          }
          globVars.jamCountV++;

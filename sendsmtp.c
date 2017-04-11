@@ -88,7 +88,7 @@ static int make_send_msg(u16 xu, char *attachName, u16 msg_tfs, u16 msg_kfs)
     {
       do
       {
-        if (msg_tfs && (handle = _sopen(fixPath(fileName), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) != -1)
+        if (msg_tfs && (handle = _sopen(fixPath(fileName), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, dDEFOMODE)) != -1)
           close(handle);
         else
           if (msg_kfs)
@@ -228,7 +228,7 @@ static int sendsmtp_bink(void)
           continue;
 
         strcpy(archiveDirPtr, ent->d_name);
-        if ((tempHandle = open(fixPath(archiveStr), O_RDWR | O_CREAT | O_APPEND | O_BINARY, S_IREAD | S_IWRITE)) == -1)
+        if ((tempHandle = open(fixPath(archiveStr), O_RDWR | O_CREAT | O_APPEND | O_BINARY, dDEFOMODE)) == -1)
           continue;
 
         memset(tempStr, 0, sizeof(tempStr) - 1);

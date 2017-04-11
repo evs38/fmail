@@ -116,7 +116,7 @@ s16 openPktRd(char *pktName, s16 secure)
 
    if ((pktHandle = _sopen(fixPath(pktName), O_RDONLY | O_BINARY, SH_DENYRW)) == -1)
    {
-      logEntryf(LOG_ALWAYS, 0, "Error opening packet file: %s", pktName);
+      logEntryf(LOG_ALWAYS, 0, "Error opening packet file: %s", fixPath(pktName));
 
       return 1;
    }
@@ -125,7 +125,7 @@ s16 openPktRd(char *pktName, s16 secure)
    {
       close(pktHandle);
       addExtension(pktName, ".error");
-      logEntryf(LOG_ALWAYS, 0, "Error reading packet header in file: %s, renamed with extension: '.error'", pktName);
+      logEntryf(LOG_ALWAYS, 0, "Error reading packet header in file: %s, renamed with extension: '.error'", fixPath(pktName));
 
       return 1;
    }
@@ -146,7 +146,6 @@ s16 openPktRd(char *pktName, s16 secure)
       )
    {
       // 4-d info
-
       globVars.remoteCapability = srcCapability;
 
       while (  MAX_AKAS > globVars.packetDestAka
@@ -260,7 +259,7 @@ s16 openPktRd(char *pktName, s16 secure)
       {
          close(pktHandle);
          addExtension(pktName, ".wrong_destination");
-         logEntryf(LOG_ALWAYS, 0, "Packet is addressed to another node (%s) --> packet file: %s is renamed with extension: '.wrong_destination'", nodeStr(&globVars.packetDestNode), pktName);
+         logEntryf(LOG_ALWAYS, 0, "Packet is addressed to another node (%s); packet file: %s is renamed with extension: '.wrong_destination'", nodeStr(&globVars.packetDestNode), fixPath(pktName));
 
          return 2;  // Destination address not found
       }
@@ -286,7 +285,7 @@ s16 openPktRd(char *pktName, s16 secure)
             close(pktHandle);
             logEntryf(LOG_ALWAYS, 0, "Received password \"%s\" from node %s, expected \"%s\"", password, nodeStr(&globVars.packetSrcNode), nodeInfoPtr->packetPwd);
             addExtension(pktName, ".wrong_password");
-            logEntryf(LOG_ALWAYS, 0, "Packet password security violation --> packet file: %s is renamed with extension: '.wrong_password'", pktName);
+            logEntryf(LOG_ALWAYS, 0, "Packet password security violation; packet file: %s is renamed with extension: '.wrong_password'", fixPath(pktName));
 
             return 3;  // Password security violation
          }
@@ -573,7 +572,7 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
 
    sprintf (nfInfoRec->pktFileName, "%s%08x.tmp", config.outPath, uniqueID());
 
-   if ((pktHandle = _sopen(fixPath(nfInfoRec->pktFileName), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, S_IREAD | S_IWRITE)) == -1)
+   if ((pktHandle = _sopen(fixPath(nfInfoRec->pktFileName), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, SH_DENYRW, dDEFOMODE)) == -1)
    {
       nfInfoRec->pktHandle    = 0;
       *nfInfoRec->pktFileName = 0;

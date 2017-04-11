@@ -22,7 +22,6 @@
 
 #ifdef __WIN32__
 #include <dir.h>
-//#include <dos.h>
 #include <share.h>
 #endif // __WIN32__
 #include <ctype.h>
@@ -124,7 +123,7 @@ s16 packValid(nodeNumType *node, char *packedNodes)
           else
           {
             tempStrType tempStr;
-            sprintf(tempStr, "Bad entry in Pack Manager: %s", helpPtr);
+            sprintf(tempStr, "Bad entry in Pack Manager: %s", helpPtr);  // helpPtr points to buf, so use it before free!
             free(buf);
             logEntry(tempStr, LOG_ALWAYS, 4);
           }
@@ -243,6 +242,10 @@ static void processPackLine(char *line, s32 switches)
   char       *helpPtr;
   char        newWildCard;
 
+#ifdef _DEBUG0
+  logEntryf(LOG_DEBUG, 0, "DEBUG processPackLine: \"%s\"", line);
+#endif // _DEBUG
+
   newWildCard = (strchr(line, '#') != NULL);
   for (count = 0; count <= (newWildCard ? 9 : 0); count++)
   {
@@ -282,11 +285,13 @@ static void processPackLine(char *line, s32 switches)
         destType = DEST_HOST;
       else
       {
-        if (((helpPtr = strtok(helpPtr + 5, " ")) == NULL) ||
-            ((sscanf(helpPtr, "%hu:%hu/%hu.%hu",
-                     &destNode.zone, &destNode.net, &destNode.node, &destNode.point) < 3) ||
-             !((strcmp(helpPtr, nodeStr(&destNode)) == 0) ||
-               (strcmp(helpPtr, nodeStrZ(&destNode)) == 0))))
+        if (  ((helpPtr = strtok(helpPtr + 5, " ")) == NULL)
+           || (  (sscanf(helpPtr, "%hu:%hu/%hu.%hu", &destNode.zone, &destNode.net, &destNode.node, &destNode.point) < 3)
+              || !(  (strcmp(helpPtr, nodeStr(&destNode)) == 0)
+                  || (strcmp(helpPtr, nodeStrZ(&destNode)) == 0)
+                  )
+              )
+           )
         {
           free(lineBuf);
           logEntry("Bad VIA node", LOG_ALWAYS, 4);
