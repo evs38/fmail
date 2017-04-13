@@ -1514,22 +1514,38 @@ char *addTZUTCKludge(char *txt)
   return txt;
 }
 //---------------------------------------------------------------------------
-void setCurDateMsg(internalMsgType *msg)
+int setCurDateMsg(internalMsgType *msg)
 {
-  time_t     ti;
-  struct tm *tm;
+  return setMsgTime(msg, time(NULL));
+}
+//---------------------------------------------------------------------------
+int setMsgTime(internalMsgType *msg, time_t tt)
+{
+  struct tm *tm = localtime(&tt);  // localtime ok
 
   *msg->dateStr = 0;
 
-  time(&ti);
-  tm = localtime(&ti);  // localtime -> ok, used as current time in internalMsgType
+  if (tm != NULL)
+  {
+    msg->seconds = tm->tm_sec;
+    msg->minutes = tm->tm_min;
+    msg->hours   = tm->tm_hour;
+    msg->day     = tm->tm_mday;
+    msg->month   = tm->tm_mon  + 1;
+    msg->year    = tm->tm_year + 1900;
 
-  msg->year    = tm->tm_year + 1900;
-  msg->month   = tm->tm_mon + 1;
-  msg->day     = tm->tm_mday;
-  msg->hours   = tm->tm_hour;
-  msg->minutes = tm->tm_min;
-  msg->seconds = tm->tm_sec;
+    return 0;
+  }
+
+  // Wrong time_t value, set to default
+  msg->seconds =
+  msg->minutes =
+  msg->hours   = 0;
+  msg->day     =
+  msg->month   = 1;
+  msg->year    = 1970;
+
+  return 1;
 }
 //---------------------------------------------------------------------------
 const char *isoFmtTimeGmt(const time_t t)

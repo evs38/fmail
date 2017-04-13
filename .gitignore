@@ -6,10 +6,13 @@
 *.layout
 *.tds
 *.~*
+/.golded
+/_ge.bat
 /bcl/*.BCL
 /bcl/*.TAG
 /bcl/fsc-0057.003
 /bcl/NEW_IN.148A
+/bin
 /cfg_back
 /doc/fmail0.msg
 /doc/fmail1.msg
@@ -29,6 +32,7 @@
 /fmail.pck
 /FMAIL32.DUP
 /FMailW32.test.bat
+/Golded
 /ide.45/fmail.mak
 /ide.45/fmail.OBR
 /ide.45/FMAIL.~DE
@@ -48,5 +52,3 @@
 /test
 /tmp
 /tst.out
-/Golded
-/_ge.bat

@@ -401,7 +401,7 @@ const char *badTimeStr(void)
                 , tm->tm_hour, tm->tm_min, tm->tm_sec
            );
   else
-    strcpy(tStr, "1970-01-01 00:00:00");
+    strcpy(tStr, "<localtime error>");
 #endif // __WIN32__
 
   return tStr;
@@ -1316,8 +1316,8 @@ s16 handleScan(internalMsgType *message, u16 boardNum, u16 boardIndex)
   if (boardNum && isNetmailBoard(boardNum))  // If JAM netmail area
   {
     message->attribute |= LOCAL |
-                          (config.mailOptions.keepExpNetmail?0:KILLSENT) |
-                          ((getFlags(message->text)&FL_FILE_REQ)?FILE_REQ:0);
+                          (config.mailOptions.keepExpNetmail ? 0 : KILLSENT) |
+                          ((getFlags(message->text)&FL_FILE_REQ) ? FILE_REQ : 0);
 
     point4d(message);
 

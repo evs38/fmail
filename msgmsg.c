@@ -670,11 +670,12 @@ s16 readMsg(internalMsgType *message, s32 msgNum)
     {
       printf("\nError in date: %s\n", message->dateStr);
 
-      message->day     =  1;
+      message->day     =
       message->month   =  1;
       message->year    = 80;
-      message->hours   =  0;
+      message->hours   =
       message->minutes =  0;
+//    message->seconds =  0;
     }
     else
     {
@@ -798,7 +799,7 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
   msgMsg.wrTime.dSeconds = message->seconds >> 1;
   msgMsg.wrTime.day      = message->day;
   msgMsg.wrTime.month    = message->month;
-  msgMsg.wrTime.year     = message->year-1980;
+  msgMsg.wrTime.year     = message->year - 1980;
 
   msgMsg.origNet  = message->srcNode.net;
   msgMsg.origNode = message->srcNode.node;
@@ -929,15 +930,8 @@ s32 writeMsg(internalMsgType *message, s16 msgType, s16 valid)
 s32 writeMsgLocal(internalMsgType *message, s16 msgType, s16 valid)
 {
   char *p;
-  time_t t = time(NULL);
-  struct tm *tm = localtime(&t);  // localtime -> should be ok
 
-  message->hours   = tm->tm_hour;
-  message->minutes = tm->tm_min;
-  message->seconds = tm->tm_sec;
-  message->day     = tm->tm_mday;
-  message->month   = tm->tm_mon + 1;
-  message->year    = tm->tm_year + 1900;
+  setCurDateMsg(message);
 
   message->attribute |= LOCAL;
 

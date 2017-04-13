@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="FTools" />
+		<Option platforms="Windows;" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option platforms="Windows;" />
+				<Option output="bin/Debug/FToolsW32" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/FTools/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="maint /H /D /N /O /P " />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-D_DEBUG" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option platforms="Windows;" />
+				<Option output="bin/Release/FToolsW32" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/FTools/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+			<Target title="Native">
+				<Option platforms="Windows;" />
+				<Option output="bin/Native/FToolsW32" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/FTools/Native/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="maint" />
+				<Compiler>
+					<Add option="-march=native" />
+					<Add option="-Ofast" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-m32" />
+			<Add option="-mtune=generic" />
+			<Add option="-DFTOOLS" />
+			<Add option="-D__32BIT__" />
+			<Add option="-D__STDIO__" />
+		</Compiler>
+		<Linker>
+			<Add option="-m32" />
+			<Add library="c:/Program Files/CodeBlocks/MinGW/lib/libversion.a" />
+			<Add library="c:/Program Files/CodeBlocks/MinGW/lib/libwsock32.a" />
+			<Add library="C:/Program Files/CodeBlocks/MinGW/lib/CRT_noglob.o" />
+		</Linker>
+		<Unit filename="FToolsW32.rc">
+			<Option compilerVar="WINDRES" />
+			<Option weight="60" />
+		</Unit>
+		<Unit filename="SetCompileDate.h" />
+		<Unit filename="addnew.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="addnew.h" />
+		<Unit filename="areainfo.h" />
+		<Unit filename="bits.h" />
+		<Unit filename="cfgfile.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cfgfile.h" />
+		<Unit filename="config.h" />
+		<Unit filename="crc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="crc.h" />
+		<Unit filename="dups.h" />
+		<Unit filename="fdfolder.h" />
+		<Unit filename="fmail.h" />
+		<Unit filename="fmstruct.h" />
+		<Unit filename="fs_util.h" />
+		<Unit filename="ftlog.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ftlog.h" />
+		<Unit filename="ftnotify.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ftnotify.h" />
+		<Unit filename="ftools.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ftools.h" />
+		<Unit filename="ftr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ftr.h" />
+		<Unit filename="hudson.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hudson.h" />
+		<Unit filename="imfolder.h" />
+		<Unit filename="impdesc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ispathch.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ispathch.h" />
+		<Unit filename="jamfun.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="jammaint.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="lock.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="lock.h" />
+		<Unit filename="log.h" />
+		<Unit filename="minmax.h" />
+		<Unit filename="msgpkt.h" />
+		<Unit filename="msgra.h" />
+		<Unit filename="msgradef.h" />
+		<Unit filename="mtask.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mtask.h" />
+		<Unit filename="pp_date.h" />
+		<Unit filename="smtp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="sorthb.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="sorthb.h" />
+		<Unit filename="spec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stpcpy.h" />
+		<Unit filename="stricmp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stricmp.h" />
+		<Unit filename="update.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="update.h" />
+		<Unit filename="utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="utils.h" />
+		<Unit filename="utils2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="version.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="version.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

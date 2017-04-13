@@ -1085,8 +1085,6 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
       && !(msgRa.MsgAttr & RA_DELETED)
       )
    {
-      struct tm *tm;
-
       if ((u32)msgRa.NumRecs > ((u32)((u32)TEXT_SIZE - 2048) >> 8))
       {
          putchar('\r');
@@ -1122,15 +1120,9 @@ s16 scanBBS(u32 index, internalMsgType *message, u16 rescan)
       // Check if wrTime is used and valid
       if (  msgRa.sjLength <= 56
          && msgRa.checkSum == (CS_SECURITY ^ msgRa.subjCrc ^ msgRa.wrTime ^ msgRa.recTime)
-         && (tm = localtime((const time_t *)&msgRa.wrTime)) != NULL
+         && setMsgTime(message, msgRa.wrTime) == 0
          )
       {
-        message->year    = tm->tm_year + 1900;
-        message->month   = tm->tm_mon + 1;
-        message->day     = tm->tm_mday;
-        message->hours   = tm->tm_hour;
-        message->minutes = tm->tm_min;
-        message->seconds = tm->tm_sec;
 #ifdef _DEBUG
         logEntryf(LOG_DEBUG, 0, "DEBUG scanBBS wrTime used: %04u-%02u-%02u %02u:%02u:%02u", message->year, message->month, message->day, message->hours, message->minutes, message->seconds);
 #endif

@@ -970,9 +970,11 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
                         if ( !*((u32*)menu->menuEntry[count].data) )
                            strcpy(tempStr, "n/a");
                         else
-                        {  struct tm *tblock;
+                        {  
+                           struct tm *tblock;
+                           time_t tt = *(const time32_t *)menu->menuEntry[count].data;
 
-                           tblock = gmtime(((const time_t*)menu->menuEntry[count].data));
+                           tblock = gmtime(&tt);
                            sprintf(tempStr, "%2u %s %u", tblock->tm_mday, months[tblock->tm_mon], tblock->tm_year + 1900);
                         }
                         break;
@@ -980,7 +982,7 @@ void displayData(menuType *menu, u16 sx, u16 sy, s16 mark)
                         if (!*((u32*)menu->menuEntry[count].data))
                           strcpy(tempStr, "n/a");
                         else
-                          strcpy(tempStr, isoFmtTime(*(const time_t *)menu->menuEntry[count].data));
+                          strcpy(tempStr, isoFmtTime(*(const time32_t *)menu->menuEntry[count].data));
                         break;
        case FUNC_PAR  : if (*((funcParType*)menu->menuEntry[count].data)->f == askGroup)
                         {  sprintf (tempStr, "%c  %s",

@@ -584,13 +584,25 @@ s16 openPktWr(nodeFileRecType *nfInfoRec)
 
    time(&ti);
    tm = localtime(&ti);  // localtime -> ok, used for current time in pkt header
+   if (tm != NULL)
+   {
+     msgPktHdr.year          = tm->tm_year + 1900;
+     msgPktHdr.month         = tm->tm_mon;
+     msgPktHdr.day           = tm->tm_mday;
+     msgPktHdr.hour          = tm->tm_hour;
+     msgPktHdr.minute        = tm->tm_min;
+     msgPktHdr.second        = tm->tm_sec;
+   }
+   else
+   {
+     msgPktHdr.year          = 1970;
+     msgPktHdr.month         = 0;
+     msgPktHdr.day           = 1;
+     msgPktHdr.hour          = 0;
+     msgPktHdr.minute        = 0;
+     msgPktHdr.second        = 0;
+   }
 
-   msgPktHdr.year          = tm->tm_year + 1900;
-   msgPktHdr.month         = tm->tm_mon;
-   msgPktHdr.day           = tm->tm_mday;
-   msgPktHdr.hour          = tm->tm_hour;
-   msgPktHdr.minute        = tm->tm_min;
-   msgPktHdr.second        = tm->tm_sec;
    msgPktHdr.baud          = 0;
    msgPktHdr.packetType    = 2;
    msgPktHdr.origZoneQ     = nfInfoRec->srcNode.zone;

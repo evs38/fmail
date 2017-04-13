@@ -2,7 +2,7 @@
 #define versionH
 //----------------------------------------------------------------------------
 //
-// Copyright (C) 2011 - 2016  Wilfred van Velzen
+// Copyright (C) 2011 - 2017  Wilfred van Velzen
 //
 // This file is part of FMail.
 //
@@ -21,7 +21,7 @@
 //
 //----------------------------------------------------------------------------
 
-#define VERNUM       "2.1.0.4"
+#define VERNUM       "2.1.0.7"
 #define SERIAL_MAJOR  2
 #define SERIAL_MINOR  1
 

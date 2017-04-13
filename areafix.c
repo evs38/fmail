@@ -1340,7 +1340,7 @@ Send:
           while (getRec(CFG_ECHOAREAS, temp) && strcmp(areaBuf->areaName, rawEchoInfo2.areaName) < 0)
             temp++;
 
-          memcpy (areaBuf, &rawEchoInfo2, RAWECHO_SIZE);
+          memcpy(areaBuf, &rawEchoInfo2, RAWECHO_SIZE);
           insRec(CFG_ECHOAREAS, temp);
           for (count2 = 0; count2 < min(MAX_AREAFIX,areaHeader->totalRecords); count2++)
             if ((*areaSortList)[count2].index >= temp)
@@ -1361,7 +1361,7 @@ Send:
         message->destNode = config.uplinkReq[count].node;
         message->attribute= PRIVATE|KILLSENT;
 
-        writeMsgLocal (message, NETMSG, 1);
+        writeMsgLocal(message, NETMSG, 1);
 
         helpPtr = message->text + sprintf(message->text,
                                           "The following area(s) have been requested from %s for %s:\r\r",

@@ -535,14 +535,9 @@ typedef struct
 #define dARFNAME   "fmail.ar"
 #define dARDFNAME  "fmail.ard"
 
-#if defined(__FMAILX__) || defined(__32BIT__)
-#define MAX_AREAS   8000
-#else
-#define MAX_AREAS    512
-#endif
-
-#define MAX_FORWARDOLD  64
-#define MAX_FORWARDDEF 256    // NOTE: this is a dummy. 'config.maxForward'
+#define MAX_AREAS       8000
+#define MAX_FORWARDOLD    64
+#define MAX_FORWARDDEF   256  // NOTE: this is a dummy. 'config.maxForward'
                               // contains the real size. 256 is the maximum.
 #define MAX_FORWARD    config.maxForward
 #define RAWECHO_SIZE   sizeof(rawEchoType)
@@ -564,7 +559,7 @@ typedef struct
   u16              : 15;  // BIT 1-15
 } areaStatType;
 
-typedef struct
+typedef struct  // rawEchoType
 {
   u16             signature;   // contains "AE" for echo areas in FMAIL.AR and
                                // "AD" for default settings in FMAIL.ARD
@@ -616,8 +611,6 @@ typedef struct
 
   nodeNumXType    forwards[MAX_FORWARDDEF];
 } rawEchoType;
-
-
 
 // ********** FMAIL.NOD **********
 

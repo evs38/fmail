@@ -2,9 +2,6 @@
 
 import struct
 import time
-import yaml
-
-from datetime import datetime
 
 #------------------------------------------------------------------------------
 # Constants
@@ -22,12 +19,21 @@ HEADERSTR       = 'FMailHeader'
 FMAILAREAVERSTR = "FMail Area File rev. 1.1\x1a"
 
 #------------------------------------------------------------------------------
+def ToInt(obj):
+  try:
+    return int(obj)
+  except:
+    return 0
+#------------------------------------------------------------------------------
 def TimeStr(t):
   return time.strftime(DATETIMEFMT, time.localtime(t)) if t != 0 else "0"
 
 #------------------------------------------------------------------------------
 def Str2Time(str):
-  return int(time.mktime(time.strptime(str, DATETIMEFMT)))
+  try:
+    return int(time.mktime(time.strptime(str, DATETIMEFMT)))
+  except:
+    return 0
 
 #------------------------------------------------------------------------------
 def DissectNodeStr(nodeStr):
@@ -35,17 +41,17 @@ def DissectNodeStr(nodeStr):
   (net , sep, nodeStr) = nodeStr.rpartition("/")
   (node, sep, pnt    ) = nodeStr. partition(".")
 
-  def ToInt(obj):
-    try:
-      return int(obj)
-    except:
-      return 0
-
   return ToInt(zone), ToInt(net), ToInt(node), ToInt(pnt)
 
 #------------------------------------------------------------------------------
 class NodeNum:
   nodeNumStruct = struct.Struct("<4H")
+
+  def __init__(self):
+    self.zone  = 0
+    self.net   = 0
+    self.node  = 0
+    self.point = 0
 
   def Write(self, f):
     f.write(self.nodeNumStruct.pack(self.zone, self.net, self.node, self.point))
@@ -79,6 +85,10 @@ class NodeNum:
 #
 class NodeNumX(NodeNum):
   nodeNumXStruct = struct.Struct("<8sH")
+
+  def __init__(self):
+    self.flags = 0
+    NodeNum.__init__(self)
 
   def Write(self, f):
     NodeNum.Write(self, f)
@@ -134,7 +144,7 @@ class RawEcho:
                         , str(self.originLine)
                         , self.address
                         , self.group
-                        , self.alsoSeenBy
+                        , self._alsoSeenBy
                         , self.msgs
                         , self.days
                         , self.daysRcvd
@@ -168,8 +178,12 @@ class RawEcho:
                         , self.alsoSeenBy
                         , self.stat
                         ))
+    #print "rawEcho write forwards:", len(self.forwards)
     for fw in self.forwards:
       fw.Write(f)
+    # Opvullen met lege NodeNumX structs om de 64 vol te maken
+    for i in range(len(self.forwards), 64):
+      NodeNumX().Write(f)
 
   def UnPack(self, rawEchoStr):
     ( self.signature
@@ -184,7 +198,7 @@ class RawEcho:
     , self.originLine
     , self.address
     , self.group
-    , self.alsoSeenBy
+    , self._alsoSeenBy
     , self.msgs
     , self.days
     , self.daysRcvd
@@ -243,6 +257,7 @@ class RawEcho:
       nnx = NodeNumX()
       nnx.UnPack(packedStr[offset:offset + nnx.nodeNumXStruct.size])
       self.forwards.append(nnx)
+    #print "forwards:", len(self.forwards)
 
   def Object(self):
     object = {}
@@ -258,7 +273,7 @@ class RawEcho:
     object['OriginLine'       ] = self.originLine
     object['address'          ] = self.address
     object['group'            ] = self.group
-    object['alsoSeenBy'       ] = self.alsoSeenBy
+    object['_alsoSeenBy'      ] = self._alsoSeenBy
     object['msgs'             ] = self.msgs
     object['days'             ] = self.days
     object['daysRcvd'         ] = self.daysRcvd
@@ -287,8 +302,8 @@ class RawEcho:
     object['replyStatSBBS'    ] = self.replyStatSBBS
     object['groupsQBBS'       ] = self.groupsQBBS
     object['aliasesQBBS'      ] = self.aliasesQBBS
-    object['lastMsgTossDat'   ] = datetime.fromtimestamp(self.lastMsgTossDat)
-    object['lastMsgScanDat'   ] = datetime.fromtimestamp(self.lastMsgScanDat)
+    object['lastMsgTossDat'   ] = TimeStr(self.lastMsgTossDat)
+    object['lastMsgScanDat'   ] = TimeStr(self.lastMsgScanDat)
     object['alsoSeenBy'       ] = self.alsoSeenBy
     object['stat'             ] = self.stat
     forwards = []
@@ -311,7 +326,7 @@ class RawEcho:
     self.originLine        =          object['OriginLine'       ]
     self.address           =          object['address'          ]
     self.group             =          object['group'            ]
-    self.alsoSeenBy        =          object['alsoSeenBy'       ]
+    self._alsoSeenBy       =          object['_alsoSeenBy'      ]
     self.msgs              =          object['msgs'             ]
     self.days              =          object['days'             ]
     self.daysRcvd          =          object['daysRcvd'         ]
@@ -370,7 +385,7 @@ class Header:
     self.recSize      = 1152
 
   def Read(self, f):
-    headerStr = f.read(50)
+    headerStr = f.read(self.headerStruct.size)
     ( self.version
     , self.rev
     , self.type
@@ -394,14 +409,15 @@ class Header:
                                   )
            )
 
+
   def Object(self):
     object = {}
     object['Version'     ] = self.version
     object['rev'         ] = self.rev
     object['type'        ] = self.type
     object['headerSize'  ] = self.headerSize
-    object['creationDate'] = datetime.fromtimestamp(self.creationDate)
-    object['lastModified'] = datetime.fromtimestamp(self.lastModified)
+    object['creationDate'] = TimeStr(self.creationDate)
+    object['lastModified'] = TimeStr(self.lastModified)
     object['recs'        ] = self.recs
     object['recSize'     ] = self.recSize
     return object
@@ -438,18 +454,22 @@ class FmailAreasConfig:
   def Read(self, f):
     self.__init__()
     self.header.Read(f)
+    #print "header rpos:", f.tell()
     while True:
       rawEcho = RawEcho()
       if rawEcho.Read(f, self.header.recSize):
         self.areas.append(rawEcho)
       else:
         break
+      #print "rawEcho rpos:", f.tell()
 
   def Write(self, f):
     self.header.recs = len(self.areas)
     self.header.Write(f)
+    #print "header wpos:", f.tell()
     for rawEcho in self.areas:
       rawEcho.Write(f)
+      #print "rawEcho wpos:", f.tell()
 
   def Object(self):
     self.header.recs = len(self.areas)
@@ -480,21 +500,3 @@ class FmailAreasConfig:
       rawEcho.Print()
 
 #------------------------------------------------------------------------------
-# main
-fmailAreasConfig = FmailAreasConfig()
-
-fmar = open(FN_FMAILAR, "rb")
-fmailAreasConfig.Read(fmar)
-fmar.close()
-
-output = yaml.safe_dump(fmailAreasConfig.Object(), default_flow_style=False)
-print output
-
-# fmacObject = json.loads(jsonStr)
-
-# fmailAreasConfig2 = FmailAreasConfig()
-# fmailAreasConfig2.Load(fmacObject)
-
-# fmarw = open(FN_FMAILART, "wb")
-# fmailAreasConfig2.Write(fmarw)
-# fmarw.close()

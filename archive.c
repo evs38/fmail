@@ -22,7 +22,6 @@
 
 #ifdef __WIN32__
 #include <dir.h>
-//#include <dos.h>
 #include <process.h>
 #include <share.h>
 #endif // __WIN32__
@@ -197,7 +196,7 @@ static int execute(const char *arcType, const char *command, const char *archive
   {
     int i;
     for (i = 0; i < argc; i++)
-      logEntryf(LOG_DEBUG, 0, "Exec argv[%d]: \"%s\"", i, argv[i]);
+      logEntryf(LOG_DEBUG, 0, "DEBUG Exec argv[%d]: \"%s\"", i, argv[i]);
   }
 #else
   {

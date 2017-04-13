@@ -126,17 +126,29 @@ s16 writeNetMsg(internalMsgType *message, s16 srcAka, nodeNumType *destNode, u16
   {
     time_t t = time(NULL);
     struct tm *tm = localtime(&t);  // localtime ok!
-
-    sprintf( msgMsg.dateTime, "%02u %.3s %02u  %02u:%02u:%02u"
-           , tm->tm_mday, months + (tm->tm_mon) * 3, tm->tm_year % 100
-           , tm->tm_hour, tm->tm_min, tm->tm_sec
-           );
-    msgMsg.wrTime.hours    = tm->tm_hour;
-    msgMsg.wrTime.minutes  = tm->tm_min;
-    msgMsg.wrTime.dSeconds = tm->tm_sec >> 1;
-    msgMsg.wrTime.day      = tm->tm_mday;
-    msgMsg.wrTime.month    = tm->tm_mon + 1;
-    msgMsg.wrTime.year     = tm->tm_year - 80;
+    if (tm != NULL)
+    {
+      sprintf( msgMsg.dateTime, "%02u %.3s %02u  %02u:%02u:%02u"
+             , tm->tm_mday, months + (tm->tm_mon) * 3, tm->tm_year % 100
+             , tm->tm_hour, tm->tm_min, tm->tm_sec
+             );
+      msgMsg.wrTime.hours    = tm->tm_hour;
+      msgMsg.wrTime.minutes  = tm->tm_min;
+      msgMsg.wrTime.dSeconds = tm->tm_sec >> 1;
+      msgMsg.wrTime.day      = tm->tm_mday;
+      msgMsg.wrTime.month    = tm->tm_mon + 1;
+      msgMsg.wrTime.year     = tm->tm_year - 80;
+    }
+    else
+    {
+      strcpy(msgMsg.dateTime, "01 Mon 70  00:00:00");
+      msgMsg.wrTime.hours    = 0;
+      msgMsg.wrTime.minutes  = 0;
+      msgMsg.wrTime.dSeconds = 0;
+      msgMsg.wrTime.day      = 1;
+      msgMsg.wrTime.month    = 1;
+      msgMsg.wrTime.year     = 0;
+    }
   }
 
   msgMsg.origNet  = message->srcNode.net;

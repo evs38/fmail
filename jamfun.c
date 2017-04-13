@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2016 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -49,97 +49,8 @@
 #include "os_string.h"
 #include "utils.h"
 
-
+//---------------------------------------------------------------------------
 char jam_subfields[_JAM_MAXSUBLENTOT];
-
-#if 0
-static int _mdays [13] =
-                                {
-/* Jan */   0,
-/* Feb */   31,
-/* Mar */   31+28,
-/* Apr */   31+28+31,
-/* May */   31+28+31+30,
-/* Jun */   31+28+31+30+31,
-/* Jul */   31+28+31+30+31+30,
-/* Aug */   31+28+31+30+31+30+31,
-/* Sep */   31+28+31+30+31+30+31+31,
-/* Oct */   31+28+31+30+31+30+31+31+30,
-/* Nov */   31+28+31+30+31+30+31+31+30+31,
-/* Dec */   31+28+31+30+31+30+31+31+30+31+30,
-/* Jan */   31+28+31+30+31+30+31+31+30+31+30+31
-                                };
-
-/*
-**  Calculates the number of seconds that has passed from January 1, 1970
-**  until the specified date and time.
-**
-**      Parameters:   JAMTMptr pTm        - Ptr to structure containing time
-**
-**         Returns:   Number of seconds since 1970 to specified date/time
-*/
-u32 jam_maketime(struct tm *ptm)
-{
-         u32  Days;
-         int  Years;
-
-         /*Get number of years since 1970*/
-         Years = ptm->tm_year - 70;
-
-         /*Calculate number of days during these years,*/
-         /*including extra days for leap years         */
-         Days = Years * 365 + ((Years + 1) / 4);
-
-         /*Add the number of days during this year*/
-         Days += _mdays [ptm->tm_mon] + ptm->tm_mday - 1;
-         if((ptm->tm_year & 3) == 0 && ptm->tm_mon > 1)
-                  Days++;
-
-         /*Convert to seconds, and add the number of seconds this day*/
-         return(((u32) Days * 86400L) + ((u32) ptm->tm_hour * 3600L) +
-                          ((u32) ptm->tm_min * 60L) + (u32) ptm->tm_sec);
-}
-
-/*
-**  Converts the specified number of seconds since January 1, 1970, to
-**  the corresponding date and time.
-**
-**      Parameters:   UINT32ptr pt        - Number of seconds since Jan 1, 1970
-**
-**         Returns:   Ptr to struct JAMtm area containing date and time
-*/
-struct tm * jam_gettime(u32 t)
-{
-         static struct tm      m;
-         int                   LeapDay;
-
-         m.tm_sec  = (int) (t % 60); t /= 60;
-         m.tm_min  = (int) (t % 60); t /= 60;
-         m.tm_hour = (int) (t % 24); t /= 24;
-         m.tm_wday = (int) ((t + 4) % 7);
-
-         m.tm_year = (int) (t / 365 + 1);
-         do
-                  {
-                  m.tm_year--;
-                  m.tm_yday = (int) (t - m.tm_year * 365 - ((m.tm_year + 1) / 4));
-                  }
-         while(m.tm_yday < 0);
-         m.tm_year += 70;
-
-         LeapDay = ((m.tm_year & 3) == 0 && m.tm_yday >= _mdays [2]);
-
-         for(m.tm_mon = m.tm_mday = 0; m.tm_mday == 0; m.tm_mon++)
-                  if(m.tm_yday < _mdays [m.tm_mon + 1] + LeapDay)
-                                m.tm_mday = m.tm_yday + 1 - (_mdays [m.tm_mon] + (m.tm_mon != 1 ? LeapDay : 0));
-
-         m.tm_mon--;
-
-         m.tm_isdst = -1;
-
-         return(&m);
-}
-#endif
 
 static fhandle jam_idxhandle = -1;
 static fhandle jam_hdrhandle = -1;
@@ -151,8 +62,10 @@ static char    jam_basename[MB_PATH_LEN];
 
 static JAMHDRINFO jam_hdrinfo;
 
+//---------------------------------------------------------------------------
 u32 jam_open(char *msgBaseName, JAMHDRINFO **jam_hdrinfo)
-{  static JAMHDRINFO hdrinfo;
+{
+   static JAMHDRINFO hdrinfo;
    char   tempstr[80];
    char   *helpptr;
 
@@ -547,17 +460,17 @@ u16 jam_makesubfields(u32 jam_code, char *jam_subfields, u32 *jam_subfieldLen,
         }
         return 1;
 }
-
-
-
+//---------------------------------------------------------------------------
 u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_subfields, internalMsgType *message)
 {
   (void)jam_code;
 
   if ((u32)fmseek(jam_hdrhandle, jam_hdroffset, SEEK_SET, 2) != jam_hdroffset)
     return 0;
+
   if (read(jam_hdrhandle, jam_hdrrec, sizeof(JAMHDR)) != sizeof(JAMHDR))
     return 0;
+
   if (jam_hdrrec->SubfieldLen >= _JAM_MAXSUBLENTOT) // SubfieldLen not defined yet?!?
   {
     logEntry("Subfields too big", LOG_ALWAYS, 0);
@@ -565,9 +478,11 @@ u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_su
   }
   if (read(jam_hdrhandle, jam_subfields, (size_t)jam_hdrrec->SubfieldLen) != (int)jam_hdrrec->SubfieldLen)
     return 0;
+
   if (message != NULL)
   {
-    struct tm *tm = gmtime((const time_t *)&jam_hdrrec->DateWritten);  // TODO test if this needs to be localtime? + gmtOffset?
+    time_t tt = jam_hdrrec->DateWritten; // In case time_t is 64 bit
+    struct tm *tm = gmtime(&tt);         // TODO test if this needs to be localtime? + gmtOffset?
     if (tm == NULL)
     {
 #ifdef _DEBUG0
@@ -583,7 +498,7 @@ u16 jam_gethdr(u32 jam_code, u32 jam_hdroffset, JAMHDR *jam_hdrrec, char *jam_su
     else
     {
       message->year    = tm->tm_year + 1900;
-      message->month   = tm->tm_mon + 1;
+      message->month   = tm->tm_mon  + 1;
       message->day     = tm->tm_mday;
       message->hours   = tm->tm_hour;
       message->minutes = tm->tm_min;

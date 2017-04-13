@@ -57,18 +57,16 @@
 //---------------------------------------------------------------------------
 typedef struct
 {
-  u32           msgNum;
-  nodeNumType   destNode;
-  nodeNumType   viaNode;
-  u16           attribute;
-  u16           flags;
+  u32          msgNum;
+  nodeNumType  destNode;
+  nodeNumType  viaNode;
+  u16          attribute;
+  u16          flags;
 } netRecType;
 
 typedef netRecType netListType[MAXNETREC];
 
 extern internalMsgType *message;
-//extern globVarsType     globVars;
-
 static s16              errorDisplay = 0;
 static u16              netIndex;
 static u32              msgNum;
@@ -77,13 +75,13 @@ static netListType     *netList;
 //---------------------------------------------------------------------------
 s16 packValid(nodeNumType *node, char *packedNodes)
 {
-  int         bufLen;
-  char       *buf;
-  char       *helpPtr
-           , *helpPtr2;
-  char        stringNode[32];
-  char        nodeTempStr[32];
-  size_t      count;
+  int    bufLen;
+  char  *buf;
+  char  *helpPtr
+      , *helpPtr2;
+  char   stringNode [32];
+  char   nodeTempStr[32];
+  size_t count;
 
   if (packedNodes == NULL)
     return 0;
@@ -196,18 +194,13 @@ void packRoute(char *packedNodes, char *exceptNodes, char destType, nodeNumType 
     switch (destType)
     {
       case DEST_NONE :
-        memcpy (&currLineDestNode,
-                &(*netList)[count].destNode,
-                sizeof(nodeNumType));
+        memcpy(&currLineDestNode, &(*netList)[count].destNode, sizeof(nodeNumType));
         break;
       case DEST_VIA  :
-        memcpy (&currLineDestNode, destNode,
-                sizeof(nodeNumType));
+        memcpy(&currLineDestNode, destNode                   , sizeof(nodeNumType));
         break;
       case DEST_HOST :
-        memcpy (&currLineDestNode,
-                &(*netList)[count].destNode,
-                sizeof(nodeNumType));
+        memcpy(&currLineDestNode, &(*netList)[count].destNode, sizeof(nodeNumType));
         currLineDestNode.node  = 0;
         currLineDestNode.point = 0;
         break;
@@ -294,7 +287,7 @@ static void processPackLine(char *line, s32 switches)
            )
         {
           free(lineBuf);
-          logEntry("Bad VIA node", LOG_ALWAYS, 4);
+          logEntryf(LOG_ALWAYS, 4, "Bad VIA node in line: \"%s\"", line);
         }
 
         destType = DEST_VIA;

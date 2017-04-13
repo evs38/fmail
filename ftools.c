@@ -1597,15 +1597,7 @@ void Post(int argc, char *argv[])
     // JAM
     if (postBoard == -1)
     {
-      time_t t = time(NULL);
-      struct tm *tm = localtime(&t);  // localtime ok!
-
-      message->hours   = tm->tm_hour;
-      message->minutes = tm->tm_min;
-      message->seconds = tm->tm_sec;
-      message->day     = tm->tm_mday;
-      message->month   = tm->tm_mon + 1;
-      message->year    = tm->tm_year + 1900;
+      setCurDateMsg(message);
 
       message->attribute = ((switches & SW_C) ? CRASH   : 0)
                          | ((switches & SW_P) ? PRIVATE : 0) | LOCAL;
