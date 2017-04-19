@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1478344258 source:c:\fmail\addnew.c
+1492463621 source:c:\fmail\addnew.c
 	<ctype.h>
 	<string.h>
 	<stdio.h>
@@ -16,44 +16,44 @@
 	"update.h"
 	"utils.h"
 
-1484953762 c:\fmail\fmail.h
+1492450459 c:\fmail\fmail.h
 	"fmstruct.h"
 	"stricmp.h"
 	<stdio.h>
 	<sys/types.h>
 
-1485034728 c:\fmail\fmstruct.h
+1492450459 c:\fmail\fmstruct.h
 	<stdint.h>
 	<time.h>
 	<pshpack1.h>
 	<poppack.h>
 
-1485537817 c:\fmail\stricmp.h
+1488730689 c:\fmail\stricmp.h
 
-1399578407 c:\fmail\cfgfile.h
+1488730689 c:\fmail\cfgfile.h
 	"fmstruct.h"
 
-1485380171 c:\fmail\config.h
+1488730689 c:\fmail\config.h
 	"fmail.h"
 	"bits.h"
 
-1477340291 c:\fmail\ftools.h
+1488730689 c:\fmail\ftools.h
 
-1478862342 c:\fmail\ispathch.h
+1488730689 c:\fmail\ispathch.h
 
-1478344329 c:\fmail\log.h
+1488730689 c:\fmail\log.h
 
-1478862964 c:\fmail\update.h
+1488730689 c:\fmail\update.h
 
-1486125368 c:\fmail\utils.h
+1492450459 c:\fmail\utils.h
 	"fmail.h"
 	"areainfo.h"
 	"fmstruct.h"
 
-1481233363 c:\fmail\areainfo.h
+1488730689 c:\fmail\areainfo.h
 	"fmail.h"
 
-1477129681 source:c:\fmail\cfgfile.c
+1492450459 source:c:\fmail\cfgfile.c
 	<fcntl.h>
 	<io.h>
 	<share.h>
@@ -67,17 +67,17 @@
 	"cfgfile.h"
 	"stpcpy.h"
 
-1478862964 c:\fmail\stpcpy.h
+1492450459 c:\fmail\stpcpy.h
 
-1475412533 source:c:\fmail\crc.c
+1488730689 source:c:\fmail\crc.c
 	<ctype.h>
 	<string.h>
 	"fmail.h"
 	"crc.h"
 
-1474316224 c:\fmail\crc.h
+1488730689 c:\fmail\crc.h
 
-1479144315 source:c:\fmail\ftlog.c
+1488730689 source:c:\fmail\ftlog.c
 	<dos.h>
 	<fcntl.h>
 	<io.h>
@@ -97,22 +97,22 @@
 	"utils.h"
 	"version.h"
 
-1478615756 c:\fmail\ftlog.h
+1488730689 c:\fmail\ftlog.h
 	"fmstruct.h"
 
-1476013525 c:\fmail\dups.h
+1488730689 c:\fmail\dups.h
 
-1483026458 c:\fmail\msgpkt.h
+1492450459 c:\fmail\msgpkt.h
 	<pshpack1.h>
 	<poppack.h>
 
-1477686228 c:\fmail\msgra.h
+1492450459 c:\fmail\msgra.h
 	<pshpack1.h>
 	<poppack.h>
 
-1476034823 c:\fmail\version.h
+1492450812 c:\fmail\version.h
 
-1480870477 source:c:\fmail\ftnotify.c
+1488730689 source:c:\fmail\ftnotify.c
 	<stdlib.h>
 	<stdio.h>
 	<string.h>
@@ -128,15 +128,14 @@
 	"mtask.h"
 	"utils.h"
 
-1479932065 c:\fmail\ftr.h
+1488730689 c:\fmail\ftr.h
 
-1478862342 c:\fmail\mtask.h
+1488730689 c:\fmail\mtask.h
 
-1481322285 c:\fmail\msgradef.h
+1488730689 c:\fmail\msgradef.h
 
-1481322284 source:c:\fmail\ftools.c
+1492463637 source:c:\fmail\ftools.c
 	<conio.h>
-	<bios.h>
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -176,38 +175,38 @@
 	"utils.h"
 	"version.h"
 
-1479933802 c:\fmail\ftnotify.h
+1488730689 c:\fmail\ftnotify.h
 
-1479853716 c:\fmail\hudson.h
+1488730689 c:\fmail\hudson.h
 	<pshpack1.h>
 	<poppack.h>
 
-1476013897 c:\fmail\jam.h
+1492450459 c:\fmail\jam.h
 	"jamsys.h"
 	<pshpack1.h>
 	<poppack.h>
 
-1476043685 c:\fmail\jamsys.h
+1488730689 c:\fmail\jamsys.h
 
-1404329706 c:\fmail\jamfun.h
+1488730689 c:\fmail\jamfun.h
 	"jam.h"
 
-1474316224 c:\fmail\jammaint.h
+1488730689 c:\fmail\jammaint.h
 
-1477949075 c:\fmail\lock.h
+1492450459 c:\fmail\lock.h
 
-1481218882 c:\fmail\msgmsg.h
+1492450459 c:\fmail\msgmsg.h
 	<pshpack1.h>
 	<poppack.h>
 
-1480540564 c:\fmail\pp_date.h
+1488730689 c:\fmail\pp_date.h
 	"SetCompileDate.h"
 
-1481143972 c:\fmail\sorthb.h
+1488730689 c:\fmail\sorthb.h
 
-1478862964 c:\fmail\spec.h
+1488730689 c:\fmail\spec.h
 
-1480026696 source:c:\fmail\ftr.c
+1488730689 source:c:\fmail\ftr.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -235,7 +234,7 @@
 	"utils.h"
 	"version.h"
 
-1479144205 source:c:\fmail\hudson.c
+1488730689 source:c:\fmail\hudson.c
 	<stdio.h>
 	<string.h>
 	<dir.h>
@@ -255,14 +254,14 @@
 	"utils.h"
 	"hudson_shared.c"
 
-1479571529 c:\fmail\hudson_shared.c
+1492450459 c:\fmail\hudson_shared.c
 	"config.h"
 	"lock.h"
 	"stpcpy.h"
 
-1426945558 source:c:\fmail\ispathch.c
+1426949158 source:c:\fmail\ispathch.c
 
-1479571240 source:c:\fmail\jamfun.c
+1492450459 source:c:\fmail\jamfun.c
 	<dir.h>
 	<errno.h>
 	<fcntl.h>
@@ -286,7 +285,7 @@
 	"stpcpy.h"
 	"utils.h"
 
-1479571240 source:c:\fmail\jammaint.c
+1492450459 source:c:\fmail\jammaint.c
 	<conio.h>
 	<dos.h>
 	<errno.h>
@@ -313,23 +312,23 @@
 	"stpcpy.h"
 	"utils.h"
 
-1426955102 c:\fmail\nodeinfo.h
+1488730689 c:\fmail\nodeinfo.h
 
-1477646082 source:c:\fmail\lock.c
+1492450459 source:c:\fmail\lock.c
 	"lock.h"
 	<errno.h>
 	<io.h>
 	<stdio.h>
 	<sys\locking.h>
 
-1476790772 source:c:\fmail\mtask.c
+1488730689 source:c:\fmail\mtask.c
 	<windows.h>
 	<sched.h>
 	<unistd.h>
 	"mtask.h"
 	"config.h"
 
-1478344258 source:c:\fmail\smtp.c
+1492450459 source:c:\fmail\smtp.c
 	<dir.h>
 	<fcntl.h>
 	<io.h>
@@ -343,9 +342,9 @@
 	"smtp.h"
 	"utils.h"
 
-1475415727 c:\fmail\smtp.h
+1492450459 c:\fmail\smtp.h
 
-1481144112 source:c:\fmail\sorthb.c
+1492450459 source:c:\fmail\sorthb.c
 	<ctype.h>
 	<dos.h>
 	<errno.h>
@@ -369,16 +368,16 @@
 	"stpcpy.h"
 	"utils.h"
 
-1477774738 source:c:\fmail\spec.c
+1488730689 source:c:\fmail\spec.c
 	<ctype.h>
 	<string.h>
 	"spec.h"
 
-1476478327 source:c:\fmail\stricmp.c
+1488730689 source:c:\fmail\stricmp.c
 	"stricmp.h"
 	<ctype.h>
 
-1478344258 source:c:\fmail\impdesc.c
+1488730689 source:c:\fmail\impdesc.c
 	<dir.h>
 	<fcntl.h>
 	<io.h>
@@ -393,11 +392,11 @@
 	"impdesc.h"
 	"minmax.h"
 
-1312487184 c:\fmail\impdesc.h
+1488730689 c:\fmail\impdesc.h
 
-1477687086 c:\fmail\bits.h
+1488730689 c:\fmail\bits.h
 
-1481234061 source:c:\fmail\utils.c
+1492450459 source:c:\fmail\utils.c
 	<ctype.h>
 	<dir.h>
 	<dirent.h>
@@ -423,7 +422,7 @@
 	"stpcpy.h"
 	"version.h"
 
-1479142705 source:c:\fmail\utils2.c
+1492450459 source:c:\fmail\utils2.c
 	<ctype.h>
 	<direct.h>
 	<dirent.h>
@@ -431,21 +430,22 @@
 	<stdarg.h>
 	<stdlib.h>
 	<string.h>
+	<sys/stat.h>
 	<time.h>
 	"utils.h"
 	"ispathch.h"
 	"minmax.h"
 	"spec.h"
 
-1480540527 source:c:\fmail\version.c
+1492463792 source:c:\fmail\version.c
 	"Version.h"
 	"pp_date.h"
 	<stdio.h>
 	<windows.h>
 
-1481235796 source:c:\fmail\ftoolsw32.rc
+1492628766 source:c:\fmail\ftoolsw32.rc
 
-1479163400 source:c:\fmail\update.c
+1492450459 source:c:\fmail\update.c
 	<fcntl.h>
 	<io.h>
 	<stdio.h>
@@ -470,22 +470,22 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1477949075 c:\fmail\fdfolder.h
+1488730689 c:\fmail\fdfolder.h
 	<pshpack1.h>
 	<poppack.h>
 
-1478861963 c:\fmail\fs_util.h
+1488730689 c:\fmail\fs_util.h
 
-1477949075 c:\fmail\imfolder.h
+1488730689 c:\fmail\imfolder.h
 	<pshpack1.h>
 	<poppack.h>
 
-1478868602 c:\fmail\window.h
+1488730689 c:\fmail\window.h
 	"bits.h"
 
-1478185506 c:\fmail\minmax.h
+1488730689 c:\fmail\minmax.h
 
-1479920806 c:\fmail\addnew.h
+1488730689 c:\fmail\addnew.h
 
-1486659872 c:\fmail\setcompiledate.h
+1492628766 c:\fmail\setcompiledate.h
 

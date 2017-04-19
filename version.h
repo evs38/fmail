@@ -21,9 +21,9 @@
 //
 //----------------------------------------------------------------------------
 
-#define VERNUM       "1.73"
-#define SERIAL_MAJOR  1
-#define SERIAL_MINOR  73
+#define VERNUM       "2.0"
+#define SERIAL_MAJOR  2
+#define SERIAL_MINOR  0
 
 extern const char *TOOLSTR;
 

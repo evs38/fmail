@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
 //  Copyright (C) 2007        Folkert J. Wijnstra
-//  Copyright (C) 2007 - 2015 Wilfred van Velzen
+//  Copyright (C) 2007 - 2017 Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -171,10 +171,10 @@ void addNew(s32 switches)
         else // pass-through
           *tempInfo.msgBasePath = 0;
       }
+      index = 0;
 	    while (index < areaInfoCount && strcmp(tempInfo.areaName, (*areaNames)[index]) > 0)
         index++;
       if (index < areaInfoCount && !strcmp(tempInfo.areaName, (*areaNames)[index]))
-      index = 0;
       {
         ++areasExist;
         logEntryf(LOG_ALWAYS, 0, "Area %s is already present", tempInfo.areaName);

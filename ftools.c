@@ -21,11 +21,7 @@
 //
 //---------------------------------------------------------------------------
 
-#ifdef __STDIO__
 #include <conio.h>
-#else
-#include <bios.h>
-#endif
 #include <ctype.h>
 #include <dir.h>
 #include <dirent.h>
@@ -71,12 +67,7 @@
 // linkfout FTools voorkomen!
 u16 echoCount;
 
-#ifdef __STDIO__
 #define keyWaiting (kbhit() ? getch() : 0)
-#else
-#define keyWaiting bioskey(1)
-#define keyRead    bioskey(0)
-#endif
 
 #define RENUM_BUFSIZE 32760 // MAX 32760
 #define DELRECNUM     (0x10000 / 8)
@@ -2060,15 +2051,7 @@ int main(int argc, char *argv[])
         while (time(&time2) <= time2a)
           returnTimeSlice(1);
       }
-#ifndef __STDIO__
-      else
-        keyRead;
-#endif
     }
-#ifndef __STDIO__
-    if (ch != 0 && ch != -1)
-      keyRead;
-#endif
 
     if (semaHndl == -1)
     {
