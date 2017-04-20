@@ -158,58 +158,62 @@ liability or litigation.
 
 1.2   Files
 
-FMail, FConfig and FTools create and use a number of files. Except
-for the last three files, FMail will create and look for these
-files in the directory where FMail is located, even if the current
-directory is a different one. The files are:
+FMail, FConfig and FTools create and use a number of files. If not
+specified otherwise, FMail will create and look for these files in the
+directory where FMail is located, even if the current directory is a
+different one. Or in the directory pointed to by the FMAIL environment
+variable, if set.
 
-FMAIL.CFG      General configuration file.
+The files are:
 
-FMAIL.AR       Contains the area configuration used by FMail.
+  FMAIL.AR       Contains the area configuration used by FMail.
 
-FMAIL.ARD      Contains  the area  configuration  defaults used  by
-               FMail.
+  FMAIL.ARD      Contains the area configuration defaults used by FMail.
 
-FMAIL.NOD      Contains the node configuration used by FMail.
+  FMAIL.CFG      General configuration file.
 
-FMAIL.PCK      Contains  the  netmail routing  information  used by
-               FMail's PACK function.
+  FMAIL.BDE      File createdby FMAIL.EXE when new areas are tossed and
+                 used by FConfig.EXE to AutoCreate those areas or used
+                 by the FTools addnew function.
+                 After usage the file is deleted.
 
-FMAIL.DUP      Contains  the database  with signatures  of messages
-               used by  FMail to  detect duplicate messages.  FMail
-               keeps track of the last 16384 messages.
+  FMAIL.DUP      Contains  the database  with signatures  of messages
+                 used by  FMail to  detect duplicate messages.  FMail
+                 keeps track of the last 16384 messages.
 
-FMAIL32.DUP    The 32-bit version of the duplicate detection file.
-               It is capable of keeping track of 9999*1024 duplicates.
+  FMAIL32.DUP    The 32-bit version of the duplicate detection file.
+                 It is capable of keeping track of 9999*1024 duplicates.
 
-FMAIL.LOC      This file  is opened by  FMail in  the message  base
-               directory  to prevent multiple  copies of FMail from
-               operating  on  the same  message  base  at the  same
-               time. This file will not be deleted afterwards.
+  FMAIL.LOC      This file  is opened by  FMail in  the message  base
+                 directory  to prevent multiple  copies of FMail from
+                 operating  on  the same  message  base  at the  same
+                 time. This file will not be deleted afterwards.
 
-MSG*.FML       These  files  are   created  in  the   message  base
-               directory  when  FMail is  running  in  message base
-               sharing  mode.  Normally  FMail  will  append  these
-               files to  the normal message base  files, but it can
-               happen that this is  not possible. FMail will  retry
-               to append them  to the normal message base files the
-               next time it is started.
+  FMAIL.NOD      Contains the node configuration used by FMail.
 
-FMAIL.BDE      File created  by FMAIL.EXE when new areas are tossed
-               and used by FConfig.EXE to AutoCreate those areas.
+  FMAIL.PCK      Contains  the  netmail routing  information  used by
+                 FMail's PACK function.
 
-*.QQQ          If  FMail  could  not  compress  the  outgoing  .PKT
-               files, they  will be renamed to  .QQQ files and will
-               remain in  the Outgoing  mail directory.  FMail will
-               retry to compress  these .QQQ files the next time it
-               is started.
+  MSG*.FML       These  files  are   created  in  the   message  base
+                 directory  when  FMail is  running  in  message base
+                 sharing  mode.  Normally  FMail  will  append  these
+                 files to  the normal message base  files, but it can
+                 happen that this is  not possible. FMail will  retry
+                 to append them  to the normal message base files the
+                 next time it is started.
 
-*.TMP          In some cases  (e.g. a crash),  it is possible  that
-               .TMP files  remain in  the Outbound  mail directory.
-               In most  cases, these  files can be  deleted without
-               any problem,  because the original mail has not been
-               removed yet: the messages  will be tossed again  the
-               next time FMail Toss is started.
+  *.QQQ          If  FMail  could  not  compress  the  outgoing  .PKT
+                 files, they  will be renamed to  .QQQ files and will
+                 remain in  the Outgoing  mail directory.  FMail will
+                 retry to compress  these .QQQ files the next time it
+                 is started.
+
+  *.TMP          In some cases  (e.g. a crash),  it is possible  that
+                 .TMP files  remain in  the Outbound  mail directory.
+                 In most  cases, these  files can be  deleted without
+                 any problem,  because the original mail has not been
+                 removed yet: the messages  will be tossed again  the
+                 next time FMail Toss is started.
 
 
 1.3       System requirements
