@@ -172,9 +172,9 @@ The files are:
 
   FMAIL.CFG      General configuration file.
 
-  FMAIL.BDE      File createdby FMAIL.EXE when new areas are tossed and
-                 used by FConfig.EXE to AutoCreate those areas or used
-                 by the FTools addnew function.
+  FMAIL.BDE      File created by FMAIL.EXE when new areas are tossed
+                 and used by FConfig.EXE to AutoCreate those areas or
+                 used by the FTools addnew function.
                  After usage the file is deleted.
 
   FMAIL.DUP      Contains  the database  with signatures  of messages

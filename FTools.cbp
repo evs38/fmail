@@ -24,6 +24,7 @@
 				<Option object_output="obj/FTools/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="addnew" />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
