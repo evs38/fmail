@@ -756,78 +756,80 @@ char *insertLineN(char *pos, char *line, u16 num)
 //---------------------------------------------------------------------------
 static void readPathSeenBy(u16 type, char *msgText, psRecType *psArray, u16 *arrayCount)
 {
-   const char *searchStr;
-   u16   searchLength;
-   char *helpPtr1
-      , *helpPtr2;
-   u16   psNet = 0;
-   s16   skip  = 0;
-   u16   helpInt;
-   u16   maxLength;
+  const char *searchStr;
+  u16   searchLength;
+  char *helpPtr1
+    , *helpPtr2;
+  u16   psNet = 0;
+  s16   skip  = 0;
+  u16   helpInt;
+  u16   maxLength;
 
-   if (type == ECHO_SEENBY)
-   {
-      searchStr    = "SEEN-BY: ";
-      searchLength = 9;
-      maxLength    = MAX_MSGSEENBY;
-   }
-   else
-   {
-      searchStr    = "\1PATH: ";
-      searchLength = 7;
-      maxLength    = MAX_MSGPATH;
-   }
+  if (type == ECHO_SEENBY)
+  {
+    searchStr    = "SEEN-BY: ";
+    searchLength = 9;
+    maxLength    = MAX_MSGSEENBY;
+  }
+  else
+  {
+    searchStr    = "\1PATH: ";
+    searchLength = 7;
+    maxLength    = MAX_MSGPATH;
+  }
 
-   *arrayCount = 0;
+  *arrayCount = 0;
 
-   helpPtr2 = msgText;
-   if ((helpPtr1 = findCLStr(helpPtr2, " * Origin: ")) != NULL)
-      helpPtr2 = helpPtr1;
+  helpPtr2 = msgText;
+  if ((helpPtr1 = findCLStr(helpPtr2, " * Origin: ")) != NULL)
+    helpPtr2 = helpPtr1;
 
-   if ((helpPtr1 = (helpPtr2 = findCLStr(helpPtr2, searchStr))) != NULL)
-   {
-      while (memcmp(searchStr, helpPtr2, searchLength) == 0)
+  if ((helpPtr1 = (helpPtr2 = findCLStr(helpPtr2, searchStr))) != NULL)
+  {
+    while (memcmp(searchStr, helpPtr2, searchLength) == 0)
+    {
+      helpPtr2 += searchLength;
+      while (isdigit(*helpPtr2))
       {
-        helpPtr2 += searchLength;
-        while (isdigit(*helpPtr2))
+        helpInt = 0;
+        do
         {
-            helpInt = 0;
-            do
-            {
-               helpInt = (helpInt << 3) + (helpInt << 1) + *(helpPtr2++) - '0';
-            }
-            while (isdigit(*helpPtr2));
+          helpInt = (helpInt << 3) + (helpInt << 1) + *(helpPtr2++) - '0';
+        }
+        while (isdigit(*helpPtr2));
 
-            switch (*helpPtr2)
-            {
-               case '.'       : skip = 1;
-                                break;
-               case '/'       : psNet = helpInt;
-                                break;
-               default        : if ((*arrayCount < maxLength) &&
-                                    (psNet != 0) &&
-                                    (!skip))
-                                {
-                                   psArray[ *arrayCount   ].net  = psNet;
-                                   psArray[(*arrayCount)++].node = helpInt;
-                                }
-                                skip = 0;
-            }
-            if (*helpPtr2)
-               helpPtr2++;
+        switch (*helpPtr2)
+        {
+          case '.': skip = 1;
+                    break;
+          case '/': psNet = helpInt;
+                    break;
+          default : if (  *arrayCount < maxLength
+                       && psNet != 0
+                       && !skip
+                       )
+                    {
+                      psArray[ *arrayCount   ].net  = psNet;
+                      psArray[(*arrayCount)++].node = helpInt;
+                    }
+                    skip = 0;
+                    break;
+        }
+        if (*helpPtr2)
+          helpPtr2++;
 
-            while (*helpPtr2 == ' ')
-               helpPtr2++;
-         }
-
-         while ( (*helpPtr2 == '\r' + (char)0x80)
-               || *helpPtr2 == '\r'
-               || *helpPtr2 == '\n'
-               )
-            helpPtr2++;
+        while (*helpPtr2 == ' ')
+          helpPtr2++;
       }
-      strmove(helpPtr1, helpPtr2);
-   }
+
+      while ( (*helpPtr2 == '\r' + (char)0x80)
+            || *helpPtr2 == '\r'
+            || *helpPtr2 == '\n'
+            )
+        helpPtr2++;
+    }
+    strmove(helpPtr1, helpPtr2);
+  }
 }
 //---------------------------------------------------------------------------
 void logPathSeenBy(const char *pre, u16 type, psRecType *psArray, int arrayCount)

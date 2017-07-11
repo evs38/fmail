@@ -135,7 +135,7 @@
 
 1488727089 /home/wilfred/Projects/FMail/pack.h
 
-1499723480 /home/wilfred/Projects/FMail/version.h
+1499791918 /home/wilfred/Projects/FMail/version.h
 
 1490723971 source:/home/wilfred/Projects/FMail/areainfo.c
 	<fcntl.h>
@@ -531,7 +531,7 @@
 	"os.h"
 	"stpcpy.h"
 
-1499723355 /home/wilfred/Projects/FMail/stpcpy.h
+1499791897 /home/wilfred/Projects/FMail/stpcpy.h
 	<string.h>
 
 1488727089 source:/home/wilfred/Projects/FMail/mtask.c
@@ -688,7 +688,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1499723455 source:/home/wilfred/Projects/FMail/utils.c
+1499791806 source:/home/wilfred/Projects/FMail/utils.c
 	<dir.h>
 	<share.h>
 	<stdint.h>
@@ -718,7 +718,7 @@
 	"os_string.h"
 	"version.h"
 
-1492102828 source:/home/wilfred/Projects/FMail/utils2.c
+1499769566 source:/home/wilfred/Projects/FMail/utils2.c
 	<direct.h>
 	<ctype.h>
 	<dirent.h>
@@ -735,6 +735,7 @@
 	"os.h"
 	"os_string.h"
 	"spec.h"
+	"stpcpy.h"
 
 1488727089 /home/wilfred/Projects/FMail/ispathch.h
 

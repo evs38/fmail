@@ -56,7 +56,7 @@ char *stpmove(char *dst, const char *src);
 
 __inline static char *strmove(char *dst, const char *src)
 {
-  return memmove(dst, src, strlen(src));
+  return memmove(dst, src, strlen(src) + 1);
 }
 
 #endif  // stpcpyH
