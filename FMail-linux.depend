@@ -91,7 +91,7 @@
 	"areainfo.h"
 	"fmstruct.h"
 
-1492102262 source:/home/wilfred/Projects/FMail/areafix.c
+1497801650 source:/home/wilfred/Projects/FMail/areafix.c
 	<ctype.h>
 	<fcntl.h>
 	<stdio.h>
@@ -135,7 +135,7 @@
 
 1488727089 /home/wilfred/Projects/FMail/pack.h
 
-1497801650 /home/wilfred/Projects/FMail/version.h
+1499723480 /home/wilfred/Projects/FMail/version.h
 
 1490723971 source:/home/wilfred/Projects/FMail/areainfo.c
 	<fcntl.h>
@@ -323,7 +323,7 @@
 1488727089 /home/wilfred/Projects/FMail/pp_date.h
 	"SetCompileDate.h"
 
-1497736800 /home/wilfred/Projects/FMail/SetCompileDate.h
+1499724000 /home/wilfred/Projects/FMail/SetCompileDate.h
 
 1488727089 /home/wilfred/Projects/FMail/sorthb.h
 
@@ -345,7 +345,7 @@
 
 1426945558 source:/home/wilfred/Projects/FMail/ispathch.c
 
-1494001904 source:/home/wilfred/Projects/FMail/jamfun.c
+1498665990 source:/home/wilfred/Projects/FMail/jamfun.c
 	<dir.h>
 	<errno.h>
 	<fcntl.h>
@@ -531,7 +531,7 @@
 	"os.h"
 	"stpcpy.h"
 
-1491942705 /home/wilfred/Projects/FMail/stpcpy.h
+1499723355 /home/wilfred/Projects/FMail/stpcpy.h
 	<string.h>
 
 1488727089 source:/home/wilfred/Projects/FMail/mtask.c
@@ -571,7 +571,7 @@
 	<stdio.h>
 	<unistd.h>
 
-1496679383 source:/home/wilfred/Projects/FMail/pack.c
+1498158044 source:/home/wilfred/Projects/FMail/pack.c
 	<dir.h>
 	<share.h>
 	<ctype.h>
@@ -688,7 +688,7 @@
 	"stricmp.h"
 	<ctype.h>
 
-1496168088 source:/home/wilfred/Projects/FMail/utils.c
+1499723455 source:/home/wilfred/Projects/FMail/utils.c
 	<dir.h>
 	<share.h>
 	<stdint.h>
@@ -713,6 +713,7 @@
 	"log.h"
 	"msgpkt.h"
 	"spec.h"
+	"stpcpy.h"
 	"os.h"
 	"os_string.h"
 	"version.h"
@@ -760,4 +761,7 @@
 	"utils.h"
 
 1494673125 /home/wilfred/Projects/FMail/hudson_shared.h
+
+1499723355 source:/home/wilfred/Projects/FMail/stpcpy.c
+	"stpcpy.h"
 

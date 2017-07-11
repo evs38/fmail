@@ -2,7 +2,7 @@
 #define stpcpyH
 //---------------------------------------------------------------------------
 //
-//  Copyright (C) 2016 Wilfred van Velzen
+//  Copyright (C) 2016 - 2017  Wilfred van Velzen
 //
 //
 //  This file is part of FMail.
@@ -51,4 +51,12 @@ __inline static char *stpncpy(char *dst, const char *src, int n)
 }
 //---------------------------------------------------------------------------
 #endif // __linux__
+
+char *stpmove(char *dst, const char *src);
+
+__inline static char *strmove(char *dst, const char *src)
+{
+  return memmove(dst, src, strlen(src));
+}
+
 #endif  // stpcpyH

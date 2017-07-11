@@ -41,6 +41,7 @@
 #include "os.h"
 #include "os_string.h"
 #include "spec.h"
+#include "stpcpy.h"
 
 extern configType config;
 
@@ -165,7 +166,7 @@ void MakeJamAreaPath(rawEchoType *echo, const char *(*CallBackGetAreaPath)(u16))
   while (*tempPtr)
   {
     if (!ispathch(*tempPtr))
-      strcpy(tempPtr, tempPtr + 1);
+      strmove(tempPtr, tempPtr + 1);
     else
       if (islower(*tempPtr++))
         toLower = 0;

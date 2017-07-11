@@ -51,6 +51,7 @@
 #include "log.h"
 #include "msgpkt.h"  // for openP
 #include "spec.h"
+#include "stpcpy.h"
 #include "os.h"
 #include "os_string.h"
 #include "version.h"
@@ -557,9 +558,10 @@ void removeLf(char *msgText)
     {
       *helpPtr = 0;
       if (newEnd != oldStart)
-        newEnd = stpcpy(newEnd, oldStart);
+        newEnd = stpmove(newEnd, oldStart);
       else
         newEnd = helpPtr;
+
       oldStart = ++helpPtr;
     }
     // Otherwise replace it with cr
@@ -570,7 +572,7 @@ void removeLf(char *msgText)
     }
   }
   if (newEnd != oldStart)
-    strcpy(newEnd, oldStart);
+    strmove(newEnd, oldStart);
 #ifdef _DEBUG_LOGREMOVELFSR
   if (n > 0)
     logEntryf(LOG_DEBUG, 0, "DEBUG Removed/replaced %d line feed characters", n);
@@ -599,12 +601,12 @@ void removeSr(char *msgText)
     else
     {
       *helpPtr = 0;
-      strcpy(newEnd, oldStart);
+      strmove(newEnd, oldStart);
       oldStart = ++helpPtr;
-      newEnd   = strchr (newEnd, 0);
+      newEnd   = strchr(newEnd, 0);
     }
   }
-  strcpy(newEnd, oldStart);
+  strmove(newEnd, oldStart);
 #ifdef _DEBUG_LOGREMOVELFSR
   if (n > 0)
     logEntryf(LOG_DEBUG, 0, "DEBUG Removed/replaced %d soft carriage return characters", n);
@@ -617,11 +619,11 @@ char *srchar(char *string, s16 t, s16 c)
       , *helpPtr2;
    s16  temp;
 
-   if ((helpPtr1 = strchr (string, t)) == NULL)
-      helpPtr1 = strchr (string, 0);
+   if ((helpPtr1 = strchr(string, t)) == NULL)
+      helpPtr1 = strchr(string, 0);
    temp = *helpPtr1;
    *helpPtr1 = 0;
-   helpPtr2 = strrchr (string, c);
+   helpPtr2 = strrchr(string, c);
    *helpPtr1 = temp;
    return (helpPtr2);
 }
@@ -824,7 +826,7 @@ static void readPathSeenBy(u16 type, char *msgText, psRecType *psArray, u16 *arr
                )
             helpPtr2++;
       }
-      strcpy(helpPtr1, helpPtr2);
+      strmove(helpPtr1, helpPtr2);
    }
 }
 //---------------------------------------------------------------------------
@@ -848,7 +850,7 @@ static void writePathSeenBy(u16 type, char *pathSeen, psRecType *psArray, u16 ar
             *startPtr;
    const char *name;
    u16      num,
-	    count;
+	          count;
    char     tempStr[6];
 
    if (type == ECHO_SEENBY)
@@ -868,9 +870,9 @@ static void writePathSeenBy(u16 type, char *pathSeen, psRecType *psArray, u16 ar
          if (helpPtr != pathSeen)
             *helpPtr++ = '\r';
 
-         helpPtr = stpcpy (helpPtr, name);
+         helpPtr = stpcpy(helpPtr, name);
          num = psArray[count].net;
-         helpPtr2 = tempStr+5;
+         helpPtr2 = tempStr + 5;
          do
          {
            div_t divRes;
@@ -880,7 +882,7 @@ static void writePathSeenBy(u16 type, char *pathSeen, psRecType *psArray, u16 ar
            num = divRes.quot;
          }
          while (num != 0);
-         helpPtr = stpcpy (helpPtr, helpPtr2);
+         helpPtr = stpcpy(helpPtr, helpPtr2);
 
          *(helpPtr++) = '/';
       }
@@ -900,7 +902,7 @@ static void writePathSeenBy(u16 type, char *pathSeen, psRecType *psArray, u16 ar
                num = divRes.quot;
             }
             while (num);
-            helpPtr = stpcpy (helpPtr, helpPtr2);
+            helpPtr = stpcpy(helpPtr, helpPtr2);
 
             *(helpPtr++) = '/';
          }
@@ -916,7 +918,7 @@ static void writePathSeenBy(u16 type, char *pathSeen, psRecType *psArray, u16 ar
          num = divRes.quot;
       }
       while (num);
-      helpPtr = stpcpy (helpPtr, helpPtr2);
+      helpPtr = stpcpy(helpPtr, helpPtr2);
    }
    *(helpPtr++) = '\r';
    *helpPtr = 0;

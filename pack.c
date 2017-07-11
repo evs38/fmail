@@ -75,13 +75,13 @@ static netListType     *netList;
 //---------------------------------------------------------------------------
 s16 packValid(nodeNumType *node, char *packedNodes)
 {
-  int    bufLen;
-  char  *buf;
-  char  *helpPtr
-      , *helpPtr2;
-  char   stringNode [32];
-  char   nodeTempStr[32];
-  size_t count;
+  int         bufLen;
+  char       *buf;
+  char       *helpPtr
+           , *helpPtr2;
+  tempStrType stringNode
+            , nodeTempStr;
+  size_t      count;
 
   if (packedNodes == NULL)
     return 0;

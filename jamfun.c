@@ -65,9 +65,9 @@ static JAMHDRINFO jam_hdrinfo;
 //---------------------------------------------------------------------------
 u32 jam_open(char *msgBaseName, JAMHDRINFO **jam_hdrinfo)
 {
-   static JAMHDRINFO hdrinfo;
-   char   tempstr[80];
-   char   *helpptr;
+   static      JAMHDRINFO hdrinfo;
+   tempStrType tempstr;
+   char       *helpptr;
 
    strcpy(jam_basename, msgBaseName);
    helpptr = stpcpy(tempstr, fixPath(msgBaseName));

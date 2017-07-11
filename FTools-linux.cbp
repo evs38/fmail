@@ -141,6 +141,9 @@
 		<Unit filename="spec.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="stpcpy.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="stpcpy.h" />
 		<Unit filename="stricmp.c">
 			<Option compilerVar="CC" />

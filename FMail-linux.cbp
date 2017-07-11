@@ -11,7 +11,7 @@
 				<Option object_output="obj/FMail/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="toss" />
+				<Option parameters="pack \* -C" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-mtune=generic" />
@@ -184,6 +184,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="spec.h" />
+		<Unit filename="stpcpy.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="stpcpy.h" />
 		<Unit filename="stricmp.c">
 			<Option compilerVar="CC" />

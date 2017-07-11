@@ -52,7 +52,7 @@
 
 1494189763 /home/wilfred/Projects/FMail/os.h
 
-1491942705 /home/wilfred/Projects/FMail/stpcpy.h
+1499723355 /home/wilfred/Projects/FMail/stpcpy.h
 	<string.h>
 
 1488727089 /home/wilfred/Projects/FMail/update.h
@@ -128,7 +128,7 @@
 
 1488727089 /home/wilfred/Projects/FMail/msgradef.h
 
-1496166308 /home/wilfred/Projects/FMail/version.h
+1499723480 /home/wilfred/Projects/FMail/version.h
 
 1496168089 source:/home/wilfred/Projects/FMail/ftnotify.c
 	<ctype.h>
@@ -151,7 +151,7 @@
 
 1488727089 /home/wilfred/Projects/FMail/mtask.h
 
-1495813087 source:/home/wilfred/Projects/FMail/ftools.c
+1498665990 source:/home/wilfred/Projects/FMail/ftools.c
 	<dir.h>
 	<share.h>
 	<ctype.h>
@@ -223,7 +223,7 @@
 1488727089 /home/wilfred/Projects/FMail/pp_date.h
 	"SetCompileDate.h"
 
-1496095200 /home/wilfred/Projects/FMail/SetCompileDate.h
+1499637600 /home/wilfred/Projects/FMail/SetCompileDate.h
 
 1488727089 /home/wilfred/Projects/FMail/sorthb.h
 
@@ -316,7 +316,7 @@
 
 1426945558 source:/home/wilfred/Projects/FMail/ispathch.c
 
-1494001904 source:/home/wilfred/Projects/FMail/jamfun.c
+1498665990 source:/home/wilfred/Projects/FMail/jamfun.c
 	<dir.h>
 	<errno.h>
 	<fcntl.h>
@@ -493,7 +493,7 @@
 1488727089 /home/wilfred/Projects/FMail/window.h
 	"bits.h"
 
-1496168088 source:/home/wilfred/Projects/FMail/utils.c
+1499723455 source:/home/wilfred/Projects/FMail/utils.c
 	<dir.h>
 	<share.h>
 	<stdint.h>
@@ -518,6 +518,7 @@
 	"log.h"
 	"msgpkt.h"
 	"spec.h"
+	"stpcpy.h"
 	"os.h"
 	"os_string.h"
 	"version.h"
@@ -545,4 +546,7 @@
 	"pp_date.h"
 	<stdio.h>
 	<windows.h>
+
+1499723355 source:/home/wilfred/Projects/FMail/stpcpy.c
+	"stpcpy.h"
 

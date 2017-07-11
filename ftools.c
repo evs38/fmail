@@ -1614,7 +1614,7 @@ void Post(int argc, char *argv[])
       jam_writemsg(areaPtr->msgBasePath, message, 1);
       jam_closeall();
 
-      logEntryf(LOG_ALWAYS, 0, "Posting message in area %s (JAM base %s)", areaPtr->areaName, areaPtr->msgBasePath);
+      logEntryf(LOG_ALWAYS, 0, "Posting message in area %s (JAM base %s)", areaPtr->areaName, fixPath(areaPtr->msgBasePath));
     }
     else
     {
